@@ -41,7 +41,7 @@ function reducer(state: State, action: Action): State {
       return { ...state, phase: { ...phase, msgIdx: next } }
     }
     // all feedback messages shown → show "次へ" by going to waiting-like state
-    return { emotion: phase.fb.emotion, phase: { name: 'feedback', ...phase, msgIdx: phase.fb.messages.length } }
+    return { emotion: phase.fb.emotion, phase: { ...phase, msgIdx: phase.fb.messages.length } }
   }
 
   if (action.type === 'CHOICE' && phase.name === 'waiting') {

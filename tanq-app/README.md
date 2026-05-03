@@ -1,61 +1,47 @@
-# TANQ App — セットアップガイド
+# TANQ App
 
-## 1. TANQuu 画像を配置する（必須・最初にやること）
+TANQuu と一緒に科学のひみつを発見する学習アプリ（小4向け・スマホ対応）
 
-Gemini で生成した 5枚の PNG を以下のファイル名で保存:
+---
 
-```
-tanq-app/public/tanquu/
-├── happy.png        ← ハッピー！
-├── angry.png        ← おこ！
-├── sad.png          ← えーん…
-├── mischievous.png  ← いたずら♪
-└── surprised.png    ← びっくり！（目が丸いやつ）
-```
+## デプロイ（ワンクリック）
 
-## 2. ローカルで動かす
+下のボタンを押すと Vercel に自動デプロイされます。
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmtk-ctrl%2Fkaisha01&root=tanq-app)
+
+ボタンを押す → GitHub でログイン → Deploy → URL が発行される。以上。  
+以後は `git push` するたびに自動で更新される。
+
+---
+
+## ローカルで動かす
 
 ```bash
 cd tanq-app
 npm install
 npm run dev
+# → http://localhost:3000
 ```
 
-ブラウザで http://localhost:3000 を開く。  
-スマホで確認したい場合は http://[PCのIPアドレス]:3000 でOK。
-
-## 3. Vercel にデプロイする（無料）
-
-1. https://vercel.com でアカウント作成（GitHub連携）
-2. 「New Project」→ このリポジトリを選択
-3. **Root Directory を `tanq-app` に設定する（重要）**
-4. Deploy ボタンを押す → URLが発行される
-
-環境変数は不要（このバージョンはAPI不使用）。
-
-## 4. 動作確認チェックリスト
-
-- [ ] TANQuu が表示される
-- [ ] メッセージが順番に表示される
-- [ ] 選択肢ボタンが押せる
-- [ ] 選択後にリアクションが出る
-- [ ] 最後に「ひみつゲット！」画面が出る
-- [ ] スマホで崩れない
+---
 
 ## ファイル構成
 
 ```
 src/
-├── app/
-│   ├── layout.tsx       レイアウト
-│   ├── page.tsx         /tanq にリダイレクト
-│   └── tanq/page.tsx    ★ メインゲーム画面
-├── data/
-│   └── unit1.ts         ★ 会話スクリプト（ここを編集してセリフ調整）
-└── app/globals.css      アニメーション定義
+├── app/tanq/page.tsx   ★ メインゲーム画面
+├── data/unit1.ts       ★ 会話スクリプト
+└── app/globals.css     アニメーション定義
+
+public/tanquu/
+├── happy.png           TANQuu ハッピー表情
+├── angry.png           TANQuu おこ表情
+├── sad.png             TANQuu えーん表情
+├── mischievous.png     TANQuu いたずら表情
+└── surprised.png       TANQuu びっくり表情
 ```
 
-## セリフを変えたい場合
+## セリフを変えるだけなら
 
-`src/data/unit1.ts` の `messages` や `label` を編集するだけでOK。  
-コードの知識は不要。日本語テキストを書き換えるだけ。
+`src/data/unit1.ts` の `messages` や `label` を編集。コード知識不要。
