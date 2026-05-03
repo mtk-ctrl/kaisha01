@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+  height: 100%;
+  background: #fdf6ff;
+  font-family: "Hiragino Maru Gothic ProN", "M PLUS Rounded 1c", sans-serif;
+}
+
+@keyframes pop-in {
+  0%   { transform: scale(0.85); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+.pop-in { animation: pop-in 0.25s ease-out forwards; }
+
+@keyframes bounce-dots {
+  0%, 80%, 100% { transform: translateY(0); }
+  40%            { transform: translateY(-6px); }
+}
+.dot { display: inline-block; animation: bounce-dots 1.2s infinite; }
+.dot:nth-child(2) { animation-delay: 0.15s; }
+.dot:nth-child(3) { animation-delay: 0.30s; }
