@@ -22,3 +22,26 @@ html, body {
 .dot { display: inline-block; animation: bounce-dots 1.2s infinite; }
 .dot:nth-child(2) { animation-delay: 0.15s; }
 .dot:nth-child(3) { animation-delay: 0.30s; }
+
+/* Furigana */
+ruby rt {
+  font-size: 0.55em;
+  color: #9575cd;
+  letter-spacing: 0.02em;
+}
+
+/* Tap hint pulsing arrow */
+@keyframes tap-pulse {
+  0%, 100% { opacity: 0.5; transform: translateY(0); }
+  50%       { opacity: 1;   transform: translateY(4px); }
+}
+.tap-hint { animation: tap-pulse 1s ease-in-out infinite; }
+
+/* Wobble for correct answer */
+@keyframes wobble {
+  0%, 100% { transform: rotate(0) scale(1); }
+  25%      { transform: rotate(-8deg) scale(1.12); }
+  50%      { transform: rotate(8deg)  scale(1.12); }
+  75%      { transform: rotate(-4deg) scale(1.06); }
+}
+.wobble { animation: wobble 0.55s ease-in-out; }
