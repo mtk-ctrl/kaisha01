@@ -25,6 +25,7 @@ export default function Footer() {
                 { href: '/tanq',      label: 'TANQ App を体験' },
                 { href: '/register',  label: '無料登録' },
                 { href: '/#app',      label: 'アプリ概要' },
+                { href: '/lab',       label: 'アプリラボ 🔒' },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link href={href} className="text-corp-muted hover:text-corp-teal transition-colors text-sm">
