@@ -30,8 +30,12 @@ function reducer(state: State, action: Action): State {
   const { phase } = state
 
   if (action.type === 'TAP') {
-    // Skip typing animation → show message immediately
+    // Skip typing animation → show message (or go to waiting if last message)
     if (phase.name === 'animating') {
+      const step = getStep(phase.stepId)
+      if (phase.msgIdx >= step.messages.length - 1) {
+        return { emotion: step.emotion, phase: { name: 'waiting', stepId: phase.stepId } }
+      }
       return { ...state, phase: { name: 'shown', stepId: phase.stepId, msgIdx: phase.msgIdx } }
     }
     if (phase.name === 'fb_animating') {
@@ -57,6 +61,11 @@ function reducer(state: State, action: Action): State {
 
   if (action.type === 'ANIM_DONE') {
     if (phase.name === 'animating') {
+      const step = getStep(phase.stepId)
+      if (phase.msgIdx >= step.messages.length - 1) {
+        // Last message: skip 'shown', go straight to waiting (shows choices/next button)
+        return { emotion: step.emotion, phase: { name: 'waiting', stepId: phase.stepId } }
+      }
       return { ...state, phase: { name: 'shown', stepId: phase.stepId, msgIdx: phase.msgIdx } }
     }
     if (phase.name === 'fb_animating') {
@@ -324,13 +333,13 @@ export default function TanqPage() {
     )
   } else if (showTapHint) {
     bottomInput = (
-      <div className="flex justify-center pb-4">
+      <div className="flex justify-center pb-6">
         <button
           onClick={handleTap}
-          className="tap-hint text-tanquu-purple text-3xl px-8 py-2"
+          className="tap-hint bg-white border-2 border-tanquu-purple text-tanquu-purple rounded-full px-10 py-4 text-lg font-bold shadow-sm active:bg-tanquu-light transition-colors flex items-center gap-2"
           aria-label="次のメッセージへ"
         >
-          ▼
+          つぎへ <span className="text-xl">→</span>
         </button>
       </div>
     )
