@@ -1,0 +1,39 @@
+name: Auto-merge AI branches → main
+
+# Jobs (AI CEO) が claude/* ブランチにプッシュすると
+# 自動的に main へマージし、Vercel が即時デプロイする
+
+on:
+  push:
+    branches:
+      - 'claude/**'
+
+permissions:
+  contents: write
+
+jobs:
+  merge-to-main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git identity
+        run: |
+          git config user.name "Jobs [AI CEO]"
+          git config user.email "jobs-ai@tanq.ai"
+
+      - name: Merge feature branch into main
+        run: |
+          git fetch origin main
+          git checkout main
+          git merge origin/${{ github.ref_name }} \
+            --no-ff \
+            -m "🚀 Auto-deploy: ${{ github.ref_name }}
+
+          Merged by Jobs (AI CEO) via GitHub Actions.
+          Source commit: ${{ github.sha }}"
+          git push origin main
