@@ -20,6 +20,7 @@
 - オーナーへの報告は簡潔・明確・根拠付き
 - 重要な意思決定は必ず `executive/ceo/decisions/` に記録
 - オーナーとの対話は必ず `board/communications/` に記録
+- **作業完了時は必ず `logs/` に日本語ログを作成する**（オーナーが確認できるように）
 - ファイル名は `YYYY-MM-DD_NNN_slug.md` の命名規則を守る
 - 「やります」と言ったことは今すぐコードや文書で実行する
 - オーナーにやらせる作業を最小化する（オーナーの仕事はフィードバックのみ）
@@ -35,6 +36,7 @@
 | **由来** | 探究（たんきゅう）の略 |
 | **ミッション** | AIで小学生〜高校生に「考える喜び」を届ける |
 | **ターゲット** | 勉強に興味が持てない小4 × 受験を意識し始めた親 |
+| **所在地** | 福岡県福岡市 |
 
 ### バリュー
 
@@ -63,11 +65,12 @@
 
 | 項目 | 内容 |
 |------|------|
-| **公開URL** | https://kaisha01-git-main-mtk-ctrls-projects.vercel.app/ |
+| **コーポレートURL** | https://kaisha01-git-main-mtk-ctrls-projects.vercel.app/ |
+| **アプリURL** | https://kaisha01-git-main-mtk-ctrls-projects.vercel.app/tanq |
 | **リポジトリ** | mtk-ctrl/kaisha01（`tanq-app/` ディレクトリ） |
 | **技術スタック** | Next.js 14 + TypeScript + Tailwind CSS |
 | **ホスティング** | Vercel（main ブランチへの push で自動デプロイ） |
-| **現状** | MVP v0.1 — Unit 1「うんちと密度」実装済み・デプロイ済み |
+| **自動マージ** | `claude/**` ブランチへのプッシュで自動的に main にマージ |
 
 ### コアコンセプト: 探究ループ（秘密コレクション）
 
@@ -87,18 +90,28 @@ Gemini 生成。画像は `tanq-app/public/tanquu/` に配置済み。
 
 ### 実装済みコンテンツ
 
+**コーポレートサイト** (`/`):
+- トップページ（ヒーロー・ミッション・アプリ紹介・探究ループ・バリュー・会社概要）
+- 登録ページ (`/register`)
+- お問い合わせページ (`/contact`)
+- デザインテーマ: 近未来 × 自然（バイオルミネッセント・フォレスト）
+
+**TANQ App** (`/tanq`):
 - **Unit 1**: 「うんちって水に浮く？」→ 密度・浮力の発見
-  - Stage 1: うんちフック（驚き）
-  - Stage 2: 氷の密度クイズ
-  - Stage 3: 友達3人の論理選択（モモ/ハナ/ソラ）
-  - Stage 4: 秘密コレクション画面
+- **Unit 2**: 「砂糖はどこに消えるの？」→ 溶解
+- **Unit 3**: 「空はなぜ青い？」→ 光散乱
+- **Unit 4**: 「植物はなにを食べてる？」→ 光合成
+- **Unit 5**: 「磁石はなぜくっつく？」→ 磁力
+- マルチユニット対応ホーム画面 + 進捗管理（localStorage）
 
 ### 未実装（次のステップ）
 
-- Unit 2〜16（理科 Season 1〜4）
+- Unit 6〜16（理科 Season 2〜4）
 - 親ダッシュボード
 - Claude API 統合（現状はスクリプト固定）
+- 登録・お問い合わせフォームのバックエンド接続
 - 英語モジュール（TANQ English）
+- 独自ドメイン（`tanq.jp` 検討）
 
 ---
 
@@ -108,6 +121,9 @@ Gemini 生成。画像は `tanq-app/public/tanquu/` に配置済み。
 kaisha01/
 ├── CLAUDE.md                        ← このファイル（引き継ぎ書）
 ├── COMPANY.md                       ← 会社概要・ミッション
+├── logs/                            ← ★ Jobs の作業ログ（日本語・オーナー確認用）
+│   ├── README.md                    ← ログの運用ルール
+│   └── YYYY-MM-DD_NNN_slug.md      ← 各作業ログ
 ├── board/communications/            ← オーナー↔Jobsの全対話ログ
 ├── executive/ceo/
 │   ├── PROFILE.md                   ← Jobsの権限・役割
@@ -120,28 +136,36 @@ kaisha01/
 ├── projects/active/
 │   └── 2026-05-03_tanq-mvp.md      ← MVPプロジェクト管理
 └── tanq-app/                        ← アプリ本体（Next.js）
-    ├── src/app/tanq/page.tsx        ← メインゲーム画面
-    └── src/data/unit1.ts            ← 会話スクリプト
+    ├── src/app/page.tsx             ← コーポレートホームページ
+    ├── src/app/register/page.tsx    ← 登録ページ
+    ├── src/app/contact/page.tsx     ← お問い合わせページ
+    ├── src/app/tanq/page.tsx        ← 子供向けゲーム画面
+    ├── src/components/Navbar.tsx    ← 共通ナビゲーション
+    ├── src/components/Footer.tsx    ← 共通フッター
+    └── src/data/                    ← ユニットデータ（unit1〜5）
 ```
 
 ---
 
-## 現在の状態（2026-05-03時点）
+## 現在の状態（2026-05-04時点）
 
 ### 完了済み
 
 - [x] 会社設立・方向性確定
 - [x] TANQuu キャラクター（Gemini生成・5表情）
-- [x] MVP実装（Unit 1 完全版）
+- [x] TANQ App Unit 1〜5 実装（Season 1 完了）
 - [x] Vercel デプロイ・公開URL発行
+- [x] コーポレートサイト実装・デプロイ（近未来×自然テーマ）
+- [x] auto-merge ワークフロー（claude/* → main 自動マージ）
+- [x] 作業ログ体制整備
 
 ### 次のアクション（優先順）
 
-1. **お子さん（小4）による初回テスト** — オーナーがURLを渡して試してもらう
-2. **フィードバック収集** — どこで笑ったか、どこで離脱しそうだったか
-3. **Unit 2 実装**（フィードバック反映後）— 「砂糖はどこに消えるの？」
-4. **親ダッシュボード実装**
-5. **Claude API 統合**（スクリプト固定→動的会話へ）
+1. **オーナーによるコーポレートサイトのデザイン確認** — 方向性フィードバック
+2. **お子さん（小4）による TANQ App テスト** — URLを渡して試してもらう
+3. **フィードバック反映** — デザイン調整・Unit 改善
+4. **フォームのバックエンド接続** — 登録・お問い合わせの実際の送信機能
+5. **独自ドメイン取得**（`tanq.jp` 等）
 
 ---
 
@@ -158,11 +182,19 @@ kaisha01/
 ## セッション開始時のルーティン
 
 1. このファイルを読む
-2. `board/communications/` の最新ログを確認
-3. `projects/active/` の最新状態を確認
-4. オーナーに「Jobs です。〇〇の状態から続けます」と簡潔に報告
-5. 作業開始
+2. `logs/` の最新ログを確認（前回何をしたか把握）
+3. `board/communications/` の最新ログを確認
+4. `projects/active/` の最新状態を確認
+5. オーナーに「Jobs です。〇〇の状態から続けます」と簡潔に報告
+6. 作業開始
+
+## セッション終了時のルーティン
+
+1. 実施した作業を `logs/YYYY-MM-DD_NNN_slug.md` に日本語で記録
+2. 必要に応じて `board/communications/` に対話ログを追加
+3. 重要な意思決定は `executive/ceo/decisions/` に記録
+4. このファイル（CLAUDE.md）の「現在の状態」を更新
 
 ---
 
-*最終更新: 2026-05-03 | Jobs (AI CEO)*
+*最終更新: 2026-05-04 | Jobs (AI CEO)*
