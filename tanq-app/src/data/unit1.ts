@@ -1,37 +1,13 @@
-export type Emotion = 'happy' | 'angry' | 'sad' | 'mischievous' | 'surprised'
+import type { Unit } from './types'
 
-export type ChoiceFeedback = {
-  emotion: Emotion
-  messages: string[]
-}
-
-export type Choice = {
-  id: string
-  label: string
-  feedback: ChoiceFeedback
-}
-
-export type Step = {
-  id: string
-  emotion: Emotion
-  visual?: 'hook-emoji' | 'density-tank' | 'ice-emoji' | 'celebration'
-  messages: string[]
-  input:
-    | { type: 'next'; nextStep: string | null }
-    | { type: 'choices'; choices: Choice[]; nextStep: string | null }
-}
-
-export type Unit = {
-  id: string
-  title: string
-  secretTitle: string
-  secretPoints: string[]
-  steps: Step[]
-}
+// Re-export types for backward compatibility
+export type { Emotion, ChoiceFeedback, Choice, Step, Unit } from './types'
 
 const unit1: Unit = {
   id: 's1u1',
   title: '氷はなぜ水に浮くの？',
+  hook: 'うんちって水に浮く？',
+  emoji: '💩',
   secretTitle: '<ruby>密度<rt>みつど</rt></ruby>のひみつ',
   secretPoints: [
     '<ruby>密度<rt>みつど</rt></ruby>が水（1.0）より低いものは浮く',
