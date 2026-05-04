@@ -30,8 +30,12 @@ function reducer(state: State, action: Action): State {
   const { phase } = state
 
   if (action.type === 'TAP') {
-    // Skip typing animation → show message immediately
+    // Skip typing animation → show message (or go to waiting if last message)
     if (phase.name === 'animating') {
+      const step = getStep(phase.stepId)
+      if (phase.msgIdx >= step.messages.length - 1) {
+        return { emotion: step.emotion, phase: { name: 'waiting', stepId: phase.stepId } }
+      }
       return { ...state, phase: { name: 'shown', stepId: phase.stepId, msgIdx: phase.msgIdx } }
     }
     if (phase.name === 'fb_animating') {
@@ -57,6 +61,11 @@ function reducer(state: State, action: Action): State {
 
   if (action.type === 'ANIM_DONE') {
     if (phase.name === 'animating') {
+      const step = getStep(phase.stepId)
+      if (phase.msgIdx >= step.messages.length - 1) {
+        // Last message: skip 'shown', go straight to waiting (shows choices/next button)
+        return { emotion: step.emotion, phase: { name: 'waiting', stepId: phase.stepId } }
+      }
       return { ...state, phase: { name: 'shown', stepId: phase.stepId, msgIdx: phase.msgIdx } }
     }
     if (phase.name === 'fb_animating') {
