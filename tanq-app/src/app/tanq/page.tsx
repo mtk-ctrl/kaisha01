@@ -333,13 +333,13 @@ export default function TanqPage() {
     )
   } else if (showTapHint) {
     bottomInput = (
-      <div className="flex justify-center pb-4">
+      <div className="flex justify-center pb-6">
         <button
           onClick={handleTap}
-          className="tap-hint text-tanquu-purple text-3xl px-8 py-2"
+          className="tap-hint bg-white border-2 border-tanquu-purple text-tanquu-purple rounded-full px-10 py-4 text-lg font-bold shadow-sm active:bg-tanquu-light transition-colors flex items-center gap-2"
           aria-label="次のメッセージへ"
         >
-          ▼
+          つぎへ <span className="text-xl">→</span>
         </button>
       </div>
     )
