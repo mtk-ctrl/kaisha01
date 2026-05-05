@@ -22,6 +22,7 @@ export default function RegisterPage() {
   const [selectedMode, setSelectedMode] = useState<string>('')
   const [submitted,    setSubmitted]    = useState(false)
   const [loading,      setLoading]      = useState(false)
+  const [apiError,     setApiError]     = useState<string | null>(null)
   const [form, setForm] = useState({
     parentEmail:  '',
     password:     '',
@@ -31,15 +32,33 @@ export default function RegisterPage() {
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm({ ...form, [e.target.name]: e.target.value })
+    setApiError(null)
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
+    setApiError(null)
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: form.parentEmail,
+          password: form.password,
+          childName: form.childName,
+          grade: form.grade,
+          mode: selectedMode || 'spark',
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setApiError(data.error ?? '登録に失敗しました'); return }
       setSubmitted(true)
-    }, 1200)
+    } catch {
+      setApiError('ネットワークエラーが発生しました')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -212,6 +231,13 @@ export default function RegisterPage() {
                       ))}
                     </div>
                   </div>
+
+                  {/* API error */}
+                  {apiError && (
+                    <p className="text-red-400 text-sm text-center py-2 px-4 rounded-xl bg-red-400/10 border border-red-400/20">
+                      {apiError}
+                    </p>
+                  )}
 
                   {/* Submit */}
                   <button

@@ -6,6 +6,7 @@ import Link from 'next/link'
 const navLinks = [
   { href: '/#app',     label: 'アプリ' },
   { href: '/pricing',  label: '料金' },
+  { href: '/lab',      label: '🔑 ラボ' },
   { href: '/#about',   label: '会社について' },
   { href: '/contact',  label: 'お問い合わせ' },
 ]

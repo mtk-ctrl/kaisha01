@@ -169,11 +169,20 @@ kaisha01/
     ├── app/register/page.tsx   ← 登録ページ
     ├── app/contact/page.tsx    ← お問い合わせ
     ├── app/tanq/page.tsx       ← 子供向けゲーム（メイン）
-    ├── app/apps/math/page.tsx  ← 計算チャレンジ
-    ├── app/apps/kanji/page.tsx ← 漢字クイズ
-    ├── components/Navbar.tsx   ← 共通ナビ
-    ├── components/Footer.tsx   ← 共通フッター
-    └── data/unit1〜5.ts       ← ゲームスクリプト
+    ├── app/apps/math/page.tsx    ← 計算チャレンジ
+    ├── app/apps/kanji/page.tsx   ← 漢字クイズ
+    ├── app/apps/clock/page.tsx   ← 時計チャレンジ
+    ├── app/apps/english/page.tsx ← 英語クイズ
+    ├── app/apps/shapes/page.tsx  ← 図形クイズ
+    ├── app/apps/coding/page.tsx  ← プログラミング思考
+    ├── api/auth/register/route.ts ← 登録API（Supabase）
+    ├── api/auth/login/route.ts    ← ログインAPI
+    ├── api/scores/route.ts        ← スコア保存API
+    ├── components/Navbar.tsx      ← 共通ナビ
+    ├── components/Footer.tsx      ← 共通フッター
+    ├── lib/supabase.ts            ← Supabaseクライアント
+    ├── supabase-schema.sql        ← DBスキーマ（要手動実行）
+    └── data/unit1〜5.ts           ← ゲームスクリプト
 ```
 
 ---
@@ -182,24 +191,34 @@ kaisha01/
 
 *最終更新: 2026-05-05*
 
+### AI チーム体制
+
+| 名前 | 役職 | ファイル |
+|------|------|---------|
+| Jobs | CEO（自分） | — |
+| リン | QA / ユーザーテスター（小4女子ペルソナ） | `departments/qa/team/rin_profile.md` |
+| ハナ | Marketing AI | `departments/marketing/team/hana_profile.md` |
+| タロウ | Sales AI | `departments/operations/team/taro_profile.md` |
+| ソラ | Analytics AI | `departments/operations/team/sora_profile.md` |
+
 ### 完了済み
 
-- [x] コーポレートサイト（近未来×自然テーマ・明るい配色）
+- [x] コーポレートサイト（明るいネイビーブルー配色）
 - [x] TANQ App Unit 1〜5（Season 1）
-- [x] パスワード制アプリハブ `/lab`（4アプリ収録）
-- [x] 計算チャレンジ `/apps/math`（四則演算スピードゲーム）
-- [x] 漢字クイズ `/apps/kanji`（小1〜小6 4択クイズ）
+- [x] パスワード制アプリハブ `/lab`（8アプリ・3カラムグリッド）
+- [x] 計算チャレンジ / 漢字クイズ / 時計チャレンジ / 英語クイズ / 図形クイズ / プログラミング思考
 - [x] 料金ページ `/pricing`（フリーミアム3プラン + B2B）
+- [x] Supabase バックエンド（登録・ログイン API・スコア保存）
 - [x] auto-merge ワークフロー
-- [x] 作業ログ体制
-- [x] マネタイズ戦略策定（フリーミアム × B2B ハイブリッド）
+- [x] マネタイズ戦略策定
+- [x] AI チーム採用（ハナ・タロウ・ソラ）
 
 ### 次のアクション（優先順）
 
-1. 登録フォームのバックエンド接続（Supabase）→ 実際に登録できるように
-2. Marketing AI「Hana」採用 → SNSコンテンツ量産
-3. Sales AI「Taro」採用 → 学校・塾へのアウトリーチ
-4. Google Analytics 設置（数字を可視化）
+1. **Supabase 設定**: オーナーに `supabase-schema.sql` の実行 + env var 設定を依頼
+2. Google Analytics 設置（ソラが分析できるように）
+3. ハナが SNS コンテンツ量産開始
+4. タロウが福岡市内10校へアウトリーチ文作成
 5. Unit 6〜 実装（Season 2）
 6. お子さん（小4）にアプリを試してもらう → フィードバック
 

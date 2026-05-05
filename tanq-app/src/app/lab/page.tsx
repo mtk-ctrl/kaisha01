@@ -45,7 +45,7 @@ const APPS = [
     name: '計算チャレンジ',
     subtitle: '計算スピードゲーム',
     description:
-      '制限時間内にできるだけ多くの計算問題を解こう！たし算・ひき算・かけ算・わり算に挑戦。頭の体操に最適。',
+      '制限時間内にできるだけ多くの計算問題を解こう！たし算・ひき算・かけ算・わり算に挑戦。',
     emoji: '🔢',
     color: '#60a5fa',
     url: '/apps/math',
@@ -60,7 +60,7 @@ const APPS = [
     name: '漢字クイズ',
     subtitle: '漢字読み方4択クイズ',
     description:
-      '小学校で習う漢字の読み方を4択で答えよう。学年別（小1〜小6）に挑戦できる。毎回ランダム出題！',
+      '小学校で習う漢字の読み方を4択で答えよう。学年別（小1〜小6）。毎回ランダム出題！',
     emoji: '📖',
     color: '#c4a8ff',
     url: '/apps/kanji',
@@ -68,6 +68,66 @@ const APPS = [
     badge: 'New',
     badgeColor: '#f87171',
     units: ['小1', '小2', '小3', '小4', '小5', '小6'],
+    mascot: null,
+  },
+  {
+    id: 'clock',
+    name: '時計チャレンジ',
+    subtitle: 'アナログ時計クイズ',
+    description:
+      'アナログ時計の針を見て時刻を読もう！何時何分かを4択で答えるクイズ。全10問！',
+    emoji: '🕐',
+    color: '#f0c040',
+    url: '/apps/clock',
+    external: false,
+    badge: 'New',
+    badgeColor: '#f87171',
+    units: ['時刻よみ'],
+    mascot: null,
+  },
+  {
+    id: 'english',
+    name: '英語クイズ',
+    subtitle: '英単語4択クイズ',
+    description:
+      '絵（emoji）を見て英語を選ぼう！TANQuu と一緒に英単語を覚えよう。全30語からランダム出題。',
+    emoji: '🌍',
+    color: '#f87171',
+    url: '/apps/english',
+    external: false,
+    badge: 'New',
+    badgeColor: '#f87171',
+    units: ['動物', '食べ物', '乗り物', '自然', '色'],
+    mascot: null,
+  },
+  {
+    id: 'shapes',
+    name: '図形クイズ',
+    subtitle: '形・角・辺クイズ',
+    description:
+      '三角形から星形まで！図形の名前・角の数・辺の数を答えよう。全10問ランダム出題。',
+    emoji: '🔷',
+    color: '#c4a8ff',
+    url: '/apps/shapes',
+    external: false,
+    badge: 'New',
+    badgeColor: '#f87171',
+    units: ['三角形', '四角形', '五角形', '六角形', '円'],
+    mascot: null,
+  },
+  {
+    id: 'coding',
+    name: 'プログラミング思考',
+    subtitle: 'コマンド順番並べゲーム',
+    description:
+      'コマンドを正しい順番に並べてTANQuu をゴールまで導こう！論理的思考力を育てる全5ステージ。',
+    emoji: '💻',
+    color: '#4ade80',
+    url: '/apps/coding',
+    external: false,
+    badge: 'New',
+    badgeColor: '#f87171',
+    units: ['順次処理', '条件分岐基礎'],
     mascot: null,
   },
 ]
@@ -295,13 +355,14 @@ function AppHub() {
               <span className="text-gradient">アプリラボ</span>
             </h1>
             <p className="text-corp-muted text-lg max-w-lg mx-auto leading-relaxed">
-              TANQ Inc. が開発・提供する教育アプリの一覧です。
-              各アプリを選んで体験してください。
+              理科探究・計算・漢字・英語・時計・図形・プログラミング…
+              <br className="hidden sm:block" />
+              全{APPS.length}アプリが使い放題！
             </p>
           </div>
 
           {/* App grid */}
-          <div className="grid sm:grid-cols-2 gap-8 mb-16">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {APPS.map((app) => (
               <AppCard key={app.id} app={app} />
             ))}
