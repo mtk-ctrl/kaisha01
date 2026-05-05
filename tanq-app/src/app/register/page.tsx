@@ -84,11 +84,10 @@ export default function RegisterPage() {
               </div>
               <h2 className="text-4xl font-black mb-4 text-gradient">登録完了！</h2>
               <p className="text-corp-muted text-lg mb-8 max-w-md mx-auto leading-relaxed">
-                TANQへようこそ。確認メールをお送りしました。
-                さあ、探究の旅を始めましょう！
+                TANQへようこそ！アプリラボで全アプリを遊んでみよう。
               </p>
-              <Link href="/tanq" className="inline-block px-10 py-4 rounded-full btn-glow-teal text-lg font-bold">
-                アプリを体験する →
+              <Link href="/lab" className="inline-block px-10 py-4 rounded-full btn-glow-teal text-lg font-bold">
+                アプリラボに入る 🔑
               </Link>
             </div>
           ) : (
