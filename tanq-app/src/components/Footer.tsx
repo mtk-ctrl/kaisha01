@@ -23,6 +23,7 @@ export default function Footer() {
             <ul className="space-y-3">
               {[
                 { href: '/tanq',      label: 'TANQ App を体験' },
+                { href: '/pricing',   label: '料金プラン' },
                 { href: '/register',  label: '無料登録' },
                 { href: '/#app',      label: 'アプリ概要' },
                 { href: '/lab',       label: 'アプリラボ 🔒' },
