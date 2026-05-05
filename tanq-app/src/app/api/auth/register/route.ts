@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
     email,
     password,
     email_confirm: true,
+    user_metadata: { full_name: childName, grade, mode },
   })
 
   if (authError) {
