@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
 
   const supabase = getServiceClient()
 
+  // auth ユーザー作成
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email,
     password,
@@ -18,26 +19,26 @@ export async function POST(req: NextRequest) {
   })
 
   if (authError) {
-    const msg = authError.message.includes('already registered')
+    const msg = /already registered|already exists|already been registered/i.test(authError.message)
       ? 'このメールアドレスは既に登録されています'
       : authError.message
     return NextResponse.json({ error: msg }, { status: 400 })
   }
 
+  const userId = authData.user!.id
+
+  // profiles テーブルへ保存（失敗しても auth 作成は成功とする）
   const { error: profileError } = await supabase
     .from('profiles')
-    .insert({
-      id: authData.user!.id,
-      email,
-      child_name: childName,
-      grade,
-      mode,
-      lab_unlocked: false,
-    })
+    .insert({ id: userId, email, child_name: childName, grade, mode, lab_unlocked: false })
 
   if (profileError) {
-    return NextResponse.json({ error: 'プロフィール作成に失敗しました' }, { status: 500 })
+    // orphan 防止: profiles 失敗したら auth ユーザーも削除してやり直せるようにする
+    await supabase.auth.admin.deleteUser(userId)
+    return NextResponse.json({
+      error: `プロフィール保存に失敗しました。Supabase の SQL Editor で supabase-schema.sql を実行してください。（詳細: ${profileError.message}）`,
+    }, { status: 500 })
   }
 
-  return NextResponse.json({ success: true, userId: authData.user!.id })
+  return NextResponse.json({ success: true, userId })
 }
