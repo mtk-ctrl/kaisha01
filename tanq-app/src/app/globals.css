@@ -119,7 +119,7 @@ ruby rt {
 
 /* Animated gradient background */
 .bg-aurora {
-  background: linear-gradient(-45deg, #071628, #0d2040, #0e3025, #112244, #071628);
+  background: linear-gradient(-45deg, #0d2248, #183870, #1a5040, #1d3a78, #0d2248);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }

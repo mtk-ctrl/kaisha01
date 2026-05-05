@@ -79,7 +79,7 @@ const COMPANY_INFO = [
 function WaveDown() {
   return (
     <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 0L48 8C96 16 192 32 288 37.3C384 43 480 37 576 32C672 27 768 21 864 24C960 27 1056 37 1152 42.7C1248 48 1344 48 1392 48L1440 48V80H0V0Z" fill="#091c35"/>
+      <path d="M0 0L48 8C96 16 192 32 288 37.3C384 43 480 37 576 32C672 27 768 21 864 24C960 27 1056 37 1152 42.7C1248 48 1344 48 1392 48L1440 48V80H0V0Z" fill="#0f2855"/>
     </svg>
   )
 }
@@ -87,7 +87,7 @@ function WaveDown() {
 function WaveUp() {
   return (
     <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 80L48 72C96 64 192 48 288 42.7C384 37 480 43 576 48C672 53 768 59 864 56C960 53 1056 43 1152 37.3C1248 32 1344 32 1392 32L1440 32V0H0V80Z" fill="#091c35"/>
+      <path d="M0 80L48 72C96 64 192 48 288 42.7C384 37 480 43 576 48C672 53 768 59 864 56C960 53 1056 43 1152 37.3C1248 32 1344 32 1392 32L1440 32V0H0V80Z" fill="#0f2855"/>
     </svg>
   )
 }
@@ -179,13 +179,13 @@ export default function CorporateHome() {
         {/* Wave to next section */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-20" fill="none">
-            <path d="M0 80L48 70.7C96 61 192 43 288 37.3C384 32 480 37 576 42.7C672 48 768 53 864 50.7C960 48 1056 37 1152 32C1248 27 1344 27 1392 27L1440 27V80H0Z" fill="#091c35"/>
+            <path d="M0 80L48 70.7C96 61 192 43 288 37.3C384 32 480 37 576 42.7C672 48 768 53 864 50.7C960 48 1056 37 1152 32C1248 27 1344 27 1392 27L1440 27V80H0Z" fill="#0f2855"/>
           </svg>
         </div>
       </section>
 
       {/* ════════ MISSION ════════ */}
-      <section className="bg-[#091c35] py-28 px-6">
+      <section className="bg-[#0f2855] py-28 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-corp-teal text-xs uppercase tracking-[0.3em] mb-6 font-semibold">Mission</p>
           <blockquote className="text-3xl lg:text-5xl font-bold leading-snug mb-8">
@@ -273,7 +273,7 @@ export default function CorporateHome() {
       </section>
 
       {/* ════════ EXPLORATION LOOP ════════ */}
-      <section className="bg-[#091c35] py-32 px-6">
+      <section className="bg-[#0f2855] py-32 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <p className="text-corp-teal text-xs uppercase tracking-[0.3em] mb-4 font-semibold">How It Works</p>
@@ -333,7 +333,7 @@ export default function CorporateHome() {
       </section>
 
       {/* ════════ CTA ════════ */}
-      <section className="bg-[#091c35] py-32 px-6">
+      <section className="bg-[#0f2855] py-32 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="glass-card-bright rounded-3xl p-14 lg:p-20 text-center relative overflow-hidden">
             {/* Inner glow */}
@@ -356,6 +356,73 @@ export default function CorporateHome() {
                 <Link href="/contact" className="px-10 py-4 rounded-full border border-corp-muted/30 text-corp-muted font-semibold text-lg hover:border-corp-teal/40 hover:text-corp-teal transition-all">
                   お問い合わせ
                 </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════ APP LAB CTA ════════ */}
+      <section className="relative bg-corp-navy py-24 px-6 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] rounded-full bg-corp-teal opacity-10 blur-[100px]" />
+          <div className="absolute inset-0 grid-overlay opacity-30" />
+        </div>
+        <div className="max-w-5xl mx-auto relative z-10">
+          <div className="glass-card-bright rounded-3xl p-10 lg:p-14 flex flex-col lg:flex-row items-center gap-10 border border-corp-teal/30" style={{ boxShadow: '0 0 60px rgba(0,229,195,0.12), inset 0 0 40px rgba(0,229,195,0.05)' }}>
+            {/* Left */}
+            <div className="flex-1 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-corp-teal/15 border border-corp-teal/30 text-corp-teal text-sm font-semibold mb-5 tracking-wide">
+                <span className="text-lg">🔓</span> アプリラボ — すべてのアプリを体験
+              </div>
+              <h2 className="text-4xl lg:text-5xl font-black mb-4 leading-tight">
+                <span className="text-gradient">6つのアプリが</span>
+                <br />
+                <span className="text-white">まとめて遊べる！</span>
+              </h2>
+              <p className="text-corp-muted text-lg leading-relaxed mb-6">
+                理科探究・計算・漢字・英語・時計・プログラミング思考…
+                <br />
+                TANQラボに入れば全部遊べるよ！
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href="/lab"
+                  className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl text-xl font-black text-[#050b14] transition-all hover:scale-[1.04]"
+                  style={{ background: 'linear-gradient(135deg, #00e5c3, #c4a8ff)', boxShadow: '0 0 40px rgba(0,229,195,0.4)' }}
+                >
+                  🔑 アプリラボに入る
+                  <span className="text-2xl">→</span>
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-5 rounded-2xl text-lg font-bold border-2 border-corp-teal/40 text-corp-teal hover:bg-corp-teal/10 transition-all"
+                >
+                  無料登録はこちら
+                </Link>
+              </div>
+              <p className="text-corp-muted text-xs mt-4">パスワードは登録するともらえるよ ✨</p>
+            </div>
+            {/* Right — app icons grid */}
+            <div className="flex-shrink-0">
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { emoji: '🔬', label: '理科探究', color: '#00e5c3' },
+                  { emoji: '🔢', label: '計算', color: '#60a5fa' },
+                  { emoji: '📖', label: '漢字', color: '#c4a8ff' },
+                  { emoji: '🌍', label: '英語', color: '#f87171' },
+                  { emoji: '🕐', label: '時計', color: '#f0c040' },
+                  { emoji: '💻', label: 'プログラミング', color: '#4ade80' },
+                ].map(({ emoji, label, color }) => (
+                  <div
+                    key={label}
+                    className="w-20 h-20 rounded-2xl flex flex-col items-center justify-center gap-1"
+                    style={{ background: `${color}18`, border: `1px solid ${color}30` }}
+                  >
+                    <span className="text-2xl">{emoji}</span>
+                    <span className="text-[9px] font-semibold" style={{ color }}>{label}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
