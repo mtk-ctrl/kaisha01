@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 type Grade = '小1' | '小2' | '小3' | '小4' | '小5' | '小6'
+type QuestionFormat = 'k2r' | 'r2k'
 
 interface KanjiEntry {
   kanji: string
@@ -15,8 +16,8 @@ interface KanjiEntry {
 
 const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
   '小1': [
-    { kanji: '山', reading: 'やま', meaning: '山（mountain）', example: '富士山（ふじさん）', tip: '漢字の形を見て！山の頂上と斜面が3本の線になってるよ⛰️ 音読みは「サン」（富士山）' },
-    { kanji: '川', reading: 'かわ', meaning: '川（river）', example: '川べり・荒川（あらかわ）', tip: '川が流れる3本の線！音読みは「セン」（河川）。大きな川を「河（かわ）」とも書くよ🌊' },
+    { kanji: '山', reading: 'やま', meaning: '山（mountain）', example: '富士山・山登り', tip: '漢字の形を見て！山の頂上と斜面が3本の線になってるよ⛰️ 音読みは「サン」（富士山）' },
+    { kanji: '川', reading: 'かわ', meaning: '川（river）', example: '川べり・荒川', tip: '川が流れる3本の線！音読みは「セン」（河川）。大きな川を「河（かわ）」とも書くよ🌊' },
     { kanji: '田', reading: 'た', meaning: '田んぼ（rice field）', example: '田んぼ・田中さん', tip: '上から見た田んぼの形！音読みは「デン」。日本の名字に多い漢字だよ🌾' },
     { kanji: '日', reading: 'にち', meaning: '太陽・日（sun/day）', example: '日曜日・誕生日', tip: '太陽の丸い形から生まれた漢字。訓読みは「ひ（日光）」や「か（三日）」もあるよ☀️' },
     { kanji: '月', reading: 'つき', meaning: '月（moon）', example: '月曜日・三日月', tip: '三日月の形から。音読みは「ゲツ」（月曜日）。1ヶ月の「月」も同じ漢字🌙' },
@@ -28,8 +29,8 @@ const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
     { kanji: '花', reading: 'はな', meaning: '花（flower）', example: '桜の花・花火', tip: '草かんむり（艹）に「化」。「化」は変化の意味。花が咲くのは変化だね！🌸' },
     { kanji: '空', reading: 'そら', meaning: '空（sky）', example: '青空・空港', tip: '音読みは「クウ」（空気・空港）。「空（から）」は「中身がない」という意味もあるよ🌤️' },
     { kanji: '犬', reading: 'いぬ', meaning: '犬（dog）', example: '犬小屋・愛犬', tip: '音読みは「ケン」（愛犬・犬種）。犬は人類最古のペット！英語では dog🐕' },
-    { kanji: '猫', reading: 'ねこ', meaning: '猫（cat）', example: '猫じゃらし・野良猫', tip: '猫の正式な読みは「びょう」（音読み）。猫はエジプトで神様として大切にされてたよ🐱' },
     { kanji: '人', reading: 'ひと', meaning: '人（person）', example: '人間・人口', tip: '人が二本足で立っている形！音読みは「ジン」（人間）や「ニン」（人気）🚶' },
+    { kanji: '目', reading: 'め', meaning: '目（eye）', example: '目玉・目標', tip: '縦に向けた目の形から！音読みは「モク」（目標・注目）。「日」と似てるから注意🎯' },
   ],
   '小2': [
     { kanji: '海', reading: 'うみ', meaning: '海（sea）', example: '海水浴・日本海', tip: '音読みは「カイ」（海外・海岸）。さんずい（氵）は水の意味。海の面積は地球の71%！🌊' },
@@ -45,7 +46,7 @@ const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
     { kanji: '朝', reading: 'あさ', meaning: '朝（morning）', example: '朝食・毎朝', tip: '音読みは「チョウ」（朝食・朝礼）。草の間から月と太陽が見える形から来ているよ🌅' },
     { kanji: '夜', reading: 'よる', meaning: '夜（night）', example: '夜中・深夜', tip: '音読みは「ヤ」（深夜・夜間）。月と夜空の形から。night（英）とおぼえよう🌙' },
     { kanji: '光', reading: 'ひかり', meaning: '光（light）', example: '日光・光速', tip: '音読みは「コウ」（光速・光線）。光の速さは秒速約30万km！月まで約1.3秒🌟' },
-    { kanji: '色', reading: 'いろ', meaning: '色（color）', example: '虹色・原色', tip: '音読みは「ショク」（色彩・原色）や「シキ」（色彩）。虹は7色？実は連続した光のグラデーション🌈' },
+    { kanji: '色', reading: 'いろ', meaning: '色（color）', example: '虹色・原色', tip: '音読みは「ショク」（色彩・原色）や「シキ」（色彩）。虹は連続した光のグラデーション🌈' },
     { kanji: '声', reading: 'こえ', meaning: '声（voice）', example: '大声・歌声', tip: '音読みは「セイ」（声優・声援）や「ショウ」。のどの声帯が振動して音が出るよ🎤' },
   ],
   '小3': [
@@ -60,7 +61,7 @@ const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
     { kanji: '畑', reading: 'はたけ', meaning: '畑（field）', example: '野菜畑・花畑', tip: '田（田んぼ）＋火（ひ）＝畑。火入れして作った農地！日本で作られた漢字（国字）だよ🥕' },
     { kanji: '薬', reading: 'くすり', meaning: '薬（medicine）', example: '薬局・漢方薬', tip: '音読みは「ヤク」（薬局・薬品）。草かんむり（艹）は植物の意味。昔は植物が薬だった💊' },
     { kanji: '悪', reading: 'わる', meaning: '悪い（bad）', example: '悪天候・善悪', tip: '音読みは「アク」（悪化・悪人）や「オ」（嫌悪）。「悪」の反対は「善（ぜん）」だよ' },
-    { kanji: '急', reading: 'きゅう', meaning: '急ぐ（hurry）', example: '急行・緊急', tip: '音読みは「キュウ」（急行・緊急・急速）。「急いては事を仕損じる」ということわざがあるよ！' },
+    { kanji: '急', reading: 'きゅう', meaning: '急ぐ（hurry）', example: '急行・緊急', tip: '音読みは「キュウ」（急行・緊急・急速）。「急いては事を仕損じる」ことわざがあるよ！' },
     { kanji: '暗', reading: 'くら', meaning: '暗い（dark）', example: '暗闇・暗号', tip: '音読みは「アン」（暗号・暗黒）。日へんは明るさ。「暗」は光が少ない状態。暗号＝secret code💡' },
     { kanji: '温', reading: 'あたた', meaning: '温かい（warm）', example: '温泉・体温', tip: '音読みは「オン」（温度・体温・温泉）。さんずいは水。温泉のお湯は地熱で温まるよ♨️' },
     { kanji: '荷', reading: 'に', meaning: '荷物（load）', example: '荷物・入荷', tip: '音読みは「カ」（荷物・出荷）。草かんむりは「重く背負うもの」の意味。宅配便の荷物もこれ📦' },
@@ -73,7 +74,6 @@ const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
     { kanji: '陸', reading: 'りく', meaning: '陸地（land）', example: '陸地・着陸', tip: '音読みは「リク」（陸地・着陸）。海の反対が陸。地球の陸地は表面の約30%だよ🌍' },
     { kanji: '菜', reading: 'な', meaning: '野菜（vegetable）', example: '野菜・菜の花', tip: '音読みは「サイ」（野菜・菜食）。草かんむりは植物。菜の花は春を告げる花🌿' },
     { kanji: '倉', reading: 'くら', meaning: '倉庫（warehouse）', example: '倉庫・鎌倉', tip: '音読みは「ソウ」（倉庫・鎌倉）。食べ物や荷物を保管する建物。warehouse🏠' },
-    { kanji: '械', reading: 'かい', meaning: '機械（machine）', example: '機械・器械', tip: '音読みは「カイ」（機械・器械）。きへん（木）は道具の素材。機械は人の仕事を助けるよ⚙️' },
     { kanji: '熱', reading: 'ねつ', meaning: '熱（heat/fever）', example: '体温・熱心', tip: '音読みは「ネツ」（体温・熱心・情熱）。火（れっか）は下にある熱の形🔥' },
     { kanji: '塩', reading: 'しお', meaning: '塩（salt）', example: '食塩・塩分', tip: '音読みは「エン」（食塩・塩分）。海水を蒸発させると塩ができるよ。NaClが化学式🧂' },
     { kanji: '類', reading: 'るい', meaning: '種類（kind/type）', example: '種類・人類', tip: '音読みは「ルイ」（種類・人類・分類）。「類は友を呼ぶ」（似た者同士が集まる）ということわざも！' },
@@ -81,6 +81,7 @@ const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
     { kanji: '察', reading: 'さつ', meaning: '観察（observe）', example: '観察・警察', tip: '音読みは「サツ」（観察・警察・診察）。しっかり見て判断すること。detective work🔍' },
     { kanji: '季', reading: 'き', meaning: '季節（season）', example: '季節・四季', tip: '音読みは「キ」（季節・四季・季語）。日本には春夏秋冬の四季がある。季語は俳句に使う季節語🌸' },
     { kanji: '節', reading: 'せつ', meaning: '節（joint/season）', example: '季節・関節', tip: '音読みは「セツ」（季節・関節・調節）や「セチ」（お節）。竹の節から来た字🎋' },
+    { kanji: '械', reading: 'かい', meaning: '機械（machine）', example: '機械・器械', tip: '音読みは「カイ」（機械・器械）。きへん（木）は道具の素材。機械は人の仕事を助けるよ⚙️' },
   ],
   '小5': [
     { kanji: '圧', reading: 'あつ', meaning: '圧力（pressure）', example: '気圧・水圧', tip: '音読みは「アツ」（気圧・水圧・圧力）。気圧が変わると天気が変わる。高気圧=晴れ!🌤️' },
@@ -88,16 +89,16 @@ const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
     { kanji: '因', reading: 'いん', meaning: '原因（cause）', example: '原因・因果', tip: '音読みは「イン」（原因・因果・要因）。囲まれた中に「大」。原因と結果（因果関係）🔗' },
     { kanji: '営', reading: 'えい', meaning: '経営（manage）', example: '経営・営業', tip: '音読みは「エイ」（経営・営業・運営）。会社を経営する=manage a business。CEO！' },
     { kanji: '応', reading: 'おう', meaning: '反応（respond）', example: '反応・応援', tip: '音読みは「オウ」（反応・応援・応用）。「応える（こたえる）」とも読む。response📣' },
-    { kanji: '仮', reading: 'か', meaning: '仮（temporary）', example: '仮定・仮面', tip: '音読みは「カ」（仮定・仮面）や「ケ」（仮病）。にんべんは人。一時的・仮の状態🎭' },
-    { kanji: '価', reading: 'か', meaning: '価格（value）', example: '価格・評価', tip: '音読みは「カ」（価格・評価・物価）。にんべんは人。物の価値を人が決めること💰' },
     { kanji: '快', reading: 'かい', meaning: '快適（pleasant）', example: '快適・快晴', tip: '音読みは「カイ」（快適・快晴・痛快）。りっしんべんは心の意味。気持ちよい状態😊' },
     { kanji: '解', reading: 'かい', meaning: '解決（solve）', example: '解決・理解', tip: '音読みは「カイ」（解決・理解）。「つのへん（角）＋刀＋牛」。牛の角をほどく=解く🔓' },
     { kanji: '格', reading: 'かく', meaning: '格式（status）', example: '格差・資格', tip: '音読みは「カク」（格差・資格・格式・価格）。きへんは木。木の形が整っている=秩序ある状態' },
     { kanji: '確', reading: 'かく', meaning: '確認（confirm）', example: '確認・正確', tip: '音読みは「カク」（確認・正確・確実）。いしへんは石。石のように固く定まった状態✅' },
     { kanji: '額', reading: 'がく', meaning: '金額（amount）', example: '金額・額縁', tip: '音読みは「ガク」（金額・額縁）。おでこ（ひたい）も「額（ひたい）」と書くよ！面白い💡' },
-    { kanji: '刊', reading: 'かん', meaning: '発刊（publish）', example: '週刊・発刊', tip: '音読みは「カン」（週刊・発刊・月刊）。りっとう（刀）は切ること。本を刷って世に出す📰' },
     { kanji: '幹', reading: 'かん', meaning: '幹（trunk/main）', example: '幹線・新幹線', tip: '音読みは「カン」（幹線・新幹線・根幹）。木の幹（みき）から来た字。新幹線の幹！🚅' },
     { kanji: '績', reading: 'せき', meaning: '成績（result）', example: '成績・業績', tip: '音読みは「セキ」（成績・業績・功績）。糸へんは仕事。努力して積み重ねた結果📊' },
+    { kanji: '圧', reading: 'あつ', meaning: '圧力（pressure）', example: '気圧・血圧', tip: '高気圧は晴れ、低気圧は雨。天気予報でよく聞く言葉だね！' },
+    { kanji: '価', reading: 'か', meaning: '価格（value）', example: '価格・評価', tip: '音読みは「カ」（価格・評価・物価）。にんべんは人。物の価値を人が決めること💰' },
+    { kanji: '刊', reading: 'かん', meaning: '発刊（publish）', example: '週刊・発刊', tip: '音読みは「カン」（週刊・発刊・月刊）。りっとう（刀）は切ること。本を刷って世に出す📰' },
   ],
   '小6': [
     { kanji: '異', reading: 'い', meaning: '異なる（different）', example: '異なる・異常', tip: '音読みは「イ」（異常・特異・異国）。「田（たんぼ）＋共（きょう）」の形。違う・変わった状態🌍' },
@@ -119,180 +120,466 @@ const KANJI_DATA: Record<Grade, KanjiEntry[]> = {
 }
 
 const GRADE_COLORS: Record<Grade, string> = {
-  '小1': '#4ade80',
-  '小2': '#34d399',
-  '小3': '#60a5fa',
-  '小4': '#c4a8ff',
-  '小5': '#f0c040',
-  '小6': '#f87171',
+  '小1': '#4ade80', '小2': '#34d399', '小3': '#60a5fa',
+  '小4': '#c4a8ff', '小5': '#f0c040', '小6': '#f87171',
 }
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5)
 }
 
-function makeChoices(correct: KanjiEntry, pool: KanjiEntry[]): string[] {
-  const others = shuffle(pool.filter((k) => k.reading !== correct.reading)).slice(0, 3)
-  return shuffle([correct.reading, ...others.map((o) => o.reading)])
+// ── SRS (Spaced Repetition) ──
+const SRS_KEY = 'tanq_kanji_srs_v1'
+const STREAK_KEY = 'tanq_kanji_streak_v1'
+const SESSION_SIZE = 12
+
+interface ItemState {
+  b: 0 | 1 | 2   // bucket: 0=未学習, 1=学習中, 2=習得
+  c: number       // 連続正解数
+  s: number       // 出題回数
+  ok: number      // 正解回数
+  t: number       // 最終出題 timestamp
+}
+type SRSStore = Record<string, ItemState>
+
+function loadSRS(): SRSStore {
+  if (typeof window === 'undefined') return {}
+  try { return JSON.parse(localStorage.getItem(SRS_KEY) || '{}') } catch { return {} }
+}
+function saveSRS(store: SRSStore) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(SRS_KEY, JSON.stringify(store))
+}
+function getStreakCount(): number {
+  if (typeof window === 'undefined') return 0
+  try { return JSON.parse(localStorage.getItem(STREAK_KEY) || '{"n":0}').n } catch { return 0 }
+}
+function recordStudy(): number {
+  if (typeof window === 'undefined') return 0
+  const today = new Date().toISOString().slice(0, 10)
+  try {
+    const d = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"n":0,"d":""}')
+    if (d.d === today) return d.n
+    const y = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+    const n = d.d === y ? d.n + 1 : 1
+    localStorage.setItem(STREAK_KEY, JSON.stringify({ n, d: today }))
+    return n
+  } catch { return 1 }
 }
 
-type Phase = 'select' | 'playing' | 'result'
+function gradeStats(grade: Grade, store: SRSStore) {
+  let mastered = 0, learning = 0, newCount = 0
+  for (const item of KANJI_DATA[grade]) {
+    const s = store[item.kanji]
+    if (!s || s.b === 0) newCount++
+    else if (s.b === 1) learning++
+    else mastered++
+  }
+  return { mastered, learning, newCount, total: KANJI_DATA[grade].length }
+}
+
+function buildSession(grade: Grade, store: SRSStore, mode: 'normal' | 'weak'): KanjiEntry[] {
+  const all = KANJI_DATA[grade]
+  if (mode === 'weak') {
+    const weak = all.filter(k => !store[k.kanji] || store[k.kanji].b < 2)
+    return shuffle(weak.length >= 3 ? weak : all).slice(0, SESSION_SIZE)
+  }
+  const now = Date.now()
+  const overdue = all.filter(k => store[k.kanji]?.b === 2 && now - store[k.kanji].t > 7 * 86400000)
+  const learning = all.filter(k => store[k.kanji]?.b === 1)
+  const newItems = all.filter(k => !store[k.kanji] || store[k.kanji].b === 0)
+  return shuffle([
+    ...shuffle(overdue).slice(0, 3),
+    ...shuffle(learning).slice(0, 7),
+    ...shuffle(newItems),
+  ]).slice(0, SESSION_SIZE)
+}
+
+interface Question { fmt: QuestionFormat; item: KanjiEntry; correct: string; choices: string[] }
+
+function makeQuestion(item: KanjiEntry, pool: KanjiEntry[]): Question {
+  const fmt: QuestionFormat = Math.random() < 0.65 ? 'k2r' : 'r2k'
+  if (fmt === 'k2r') {
+    const correct = item.reading
+    const others = shuffle(pool.filter(k => k.reading !== item.reading)).slice(0, 3).map(k => k.reading)
+    return { fmt, item, correct, choices: shuffle([correct, ...others]) }
+  }
+  const correct = item.kanji
+  const others = shuffle(pool.filter(k => k.kanji !== item.kanji)).slice(0, 3).map(k => k.kanji)
+  return { fmt, item, correct, choices: shuffle([correct, ...others]) }
+}
+
+function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
+  store: SRSStore; change: 'mastered' | 'advance' | 'same' | 'regress'
+} {
+  const old = store[key] || { b: 0, c: 0, s: 0, ok: 0, t: 0 }
+  const fast = ms < 2500
+  let b = old.b as number, c = old.c
+
+  if (correct && fast) {
+    c = old.c + 1
+    if (b === 0) b = 1
+    else if (b === 1 && c >= 3) b = 2
+  } else if (correct && !fast) {
+    c = Math.min(old.c + 1, 2)
+    if (b === 2) b = 1  // 習得済みでも遅ければ学習中に戻す
+  } else {
+    c = 0
+    if (b === 2) b = 1
+  }
+
+  const entry: ItemState = { b: b as 0 | 1 | 2, c, s: old.s + 1, ok: old.ok + (correct ? 1 : 0), t: Date.now() }
+  const newStore = { ...store, [key]: entry }
+  let change: 'mastered' | 'advance' | 'same' | 'regress' = 'same'
+  if (b > old.b) change = b === 2 ? 'mastered' : 'advance'
+  else if (b < old.b) change = 'regress'
+  return { store: newStore, change }
+}
+
+type Phase = 'home' | 'playing' | 'result'
 
 export default function KanjiQuiz() {
-  const [phase, setPhase] = useState<Phase>('select')
-  const [grade, setGrade] = useState<Grade>('小3')
-  const [queue, setQueue] = useState<KanjiEntry[]>([])
-  const [index, setIndex] = useState(0)
-  const [choices, setChoices] = useState<string[]>([])
+  const [phase, setPhase] = useState<Phase>('home')
+  const [grade, setGrade] = useState<Grade>('小4')
+  const [mode, setMode] = useState<'normal' | 'weak'>('normal')
+  const [store, setStore] = useState<SRSStore>({})
+  const [streak, setStreak] = useState(0)
+
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [qIdx, setQIdx] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
-  const [score, setScore] = useState(0)
-  const [miss, setMiss] = useState(0)
+  const [lastMs, setLastMs] = useState(0)
+  const [lastChange, setLastChange] = useState<'mastered' | 'advance' | 'same' | 'regress'>('same')
+  const [sessionCorrect, setSessionCorrect] = useState(0)
+  const [sessionMastered, setSessionMastered] = useState(0)
+  const [sessionWeak, setSessionWeak] = useState(0)
+  const [finalStreak, setFinalStreak] = useState(0)
+  const qStartRef = useRef<number>(Date.now())
 
-  const TOTAL = 10
-
-  const startQuiz = useCallback((g: Grade) => {
-    const q = shuffle(KANJI_DATA[g]).slice(0, TOTAL)
-    setGrade(g)
-    setQueue(q)
-    setIndex(0)
-    setScore(0)
-    setMiss(0)
-    setSelected(null)
-    setChoices(makeChoices(q[0], KANJI_DATA[g]))
-    setPhase('playing')
+  useEffect(() => {
+    setStore(loadSRS())
+    setStreak(getStreakCount())
   }, [])
 
-  function choose(choice: string) {
+  useEffect(() => {
+    if (phase === 'playing') qStartRef.current = Date.now()
+  }, [qIdx, phase])
+
+  const startGame = useCallback((g: Grade = grade, m: 'normal' | 'weak' = mode) => {
+    const currentStore = loadSRS()
+    setStore(currentStore)
+    const items = buildSession(g, currentStore, m)
+    setQuestions(items.map(item => makeQuestion(item, KANJI_DATA[g])))
+    setQIdx(0)
+    setSelected(null)
+    setSessionCorrect(0)
+    setSessionMastered(0)
+    setSessionWeak(0)
+    qStartRef.current = Date.now()
+    setGrade(g)
+    setMode(m)
+    setPhase('playing')
+  }, [grade, mode])
+
+  function choose(c: string) {
     if (selected !== null) return
-    setSelected(choice)
-    if (choice === queue[index].reading) setScore((s) => s + 1)
-    else setMiss((m) => m + 1)
+    const ms = Date.now() - qStartRef.current
+    setLastMs(ms)
+    setSelected(c)
+    const q = questions[qIdx]
+    const correct = c === q.correct
+    if (correct) setSessionCorrect(n => n + 1)
+    else setSessionWeak(n => n + 1)
+    const { store: newStore, change } = applySRS(store, q.item.kanji, correct, ms)
+    setStore(newStore)
+    saveSRS(newStore)
+    setLastChange(change)
+    if (change === 'mastered') setSessionMastered(n => n + 1)
   }
 
   function goNext() {
-    if (index + 1 >= TOTAL) { setPhase('result'); return }
-    const next = index + 1
-    setIndex(next)
-    setChoices(makeChoices(queue[next], KANJI_DATA[grade]))
+    if (qIdx + 1 >= questions.length) {
+      const ns = recordStudy()
+      setFinalStreak(ns)
+      setStreak(ns)
+      setPhase('result')
+      return
+    }
+    setQIdx(i => i + 1)
     setSelected(null)
   }
 
   const color = GRADE_COLORS[grade]
+  const stats = gradeStats(grade, store)
 
-  if (phase === 'select') {
+  // ── HOME ──
+  if (phase === 'home') {
+    const masteredPct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0
     return (
-      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6">
+      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center px-6 py-16 pt-20">
         <Link href="/lab" className="absolute top-6 left-6 text-[#8892b0] hover:text-[#c4a8ff] text-sm transition-colors">← ラボに戻る</Link>
-        <div className="text-6xl mb-4">📖</div>
-        <h1 className="text-4xl font-black mb-2 text-[#c4a8ff]">漢字クイズ</h1>
-        <p className="text-[#8892b0] mb-3 text-center">学年を選んでスタート！<br />読み方を4択で答えて解説もチェック</p>
-        <p className="text-[#8892b0] text-sm mb-8">全10問・解説付き</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full max-w-sm">
-          {(Object.keys(KANJI_DATA) as Grade[]).map((g) => (
-            <button key={g} onClick={() => startQuiz(g)}
-              className="py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.05]"
-              style={{ background: GRADE_COLORS[g], boxShadow: `0 0 20px ${GRADE_COLORS[g]}40` }}>
-              {g}
+
+        {streak > 0 && (
+          <div className="absolute top-6 right-6 flex items-center gap-1.5 bg-[#f0c040]/15 border border-[#f0c040]/30 px-3 py-1.5 rounded-full">
+            <span>🔥</span>
+            <span className="font-black text-[#f0c040] text-sm">{streak}日連続</span>
+          </div>
+        )}
+
+        <div className="text-5xl mb-2 mt-4">📖</div>
+        <h1 className="text-3xl font-black mb-1 text-[#c4a8ff]">漢字クイズ</h1>
+        <p className="text-[#8892b0] text-xs mb-8 text-center">漢字→読み方 ＆ 読み方→漢字の2方向で練習。間隔反復で効率的に習得！</p>
+
+        {/* Grade selector */}
+        <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm mb-5">
+          {(Object.keys(KANJI_DATA) as Grade[]).map((g) => {
+            const gs = gradeStats(g, store)
+            const pct = gs.total > 0 ? Math.round((gs.mastered / gs.total) * 100) : 0
+            const sel = g === grade
+            return (
+              <button key={g} onClick={() => setGrade(g)}
+                className={`py-3 px-2 rounded-xl font-bold text-sm transition-all ${sel ? 'scale-105 text-[#050b14]' : 'text-[#8892b0] hover:text-white'}`}
+                style={sel
+                  ? { background: GRADE_COLORS[g], boxShadow: `0 0 20px ${GRADE_COLORS[g]}50` }
+                  : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }
+                }>
+                {g}
+                <div className="text-[10px] font-normal mt-0.5 opacity-75">{pct}% 習得</div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Grade progress */}
+        <div className="w-full max-w-sm bg-white/5 rounded-2xl p-4 mb-5 border border-white/10">
+          <div className="flex justify-between text-xs text-[#8892b0] mb-2">
+            <span>{grade}の漢字 {stats.total}字</span>
+            <span style={{ color }}>{masteredPct}% 習得済み</span>
+          </div>
+          <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
+            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${masteredPct}%`, background: color }} />
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div>
+              <div className="font-black text-xl" style={{ color }}>{stats.mastered}</div>
+              <div className="text-[#8892b0] text-[10px]">⭐ 習得済み</div>
+            </div>
+            <div>
+              <div className="font-black text-xl text-[#60a5fa]">{stats.learning}</div>
+              <div className="text-[#8892b0] text-[10px]">📚 学習中</div>
+            </div>
+            <div>
+              <div className="font-black text-xl text-[#e8f0fe]">{stats.newCount}</div>
+              <div className="text-[#8892b0] text-[10px]">🆕 未学習</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Mode */}
+        <div className="flex w-full max-w-sm gap-3 mb-5">
+          {(['normal', 'weak'] as const).map((m) => (
+            <button key={m} onClick={() => setMode(m)}
+              className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${mode === m ? 'text-[#050b14]' : 'text-[#8892b0] bg-white/5 border border-white/10 hover:border-white/20'}`}
+              style={mode === m ? { background: color } : {}}>
+              {m === 'normal' ? '📚 通常モード' : '💪 苦手集中'}
             </button>
           ))}
         </div>
+
+        <button onClick={() => startGame(grade, mode)}
+          className="w-full max-w-sm py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.02] active:scale-[0.99]"
+          style={{ background: color, boxShadow: `0 0 30px ${color}50` }}>
+          スタート！（{SESSION_SIZE}問）
+        </button>
       </div>
     )
   }
 
+  // ── RESULT ──
   if (phase === 'result') {
-    const rank = score >= 9 ? '🏆 完璧！' : score >= 7 ? '🥇 すごい！' : score >= 5 ? '🥈 よくできました' : '🥉 もう一回！'
+    const total = questions.length
+    const acc = total > 0 ? Math.round((sessionCorrect / total) * 100) : 0
+    const rank = acc >= 90 ? '🏆 完璧！' : acc >= 70 ? '🥇 すごい！' : acc >= 50 ? '🥈 よくできた' : '🥉 もう一回！'
+    const newStats = gradeStats(grade, store)
+    const newPct = newStats.total > 0 ? Math.round((newStats.mastered / newStats.total) * 100) : 0
     return (
-      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center">
-        <div className="text-5xl mb-4">{rank.split(' ')[0]}</div>
-        <h2 className="text-3xl font-black mb-1" style={{ color }}>{rank.split(' ').slice(1).join(' ')}</h2>
-        <p className="text-[#8892b0] mb-8">{grade} の漢字 {TOTAL}問</p>
-        <div className="flex gap-10 mb-10">
-          <div className="text-center"><div className="text-5xl font-black text-[#4ade80]">{score}</div><div className="text-[#8892b0] text-sm mt-1">正解</div></div>
-          <div className="text-center"><div className="text-5xl font-black text-[#f87171]">{miss}</div><div className="text-[#8892b0] text-sm mt-1">まちがい</div></div>
+      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center py-16">
+        <div className="text-5xl mb-2">{rank.split(' ')[0]}</div>
+        <h2 className="text-2xl font-black mb-3" style={{ color }}>{rank.split(' ').slice(1).join(' ')}</h2>
+
+        {finalStreak > 0 && (
+          <div className="flex items-center gap-2 bg-[#f0c040]/15 border border-[#f0c040]/30 px-4 py-2 rounded-full mb-4">
+            <span>🔥</span>
+            <span className="font-black text-[#f0c040]">{finalStreak}日連続達成！</span>
+          </div>
+        )}
+
+        <div className="text-7xl font-black mb-1" style={{ color }}>{acc}%</div>
+        <p className="text-[#8892b0] text-sm mb-6">{total}問中 {sessionCorrect}問正解</p>
+
+        <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-5">
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+            <div className="text-2xl font-black mb-1" style={{ color }}>⭐ {sessionMastered}</div>
+            <div className="text-[#8892b0] text-xs">新規習得</div>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+            <div className="text-2xl font-black text-[#4ade80] mb-1">{sessionCorrect}</div>
+            <div className="text-[#8892b0] text-xs">正解数</div>
+          </div>
+          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+            <div className="text-2xl font-black text-[#f87171] mb-1">{sessionWeak}</div>
+            <div className="text-[#8892b0] text-xs">要復習</div>
+          </div>
         </div>
-        <div className="flex flex-col gap-3 w-full max-w-xs">
-          <button onClick={() => startQuiz(grade)}
+
+        <div className="w-full max-w-sm bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
+          <div className="flex justify-between text-xs text-[#8892b0] mb-2">
+            <span>{grade}の累計習得状況</span>
+            <span style={{ color }}>{newPct}%</span>
+          </div>
+          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-full rounded-full" style={{ width: `${newPct}%`, background: color }} />
+          </div>
+          <p className="text-xs text-[#8892b0] mt-2">習得済み {newStats.mastered}/{newStats.total}字</p>
+        </div>
+
+        <div className="flex flex-col gap-3 w-full max-w-sm">
+          <button onClick={() => startGame(grade, mode)}
             className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02]"
             style={{ background: color }}>もう一回！</button>
-          <button onClick={() => setPhase('select')}
-            className="w-full py-4 rounded-2xl font-bold text-lg border border-white/20 text-[#8892b0] hover:text-white hover:border-white/40 transition-all">
-            学年を変える
+          {sessionWeak > 0 && (
+            <button onClick={() => startGame(grade, 'weak')}
+              className="w-full py-4 rounded-2xl font-bold text-base border border-[#f87171]/50 text-[#f87171] hover:bg-[#f87171]/10 transition-all">
+              💪 苦手 {sessionWeak}問を集中練習
+            </button>
+          )}
+          <button onClick={() => setPhase('home')}
+            className="w-full py-4 rounded-2xl font-bold text-base border border-white/20 text-[#8892b0] hover:text-white transition-all">
+            学年・モードを変える
           </button>
-          <Link href="/lab" className="w-full py-4 rounded-2xl font-bold text-lg border border-white/10 text-[#8892b0] hover:text-[#c4a8ff] transition-all text-center">ラボに戻る</Link>
+          <Link href="/lab" className="w-full py-4 rounded-2xl font-bold text-base border border-white/10 text-[#8892b0] hover:text-[#c4a8ff] transition-all text-center">ラボに戻る</Link>
         </div>
       </div>
     )
   }
 
-  const current = queue[index]
-  if (!current) return null
-  const isCorrect = selected === current.reading
+  // ── PLAYING ──
+  const q = questions[qIdx]
+  if (!q) return null
+  const isCorrect = selected === q.correct
+  const isFast = lastMs > 0 && lastMs < 1500
+  const isSlow = lastMs > 2500
+  const isKanjiChoices = q.fmt === 'r2k'
+
+  const changeColor = lastChange === 'mastered' ? '#f0c040' : lastChange === 'advance' ? '#4ade80' : lastChange === 'regress' ? '#f87171' : '#8892b0'
+  const changeMsg = lastChange === 'mastered' ? '⭐ 習得！' : lastChange === 'advance' ? '📈 いい調子！' : lastChange === 'regress' ? '📉 要復習' : null
 
   return (
     <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-4 py-20">
-      <div className="fixed top-0 left-0 right-0 px-6 py-4 flex items-center justify-between bg-[#071628]/90 backdrop-blur-sm">
-        <button onClick={() => setPhase('select')} className="text-[#8892b0] hover:text-white text-sm transition-colors">← やめる</button>
-        <span className="text-sm text-[#8892b0]">{index + 1} / {TOTAL}</span>
-        <div className="flex gap-4 text-sm font-bold">
-          <span className="text-[#4ade80]">○ {score}</span>
-          <span className="text-[#f87171]">✗ {miss}</span>
+      <div className="fixed top-0 left-0 right-0 px-6 py-4 flex items-center justify-between bg-[#071628]/90 backdrop-blur-sm z-10">
+        <button onClick={() => setPhase('home')} className="text-[#8892b0] hover:text-white text-sm transition-colors">← やめる</button>
+        <span className="text-sm text-[#8892b0]">{qIdx + 1} / {questions.length}</span>
+        <div className="flex gap-3 text-sm font-bold">
+          <span className="text-[#4ade80]">○ {sessionCorrect}</span>
+          <span className="text-[#f87171]">✗ {sessionWeak}</span>
         </div>
       </div>
-      <div className="fixed top-14 left-0 right-0 h-1.5 bg-white/10">
-        <div className="h-full transition-all duration-500" style={{ width: `${(index / TOTAL) * 100}%`, background: color }} />
+      <div className="fixed top-14 left-0 right-0 h-1.5 bg-white/10 z-10">
+        <div className="h-full transition-all duration-500" style={{ width: `${(qIdx / questions.length) * 100}%`, background: color }} />
       </div>
 
       <div className="w-full max-w-sm text-center">
-        <p className="text-[#8892b0] text-sm mb-4 tracking-widest uppercase">{grade} — 読み方は？</p>
-
-        <div className="text-[9rem] font-black leading-none mb-2"
-          style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : '#e8f0fe' }}>
-          {current.kanji}
+        {/* Format badge */}
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
+          style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>
+          {q.fmt === 'k2r' ? '漢字 → 読み方' : '読み方 → 漢字'}
+          <span className="opacity-50">|</span>
+          <span className="opacity-75">{grade}</span>
         </div>
-        <p className="text-[#8892b0] text-sm mb-1">{current.meaning}</p>
-        <p className="text-xs mb-5" style={{ color: `${color}99` }}>例）{current.example}</p>
 
+        {/* Question */}
+        {q.fmt === 'k2r' ? (
+          <>
+            <div className="text-[9rem] font-black leading-none mb-2 select-none"
+              style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : '#e8f0fe' }}>
+              {q.item.kanji}
+            </div>
+            <p className="text-[#8892b0] text-sm mb-1">{q.item.meaning}</p>
+            <p className="text-xs mb-5" style={{ color: `${color}90` }}>例）{q.item.example}</p>
+          </>
+        ) : (
+          <>
+            <p className="text-[#8892b0] text-xs mb-2 uppercase tracking-widest">この読み方の漢字は？</p>
+            <div className="text-5xl font-black mb-2 select-none"
+              style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : color }}>
+              {q.item.reading}
+            </div>
+            <p className="text-[#8892b0] text-sm mb-1">{q.item.meaning}</p>
+            <p className="text-xs mb-5" style={{ color: `${color}90` }}>例）{q.item.example}</p>
+          </>
+        )}
+
+        {/* Choices */}
         <div className="grid grid-cols-2 gap-3 mb-4">
-          {choices.map((c) => {
-            const isCor = c === current.reading
+          {q.choices.map((c) => {
+            const isCor = c === q.correct
             const isSel = c === selected
             let bg = 'rgba(255,255,255,0.06)'
             let border = 'rgba(255,255,255,0.12)'
             let textColor = '#e8f0fe'
             if (selected !== null) {
-              if (isCor) { bg = `${color}30`; border = color; textColor = color }
+              if (isCor) { bg = `${color}28`; border = color; textColor = color }
               else if (isSel) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; textColor = '#f87171' }
             }
             return (
               <button key={c} onClick={() => choose(c)} disabled={selected !== null}
-                className="py-4 rounded-2xl font-bold text-lg transition-all hover:scale-[1.03] disabled:cursor-default"
-                style={{ background: bg, border: `2px solid ${border}`, color: textColor }}>
+                className="py-4 rounded-2xl font-bold transition-all hover:scale-[1.03] disabled:cursor-default select-none"
+                style={{
+                  background: bg,
+                  border: `2px solid ${border}`,
+                  color: textColor,
+                  fontSize: isKanjiChoices ? '2.2rem' : '1.1rem',
+                  lineHeight: isKanjiChoices ? '1' : '1.5',
+                  minHeight: '64px',
+                }}>
                 {c}
               </button>
             )
           })}
         </div>
 
+        {/* Feedback */}
         {selected !== null && (
-          <div className={`rounded-2xl p-4 mb-4 text-left ${isCorrect ? 'border' : 'border'}`}
-            style={{
-              background: isCorrect ? `${color}15` : 'rgba(248,113,113,0.1)',
-              borderColor: isCorrect ? `${color}50` : 'rgba(248,113,113,0.4)',
-            }}>
-            <p className="font-black text-sm mb-1" style={{ color: isCorrect ? color : '#f87171' }}>
-              {isCorrect ? `✓ 正解！「${current.reading}」` : `✗ 正解は「${current.reading}」だよ`}
-            </p>
-            <p className="text-[#e8f0fe] text-sm leading-relaxed">{current.tip}</p>
-          </div>
-        )}
+          <>
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="text-sm font-bold" style={{ color: isFast && isCorrect ? '#f0c040' : isSlow ? '#94a3b8' : 'transparent' }}>
+                {isCorrect && isFast ? '⚡ 速い！' : isCorrect && isSlow ? '🤔 ゆっくり' : ''}
+              </span>
+              {changeMsg && (
+                <span className="text-sm font-bold" style={{ color: changeColor }}>{changeMsg}</span>
+              )}
+            </div>
 
-        {selected !== null && (
-          <button onClick={goNext}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02]"
-            style={{ background: color, boxShadow: `0 0 25px ${color}50` }}>
-            {index + 1 < TOTAL ? '次の問題 →' : '結果を見る！'}
-          </button>
+            <div className="rounded-2xl p-4 mb-4 text-left border"
+              style={{
+                background: isCorrect ? `${color}12` : 'rgba(248,113,113,0.1)',
+                borderColor: isCorrect ? `${color}40` : 'rgba(248,113,113,0.4)',
+              }}>
+              <p className="font-black text-sm mb-1.5" style={{ color: isCorrect ? color : '#f87171' }}>
+                {isCorrect
+                  ? `✓ 正解！${q.fmt === 'k2r' ? `「${q.item.kanji}」＝「${q.item.reading}」` : `「${q.item.reading}」＝「${q.item.kanji}」`}`
+                  : `✗ 正解は「${q.correct}」`
+                }
+              </p>
+              <p className="text-[#e8f0fe] text-sm leading-relaxed">{q.item.tip}</p>
+            </div>
+
+            <button onClick={goNext}
+              className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02]"
+              style={{ background: color, boxShadow: `0 0 25px ${color}50` }}>
+              {qIdx + 1 < questions.length ? '次の問題 →' : '結果を見る！'}
+            </button>
+          </>
         )}
       </div>
     </div>
