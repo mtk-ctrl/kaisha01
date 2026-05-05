@@ -30,7 +30,7 @@ function makeChoices(correct: ClockProblem): string[] {
     const s = formatTime(h, m)
     if (s !== correctStr) choices.add(s)
   }
-  return [...choices].sort(() => Math.random() - 0.5)
+  return Array.from(choices).sort(() => Math.random() - 0.5)
 }
 
 /* ── SVG Analog Clock ── */

@@ -1,19 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServiceClient } from '@/lib/supabase'
-import { createClient } from '@supabase/supabase-js'
+import { getAnonClient, getServiceClient } from '@/lib/supabase'
+
+async function getUserFromToken(req: NextRequest) {
+  const authHeader = req.headers.get('authorization')
+  if (!authHeader) return null
+  const token = authHeader.replace('Bearer ', '')
+  const supabase = getAnonClient()
+  const { data: { user }, error } = await supabase.auth.getUser(token)
+  if (error || !user) return null
+  return user
+}
 
 export async function GET(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const token = authHeader.replace('Bearer ', '')
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-  if (error || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = await getUserFromToken(req)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const svc = getServiceClient()
   const { data: scores } = await svc
@@ -26,17 +26,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const token = authHeader.replace('Bearer ', '')
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-  if (error || !user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const user = await getUserFromToken(req)
+  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { appId, score, total, difficulty } = await req.json()
   if (!appId || score === undefined || !total) {

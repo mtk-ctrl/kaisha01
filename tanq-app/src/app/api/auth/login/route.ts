@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { getAnonClient } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   const { email, password } = await req.json()
@@ -8,11 +8,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'メールアドレスとパスワードを入力してください' }, { status: 400 })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  )
-
+  const supabase = getAnonClient()
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
   if (error) {
