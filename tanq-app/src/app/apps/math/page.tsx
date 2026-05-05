@@ -9,6 +9,9 @@ type Difficulty = 'かんたん' | 'ふつう' | 'むずかしい'
 interface Problem {
   question: string
   answer: number
+  op: Op
+  a: number
+  b: number
 }
 
 const DIFFICULTY_CONFIG: Record<Difficulty, { max: number; ops: Op[]; time: number }> = {
@@ -39,7 +42,7 @@ function makeProblem(difficulty: Difficulty): Problem {
     answer = a + b
   }
 
-  return { question: `${a} ${op} ${b}`, answer }
+  return { question: `${a} ${op} ${b}`, answer, op, a, b }
 }
 
 type Phase = 'select' | 'playing' | 'result'
@@ -47,12 +50,13 @@ type Phase = 'select' | 'playing' | 'result'
 export default function MathChallenge() {
   const [phase, setPhase] = useState<Phase>('select')
   const [difficulty, setDifficulty] = useState<Difficulty>('ふつう')
-  const [problem, setProblem] = useState<Problem>({ question: '', answer: 0 })
+  const [problem, setProblem] = useState<Problem>({ question: '', answer: 0, op: '+', a: 0, b: 0 })
   const [input, setInput] = useState('')
   const [score, setScore] = useState(0)
   const [miss, setMiss] = useState(0)
   const [timeLeft, setTimeLeft] = useState(45)
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
+  const [showAnswer, setShowAnswer] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
@@ -71,6 +75,7 @@ export default function MathChallenge() {
     setProblem(makeProblem(diff))
     setInput('')
     setFeedback(null)
+    setShowAnswer(false)
     setPhase('playing')
   }
 
@@ -97,12 +102,14 @@ export default function MathChallenge() {
     if (val === problem.answer) {
       setScore((s) => s + 1)
       setFeedback('correct')
-      setTimeout(() => next(difficulty), 300)
+      setShowAnswer(false)
+      setTimeout(() => { next(difficulty); setShowAnswer(false) }, 400)
     } else {
       setMiss((m) => m + 1)
       setFeedback('wrong')
+      setShowAnswer(true)
       setInput('')
-      setTimeout(() => { setFeedback(null); inputRef.current?.focus() }, 500)
+      setTimeout(() => { setFeedback(null); setShowAnswer(false); inputRef.current?.focus() }, 1800)
     }
   }
 
@@ -229,7 +236,12 @@ export default function MathChallenge() {
         </div>
 
         {feedback === 'correct' && (
-          <div className="text-3xl font-black text-[#4ade80] mb-6 animate-bounce">正解！✓</div>
+          <div className="text-3xl font-black text-[#4ade80] mb-6 animate-bounce">✓ 正解！</div>
+        )}
+        {showAnswer && feedback === 'wrong' && (
+          <div className="text-xl font-black text-[#f0c040] mb-4">
+            答え: <span className="text-3xl">{problem.answer}</span>
+          </div>
         )}
 
         <form onSubmit={handleSubmit}>
