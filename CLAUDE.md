@@ -164,10 +164,13 @@ kaisha01/
 ├── projects/active/            ← 進行中プロジェクト管理
 └── tanq-app/src/
     ├── app/page.tsx            ← コーポレートトップ
-    ├── app/lab/page.tsx        ← アプリハブ（パスワード制）
+    ├── app/lab/page.tsx        ← アプリハブ（パスワード制・4アプリ）
+    ├── app/pricing/page.tsx    ← 料金ページ
     ├── app/register/page.tsx   ← 登録ページ
     ├── app/contact/page.tsx    ← お問い合わせ
     ├── app/tanq/page.tsx       ← 子供向けゲーム（メイン）
+    ├── app/apps/math/page.tsx  ← 計算チャレンジ
+    ├── app/apps/kanji/page.tsx ← 漢字クイズ
     ├── components/Navbar.tsx   ← 共通ナビ
     ├── components/Footer.tsx   ← 共通フッター
     └── data/unit1〜5.ts       ← ゲームスクリプト
@@ -177,22 +180,28 @@ kaisha01/
 
 ## ━━ SECTION 5: 現在の状態 ━━
 
-*最終更新: 2026-05-04*
+*最終更新: 2026-05-05*
 
 ### 完了済み
 
-- [x] コーポレートサイト（近未来×自然テーマ）
+- [x] コーポレートサイト（近未来×自然テーマ・明るい配色）
 - [x] TANQ App Unit 1〜5（Season 1）
-- [x] パスワード制アプリハブ `/lab`（TANQ + youti_master）
+- [x] パスワード制アプリハブ `/lab`（4アプリ収録）
+- [x] 計算チャレンジ `/apps/math`（四則演算スピードゲーム）
+- [x] 漢字クイズ `/apps/kanji`（小1〜小6 4択クイズ）
+- [x] 料金ページ `/pricing`（フリーミアム3プラン + B2B）
 - [x] auto-merge ワークフロー
 - [x] 作業ログ体制
+- [x] マネタイズ戦略策定（フリーミアム × B2B ハイブリッド）
 
 ### 次のアクション（優先順）
 
-1. オーナーからコーポレートサイト・ハブページのフィードバック
-2. お子さん（小4）にアプリを試してもらう
-3. Unit 6〜 実装（Season 2）
-4. フォームのバックエンド接続
+1. 登録フォームのバックエンド接続（Supabase）→ 実際に登録できるように
+2. Marketing AI「Hana」採用 → SNSコンテンツ量産
+3. Sales AI「Taro」採用 → 学校・塾へのアウトリーチ
+4. Google Analytics 設置（数字を可視化）
+5. Unit 6〜 実装（Season 2）
+6. お子さん（小4）にアプリを試してもらう → フィードバック
 
 ---
 

@@ -79,7 +79,7 @@ const COMPANY_INFO = [
 function WaveDown() {
   return (
     <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 0L48 8C96 16 192 32 288 37.3C384 43 480 37 576 32C672 27 768 21 864 24C960 27 1056 37 1152 42.7C1248 48 1344 48 1392 48L1440 48V80H0V0Z" fill="#0a1628"/>
+      <path d="M0 0L48 8C96 16 192 32 288 37.3C384 43 480 37 576 32C672 27 768 21 864 24C960 27 1056 37 1152 42.7C1248 48 1344 48 1392 48L1440 48V80H0V0Z" fill="#091c35"/>
     </svg>
   )
 }
@@ -87,7 +87,7 @@ function WaveDown() {
 function WaveUp() {
   return (
     <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M0 80L48 72C96 64 192 48 288 42.7C384 37 480 43 576 48C672 53 768 59 864 56C960 53 1056 43 1152 37.3C1248 32 1344 32 1392 32L1440 32V0H0V80Z" fill="#0a1628"/>
+      <path d="M0 80L48 72C96 64 192 48 288 42.7C384 37 480 43 576 48C672 53 768 59 864 56C960 53 1056 43 1152 37.3C1248 32 1344 32 1392 32L1440 32V0H0V80Z" fill="#091c35"/>
     </svg>
   )
 }
@@ -104,9 +104,9 @@ export default function CorporateHome() {
 
         {/* Background glows */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-[20%] w-[500px] h-[500px] rounded-full bg-corp-forest opacity-25 blur-[120px]" />
-          <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-corp-teal opacity-10 blur-[100px]" />
-          <div className="absolute bottom-1/4 left-1/2 w-[350px] h-[350px] rounded-full bg-corp-lavender opacity-10 blur-[90px]" />
+          <div className="absolute top-1/4 left-[20%] w-[600px] h-[600px] rounded-full bg-corp-forest opacity-40 blur-[100px]" />
+          <div className="absolute top-1/3 right-1/4 w-[450px] h-[450px] rounded-full bg-corp-teal opacity-20 blur-[90px]" />
+          <div className="absolute bottom-1/4 left-1/2 w-[400px] h-[400px] rounded-full bg-corp-lavender opacity-20 blur-[80px]" />
         </div>
 
         {/* Grid overlay */}
@@ -179,13 +179,13 @@ export default function CorporateHome() {
         {/* Wave to next section */}
         <div className="absolute bottom-0 left-0 right-0 pointer-events-none">
           <svg viewBox="0 0 1440 80" preserveAspectRatio="none" className="w-full h-20" fill="none">
-            <path d="M0 80L48 70.7C96 61 192 43 288 37.3C384 32 480 37 576 42.7C672 48 768 53 864 50.7C960 48 1056 37 1152 32C1248 27 1344 27 1392 27L1440 27V80H0Z" fill="#0a1628"/>
+            <path d="M0 80L48 70.7C96 61 192 43 288 37.3C384 32 480 37 576 42.7C672 48 768 53 864 50.7C960 48 1056 37 1152 32C1248 27 1344 27 1392 27L1440 27V80H0Z" fill="#091c35"/>
           </svg>
         </div>
       </section>
 
       {/* ════════ MISSION ════════ */}
-      <section className="bg-[#0a1628] py-28 px-6">
+      <section className="bg-[#091c35] py-28 px-6">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-corp-teal text-xs uppercase tracking-[0.3em] mb-6 font-semibold">Mission</p>
           <blockquote className="text-3xl lg:text-5xl font-bold leading-snug mb-8">
@@ -205,7 +205,7 @@ export default function CorporateHome() {
         <WaveUp />
 
         {/* Background accent */}
-        <div className="absolute top-1/3 right-0 w-[600px] h-[600px] rounded-full bg-corp-forest opacity-[15%] blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/3 right-0 w-[600px] h-[600px] rounded-full bg-corp-forest opacity-30 blur-[130px] pointer-events-none" />
 
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-20">
@@ -273,7 +273,7 @@ export default function CorporateHome() {
       </section>
 
       {/* ════════ EXPLORATION LOOP ════════ */}
-      <section className="bg-[#0a1628] py-32 px-6">
+      <section className="bg-[#091c35] py-32 px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <p className="text-corp-teal text-xs uppercase tracking-[0.3em] mb-4 font-semibold">How It Works</p>
@@ -333,7 +333,7 @@ export default function CorporateHome() {
       </section>
 
       {/* ════════ CTA ════════ */}
-      <section className="bg-[#0a1628] py-32 px-6">
+      <section className="bg-[#091c35] py-32 px-6">
         <div className="max-w-4xl mx-auto">
           <div className="glass-card-bright rounded-3xl p-14 lg:p-20 text-center relative overflow-hidden">
             {/* Inner glow */}

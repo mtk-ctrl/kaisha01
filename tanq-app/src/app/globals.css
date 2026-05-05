@@ -75,24 +75,24 @@ ruby rt {
 /* Subtle tech-grid overlay */
 .grid-overlay {
   background-image:
-    linear-gradient(rgba(0, 229, 195, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 229, 195, 0.04) 1px, transparent 1px);
+    linear-gradient(rgba(0, 229, 195, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 195, 0.07) 1px, transparent 1px);
   background-size: 60px 60px;
 }
 
 /* Glassmorphism cards */
 .glass-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.06);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .glass-card-bright {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.20);
 }
 
 /* Gradient text */
@@ -119,7 +119,7 @@ ruby rt {
 
 /* Animated gradient background */
 .bg-aurora {
-  background: linear-gradient(-45deg, #050b14, #0a1628, #0d2b1d, #0a1628, #050b14);
+  background: linear-gradient(-45deg, #071628, #0d2040, #0e3025, #112244, #071628);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }
@@ -131,11 +131,11 @@ ruby rt {
 
 /* Glow effects */
 .glow-teal {
-  box-shadow: 0 0 30px rgba(0, 229, 195, 0.35);
+  box-shadow: 0 0 40px rgba(0, 229, 195, 0.55);
 }
 
 .glow-lavender {
-  box-shadow: 0 0 30px rgba(196, 168, 255, 0.35);
+  box-shadow: 0 0 40px rgba(196, 168, 255, 0.55);
 }
 
 /* Float animation */
@@ -188,8 +188,8 @@ ruby rt {
   transition: all 0.2s ease;
 }
 .btn-glow-teal:hover {
-  background: #00f0d0;
-  box-shadow: 0 0 35px rgba(0, 229, 195, 0.5), 0 4px 15px rgba(0, 0, 0, 0.3);
+  background: #00f5d8;
+  box-shadow: 0 0 50px rgba(0, 229, 195, 0.7), 0 4px 20px rgba(0, 229, 195, 0.3);
   transform: translateY(-2px) scale(1.02);
 }
 

@@ -40,6 +40,36 @@ const APPS = [
     units: [],
     mascot: null,
   },
+  {
+    id: 'math',
+    name: '計算チャレンジ',
+    subtitle: '計算スピードゲーム',
+    description:
+      '制限時間内にできるだけ多くの計算問題を解こう！たし算・ひき算・かけ算・わり算に挑戦。頭の体操に最適。',
+    emoji: '🔢',
+    color: '#60a5fa',
+    url: '/apps/math',
+    external: false,
+    badge: 'New',
+    badgeColor: '#f87171',
+    units: ['たし算', 'ひき算', 'かけ算', 'わり算'],
+    mascot: null,
+  },
+  {
+    id: 'kanji',
+    name: '漢字クイズ',
+    subtitle: '漢字読み方4択クイズ',
+    description:
+      '小学校で習う漢字の読み方を4択で答えよう。学年別（小1〜小6）に挑戦できる。毎回ランダム出題！',
+    emoji: '📖',
+    color: '#c4a8ff',
+    url: '/apps/kanji',
+    external: false,
+    badge: 'New',
+    badgeColor: '#f87171',
+    units: ['小1', '小2', '小3', '小4', '小5', '小6'],
+    mascot: null,
+  },
 ]
 
 /* ── Password gate ── */
@@ -200,21 +230,21 @@ function AppCard({ app }: { app: typeof APPS[0] }) {
             href={app.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full font-bold transition-all duration-200 hover:scale-[1.02]"
+            className="flex items-center justify-center gap-3 w-full py-5 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-[1.03]"
             style={{
               background: app.color,
               color: '#050b14',
               boxShadow: `0 0 0 0 ${app.color}`,
             }}
             onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.boxShadow = `0 0 25px ${app.color}50`
+              (e.currentTarget as HTMLElement).style.boxShadow = `0 0 35px ${app.color}60`
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.boxShadow = 'none'
             }}
           >
             アプリを開く
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
               <polyline points="15 3 21 3 21 9"/>
               <line x1="10" y1="14" x2="21" y2="3"/>
@@ -223,8 +253,14 @@ function AppCard({ app }: { app: typeof APPS[0] }) {
         ) : (
           <Link
             href={app.url}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-full font-bold transition-all duration-200 hover:scale-[1.02]"
+            className="flex items-center justify-center gap-3 w-full py-5 rounded-2xl font-black text-lg transition-all duration-200 hover:scale-[1.03]"
             style={{ background: app.color, color: '#050b14' }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.boxShadow = `0 0 35px ${app.color}60`
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.boxShadow = 'none'
+            }}
           >
             アプリを開く →
           </Link>
@@ -265,7 +301,7 @@ function AppHub() {
           </div>
 
           {/* App grid */}
-          <div className="grid md:grid-cols-2 gap-8 mb-16">
+          <div className="grid sm:grid-cols-2 gap-8 mb-16">
             {APPS.map((app) => (
               <AppCard key={app.id} app={app} />
             ))}
