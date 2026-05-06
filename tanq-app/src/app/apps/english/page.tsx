@@ -2,51 +2,10 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { WORDS } from '@/data/englishData'
+import type { WordEntry } from '@/data/englishData'
 
 type QuestionFormat = 'en2jp' | 'jp2en'
-
-interface WordEntry {
-  emoji: string
-  japanese: string
-  english: string
-  category: string
-  tip: string
-  sentence: string   // 例文（英語）
-  sentenceJP: string // 例文（和訳）
-}
-
-const WORDS: WordEntry[] = [
-  { emoji: '🍎', japanese: 'リンゴ', english: 'apple', category: 'くだもの', tip: '"アップル"と読む。ニュートンがリンゴを見て重力を発見した話は有名！Apple社のロゴもリンゴ🍏', sentence: 'I eat an apple every day.', sentenceJP: '私は毎日リンゴを食べます。' },
-  { emoji: '🐕', japanese: 'イヌ', english: 'dog', category: 'どうぶつ', tip: '"ドッグ"と読む。「It\'s raining cats and dogs（土砂降り）」という慣用句があるよ！', sentence: 'My dog loves to run in the park.', sentenceJP: '私のイヌは公園を走るのが大好きです。' },
-  { emoji: '🐱', japanese: 'ネコ', english: 'cat', category: 'どうぶつ', tip: '"キャット"と読む。英語でネコの鳴き声は「meow（ミャオ）」と書くよ🐾', sentence: 'The cat is sleeping on the sofa.', sentenceJP: 'ネコはソファの上で寝ています。' },
-  { emoji: '📚', japanese: 'ほん', english: 'book', category: 'もの', tip: '"ブック"と読む。1冊・2冊は one book / two books。複数形は -s をつけよう📖', sentence: 'She reads a book before bed.', sentenceJP: '彼女は寝る前に本を読みます。' },
-  { emoji: '✏️', japanese: 'えんぴつ', english: 'pencil', category: 'もの', tip: '"ペンスル"と読む。pen（ペン）との違いは消せること。stationery（文房具）の仲間！', sentence: 'Please write with a pencil.', sentenceJP: 'えんぴつで書いてください。' },
-  { emoji: '🌸', japanese: 'はな', english: 'flower', category: 'しぜん', tip: '"フラワー"と読む。日本の桜は英語で「cherry blossom（チェリーブロッサム）」と言うよ🌸', sentence: 'The flowers in the garden are beautiful.', sentenceJP: '庭の花は美しいです。' },
-  { emoji: '🌙', japanese: 'つき', english: 'moon', category: 'そら', tip: '"ムーン"と読む。月曜日は Monday — Moon\'s day（月の日）が語源！', sentence: 'The moon is bright tonight.', sentenceJP: '今夜は月が明るい。' },
-  { emoji: '☀️', japanese: 'たいよう', english: 'sun', category: 'そら', tip: '"サン"と読む。日曜日は Sunday — Sun\'s day（太陽の日）。sunshine = 日光 ☀️', sentence: 'The sun rises in the east.', sentenceJP: '太陽は東から昇ります。' },
-  { emoji: '🌊', japanese: 'うみ', english: 'sea', category: 'しぜん', tip: '"スィー"と読む。海の水は saltwater（塩水）。ocean（オーシャン）はより大きな海域だよ🌊', sentence: 'We swim in the sea every summer.', sentenceJP: '私たちは毎年夏に海で泳ぎます。' },
-  { emoji: '⛰️', japanese: 'やま', english: 'mountain', category: 'しぜん', tip: '"マウンテン"と読む。富士山は Mount Fuji！mountain climbing = 登山🏔️', sentence: 'Mount Fuji is a famous mountain.', sentenceJP: '富士山は有名な山です。' },
-  { emoji: '🍙', japanese: 'おにぎり', english: 'rice ball', category: 'たべもの', tip: '"ライスボール"と読む。最近では onigiri がそのまま英語になってきてるよ🍙', sentence: 'I made a rice ball for lunch.', sentenceJP: '昼食におにぎりを作りました。' },
-  { emoji: '🚗', japanese: 'くるま', english: 'car', category: 'のりもの', tip: '"カー"と読む。automobile（オートモービル）とも言う。ドライブは go for a drive！', sentence: 'We went to the park by car.', sentenceJP: '私たちは車で公園に行きました。' },
-  { emoji: '✈️', japanese: 'ひこうき', english: 'airplane', category: 'のりもの', tip: '"エアプレイン"と読む。aeroplane（英）= airplane（米）。空港は airport🛫', sentence: 'The airplane flew over the clouds.', sentenceJP: 'ひこうきは雲の上を飛んだ。' },
-  { emoji: '🏠', japanese: 'いえ', english: 'house', category: 'たてもの', tip: '"ハウス"と読む。house は建物、home は「家（場所+気持ち）」。Home is where the heart is💙', sentence: 'My house has a big garden.', sentenceJP: '私の家には大きな庭があります。' },
-  { emoji: '🎒', japanese: 'ランドセル', english: 'backpack', category: 'もの', tip: '"バックパック"と読む。ランドセルは日本独特！海外では backpack（リュック）と呼ぶよ🎒', sentence: 'I put my books in my backpack.', sentenceJP: '私はリュックに本を入れました。' },
-  { emoji: '🍊', japanese: 'みかん', english: 'orange', category: 'くだもの', tip: '"オレンジ"と読む。色のオレンジも同じ単語！The sky turned orange（空がオレンジ色になった）🍊', sentence: 'An orange is sweet and juicy.', sentenceJP: 'みかんは甘くてジューシーです。' },
-  { emoji: '🐟', japanese: 'さかな', english: 'fish', category: 'どうぶつ', tip: '"フィッシュ"と読む。fish は単複同形が多い（1 fish, 2 fish）。フィッシュ&チップスは英国の名物！', sentence: 'There are many fish in the river.', sentenceJP: '川にはたくさんの魚がいます。' },
-  { emoji: '⭐', japanese: 'ほし', english: 'star', category: 'そら', tip: '"スター"と読む。Twinkle twinkle little star🎵 お気に入りの歌で英語を覚えよう！', sentence: 'I can see many stars at night.', sentenceJP: '夜には星がたくさん見えます。' },
-  { emoji: '🌈', japanese: 'にじ', english: 'rainbow', category: 'そら', tip: '"レインボー"と読む。rain（雨）＋bow（弓）＝ rainbow。なぜ虹が見えるか知ってる？光の屈折！', sentence: 'A rainbow appeared after the rain.', sentenceJP: '雨の後ににじが現れました。' },
-  { emoji: '🎵', japanese: 'おんがく', english: 'music', category: 'こうい', tip: '"ミュージック"と読む。musician（音楽家）、musical（ミュージカル）など仲間の言葉もたくさん！', sentence: 'I love listening to music.', sentenceJP: '私は音楽を聴くのが大好きです。' },
-  { emoji: '🏃', japanese: 'はしる', english: 'run', category: 'こうい', tip: '"ラン"と読む。run は多義語！プログラムを「実行する」もrun（run a program）と言うよ💻', sentence: 'She runs five kilometers every morning.', sentenceJP: '彼女は毎朝5キロ走ります。' },
-  { emoji: '😊', japanese: 'うれしい', english: 'happy', category: 'きもち', tip: '"ハッピー"と読む。Happy birthday！Happy New Year！お祝いの定番表現だよ😊', sentence: 'I am very happy today!', sentenceJP: '今日はとてもうれしいです！' },
-  { emoji: '😢', japanese: 'かなしい', english: 'sad', category: 'きもち', tip: '"サッド"と読む。I\'m sad.（かなしいな）、Don\'t be sad!（かなしまないで）と使えるよ', sentence: 'He looked sad after losing the game.', sentenceJP: '彼は試合に負けた後かなしそうにしていた。' },
-  { emoji: '🔴', japanese: 'あかい', english: 'red', category: 'いろ', tip: '"レッド"と読む。red card（レッドカード）、red carpet（レッドカーペット）日常でよく見るね！', sentence: 'The traffic light is red.', sentenceJP: '信号が赤です。' },
-  { emoji: '💙', japanese: 'あおい', english: 'blue', category: 'いろ', tip: '"ブルー"と読む。"I\'m feeling blue"は「気分が落ち込んでいる」という慣用句。色と気持ちは関係あるね', sentence: 'The sky is blue on a sunny day.', sentenceJP: '晴れた日は空が青いです。' },
-  { emoji: '💚', japanese: 'みどり', english: 'green', category: 'いろ', tip: '"グリーン"と読む。"go green"（エコにする）と環境にも使う！Green energy = 再生可能エネルギー', sentence: 'The grass is green in spring.', sentenceJP: '春には草が緑色です。' },
-  { emoji: '🎂', japanese: 'ケーキ', english: 'cake', category: 'たべもの', tip: '"ケイク"と読む。piece of cake は「超かんたん」の意味もあるよ😄 It\'s a piece of cake!', sentence: 'We ate cake at the birthday party.', sentenceJP: '誕生日パーティーでケーキを食べました。' },
-  { emoji: '🍕', japanese: 'ピザ', english: 'pizza', category: 'たべもの', tip: '"ピーツァ"と読む。イタリア語から来た言葉！英語では pizza parlor（ピザ屋）と言うよ🍕', sentence: 'Pizza is popular all over the world.', sentenceJP: 'ピザは世界中で人気があります。' },
-  { emoji: '👾', japanese: 'ゲーム', english: 'game', category: 'あそび', tip: '"ゲイム"と読む。video game、board game、card game — 色々なゲームがあるね。Let\'s play a game!🎮', sentence: 'Let\'s play a game together.', sentenceJP: '一緒にゲームをしましょう。' },
-  { emoji: '🏊', japanese: 'およぐ', english: 'swim', category: 'こうい', tip: '"スウィム"と読む。swimmer（水泳選手）、swimming pool（プール）。「泳げる」は I can swim!🏊', sentence: 'I can swim very fast.', sentenceJP: '私はとても速く泳げます。' },
-]
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5)
