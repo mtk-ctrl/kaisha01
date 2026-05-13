@@ -72,6 +72,60 @@ const SHAPES: Shape[] = [
     description: '5つのとんがりがある',
     explanation: '星形（五芒星）はとんがりが5つ。星の形は世界中の国旗にも使われているよ！',
   },
+  {
+    name: 'octagon', japanese: 'はっかくけい（八角形）', corners: 8, sides: 8,
+    svgPath: 'M50,5 L75,15 L95,40 L95,60 L75,85 L50,95 L25,85 L5,60 L5,40 L25,15 Z', color: '#ff7043',
+    description: '8つの角がある形',
+    explanation: '八角形は辺が8本、角が8つ。道路の一時停止サイン（STOP標識）はこの形だよ！',
+  },
+  {
+    name: 'diamond', japanese: 'ひし形（菱形）', corners: 4, sides: 4,
+    svgPath: 'M50,5 L90,50 L50,95 L10,50 Z', color: '#ab47bc',
+    description: 'たて長のひし形',
+    explanation: '菱形（ひし形）は4本の辺がすべて同じ長さ。トランプのダイヤ♦もこの形だよ！',
+  },
+  {
+    name: 'trapezoid', japanese: 'だいけい（台形）', corners: 4, sides: 4,
+    svgPath: 'M20,75 L80,75 L65,25 L35,25 Z', color: '#26c6da',
+    description: '1組の辺が平行な四角形',
+    explanation: '台形は向かい合う1組の辺だけが平行な四角形。台形のケーキやバケツの形がこれだよ！',
+  },
+  {
+    name: 'oval', japanese: 'だえん（楕円）', corners: 0, sides: 1,
+    svgPath: '', color: '#ef9a9a',
+    description: 'たまご型のまるい形',
+    explanation: '楕円（だえん）は円を横か縦に引き伸ばした形。たまごや地球の軌道もこの形だよ！',
+  },
+  {
+    name: 'parallelogram', japanese: 'へいこうしへんけい（平行四辺形）', corners: 4, sides: 4,
+    svgPath: 'M25,75 L90,75 L75,25 L10,25 Z', color: '#66bb6a',
+    description: '斜めに傾いた四角形',
+    explanation: '平行四辺形は向かい合う2組の辺がそれぞれ平行で同じ長さ。長方形を斜めに押した形だよ！',
+  },
+  {
+    name: 'right triangle', japanese: 'ちょっかくさんかくけい（直角三角形）', corners: 3, sides: 3,
+    svgPath: 'M15,85 L85,85 L15,15 Z', color: '#ffa726',
+    description: '直角（90°）がある三角形',
+    explanation: '直角三角形は1つの角がちょうど90°。定規やスロープの形がこれ。ピタゴラスの定理で有名！',
+  },
+  {
+    name: 'star10', japanese: 'ほし形（星形）', corners: 10, sides: 10,
+    svgPath: 'M50,5 L61,35 L95,35 L68,57 L79,91 L50,70 L21,91 L32,57 L5,35 L39,35 Z', color: '#ffee58',
+    description: '10のとんがりと角がある星',
+    explanation: '星形は10本の辺と10個の角を持つ多角形。先のとがった点が5つあって、とっても目立つ形だよ！',
+  },
+  {
+    name: 'heptagon', japanese: 'ななかくけい（七角形）', corners: 7, sides: 7,
+    svgPath: 'M50,5 L82,20 L95,55 L80,88 L50,95 L20,88 L5,55 L18,20 Z', color: '#29b6f6',
+    description: '7つの角がある形',
+    explanation: '七角形は辺が7本、角が7つ。正七角形はすべての辺と角が等しく、硬貨（コイン）にも使われるよ！',
+  },
+  {
+    name: 'cross', japanese: 'じゅうじ形（十字形）', corners: 12, sides: 12,
+    svgPath: 'M35,5 L65,5 L65,35 L95,35 L95,65 L65,65 L65,95 L35,95 L35,65 L5,65 L5,35 L35,35 Z', color: '#ec407a',
+    description: '十字（＋）の形',
+    explanation: '十字形（プラス形）は12本の辺と12個の角がある図形。足し算の「＋」記号もこの形だよ！',
+  },
 ]
 
 const TOTAL = SHAPES.length  // 8問（図形の数に合わせる）
@@ -81,7 +135,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 function makeQuestion(shape: Shape): ShapeQuestion {
-  const types: ShapeQuestion['type'][] = shape.name === 'circle'
+  const types: ShapeQuestion['type'][] = (shape.name === 'circle' || shape.name === 'oval')
     ? ['name', 'name']
     : ['name', 'corners', 'sides']
   const type = types[Math.floor(Math.random() * types.length)]
@@ -97,7 +151,7 @@ function makeQuestion(shape: Shape): ShapeQuestion {
   }
   if (type === 'corners') {
     const correct = `${shape.corners}個`
-    const opts = shuffle([0, 3, 4, 5, 6, 8].filter((n) => n !== shape.corners)).slice(0, 3).map((n) => `${n}個`)
+    const opts = shuffle([0, 3, 4, 5, 6, 7, 8, 10, 12].filter((n) => n !== shape.corners)).slice(0, 3).map((n) => `${n}個`)
     return {
       type, shape, question: 'かどは何個ある？', correct,
       choices: shuffle([correct, ...opts]),
@@ -105,7 +159,7 @@ function makeQuestion(shape: Shape): ShapeQuestion {
     }
   }
   const correct = `${shape.sides}本`
-  const opts = shuffle([1, 3, 4, 5, 6, 8].filter((n) => n !== shape.sides)).slice(0, 3).map((n) => `${n}本`)
+  const opts = shuffle([1, 3, 4, 5, 6, 7, 8, 10, 12].filter((n) => n !== shape.sides)).slice(0, 3).map((n) => `${n}本`)
   return {
     type, shape, question: 'へんは何本ある？', correct,
     choices: shuffle([correct, ...opts]),
@@ -118,6 +172,8 @@ function ShapeSVG({ shape, size = 100 }: { shape: Shape; size?: number }) {
     <svg viewBox="0 0 100 100" width={size} height={size} className="drop-shadow-lg">
       {shape.name === 'circle'
         ? <circle cx="50" cy="50" r="45" fill={shape.color} opacity="0.9" />
+        : shape.name === 'oval'
+        ? <ellipse cx="50" cy="50" rx="45" ry="30" fill={shape.color} opacity="0.9" />
         : <path d={shape.svgPath} fill={shape.color} opacity="0.9" />
       }
     </svg>
@@ -179,7 +235,7 @@ export default function ShapesQuiz() {
   }
 
   if (phase === 'result') {
-    const rank = score >= 7 ? '🏆 図形マスター！' : score >= 5 ? '🥇 すごい！' : score >= 3 ? '🥈 よくできた' : '🥉 もう一回！'
+    const rank = score >= 14 ? '🏆 図形マスター！' : score >= 10 ? '🥇 すごい！' : score >= 6 ? '🥈 よくできた' : '🥉 もう一回！'
     return (
       <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center">
         <div className="text-5xl mb-4">{rank.split(' ')[0]}</div>

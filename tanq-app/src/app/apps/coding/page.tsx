@@ -75,6 +75,266 @@ const PUZZLES: Puzzle[] = [
     answer: ['RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN'],
     hint: '右→右→右→下→下→下',
   },
+  // ─── やさしい (ids 6–9) ───────────────────────────
+  {
+    id: 6,
+    title: 'ながい一本道',
+    // S → → → → G  (row 1, cols 0-4)
+    grid: [
+      ['#', '#', '#', '#', '#'],
+      ['S', '.', '.', '.', 'G'],
+      ['#', '#', '#', '#', '#'],
+    ],
+    answer: ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT'],
+    hint: 'ひたすら右に進もう',
+  },
+  {
+    id: 7,
+    title: 'L字のみち',
+    // S at (0,0), go down 3 steps then right 3 steps to G at (3,3)
+    grid: [
+      ['S', '#', '#', '#'],
+      ['.', '#', '#', '#'],
+      ['.', '#', '#', '#'],
+      ['.', '.', '.', 'G'],
+    ],
+    answer: ['DOWN', 'DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'RIGHT'],
+    hint: '下に行ってから右へ',
+  },
+  {
+    id: 8,
+    title: 'さかさまL',
+    // S at (0,0) → right 3 → down 3 → G at (3,3)
+    grid: [
+      ['S', '.', '.', '.'],
+      ['#', '#', '#', '.'],
+      ['#', '#', '#', '.'],
+      ['#', '#', '#', 'G'],
+    ],
+    answer: ['RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN'],
+    hint: '右に行ってから下へ',
+  },
+  {
+    id: 9,
+    title: 'かいだん',
+    // S(0,0)→RIGHT→DOWN→RIGHT→DOWN to G(2,2)  — staircase shape
+    grid: [
+      ['S', '.', '#', '#', '#'],
+      ['#', '.', '.', '#', '#'],
+      ['#', '#', '.', '.', 'G'],
+    ],
+    answer: ['RIGHT', 'DOWN', 'RIGHT', 'DOWN', 'RIGHT', 'RIGHT'],
+    hint: '階段みたいにジグザグ',
+  },
+  // ─── ふつう (ids 10–14) ──────────────────────────
+  {
+    id: 10,
+    title: 'コの字みち',
+    // S(0,0) down 2, right 3, up 2 to G(0,3)
+    grid: [
+      ['S', '#', '#', 'G'],
+      ['.', '#', '#', '.'],
+      ['.', '.', '.', '.'],
+    ],
+    answer: ['DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'RIGHT', 'UP', 'UP'],
+    hint: 'コの字を描くように進もう',
+  },
+  {
+    id: 11,
+    title: 'しま越え',
+    // S(0,0), navigate around central wall island
+    // S at (0,0)→right→right→down→down→left→left→down→right→right→G(4,2)? Let me design carefully.
+    // Grid 5x5: S(0,0), go right 4, down 2, left 4, down 2, right 4 is too long
+    // Simpler: S(0,0)→down→right→right→up→right→down→down→G(3,4)
+    // path: (0,0)→(1,0)→(1,1)→(1,2)→(0,2)→(0,3)→(1,3)→(2,3)→(3,3)? no G at (3,4)
+    // Let me redesign with a clear traced path:
+    // S(0,0) RIGHT RIGHT DOWN DOWN LEFT LEFT DOWN RIGHT RIGHT G at (3,2)?
+    // (0,0)→(0,1)→(0,2)→(1,2)→(2,2)→(2,1)→(2,0)→(3,0)→(3,1)→(3,2)=G  9 steps
+    grid: [
+      ['S', '.', '.', '#', '#'],
+      ['#', '#', '.', '#', '#'],
+      ['.', '.', '.', '#', '#'],
+      ['.', '.', 'G', '#', '#'],
+    ],
+    answer: ['RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'LEFT', 'LEFT', 'DOWN', 'RIGHT', 'RIGHT'],
+    hint: '右→下→左→下と進もう',
+  },
+  {
+    id: 12,
+    title: 'ぐるっと一周',
+    // S(0,0) down 3, right 3, up 1, left 1, up 1 ... let me keep it simple
+    // S(0,4) left→left→left→left = (0,0), down = (1,0), right×4 = (1,4), down×2=(3,4)=G
+    // Grid 4x5
+    grid: [
+      ['G', '#', '#', '#', 'S'],
+      ['.', '#', '.', '#', '.'],
+      ['.', '#', '.', '#', '.'],
+      ['.', '.', '.', '.', '.'],
+    ],
+    answer: ['DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT', 'LEFT', 'LEFT', 'UP', 'UP', 'UP'],
+    hint: 'ぐるっと外を回ろう',
+  },
+  {
+    id: 13,
+    title: 'めいろのわな',
+    // S(0,0), blocked right, must go down 2, right 2, up 1, right 2, down 2 → G(3,4)
+    // trace: (0,0)→(1,0)→(2,0)→(2,1)→(2,2)→(1,2)→(1,3)→(1,4)→(2,4)→(3,4)=G  9 steps
+    grid: [
+      ['S', '#', '#', '#', '#'],
+      ['.', '#', '.', '.', '.'],
+      ['.', '.', '.', '#', '.'],
+      ['#', '#', '#', '#', 'G'],
+    ],
+    answer: ['DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'UP', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN'],
+    hint: '下→右→上→右→下とすすむ',
+  },
+  {
+    id: 14,
+    title: 'たからさがし',
+    // S(0,0) right 4, down 1, left 2, down 2, right 2 → G(3,4)
+    // trace: (0,0)→(0,1)→(0,2)→(0,3)→(0,4)→(1,4)→(1,3)→(1,2)→(2,2)→(3,2)→(3,3)→(3,4)=G  11 steps?
+    // Let me recount: RIGHT×4=(0,4), DOWN=(1,4), LEFT=(1,3), LEFT=(1,2), DOWN=(2,2), DOWN=(3,2), RIGHT=(3,3), RIGHT=(3,4)=G  8 steps
+    grid: [
+      ['S', '.', '.', '.', '.'],
+      ['#', '#', '.', '.', '.'],
+      ['#', '#', '.', '#', '#'],
+      ['#', '#', '.', '.', 'G'],
+    ],
+    answer: ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'LEFT', 'LEFT', 'DOWN', 'DOWN', 'RIGHT', 'RIGHT'],
+    hint: '右に進んで、もどって、下へ',
+  },
+  // ─── むずかしい (ids 15–18) ──────────────────────
+  {
+    id: 15,
+    title: 'スパイ作戦',
+    // 5x5 grid, complex path
+    // S(0,0) down 2, right 2, up 1, right 2, down 3, left 1 → G(4,3)
+    // trace: (0,0)→(1,0)→(2,0)→(2,1)→(2,2)→(1,2)→(1,3)→(1,4)→(2,4)→(3,4)→(4,4)→(4,3)=G  11 steps
+    grid: [
+      ['S', '#', '#', '#', '#'],
+      ['.', '#', '.', '.', '.'],
+      ['.', '.', '.', '#', '.'],
+      ['#', '#', '#', '#', '.'],
+      ['#', '#', '#', 'G', '.'],
+    ],
+    answer: ['DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'UP', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'LEFT'],
+    hint: '上下左右を組み合わせて',
+  },
+  {
+    id: 16,
+    title: 'ドラゴンのすみか',
+    // 5x5, 12 steps
+    // S(0,4) left 4, down 2, right 2, down 2, right 2 → G(4,4)
+    // trace: (0,4)→(0,3)→(0,2)→(0,1)→(0,0)→(1,0)→(2,0)→(2,1)→(2,2)→(3,2)→(4,2)→(4,3)→(4,4)=G  12 steps
+    grid: [
+      ['.', '.', '.', '.', 'S'],
+      ['.', '#', '#', '#', '#'],
+      ['.', '.', '.', '#', '#'],
+      ['#', '#', '.', '#', '#'],
+      ['#', '#', '.', '.', 'G'],
+    ],
+    answer: ['LEFT', 'LEFT', 'LEFT', 'LEFT', 'DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'RIGHT', 'RIGHT'],
+    hint: '左へ行って下へ、また右へ進め',
+  },
+  {
+    id: 17,
+    title: 'うずまき迷路',
+    // 6x6 grid: S at (0,0), spiral-like path to G at (3,3)
+    // path: (0,0)→right×4=(0,4)→down×4=(4,4)→left×4=(4,0)→up×2=(2,0)→right×2=(2,2)→down=(3,2)→right=(3,3)=G  14 steps
+    grid: [
+      ['S', '.', '.', '.', '.', '#'],
+      ['#', '#', '#', '#', '.', '#'],
+      ['.', '.', '.', '#', '.', '#'],
+      ['.', '#', '.', 'G', '.', '#'],
+      ['.', '#', '.', '.', '.', '#'],
+      ['.', '.', '.', '.', '.', '#'],
+    ],
+    answer: ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'DOWN', 'LEFT', 'LEFT', 'UP', 'UP', 'RIGHT', 'RIGHT', 'DOWN'],
+    hint: 'うずを描くように外から内へ',
+  },
+  {
+    id: 18,
+    title: 'もりのさんぽ道',
+    // 5x6 grid, 13 steps
+    // S(0,0) right×5=(0,5), down×2=(2,5), left×3=(2,2), down×2=(4,2), right×3=(4,5)? no G
+    // Let me do: S(0,0) down×4=(4,0), right×5=(4,5), up×2=(2,5), left×2=(2,3), up×1=(1,3), right×1=(1,4)? → G(1,4)
+    // trace: (0,0)→(1,0)→(2,0)→(3,0)→(4,0)→(4,1)→(4,2)→(4,3)→(4,4)→(4,5)→(3,5)→(2,5)→(2,4)→(2,3)→(1,3)→(1,4)=G  15 steps
+    grid: [
+      ['S', '#', '#', '#', '#', '#'],
+      ['.', '#', '#', '.', 'G', '#'],
+      ['.', '#', '#', '.', '.', '.'],
+      ['.', '#', '#', '#', '#', '.'],
+      ['.', '.', '.', '.', '.', '.'],
+    ],
+    answer: ['DOWN', 'DOWN', 'DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'UP', 'UP', 'LEFT', 'LEFT', 'UP', 'RIGHT'],
+    hint: '下まで行って右に進み、上に戻ろう',
+  },
+  // ─── とても難しい (ids 19–20) ────────────────────
+  {
+    id: 19,
+    title: 'ラビリンス・オメガ',
+    // 6x6 grid, 18 steps
+    // S(0,0) right×5=(0,5), down×5=(5,5), left×5=(5,0), up×3=(2,0), right×3=(2,3), down×1=(3,3), right×2=(3,5)? no – let me recount
+    // simpler: S(0,0) right×5, down×2, left×3, down×2, right×3, up×1 → G
+    // (0,0)→(0,1)→(0,2)→(0,3)→(0,4)→(0,5) [RIGHT×5]
+    // →(1,5)→(2,5) [DOWN×2]
+    // →(2,4)→(2,3)→(2,2) [LEFT×3]
+    // →(3,2)→(4,2) [DOWN×2]
+    // →(4,3)→(4,4)→(4,5) [RIGHT×3]
+    // →(3,5) [UP]  = G   total 16 steps
+    grid: [
+      ['S', '.', '.', '.', '.', '.'],
+      ['#', '#', '#', '#', '#', '.'],
+      ['#', '.', '.', '.', '#', '.'],
+      ['#', '.', '#', '#', '#', 'G'],
+      ['#', '.', '.', '.', '.', '.'],
+      ['#', '#', '#', '#', '#', '#'],
+    ],
+    answer: ['RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'LEFT', 'LEFT', 'LEFT', 'DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'RIGHT', 'UP'],
+    hint: '右→下→左→下→右→上が鍵だ',
+  },
+  {
+    id: 20,
+    title: '伝説の最終迷路',
+    // 6x6 grid, ~18 steps
+    // S(5,0) up×5=(0,0), right×2=(0,2), down×3=(3,2), right×3=(3,5), up×3=(0,5), ... too long
+    // S(0,0), path: right×2, down×2, right×2, down×2, left×4, down×1 → G(5,0)?
+    // (0,0)→(0,1)→(0,2) [R×2]
+    // →(1,2)→(2,2) [D×2]
+    // →(2,3)→(2,4) [R×2]
+    // →(3,4)→(4,4) [D×2]
+    // →(4,3)→(4,2)→(4,1)→(4,0) [L×4]
+    // →(5,0)=G [D×1]   total: 2+2+2+2+4+1 = 13 steps. Let me add more complexity.
+    // extended: S(0,5), left×5=(0,0), down×2=(2,0), right×4=(2,4), down×1=(3,4), left×2=(3,2), down×2=(5,2), right×3=(5,5)=G
+    // total: 5+2+4+1+2+2+3 = 19 steps
+    grid: [
+      ['.', '.', '.', '.', '.', 'S'],
+      ['#', '#', '#', '#', '#', '.'],
+      ['.', '.', '.', '.', '.', '.'],  // wait (2,4) to (3,4): need path, check (3,4) is '.'
+      ['.', '.', '.', '#', '.', '#'],
+      ['#', '#', '#', '#', '.', '#'],
+      ['#', '#', '.', '.', '.', 'G'],
+    ],
+    // trace: S=(0,5)
+    // LEFT×5: (0,4),(0,3),(0,2),(0,1),(0,0)
+    // DOWN×2: (1,0)=# BLOCKED!
+    // (1,0) is '#'—fix the grid so (1,0) is '#' is a wall. We need to go around.
+    // Let me redesign cleanly.
+    // S(0,5): right×0 (already rightmost), need a valid 6x6 path.
+    // New design: S(0,0)
+    // R,R,D,D,D,R,R,D,D,L,L,L,L,D,R,R,R,R = 18 steps → G(5,4)
+    // (0,0)→(0,1)→(0,2)→(1,2)→(2,2)→(3,2)→(3,3)→(3,4)→(4,4)→(5,4)→(5,3)→(5,2)→(5,1)→(5,0)→... wait need to reach G
+    // Let me go: R,R,D,D,D,R,R,D,L,L,L,L,D,R,R,R,R,R = 18 → G(5,5)
+    // (0,0)→(0,1)→(0,2): R,R
+    // →(1,2)→(2,2)→(3,2): D,D,D
+    // →(3,3)→(3,4): R,R
+    // →(4,4): D
+    // →(4,3)→(4,2)→(4,1)→(4,0): L,L,L,L
+    // →(5,0): D
+    // →(5,1)→(5,2)→(5,3)→(5,4)→(5,5)=G: R,R,R,R,R  total: 2+3+2+1+4+1+5=18 steps
+    answer: ['RIGHT', 'RIGHT', 'DOWN', 'DOWN', 'DOWN', 'RIGHT', 'RIGHT', 'DOWN', 'LEFT', 'LEFT', 'LEFT', 'LEFT', 'DOWN', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT', 'RIGHT'],
+    hint: '右→下×3→右→下→左→下→右の大作戦',
+  },
 ]
 
 const CMD_LABELS: Record<Dir, string> = {
