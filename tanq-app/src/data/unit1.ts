@@ -87,7 +87,7 @@ const unit1: Unit = {
       visual: '🧊',
       messages: [
         'でもちょっと待って！',
-        '氷と水って…同じH₂O（水）だよね？',
+        '氷と水って…同じH₂O（水のこと）だよね？',
         'なんで凍ったら軽くなるの！？',
       ],
       input: { type: 'next', nextStep: 'why_ice_light' },
@@ -99,7 +99,7 @@ const unit1: Unit = {
       messages: [
         'ふつうは冷やすと縮んで密度が上がるんだよね',
         'でも水だけは特別！凍ると逆に膨らむんだよ！',
-        '同じ重さなのに体積が増える → <ruby>密度<rt>みつど</rt></ruby>が下がる！',
+        '同じ重さなのに<ruby>体積<rt>たいせき</rt></ruby>（大きさ）が増える → <ruby>密度<rt>みつど</rt></ruby>が下がる！',
         'これ、水だけの超レアな性質！',
       ],
       input: { type: 'next', nextStep: 'real_world' },
