@@ -3,18 +3,13 @@ echo.
 echo === TANQ Jobs Setup ===
 echo.
 
-echo [1/4] Installing Supabase CLI...
-call npm install -g supabase
-if %errorlevel% neq 0 (
-  echo ERROR: npm install failed
-  pause
-  exit /b 1
-)
+echo [1/4] Installing Supabase CLI (via winget)...
+winget install Supabase.CLI
 echo Done.
 echo.
 
 echo [2/4] Supabase login (browser will open)...
-call supabase login
+supabase login
 echo Done.
 echo.
 
@@ -28,6 +23,5 @@ call vercel login
 echo Done.
 echo.
 
-echo === Setup complete! Jobs can now manage everything. ===
-echo.
+echo === Setup complete! ===
 pause
