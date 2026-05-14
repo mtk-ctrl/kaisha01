@@ -6,7 +6,8 @@
       "Bash(git push *)",
       "Bash(echo \"EXIT:$?\")",
       "Bash(git commit -m 'docs: NOW.md 更新（Supabase接続完了・次タスク整理） *)",
-      "Bash(git commit -m 'docs: OWNER.md全面更新・ユーザーリサーチ資料作成 *)"
+      "Bash(git commit -m 'docs: OWNER.md全面更新・ユーザーリサーチ資料作成 *)",
+      "Bash(git commit -m 'feat: フィードバックフォーム実装・LINE招待文にURL追加 *)"
     ]
   }
 }
