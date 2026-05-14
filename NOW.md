@@ -7,6 +7,21 @@
 
 ---
 
+## インフラ構成（セットアップ済み・触らない）
+
+| ツール | 状態 | 用途 |
+|--------|------|------|
+| Vercel CLI | ✅ ログイン済み | env var 変更を Jobs が自動実行 |
+| Supabase CLI | ✅ ログイン・プロジェクト紐付け済み | `supabase db push` でSQL変更を Jobs が自動実行 |
+| GitHub Actions | ✅ 稼働中 | push → main 自動マージ → Vercel デプロイ |
+| Node.js / npm | ✅ インストール済み | 各CLIの動作基盤 |
+
+**Supabase プロジェクトID**: `jdrhnxqvmohzikmfqzbl`  
+**マイグレーションフォルダ**: `tanq-app/supabase/migrations/`  
+次回以降のSQL変更 → Jobs がファイルを書いて `supabase db push` を実行。オーナー作業不要。
+
+---
+
 ## 直近で完了したこと
 
 | 日付 | 内容 |
