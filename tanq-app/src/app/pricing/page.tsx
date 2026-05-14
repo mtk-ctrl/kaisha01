@@ -10,52 +10,34 @@ const PLANS = [
     color: '#4ade80',
     badge: null,
     features: [
-      'TANQ App Unit 1〜2',
-      '計算チャレンジ（基本）',
+      '時計チャレンジ（無制限）',
       '漢字クイズ 小1〜小2',
-      '学習履歴（30日分）',
+      '算数チャレンジ（基本）',
+      '学習履歴（7日分）',
     ],
-    disabled: ['全Unit（Unit 3〜5）', '保護者レポート', '広告なし'],
+    disabled: ['全アプリ解放', 'TANQ Story（理科）', '漢字クイズ 小3〜小6', '保護者レポート'],
     cta: '無料で始める',
     href: '/register',
     highlight: false,
   },
   {
-    name: 'TANQ Plus',
-    price: '¥980',
+    name: 'TANQ Premium',
+    price: '¥100',
     period: '/月',
     color: '#00e5c3',
-    badge: '人気 No.1',
+    badge: 'おすすめ',
     features: [
-      'TANQ App 全Unit（Season 1完全版）',
-      '計算チャレンジ 全難易度',
-      '漢字クイズ 小1〜小6',
+      '全アプリ完全解放',
+      'TANQ Story（理科）全Unit',
+      '漢字クイズ 小1〜小6（944字）',
+      '算数・時計・図形・英語・コーディング',
       '学習履歴（無制限）',
       '保護者向け成績レポート',
-      '広告なし',
     ],
     disabled: [],
-    cta: '14日間無料で試す',
-    href: '/register?plan=plus',
+    cta: '1ヶ月無料で試す',
+    href: '/register?plan=premium',
     highlight: true,
-  },
-  {
-    name: 'TANQ Family',
-    price: '¥1,480',
-    period: '/月',
-    color: '#c4a8ff',
-    badge: 'お得！',
-    features: [
-      'Plus の全機能',
-      '3人まで同時利用',
-      '保護者ダッシュボード',
-      'きょうだいそれぞれの学習データ',
-      '優先サポート',
-    ],
-    disabled: [],
-    cta: '14日間無料で試す',
-    href: '/register?plan=family',
-    highlight: false,
   },
 ]
 
@@ -87,7 +69,7 @@ export default function PricingPage() {
           </div>
 
           {/* Cards */}
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
+          <div className="grid md:grid-cols-2 gap-8 mb-20 max-w-3xl mx-auto">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
