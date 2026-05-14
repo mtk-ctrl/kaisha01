@@ -2,6 +2,7 @@
 
 import { useEffect, useReducer, useCallback, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import type { Emotion, Unit, Step, ChoiceFeedback } from '@/data/types'
 import ALL_UNITS from '@/data/units'
 
@@ -196,6 +197,11 @@ function HomeScreen({ completed, onSelect }: { completed: string[]; onSelect: (u
     <div className="flex flex-col min-h-screen bg-tanquu-light max-w-sm mx-auto">
       {/* Header */}
       <div className="flex flex-col items-center pt-8 pb-4 px-6">
+        <div className="self-start mb-2">
+          <Link href="/" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-tanquu-purple transition-colors">
+            ← ホームへ戻る
+          </Link>
+        </div>
         <Image src={EMOTION_SRC.happy} alt="TANQuu" width={100} height={100} className="drop-shadow-md pop-in" priority />
         <h1 className="text-3xl font-bold text-tanquu-purple mt-2">TANQ 理科</h1>
         <p className="text-gray-500 text-sm mt-1">シーズン1 — ひみつコレクション</p>

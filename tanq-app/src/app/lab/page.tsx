@@ -200,11 +200,19 @@ function HomeTab({ profile, stats, onNav }: {
         <h2 className="font-black text-[#e8f0fe] text-sm mb-3">クイックアクセス</h2>
         <div className="grid grid-cols-4 gap-2">
           {APPS.slice(0, 4).map((app) => (
-            <Link key={app.id} href={app.external ? '#' : app.url}
-              className="flex flex-col items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl py-3 px-2 hover:border-white/20 transition-all">
-              <span className="text-2xl">{app.emoji}</span>
-              <span className="text-[#94a3c4] text-[10px] text-center leading-tight">{app.name}</span>
-            </Link>
+            app.external ? (
+              <a key={app.id} href={app.url} target="_blank" rel="noopener noreferrer"
+                className="flex flex-col items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl py-3 px-2 hover:border-white/20 transition-all">
+                <span className="text-2xl">{app.emoji}</span>
+                <span className="text-[#94a3c4] text-[10px] text-center leading-tight">{app.name}</span>
+              </a>
+            ) : (
+              <Link key={app.id} href={app.url}
+                className="flex flex-col items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl py-3 px-2 hover:border-white/20 transition-all">
+                <span className="text-2xl">{app.emoji}</span>
+                <span className="text-[#94a3c4] text-[10px] text-center leading-tight">{app.name}</span>
+              </Link>
+            )
           ))}
         </div>
       </div>

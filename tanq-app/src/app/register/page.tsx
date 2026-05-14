@@ -149,9 +149,14 @@ export default function RegisterPage() {
 
                   {/* Password */}
                   <div>
-                    <label className="block text-xs text-corp-muted font-semibold uppercase tracking-wider mb-2">
-                      パスワード
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-xs text-corp-muted font-semibold uppercase tracking-wider">
+                        パスワード
+                      </label>
+                      <Link href="/reset-password" className="text-xs text-corp-teal hover:underline">
+                        パスワードを忘れた方
+                      </Link>
+                    </div>
                     <input
                       type="password"
                       name="password"
