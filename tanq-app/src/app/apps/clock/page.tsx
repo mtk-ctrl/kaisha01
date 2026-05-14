@@ -127,7 +127,7 @@ function AnalogClock({ h, m, size = 180 }: { h: number; m: number; size?: number
 const DIFFICULTIES: { id: Difficulty; label: string; sub: string; badge: string; badgeColor: string; free: boolean }[] = [
   { id: 'jidou',     label: 'ちょうど',     sub: '1時、2時…ぴったりの時刻',       badge: '★',   badgeColor: '#4ade80', free: true  },
   { id: 'sanjuppun', label: '30分まで',     sub: 'ちょうどと30分の時刻',           badge: '★★',  badgeColor: '#f0c040', free: true  },
-  { id: 'all',       label: 'ぜんぶ',       sub: '5分きざみ＋時間の計算',          badge: '★★★', badgeColor: '#c4a8ff', free: false },
+  { id: 'all',       label: 'ぜんぶ',       sub: '5分きざみ＋時間の計算（プレミアム）', badge: '★★★', badgeColor: '#c4a8ff', free: false },
 ]
 
 export default function ClockChallenge() {
