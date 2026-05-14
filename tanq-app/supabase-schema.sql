@@ -38,3 +38,19 @@ create policy "scores_self" on scores
 -- インデックス
 create index if not exists scores_user_id_idx on scores(user_id);
 create index if not exists scores_app_id_idx  on scores(app_id);
+
+-- フィードバック（ユーザーリサーチ用）
+create table if not exists feedback (
+  id         uuid primary key default gen_random_uuid(),
+  fav_app    text,
+  quit_note  text,
+  again      text,
+  memo       text,
+  grade      text,
+  created_at timestamptz default now()
+);
+
+-- feedbackは誰でも書き込み可（匿名収集）、読み取りは管理者のみ
+alter table feedback enable row level security;
+create policy "feedback_insert" on feedback for insert with check (true);
+create policy "feedback_select" on feedback for select using (false);
