@@ -1,0 +1,27 @@
+name: X文案 昼12時 (JST)
+
+on:
+  schedule:
+    # 3:07 UTC = 12:07 JST
+    - cron: '7 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  generate-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 昼の文案を生成してメール送信
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          TIME_SLOT: 昼
+          TO_EMAIL: mtk551141@gmail.com
+        run: python scripts/generate_x_draft.py
