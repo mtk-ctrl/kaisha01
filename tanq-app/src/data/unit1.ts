@@ -1,6 +1,5 @@
 import type { Unit } from './types'
 
-// Re-export types for backward compatibility
 export type { Emotion, ChoiceFeedback, Choice, Step, Unit } from './types'
 
 const unit1: Unit = {
@@ -10,160 +9,162 @@ const unit1: Unit = {
   emoji: '💩',
   secretTitle: '<ruby>密度<rt>みつど</rt></ruby>のひみつ',
   secretPoints: [
-    '<ruby>密度<rt>みつど</rt></ruby>が水（1.0）より低いものは浮く',
-    '氷の<ruby>密度<rt>みつど</rt></ruby>は約 0.9 → 水より軽いから浮く！',
-    '中学受験の理科「浮力」にもつながるよ！',
+    '<ruby>密度<rt>みつど</rt></ruby>＝「同じ大きさで比べたときの重さ」。水は1.0',
+    '氷の<ruby>密度<rt>みつど</rt></ruby>は約0.9 → 水より軽いから浮く！',
+    '冷やすと縮むのに、水だけは凍ると膨らむ → だから氷は軽くなる',
+    '中学受験「浮力・水溶液」にもつながるよ！',
   ],
   steps: [
     {
       id: 'hook',
-      emotion: 'surprised',
-      visual: 'hook-emoji',
+      emotion: 'mischievous',
+      visual: '💩',
       messages: [
         'ねえねえ、ちょっと聞いていい？',
-        'うんちって水に浮くと思う〜？笑',
-        'これ、ガチで面白いんだけど！',
+        'うんちって…水に浮くと思う？笑',
+        'これ実はガチの理科の問題なんだけど！',
       ],
       input: {
         type: 'choices',
-        nextStep: 'density_intro',
+        nextStep: 'hook_reveal',
         choices: [
-          {
-            id: 'a',
-            label: '浮く 🤔',
-            feedback: {
-              emotion: 'mischievous',
-              messages: ['おしい〜〜！実はね…', '「人によってちがう！」が正解なんだよ笑笑'],
-            },
-          },
-          {
-            id: 'b',
-            label: '沈む',
-            feedback: {
-              emotion: 'mischievous',
-              messages: ['え〜〜！実はね…', '「人によってちがう！」が正解なんだよ笑笑'],
-            },
-          },
-          {
-            id: 'c',
-            label: '人による 笑',
-            feedback: {
-              emotion: 'happy',
-              messages: ['そうそう！！よく知ってたね！！', '人によってちがうんだよ〜！'],
-            },
-          },
+          { id: 'a', label: '浮く！', feedback: { emotion: 'mischievous', messages: ['おしいっ！', '実はね…「人によってちがう！」が正解なんだよ笑'] } },
+          { id: 'b', label: '沈む！', feedback: { emotion: 'mischievous', messages: ['ちがうちがう！', '「人によってちがう！」が正解なんだよ笑笑'] } },
+          { id: 'c', label: '人によるでしょ 笑', feedback: { emotion: 'happy', messages: ['そうそう！！！さすがすぎる！', '食べたものによって変わるんだよ！'] } },
         ],
       },
     },
     {
-      id: 'density_intro',
+      id: 'hook_reveal',
       emotion: 'mischievous',
+      messages: [
+        'で、なんで「人によってちがう」のかっていうと…',
+        '「浮くかどうか」はその物の<ruby>密度<rt>みつど</rt></ruby>で決まるから！',
+        '<ruby>密度<rt>みつど</rt></ruby>って聞いたことある？',
+      ],
+      input: {
+        type: 'choices',
+        nextStep: 'density_what',
+        choices: [
+          { id: 'a', label: '聞いたことある！', feedback: { emotion: 'happy', messages: ['おっ！じゃあ一緒に確認していこう！'] } },
+          { id: 'b', label: 'はじめて聞いた', feedback: { emotion: 'happy', messages: ['大丈夫！一緒に覚えよう！絶対わかるから！'] } },
+        ],
+      },
+    },
+    {
+      id: 'density_what',
+      emotion: 'surprised',
       visual: 'density-tank',
       messages: [
-        '浮くかどうかは「<ruby>密度<rt>みつど</rt></ruby>」で決まるんだよ！',
-        '<ruby>密度<rt>みつど</rt></ruby>って「おなじ大きさで くらべたときの重さ」のこと',
-        '水の<ruby>密度<rt>みつど</rt></ruby>は 1.0。これより低いと浮く！',
+        '<ruby>密度<rt>みつど</rt></ruby>っていうのはね…',
+        '「同じ大きさで比べたときの重さ」のこと！',
+        '水の<ruby>密度<rt>みつど</rt></ruby>は1.0。これより低いと浮く、高いと沈む！',
       ],
-      input: { type: 'next', nextStep: 'ice_question' },
+      input: { type: 'next', nextStep: 'density_examples' },
     },
     {
-      id: 'ice_question',
-      emotion: 'mischievous',
-      visual: 'ice-emoji',
-      messages: ['じゃあ、氷の<ruby>密度<rt>みつど</rt></ruby>はどっちだと思う？'],
-      input: {
-        type: 'choices',
-        nextStep: 'logic_intro',
-        choices: [
-          {
-            id: 'a',
-            label: '1.0 より大きい（重い）',
-            feedback: {
-              emotion: 'sad',
-              messages: [
-                'えーん…',
-                '氷って実は水より少し軽いんだよ！',
-                '<ruby>密度<rt>みつど</rt></ruby>は約 0.9 なんだ',
-              ],
-            },
-          },
-          {
-            id: 'b',
-            label: '1.0 とおなじ',
-            feedback: {
-              emotion: 'angry',
-              messages: [
-                'ちがう！笑',
-                '氷と水はおなじ物質だけど、<ruby>密度<rt>みつど</rt></ruby>はちがうんだよ！',
-              ],
-            },
-          },
-          {
-            id: 'c',
-            label: '1.0 より小さい（軽い）',
-            feedback: {
-              emotion: 'happy',
-              messages: [
-                '正解！！！',
-                '氷の<ruby>密度<rt>みつど</rt></ruby>は約 0.9！',
-                '水より軽いから浮くんだよ！！',
-              ],
-            },
-          },
-        ],
-      },
-    },
-    {
-      id: 'logic_intro',
-      emotion: 'surprised',
+      id: 'density_examples',
+      emotion: 'happy',
+      visual: '🪵🪨🧊',
       messages: [
-        'じゃあ最後に一問！',
-        'TANQuu の友だち 3 人に「なんで氷が水に浮くの？」って聞いたよ',
-        '3 人ともちがう答えが返ってきた…',
-        'だれの考えが一番正しいと思う？',
+        '身のまわりでやってみるよ！',
+        '木（<ruby>密度<rt>みつど</rt></ruby>0.5）→ 水より軽い → 浮く！',
+        '石（<ruby>密度<rt>みつど</rt></ruby>2.7）→ 水より重い → 沈む！',
+        '氷は…どっちだと思う？',
       ],
       input: {
         type: 'choices',
-        nextStep: 'collection',
+        nextStep: 'ice_answer',
+        choices: [
+          { id: 'a', label: '浮く（水より軽い）', feedback: { emotion: 'happy', messages: ['正解！！！', '氷の<ruby>密度<rt>みつど</rt></ruby>は約0.9！水の1.0より軽いから浮く！'] } },
+          { id: 'b', label: '沈む（水より重い）', feedback: { emotion: 'sad', messages: ['ちがうよ〜！', '氷って実は水より少しだけ軽いんだよ！', '<ruby>密度<rt>みつど</rt></ruby>は約0.9！'] } },
+        ],
+      },
+    },
+    {
+      id: 'ice_answer',
+      emotion: 'surprised',
+      visual: '🧊',
+      messages: [
+        'でもちょっと待って！',
+        '氷と水って…同じH₂O（水）だよね？',
+        'なんで凍ったら軽くなるの！？',
+      ],
+      input: { type: 'next', nextStep: 'why_ice_light' },
+    },
+    {
+      id: 'why_ice_light',
+      emotion: 'mischievous',
+      visual: '❄️',
+      messages: [
+        'ふつうは冷やすと縮んで密度が上がるんだよね',
+        'でも水だけは特別！凍ると逆に膨らむんだよ！',
+        '同じ重さなのに体積が増える → <ruby>密度<rt>みつど</rt></ruby>が下がる！',
+        'これ、水だけの超レアな性質！',
+      ],
+      input: { type: 'next', nextStep: 'real_world' },
+    },
+    {
+      id: 'real_world',
+      emotion: 'happy',
+      visual: '🐟',
+      messages: [
+        'これって実はすごく大事な話でね…',
+        '冬に池が全部凍らないのも、魚が冬を越せるのも',
+        '氷が上に浮いてくれるおかげなんだよ！',
+        '氷が水面を覆って、下の水は0℃以上を保てる → 魚が生きられる！',
+      ],
+      input: { type: 'next', nextStep: 'logic_question' },
+    },
+    {
+      id: 'logic_question',
+      emotion: 'mischievous',
+      messages: [
+        'じゃあ最後の難問！',
+        '友だち3人に「なんで氷が浮くの？」って聞いたよ',
+        'だれの答えが一番正しい？',
+      ],
+      input: {
+        type: 'choices',
+        nextStep: 'logic_reveal',
         choices: [
           {
             id: 'a',
-            label: 'モモちゃん「冷たいから 軽くなって浮く」',
+            label: 'モモ「冷たいから軽くなって浮く」',
             feedback: {
               emotion: 'angry',
-              messages: [
-                '「冷たい ＝ 軽い」は関係ないんだよ〜！笑',
-                '冷たさと重さは別の話！',
-                'ヒントは「<ruby>密度<rt>みつど</rt></ruby>」だよ',
-              ],
+              messages: ['惜しいけど！', '「冷たい＝軽い」は正しくないよ〜', 'ふつうは冷やすと重くなるんだから！'],
             },
           },
           {
             id: 'b',
-            label: 'ハナちゃん「かたまると少し 軽くなるから浮く」',
+            label: 'ハナ「凍ると膨らむから浮く」',
             feedback: {
               emotion: 'sad',
-              messages: [
-                'おしい！ハナちゃんも おしい…',
-                'でも「なんで軽くなるか」＝ <ruby>密度<rt>みつど</rt></ruby>！まで言えてないんだよね',
-              ],
+              messages: ['おしい！！', '「膨らむ」は合ってる！', 'でも「膨らむ＝<ruby>密度<rt>みつど</rt></ruby>が下がる＝浮く」まで言えてほしかった！'],
             },
           },
           {
             id: 'c',
-            label: 'ソラくん「<ruby>密度<rt>みつど</rt></ruby>が 0.9 で 水の 1.0 より低いから浮く」',
+            label: 'ソラ「密度が0.9で水の1.0より低いから浮く」',
             feedback: {
               emotion: 'happy',
-              messages: [
-                'ソラくん 完璧すぎる！！！！',
-                '<ruby>密度<rt>みつど</rt></ruby>が 1.0 より低いと浮く！',
-                'モモちゃんは冷たさ、ハナちゃんは軽さで止まってた',
-                'ソラくんだけが<ruby>密度<rt>みつど</rt></ruby>まで言えた！！',
-              ],
+              messages: ['ソラ完璧すぎる！！！', '<ruby>密度<rt>みつど</rt></ruby>の数字まで言える人、なかなかいないよ！', 'モモは感覚、ハナは現象止まり。ソラだけが原理まで言えた！'],
             },
           },
         ],
       },
+    },
+    {
+      id: 'logic_reveal',
+      emotion: 'happy',
+      messages: [
+        'まとめると…',
+        '氷が浮く理由：「<ruby>密度<rt>みつど</rt></ruby>が0.9で水の1.0より低いから」',
+        '凍ると膨らむ水の特別な性質のおかげ！',
+        'これ中学受験でも絶対出るやつ！覚えといてね！',
+      ],
+      input: { type: 'next', nextStep: 'collection' },
     },
     {
       id: 'collection',
