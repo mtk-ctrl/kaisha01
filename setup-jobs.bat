@@ -1,42 +1,33 @@
 @echo off
-chcp 65001 > nul
 echo.
-echo ╔══════════════════════════════════════╗
-echo ║   TANQ Jobs セットアップ             ║
-echo ║   これを1回実行すればOKです          ║
-echo ╚══════════════════════════════════════╝
+echo === TANQ Jobs Setup ===
 echo.
 
-echo [1/4] Supabase CLI をインストール中...
+echo [1/4] Installing Supabase CLI...
 call npm install -g supabase
 if %errorlevel% neq 0 (
-  echo エラー: インストールに失敗しました
+  echo ERROR: npm install failed
   pause
   exit /b 1
 )
-echo      完了!
+echo Done.
 echo.
 
-echo [2/4] Supabase にログイン（ブラウザが開きます）...
-echo      ブラウザで「Confirm」ボタンを押してください
+echo [2/4] Supabase login (browser will open)...
 call supabase login
-echo      完了!
+echo Done.
 echo.
 
-echo [3/4] Vercel CLI をインストール中...
+echo [3/4] Installing Vercel CLI...
 call npm install -g vercel
-echo      完了!
+echo Done.
 echo.
 
-echo [4/4] Vercel にログイン（ブラウザが開きます）...
-echo      ブラウザで「Continue with GitHub」を押してください
+echo [4/4] Vercel login (browser will open)...
 call vercel login
-echo      完了!
+echo Done.
 echo.
 
-echo ╔══════════════════════════════════════╗
-echo ║   ✅ セットアップ完了！              ║
-echo ║   これ以降はジョブズが全部やります   ║
-echo ╚══════════════════════════════════════╝
+echo === Setup complete! Jobs can now manage everything. ===
 echo.
 pause
