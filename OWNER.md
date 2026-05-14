@@ -21,9 +21,12 @@
 | 2026-05-14 | パスワードリセット実装・UXレビュー（リン＋保護者）実施 |
 | 2026-05-14 | **GA4 設置完了**（G-TK27G02856）・**プライバシーポリシーページ公開** |
 
-詳細ログ → [`logs/sessions/`](logs/sessions/)  
+詳細ログ → [`logs/sessions/`](logs/sessions/) ← **ここを見れば誰が何をやったか全部わかります**
 重要判断ログ → [`logs/decisions/`](logs/decisions/)  
 オーナー↔Jobs 対話記録 → [`board/communications/`](board/communications/)
+
+> **【ログルール】** スタッフが作業するたびに `logs/sessions/YYYY-MM-DD_NNN_担当者_内容.md` に記録します。  
+> Jobs は毎セッション読みません（トークン節約）。オーナーだけが読む場所です。
 
 ---
 
