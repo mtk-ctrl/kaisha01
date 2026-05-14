@@ -262,9 +262,7 @@ export default function RegisterPage() {
 
                   <p className="text-center text-xs text-corp-muted leading-relaxed">
                     登録することで
-                    <Link href="#" className="text-corp-teal hover:underline mx-1">利用規約</Link>
-                    および
-                    <Link href="#" className="text-corp-teal hover:underline mx-1">プライバシーポリシー</Link>
+                    <Link href="/privacy" className="text-corp-teal hover:underline mx-1">プライバシーポリシー</Link>
                     に同意したことになります。
                   </p>
                 </form>

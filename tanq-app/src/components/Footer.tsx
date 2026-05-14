@@ -44,6 +44,7 @@ export default function Footer() {
               {[
                 { href: '/#about',   label: '会社概要' },
                 { href: '/contact',  label: 'お問い合わせ' },
+                { href: '/privacy',  label: 'プライバシーポリシー' },
               ].map(({ href, label }) => (
                 <li key={href}>
                   <Link href={href} className="text-corp-muted hover:text-corp-teal transition-colors text-sm">
@@ -58,10 +59,13 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-corp-muted text-xs">© 2026 TANQ Inc. All rights reserved.</p>
-          <p className="text-corp-muted text-xs">
+          <div className="flex items-center gap-4 text-xs text-corp-muted">
+            <Link href="/privacy" className="hover:text-corp-teal transition-colors">プライバシーポリシー</Link>
+            <span>|</span>
             <span className="text-corp-teal">contact@tanq.jp</span>
-            {' '}| 福岡県福岡市
-          </p>
+            <span>|</span>
+            <span>福岡県福岡市</span>
+          </div>
         </div>
       </div>
     </footer>
