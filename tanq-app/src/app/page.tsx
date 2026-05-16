@@ -156,6 +156,14 @@ export default function CorporateHome() {
                 アプリを体験
               </Link>
             </div>
+            {/* ── [TRIAL] ログインなし体験ボタン（テストデータ収集後に削除） */}
+            <Link
+              href="/lab?trial=1"
+              className="inline-flex items-center gap-2 text-[#c4a8ff] font-bold text-base hover:text-white transition-colors mt-2"
+            >
+              🚀 登録なしで今すぐ体験する →
+            </Link>
+            {/* ── [TRIAL] END ── */}
           </div>
 
           {/* TANQuu mascot */}
@@ -401,7 +409,15 @@ export default function CorporateHome() {
                   無料登録はこちら
                 </Link>
               </div>
-              <p className="text-corp-muted text-xs mt-4">パスワードは登録するともらえるよ ✨</p>
+              {/* ── [TRIAL] ログインなし体験ボタン（テストデータ収集後に削除） */}
+              <Link
+                href="/lab?trial=1"
+                className="inline-flex items-center gap-2 text-[#c4a8ff] font-bold text-sm hover:text-white transition-colors mt-1"
+              >
+                🚀 登録なしで今すぐ体験する →
+              </Link>
+              {/* ── [TRIAL] END ── */}
+              <p className="text-corp-muted text-xs mt-2">パスワードは登録するともらえるよ ✨</p>
             </div>
             {/* Right — app icons grid */}
             <div className="flex-shrink-0">
