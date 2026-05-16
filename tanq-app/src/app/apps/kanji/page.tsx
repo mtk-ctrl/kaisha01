@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { KANJI_DATA } from '@/data/kanjiData'
 import type { Grade, KanjiEntry } from '@/data/kanjiData'
+import { playCorrect, playWrong } from '@/lib/audio'
 
 type QuestionFormat = 'k2r' | 'r2k'
 
@@ -176,6 +177,7 @@ export default function KanjiQuiz() {
     setSelected(c)
     const q = questions[qIdx]
     const correct = c === q.correct
+    correct ? playCorrect() : playWrong()
     if (correct) setSessionCorrect(n => n + 1)
     else setSessionWeak(n => n + 1)
     const { store: newStore, change } = applySRS(store, q.item.kanji, correct, ms)
