@@ -148,23 +148,15 @@ export default function CorporateHome() {
               受験にも対応しながら、一生使える思考力を育てます。
             </p>
 
+            {/* ── [TRIAL] 体験ボタンを最初に（削除時は2行目のみ残す） */}
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link href="/register" className="px-9 py-4 rounded-full btn-glow-teal text-lg font-bold text-center">
-                無料で始める →
+              <Link href="/lab?trial=1" className="px-9 py-4 rounded-full btn-glow-teal text-lg font-bold text-center">
+                ログインなしで試してみる →
               </Link>
-              {/* ── [TRIAL] アプリを体験 → lab に変更（テスト後 href="/tanq" に戻すか削除） */}
-              <Link href="/lab?trial=1" className="px-9 py-4 rounded-full border border-corp-teal/30 text-corp-teal font-semibold text-lg hover:bg-corp-teal/10 transition-all text-center">
-                アプリを体験
+              <Link href="/register" className="px-9 py-4 rounded-full border border-corp-teal/30 text-corp-teal font-semibold text-lg hover:bg-corp-teal/10 transition-all text-center">
+                アカウントを作成
               </Link>
-              {/* ── [TRIAL] END ── */}
             </div>
-            {/* ── [TRIAL] ログインなし体験ボタン（テストデータ収集後に削除） */}
-            <Link
-              href="/lab?trial=1"
-              className="inline-flex items-center gap-2 text-[#c4a8ff] font-bold text-base hover:text-white transition-colors mt-2"
-            >
-              🚀 登録なしで今すぐ体験する →
-            </Link>
             {/* ── [TRIAL] END ── */}
           </div>
 
@@ -361,7 +353,7 @@ export default function CorporateHome() {
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/register" className="px-10 py-4 rounded-full btn-glow-teal text-lg font-bold">
-                  無料で登録する →
+                  アカウントを作成する →
                 </Link>
                 <Link href="/contact" className="px-10 py-4 rounded-full border border-corp-muted/30 text-corp-muted font-semibold text-lg hover:border-corp-teal/40 hover:text-corp-teal transition-all">
                   お問い合わせ
@@ -395,31 +387,25 @@ export default function CorporateHome() {
                 <br />
                 TANQラボに入れば全部遊べるよ！
               </p>
+              {/* ── [TRIAL] 体験優先ボタン（削除時は /lab?trial=1 → /lab に戻し「無料登録はこちら」のみ残す） */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
-                  href="/lab"
+                  href="/lab?trial=1"
                   className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl text-xl font-black text-[#050b14] transition-all hover:scale-[1.04]"
                   style={{ background: 'linear-gradient(135deg, #00e5c3, #c4a8ff)', boxShadow: '0 0 40px rgba(0,229,195,0.4)' }}
                 >
-                  🔑 アプリラボに入る
+                  ログインなしで試してみる
                   <span className="text-2xl">→</span>
                 </Link>
                 <Link
                   href="/register"
                   className="inline-flex items-center justify-center gap-2 px-8 py-5 rounded-2xl text-lg font-bold border-2 border-corp-teal/40 text-corp-teal hover:bg-corp-teal/10 transition-all"
                 >
-                  無料登録はこちら
+                  アカウントを作成
                 </Link>
               </div>
-              {/* ── [TRIAL] ログインなし体験ボタン（テストデータ収集後に削除） */}
-              <Link
-                href="/lab?trial=1"
-                className="inline-flex items-center gap-2 text-[#c4a8ff] font-bold text-sm hover:text-white transition-colors mt-1"
-              >
-                🚀 登録なしで今すぐ体験する →
-              </Link>
               {/* ── [TRIAL] END ── */}
-              <p className="text-corp-muted text-xs mt-2">パスワードは登録するともらえるよ ✨</p>
+              <p className="text-corp-muted text-xs mt-3">アカウントを作ると記録が残るよ ✨</p>
             </div>
             {/* Right — app icons grid */}
             <div className="flex-shrink-0">
