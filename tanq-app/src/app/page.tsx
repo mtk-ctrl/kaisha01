@@ -152,9 +152,11 @@ export default function CorporateHome() {
               <Link href="/register" className="px-9 py-4 rounded-full btn-glow-teal text-lg font-bold text-center">
                 無料で始める →
               </Link>
-              <Link href="/tanq" className="px-9 py-4 rounded-full border border-corp-teal/30 text-corp-teal font-semibold text-lg hover:bg-corp-teal/10 transition-all text-center">
+              {/* ── [TRIAL] アプリを体験 → lab に変更（テスト後 href="/tanq" に戻すか削除） */}
+              <Link href="/lab?trial=1" className="px-9 py-4 rounded-full border border-corp-teal/30 text-corp-teal font-semibold text-lg hover:bg-corp-teal/10 transition-all text-center">
                 アプリを体験
               </Link>
+              {/* ── [TRIAL] END ── */}
             </div>
             {/* ── [TRIAL] ログインなし体験ボタン（テストデータ収集後に削除） */}
             <Link

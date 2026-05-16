@@ -154,7 +154,8 @@ function StepVisual({ visual }: { visual?: string }) {
       <span className="text-4xl">⭐</span><span className="text-4xl">✨</span><span className="text-4xl">⭐</span>
     </div>
   )
-  // Generic: show emoji large
+  // 絵文字のみ表示（ASCII文字だけの文字列はプレースホルダーとみなしてスキップ）
+  if (/^[\w\-]+$/.test(visual)) return null
   return <div className="text-6xl text-center py-1 pop-in select-none">{visual}</div>
 }
 
@@ -399,7 +400,7 @@ function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () =
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-tanquu-light max-w-sm mx-auto" onClick={handleSkipAnim}>
+    <div className="flex flex-col min-h-screen bg-tanquu-light max-w-sm mx-auto pb-8" onClick={handleSkipAnim}>
       {/* Header */}
       <div className="flex items-center gap-2 px-4 pt-4 pb-1">
         <button onClick={onHome} className="text-tanquu-purple font-bold text-sm px-2 py-1 rounded-lg active:bg-tanquu-light">
@@ -432,13 +433,13 @@ function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () =
       {visual && <StepVisual key={currentStepId} visual={visual} />}
 
       {/* Bubble */}
-      <div className="flex-1 px-4 py-2">
+      <div className="px-4 py-2">
         <div key={bubbleKey} className="flex items-start gap-2 pop-in">
           {isAnimating ? <TypingDots /> : <Bubble text={displayMsg} />}
         </div>
       </div>
 
-      <div className="mt-auto">{bottomInput}</div>
+      <div className="mt-8">{bottomInput}</div>
     </div>
   )
 }
