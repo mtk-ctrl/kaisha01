@@ -6,6 +6,8 @@ import Link from 'next/link'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
+// ── [TRIAL] ゲストセッション値（削除時はこの定数と参照箇所をまとめて消す）
+const GUEST_VALUE = 'guest'
 const PROFILE_KEY = 'tanq_profile_v1'
 
 interface Profile { name: string; grade: string; color: string }
@@ -61,21 +63,37 @@ type Tab = 'home' | 'apps' | 'records' | 'settings'
 // ─────────────────────────────────────────
 // PasswordGate
 // ─────────────────────────────────────────
-function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
+function PasswordGate({ onUnlock }: { onUnlock: (asGuest?: boolean) => void }) {
   const [input, setInput] = useState('')
   const [error, setError] = useState(false)
   const [shake, setShake] = useState(false)
+
+  // ── [TRIAL] ?trial=1 でアクセスされたら自動でゲスト体験スタート
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('trial') === '1') {
+      sessionStorage.setItem(SESSION_KEY, GUEST_VALUE)
+      onUnlock(true)
+    }
+  }, [onUnlock])
+  // ── [TRIAL] END ──
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (input === LAB_PASSWORD) {
       sessionStorage.setItem(SESSION_KEY, '1')
-      onUnlock()
+      onUnlock(false)
     } else {
       setError(true); setShake(true); setInput('')
       setTimeout(() => setShake(false), 500)
     }
   }
+
+  // ── [TRIAL] ゲスト体験ボタンのハンドラ
+  function handleGuestTrial() {
+    sessionStorage.setItem(SESSION_KEY, GUEST_VALUE)
+    onUnlock(true)
+  }
+  // ── [TRIAL] END ──
 
   return (
     <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex items-center justify-center px-6">
@@ -102,7 +120,21 @@ function PasswordGate({ onUnlock }: { onUnlock: () => void }) {
             入る →
           </button>
         </form>
-        <p className="text-center mt-4"><Link href="/" className="text-[#94a3c4] text-sm hover:text-[#c4a8ff]">← ホームへ</Link></p>
+
+        {/* ── [TRIAL] ログインなし体験ボタン（テストデータ収集後に削除） */}
+        <div className="mt-5 pt-5 border-t border-white/10">
+          <p className="text-center text-[#94a3c4] text-xs mb-3">パスワードがなくてもOK！</p>
+          <button
+            onClick={handleGuestTrial}
+            className="w-full py-3.5 rounded-xl font-black text-lg text-white border-2 border-[#c4a8ff]/50 hover:border-[#c4a8ff] hover:bg-[#c4a8ff]/10 transition-all"
+          >
+            🚀 ログインなしで体験する
+          </button>
+          <p className="text-center text-[#94a3c4] text-[11px] mt-2">進捗はこのデバイスだけに保存されます</p>
+        </div>
+        {/* ── [TRIAL] END ── */}
+
+        <p className="text-center mt-5"><Link href="/" className="text-[#94a3c4] text-sm hover:text-[#c4a8ff]">← ホームへ</Link></p>
       </div>
       <style jsx>{`
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
@@ -441,7 +473,7 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
 // ─────────────────────────────────────────
 // AppHub (main dashboard)
 // ─────────────────────────────────────────
-function AppHub() {
+function AppHub({ isGuest }: { isGuest: boolean }) {
   const [tab, setTab] = useState<Tab>('home')
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
   const [stats, setStats] = useState(computeStats())
@@ -473,6 +505,20 @@ function AppHub() {
         </div>
       </div>
 
+      {/* ── [TRIAL] ゲスト体験バナー（テストデータ収集後に削除） */}
+      {isGuest && (
+        <div className="mx-4 mt-4 px-4 py-3 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-2xl flex items-center justify-between gap-3">
+          <div>
+            <p className="text-[#f0c040] text-xs font-bold">👋 ゲスト体験中</p>
+            <p className="text-[#94a3c4] text-[10px] mt-0.5">登録すると記録がずっと残るよ！</p>
+          </div>
+          <Link href="/register" className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-black text-[#050b14]" style={{ background: '#f0c040' }}>
+            無料登録 →
+          </Link>
+        </div>
+      )}
+      {/* ── [TRIAL] END ── */}
+
       {/* Tab content */}
       {tab === 'home' && <HomeTab profile={profile} stats={stats} onNav={setTab} />}
       {tab === 'apps' && <AppsTab stats={stats} />}
@@ -490,9 +536,16 @@ function AppHub() {
 export default function LabPage() {
   const [unlocked, setUnlocked] = useState(false)
   const [checking, setChecking] = useState(true)
+  // ── [TRIAL] ゲストフラグ（削除時はこの行と isGuest 参照箇所をまとめて消す）
+  const [isGuest, setIsGuest] = useState(false)
+  // ── [TRIAL] END ──
 
   useEffect(() => {
-    if (sessionStorage.getItem(SESSION_KEY) === '1') setUnlocked(true)
+    const saved = sessionStorage.getItem(SESSION_KEY)
+    if (saved === '1') { setUnlocked(true) }
+    // ── [TRIAL]
+    else if (saved === GUEST_VALUE) { setUnlocked(true); setIsGuest(true) }
+    // ── [TRIAL] END ──
     setChecking(false)
   }, [])
 
@@ -503,5 +556,15 @@ export default function LabPage() {
       </div>
     )
   }
-  return unlocked ? <AppHub /> : <PasswordGate onUnlock={() => setUnlocked(true)} />
+
+  // ── [TRIAL] onUnlock にゲストフラグを受け取る引数を追加
+  function handleUnlock(asGuest = false) {
+    setIsGuest(asGuest)
+    setUnlocked(true)
+  }
+  // ── [TRIAL] END ──
+
+  return unlocked
+    ? <AppHub isGuest={isGuest} />
+    : <PasswordGate onUnlock={handleUnlock} />
 }
