@@ -19,10 +19,24 @@
 
 | ツール | 状態 | 用途 |
 |--------|------|------|
-| Vercel CLI | ✅ ログイン済み | env var 変更を Jobs が自動実行 |
+| Vercel CLI | ⚠️ 要確認 | セッションをまたぐと認証が消える（下記参照） |
 | Supabase CLI | ✅ ログイン・プロジェクト紐付け済み | `supabase db push` でSQL変更を Jobs が自動実行 |
 | GitHub Actions | ✅ 稼働中 | push → main 自動マージ → Vercel デプロイ |
 | Node.js / npm | ✅ インストール済み | 各CLIの動作基盤 |
+
+## ⚠️ Vercel CLI 認証問題（2026-05-16 発覚・未解決）
+
+**問題**: このサーバー環境はセッションをまたぐたびにリセットされる。`/root/.local/share/com.vercel.cli/auth.json` が空になり、Vercel CLI が使えなくなる。
+
+**現状**: GitHub Actions の bot push が Vercel webhook をトリガーしない場合がある → 本番に反映されない
+
+**恒久解決策（Jobs が次セッション開始時に確認・実施すること）**:
+1. `cat /root/.local/share/com.vercel.cli/auth.json` を確認
+2. 空なら `vercel login` を試みる（ネットワーク接続が必要）
+3. 失敗なら → オーナーに「Claude Codeの環境設定に `VERCEL_TOKEN` を追加してほしい」と依頼（1回だけ）
+4. トークンが使えるなら GitHub Actions の auto-merge.yml に `vercel --prod --token=$VERCEL_TOKEN` を追加 → 以後永続解決
+
+**今すぐ使える回避策**: `git commit --allow-empty` → push → GitHub Actions → main 再トリガー
 
 **Supabase プロジェクトID**: `jdrhnxqvmohzikmfqzbl`  
 **マイグレーションフォルダ**: `tanq-app/supabase/migrations/`  
