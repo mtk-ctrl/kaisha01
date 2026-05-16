@@ -5,6 +5,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import type { Emotion, Unit, Step, ChoiceFeedback } from '@/data/types'
 import ALL_UNITS from '@/data/units'
+import { speak, stopSpeaking, playCorrect, playWrong } from '@/lib/audio'
+
+const SOUND_KEY = 'tanq-sound-on'
+function loadSoundPref(): boolean {
+  if (typeof window === 'undefined') return true
+  return localStorage.getItem(SOUND_KEY) !== 'false'
+}
 
 // ─── App-level state ──────────────────────────────────────────────
 
@@ -246,7 +253,10 @@ function getProgressIdx(steps: Step[], stepId: string): number {
   return contentSteps.findIndex(s => s.id === stepId)
 }
 
-function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () => void; onHome: () => void }) {
+function GameScreen({ unit, onComplete, onHome, soundOn, onToggleSound }: {
+  unit: Unit; onComplete: () => void; onHome: () => void
+  soundOn: boolean; onToggleSound: () => void
+}) {
   const reducer = useCallback(makeReducer(unit), [unit])
   const INIT: GameState = {
     emotion: unit.steps[0].emotion,
@@ -269,6 +279,15 @@ function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () =
 
   const handleTap = useCallback(() => dispatch({ type: 'TAP' }), [])
   const handleAdvance = useCallback(() => dispatch({ type: 'ADVANCE' }), [])
+
+  const handleChoice = useCallback((choiceIdx: number) => {
+    if (phase.name !== 'waiting') return
+    const step = getStep(phase.stepId)
+    if (step.input.type !== 'choices') return
+    const emotion = step.input.choices[choiceIdx].feedback.emotion
+    if (soundOn) emotion === 'happy' ? playCorrect() : playWrong()
+    dispatch({ type: 'CHOICE', choiceIdx })
+  }, [phase, getStep, soundOn])
 
   // ── Collection screen ──
   if (phase.name === 'collection') {
@@ -351,6 +370,12 @@ function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () =
     return 'none'
   })()
 
+  // 読み上げ: メッセージが表示されたときに発火
+  useEffect(() => {
+    if (!soundOn || !displayMsg || isAnimating) { if (!soundOn) stopSpeaking(); return }
+    speak(displayMsg)
+  }, [bubbleKey, soundOn]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ── Bottom input ──
   let bottomInput: React.ReactNode = null
 
@@ -362,7 +387,7 @@ function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () =
           {step.input.choices.map((c, i) => (
             <button
               key={c.id}
-              onClick={() => dispatch({ type: 'CHOICE', choiceIdx: i })}
+              onClick={() => handleChoice(i)}
               className="w-full bg-white border-2 border-tanquu-purple text-gray-700 rounded-2xl px-4 py-4 text-base font-medium active:bg-tanquu-light transition-colors shadow-sm text-left"
               dangerouslySetInnerHTML={{ __html: c.label }}
             />
@@ -407,6 +432,13 @@ function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () =
           ← ホーム
         </button>
         <span className="ml-auto text-tanquu-purple font-bold text-sm">{unit.emoji} Unit {ALL_UNITS.findIndex(u => u.id === unit.id) + 1}</span>
+        <button
+          onClick={onToggleSound}
+          className="text-xl px-2 py-1 rounded-lg active:bg-tanquu-light"
+          aria-label={soundOn ? '音声OFF' : '音声ON'}
+        >
+          {soundOn ? '🔊' : '🔇'}
+        </button>
       </div>
 
       {/* Progress dots */}
@@ -449,6 +481,7 @@ function GameScreen({ unit, onComplete, onHome }: { unit: Unit; onComplete: () =
 export default function TanqPage() {
   const [appMode, setAppMode] = useState<AppMode>({ mode: 'home' })
   const [completed, setCompleted] = useState<string[]>(loadCompleted)
+  const [soundOn, setSoundOn] = useState(loadSoundPref)
 
   const handleSelect = (unit: Unit) => setAppMode({ mode: 'playing', unit })
   const handleComplete = useCallback((unitId: string) => {
@@ -460,6 +493,13 @@ export default function TanqPage() {
     })
   }, [])
   const handleHome = useCallback(() => setAppMode({ mode: 'home' }), [])
+  const handleToggleSound = useCallback(() => {
+    setSoundOn(prev => {
+      const next = !prev
+      localStorage.setItem(SOUND_KEY, String(next))
+      return next
+    })
+  }, [])
 
   if (appMode.mode === 'home') {
     return <HomeScreen completed={completed} onSelect={handleSelect} />
@@ -471,6 +511,8 @@ export default function TanqPage() {
       unit={appMode.unit}
       onComplete={() => handleComplete(appMode.unit.id)}
       onHome={handleHome}
+      soundOn={soundOn}
+      onToggleSound={handleToggleSound}
     />
   )
 }

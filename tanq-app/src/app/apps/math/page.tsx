@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { playCorrect, playWrong } from '@/lib/audio'
 
 type Op = '+' | '-' | '×' | '÷'
 type Difficulty = 'かんたん' | 'ふつう' | 'むずかしい'
@@ -100,11 +101,13 @@ export default function MathChallenge() {
     if (!input.trim() || phase !== 'playing') return
     const val = parseInt(input, 10)
     if (val === problem.answer) {
+      playCorrect()
       setScore((s) => s + 1)
       setFeedback('correct')
       setShowAnswer(false)
       setTimeout(() => { next(difficulty); setShowAnswer(false) }, 400)
     } else {
+      playWrong()
       setMiss((m) => m + 1)
       setFeedback('wrong')
       setShowAnswer(true)
