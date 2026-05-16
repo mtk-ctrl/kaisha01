@@ -24,19 +24,51 @@
 | GitHub Actions | ✅ 稼働中 | push → main 自動マージ → Vercel デプロイ |
 | Node.js / npm | ✅ インストール済み | 各CLIの動作基盤 |
 
-## ⚠️ Vercel CLI 認証問題（2026-05-16 発覚・未解決）
+## 各サービス確認コマンド（Jobs がセッション開始時に使う）
 
-**問題**: このサーバー環境はセッションをまたぐたびにリセットされる。`/root/.local/share/com.vercel.cli/auth.json` が空になり、Vercel CLI が使えなくなる。
+```bash
+# GitHub Actions（auto-mergeが動いているか）
+git log origin/main -3 --oneline
+# → 「🚀 Auto-deploy」が最新にあればOK
 
-**現状**: GitHub Actions の bot push が Vercel webhook をトリガーしない場合がある → 本番に反映されない
+# Vercel GitHub App連携（0件なら連携切れ）
+curl -s "https://api.github.com/repos/mtk-ctrl/kaisha01/commits/$(git rev-parse origin/main)/status" \
+  | python3 -c "import json,sys; d=json.load(sys.stdin); print('Vercel statuses:', len(d.get('statuses',[])))"
+# → 0件 = 連携なし（要修正） / 1件以上 = 連携OK
 
-**恒久解決策（Jobs が次セッション開始時に確認・実施すること）**:
-1. `cat /root/.local/share/com.vercel.cli/auth.json` を確認
-2. 空なら `vercel login` を試みる（ネットワーク接続が必要）
-3. 失敗なら → オーナーに「Claude Codeの環境設定に `VERCEL_TOKEN` を追加してほしい」と依頼（1回だけ）
-4. トークンが使えるなら GitHub Actions の auto-merge.yml に `vercel --prod --token=$VERCEL_TOKEN` を追加 → 以後永続解決
+# Supabase エンドポイント疎通
+curl -s -o /dev/null -w "Supabase: %{http_code}\n" \
+  "https://jdrhnxqvmohzikmfqzbl.supabase.co/rest/v1/" -H "apikey: dummy"
+# → 401か403 = OK（エンドポイント生きている）
 
-**今すぐ使える回避策**: `git commit --allow-empty` → push → GitHub Actions → main 再トリガー
+# GitHub Secrets 設定状況（参照しているSecret名の一覧）
+grep -h "secrets\." /home/user/kaisha01/.github/workflows/*.yml | grep -oP "secrets\.\w+" | sort -u
+# → VERCEL_TOKEN / RESEND_API_KEY / ANTHROPIC_API_KEY が出なければ未設定
+
+# GA4 実装確認
+grep "NEXT_PUBLIC_GA_ID" /home/user/kaisha01/tanq-app/src/app/layout.tsx
+# → 1行でも出ればOK
+```
+
+---
+
+## ⚠️ Vercel 自動デプロイ問題（2026-05-16 根本原因判明・未解決）
+
+**根本原因**: VercelのGitHub Appがこのリポジトリに**未接続**。
+- GitHub commitのstatusが0件 = Vercelはpushを検知していない
+- デスクトップ版では `vercel --prod` をローカルCLIで直接実行していたため動いていた
+- クラウド環境ではVercel CLIの認証情報もGitHub連携もないため自動デプロイが機能しない
+
+**恒久解決策（オーナー操作が必要・2ステップのみ）**:
+1. Vercel → kaisha01プロジェクト → Settings → Git → **GitHubリポジトリを連携**
+2. GitHub Secrets に以下を追加（Settings → Secrets → Actions）:
+   - `VERCEL_TOKEN`（Vercel → Settings → Tokens で生成）
+   - `RESEND_API_KEY`（X投稿メール用・未設定）
+   - `ANTHROPIC_API_KEY`（X投稿文案生成用・未設定）
+
+**上記完了後、Jobs がやること**: GitHub Actionsに `vercel --prod --token=$VERCEL_TOKEN` を追加 → 永続解決
+
+**今すぐ使える回避策**: デスクトップ版Claude Codeでセッションを開く（Vercel CLIが使える）
 
 **Supabase プロジェクトID**: `jdrhnxqvmohzikmfqzbl`  
 **マイグレーションフォルダ**: `tanq-app/supabase/migrations/`  
