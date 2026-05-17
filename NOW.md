@@ -10,7 +10,7 @@
 | サービス | 状態 | 備考 |
 |---------|------|------|
 | GitHub Actions | ✅ 稼働中 | `claude/*` → main 自動マージ |
-| Vercel | ✅ 手動デプロイ済 / CI準備完了 | https://tanq-app.vercel.app（音声機能反映済）。CI自動化はVERCEL_TOKEN Secret登録で完成 |
+| Vercel | ✅ CI自動デプロイ完成 | tanq-app.vercel.app / VERCEL_TOKEN Secret登録済・GitHub Actions自動化完了 |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
 | Resend | ❌ 未設定 | X投稿メール用（Secret未登録） |
