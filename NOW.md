@@ -1,87 +1,88 @@
-# NOW — 現在地（新セッション開始時は CLAUDE.md の次に必読）
+﻿# NOW 窶・迴ｾ蝨ｨ蝨ｰ・域眠繧ｻ繝・す繝ｧ繝ｳ髢句ｧ区凾縺ｯ CLAUDE.md 縺ｮ谺｡縺ｫ蠢・ｪｭ・・
 
-> **更新ルール**: インフラ変更時・タスク完了直後に即更新。セッション終了を待たない。  
-> **最終更新**: 2026-05-17 | 更新者: Jobs
+> **譖ｴ譁ｰ繝ｫ繝ｼ繝ｫ**: 繧､繝ｳ繝輔Λ螟画峩譎ゅ・繧ｿ繧ｹ繧ｯ螳御ｺ・峩蠕後↓蜊ｳ譖ｴ譁ｰ縲ゅそ繝・す繝ｧ繝ｳ邨ゆｺ・ｒ蠕・◆縺ｪ縺・・ 
+> **譛邨よ峩譁ｰ**: 2026-05-17 | 譖ｴ譁ｰ閠・ Jobs
 
 ---
 
-## ① サービス状態（一覧）
+## 竭 繧ｵ繝ｼ繝薙せ迥ｶ諷具ｼ井ｸ隕ｧ・・
 
-| サービス | 状態 | 備考 |
+| 繧ｵ繝ｼ繝薙せ | 迥ｶ諷・| 蛯呵・|
 |---------|------|------|
-| GitHub Actions | ✅ 稼働中 | `claude/*` → main 自動マージ |
-| Vercel | ✅ CI自動デプロイ完成 | tanq-app.vercel.app / VERCEL_TOKEN Secret登録済・GitHub Actions自動化完了 |
-| Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
-| GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
-| Resend | ❌ 未設定 | X投稿メール用（Secret未登録） |
-| Anthropic API | ❌ 未設定 | X投稿文案生成用（Secret未登録） |
+| GitHub Actions | 笨・遞ｼ蜒堺ｸｭ | `claude/*` 竊・main 閾ｪ蜍輔・繝ｼ繧ｸ |
+| Vercel | 笨・謇句虚繝・・繝ｭ繧､貂・/ CI貅門ｙ螳御ｺ・| https://tanq-app.vercel.app・磯浹螢ｰ讖溯・蜿肴丐貂茨ｼ峨・I閾ｪ蜍募喧縺ｯVERCEL_TOKEN Secret逋ｻ骭ｲ縺ｧ螳梧・ |
+| Supabase | 笨・謗･邯壽ｸ医∩ | 繝励Ο繧ｸ繧ｧ繧ｯ繝・D: `jdrhnxqvmohzikmfqzbl` |
+| GA4 | 笨・險域ｸｬ荳ｭ | 貂ｬ螳唔D: G-TK27G02856 |
+| Resend | 笶・譛ｪ險ｭ螳・| X謚慕ｨｿ繝｡繝ｼ繝ｫ逕ｨ・・ecret譛ｪ逋ｻ骭ｲ・・|
+| Anthropic API | 笶・譛ｪ險ｭ螳・| X謚慕ｨｿ譁・｡育函謌千畑・・ecret譛ｪ逋ｻ骭ｲ・・|
 
-**各サービスの確認コマンド・詳細設定 → `product/infra.md` を参照**
+**蜷・し繝ｼ繝薙せ縺ｮ遒ｺ隱阪さ繝槭Φ繝峨・隧ｳ邏ｰ險ｭ螳・竊・`product/infra.md` 繧貞盾辣ｧ**
 
 ---
 
-## ② 情報マップ（どこに何があるか）
+## 竭｡ 諠・ｱ繝槭ャ繝暦ｼ医←縺薙↓菴輔′縺ゅｋ縺具ｼ・
 
-| 知りたいこと | 場所 |
+| 遏･繧翫◆縺・％縺ｨ | 蝣ｴ謇 |
 |------------|------|
-| CEOの役割・行動ルール | `CLAUDE.md` |
-| 現在地・次アクション・サービス状態 | `NOW.md`（このファイル） |
-| サービス確認コマンド・環境変数詳細 | `product/infra.md` |
-| 全アプリ一覧・URLとデータファイル | `product/apps.md` |
-| 料金プラン・収益戦略 | `company/monetization.md` |
-| ターゲットユーザー詳細 | `company/users.md` |
-| スタッフ定義（リン・Ken等） | `agents/` フォルダ |
-| 作業ログ（タスク完了後即書く） | `logs/sessions/YYYY-MM-DD_NNN_担当者_内容.md` |
-| 重要判断記録 | `logs/decisions/YYYY-MM-DD_topic.md` |
-| オーナー向けダッシュボード | `OWNER.md` |
-| アプリコード | `tanq-app/src/` |
-| DBマイグレーション | `tanq-app/supabase/migrations/` |
+| CEO縺ｮ蠖ｹ蜑ｲ繝ｻ陦悟虚繝ｫ繝ｼ繝ｫ | `CLAUDE.md` |
+| 迴ｾ蝨ｨ蝨ｰ繝ｻ谺｡繧｢繧ｯ繧ｷ繝ｧ繝ｳ繝ｻ繧ｵ繝ｼ繝薙せ迥ｶ諷・| `NOW.md`・医％縺ｮ繝輔ぃ繧､繝ｫ・・|
+| 繧ｵ繝ｼ繝薙せ遒ｺ隱阪さ繝槭Φ繝峨・迺ｰ蠅・､画焚隧ｳ邏ｰ | `product/infra.md` |
+| 蜈ｨ繧｢繝励Μ荳隕ｧ繝ｻURL縺ｨ繝・・繧ｿ繝輔ぃ繧､繝ｫ | `product/apps.md` |
+| 譁咎≡繝励Λ繝ｳ繝ｻ蜿守寢謌ｦ逡･ | `company/monetization.md` |
+| 繧ｿ繝ｼ繧ｲ繝・ヨ繝ｦ繝ｼ繧ｶ繝ｼ隧ｳ邏ｰ | `company/users.md` |
+| 繧ｹ繧ｿ繝・ヵ螳夂ｾｩ・医Μ繝ｳ繝ｻKen遲会ｼ・| `agents/` 繝輔か繝ｫ繝 |
+| 菴懈･ｭ繝ｭ繧ｰ・医ち繧ｹ繧ｯ螳御ｺ・ｾ悟叉譖ｸ縺擾ｼ・| `logs/sessions/YYYY-MM-DD_NNN_諡・ｽ楢・蜀・ｮｹ.md` |
+| 驥崎ｦ∝愛譁ｭ險倬鹸 | `logs/decisions/YYYY-MM-DD_topic.md` |
+| 繧ｪ繝ｼ繝翫・蜷代￠繝繝・す繝･繝懊・繝・| `OWNER.md` |
+| 繧｢繝励Μ繧ｳ繝ｼ繝・| `tanq-app/src/` |
+| DB繝槭う繧ｰ繝ｬ繝ｼ繧ｷ繝ｧ繝ｳ | `tanq-app/supabase/migrations/` |
 
 ---
 
-## ③ 現在のフェーズと次アクション TOP3
+## 竭｢ 迴ｾ蝨ｨ縺ｮ繝輔ぉ繝ｼ繧ｺ縺ｨ谺｡繧｢繧ｯ繧ｷ繝ｧ繝ｳ TOP3
 
-**フェーズ**: Phase 1 — プロダクト完成 + 初期ユーザー獲得
+**繝輔ぉ繝ｼ繧ｺ**: Phase 1 窶・繝励Ο繝繧ｯ繝亥ｮ梧・ + 蛻晄悄繝ｦ繝ｼ繧ｶ繝ｼ迯ｲ蠕・
 
-**今すぐやること（優先順）**:
-1. **リアルユーザー（小学生）へのテスト提供** — 招待フロー・メール文案を整備
-2. **ゆい（小1）UXレビュー** — 時計・漢字アプリを低学年目線でチェック
-3. **ソラにGA4分析依頼** — 現時点のアクセス・離脱ポイントを把握
+**莉翫☆縺舌ｄ繧九％縺ｨ・亥━蜈磯・ｼ・*:
+1. **繝ｪ繧｢繝ｫ繝ｦ繝ｼ繧ｶ繝ｼ・亥ｰ丞ｭｦ逕滂ｼ峨∈縺ｮ繝・せ繝域署萓・* 窶・諡帛ｾ・ヵ繝ｭ繝ｼ繝ｻ繝｡繝ｼ繝ｫ譁・｡医ｒ謨ｴ蛯・
+2. **繧・＞・亥ｰ・・蔚X繝ｬ繝薙Η繝ｼ** 窶・譎りｨ医・貍｢蟄励い繝励Μ繧剃ｽ主ｭｦ蟷ｴ逶ｮ邱壹〒繝√ぉ繝・け
+3. **繧ｽ繝ｩ縺ｫGA4蛻・梵萓晞ｼ** 窶・迴ｾ譎らせ縺ｮ繧｢繧ｯ繧ｻ繧ｹ繝ｻ髮｢閼ｱ繝昴う繝ｳ繝医ｒ謚頑升
 
 ---
 
-## ④ オーナー対応待ち（物理的にJobsができないもの）
+## 竭｣ 繧ｪ繝ｼ繝翫・蟇ｾ蠢懷ｾ・■・育黄逅・噪縺ｫJobs縺後〒縺阪↑縺・ｂ縺ｮ・・
 
-### CI自動デプロイの完成（1ステップのみ残り）
+### CI閾ｪ蜍輔ョ繝励Ο繧､縺ｮ螳梧・・・繧ｹ繝・ャ繝励・縺ｿ谿九ｊ・・
 
-GitHub Actions に Vercel デプロイジョブ追加済み。あと1つのSecret登録で完全自動化。
+GitHub Actions 縺ｫ Vercel 繝・・繝ｭ繧､繧ｸ繝ｧ繝冶ｿｽ蜉貂医∩縲ゅ≠縺ｨ1縺､縺ｮSecret逋ｻ骭ｲ縺ｧ螳悟・閾ｪ蜍募喧縲・
 
-**GitHub Secrets に追加** → https://github.com/mtk-ctrl/kaisha01/settings/secrets/actions
+**GitHub Secrets 縺ｫ霑ｽ蜉** 竊・https://github.com/mtk-ctrl/kaisha01/settings/secrets/actions
 
-| Secret名 | 取得方法 | 優先度 |
+| Secret蜷・| 蜿門ｾ玲婿豕・| 蜆ｪ蜈亥ｺｦ |
 |---------|---------|------|
-| `VERCEL_TOKEN` | Vercel → Settings → Tokens で生成 | 🔴 最優先（CI自動化） |
-| `RESEND_API_KEY` | resend.com → 無料登録 → API Keys | 🟡 X文案メール用 |
-| `ANTHROPIC_API_KEY` | Claude Code で使用中のキー | 🟡 X文案生成用 |
+| `VERCEL_TOKEN` | Vercel 竊・Settings 竊・Tokens 縺ｧ逕滓・ | 閥 譛蜆ｪ蜈茨ｼ・I閾ｪ蜍募喧・・|
+| `RESEND_API_KEY` | resend.com 竊・辟｡譁咏匳骭ｲ 竊・API Keys | 泯 X譁・｡医Γ繝ｼ繝ｫ逕ｨ |
+| `ANTHROPIC_API_KEY` | Claude Code 縺ｧ菴ｿ逕ｨ荳ｭ縺ｮ繧ｭ繝ｼ | 泯 X譁・｡育函謌千畑 |
 
-**登録後**: 次回スマホからの変更も自動でVercelにデプロイされる
+**逋ｻ骭ｲ蠕・*: 谺｡蝗槭せ繝槭・縺九ｉ縺ｮ螟画峩繧り・蜍輔〒Vercel縺ｫ繝・・繝ｭ繧､縺輔ｌ繧・
 
 ---
 
-## ⑤ 直近の完了タスク（参考）
+## 竭､ 逶ｴ霑代・螳御ｺ・ち繧ｹ繧ｯ・亥盾閠・ｼ・
 
-| 日付 | 内容 | ログ |
+| 譌･莉・| 蜀・ｮｹ | 繝ｭ繧ｰ |
 |------|------|------|
-| 2026-05-17 | 音声機能を本番デプロイ・GitHub Actions CI自動化追加 | `logs/sessions/2026-05-17_001_jobs_deploy-and-ci-setup.md` |
-| 2026-05-16 | 音声読み上げ＋正誤サウンド追加（スマホセッション） | `logs/sessions/2026-05-16_001_jobs_trial-button-and-ui-fix.md` |
-| 2026-05-16 | ゲスト体験ボタン実装（[TRIAL]タグ付き・削除可能） | 同上 |
-| 2026-05-16 | TANQ Story UIバグ修正（余白・hook-emoji・ナビゲーション） | 同上 |
-| 2026-05-16 | リン QAチェックリスト強化（観点7・8追加） | 同上 |
-| 2026-05-16 | CLAUDE.md・NOW.md 再設計（エフェメラルセッション対応） | 同上 |
-| 2026-05-14 | Supabase接続・GA4・プライバシーポリシー・料金2本化 | `logs/sessions/2026-05-14_001_*.md` |
+| 2026-05-17 | 髻ｳ螢ｰ讖溯・繧呈悽逡ｪ繝・・繝ｭ繧､繝ｻGitHub Actions CI閾ｪ蜍募喧霑ｽ蜉 | `logs/sessions/2026-05-17_001_jobs_deploy-and-ci-setup.md` |
+| 2026-05-16 | 髻ｳ螢ｰ隱ｭ縺ｿ荳翫￡・区ｭ｣隱､繧ｵ繧ｦ繝ｳ繝芽ｿｽ蜉・医せ繝槭・繧ｻ繝・す繝ｧ繝ｳ・・| `logs/sessions/2026-05-16_001_jobs_trial-button-and-ui-fix.md` |
+| 2026-05-16 | 繧ｲ繧ｹ繝井ｽ馴ｨ薙・繧ｿ繝ｳ螳溯｣・ｼ・TRIAL]繧ｿ繧ｰ莉倥″繝ｻ蜑企勁蜿ｯ閭ｽ・・| 蜷御ｸ・|
+| 2026-05-16 | TANQ Story UI繝舌げ菫ｮ豁｣・井ｽ咏區繝ｻhook-emoji繝ｻ繝翫ン繧ｲ繝ｼ繧ｷ繝ｧ繝ｳ・・| 蜷御ｸ・|
+| 2026-05-16 | 繝ｪ繝ｳ QA繝√ぉ繝・け繝ｪ繧ｹ繝亥ｼｷ蛹厄ｼ郁ｦｳ轤ｹ7繝ｻ8霑ｽ蜉・・| 蜷御ｸ・|
+| 2026-05-16 | CLAUDE.md繝ｻNOW.md 蜀崎ｨｭ險茨ｼ医お繝輔ぉ繝｡繝ｩ繝ｫ繧ｻ繝・す繝ｧ繝ｳ蟇ｾ蠢懶ｼ・| 蜷御ｸ・|
+| 2026-05-14 | Supabase謗･邯壹・GA4繝ｻ繝励Λ繧､繝舌す繝ｼ繝昴Μ繧ｷ繝ｼ繝ｻ譁咎≡2譛ｬ蛹・| `logs/sessions/2026-05-14_001_*.md` |
 
 ---
 
-## ⑥ 現在の作業ブランチ
+## 竭･ 迴ｾ蝨ｨ縺ｮ菴懈･ｭ繝悶Λ繝ｳ繝・
 
-`claude/naughty-lewin-4447d6` → GitHub Actions で main に自動マージ → Vercel 自動デプロイ（VERCEL_TOKEN登録後）
+`claude/naughty-lewin-4447d6` 竊・GitHub Actions 縺ｧ main 縺ｫ閾ｪ蜍輔・繝ｼ繧ｸ 竊・Vercel 閾ｪ蜍輔ョ繝励Ο繧､・・ERCEL_TOKEN逋ｻ骭ｲ蠕鯉ｼ・
+
