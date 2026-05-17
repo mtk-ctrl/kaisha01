@@ -48,6 +48,13 @@ function makeProblem(difficulty: Difficulty): Problem {
 
 type Phase = 'select' | 'playing' | 'result'
 
+const GUEST_DIFFICULTIES: Difficulty[] = ['かんたん', 'ふつう']
+
+function isGuestUser(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem('tanq-lab-auth') === 'guest'
+}
+
 export default function MathChallenge() {
   const [phase, setPhase] = useState<Phase>('select')
   const [difficulty, setDifficulty] = useState<Difficulty>('ふつう')
@@ -121,6 +128,12 @@ export default function MathChallenge() {
   const timeColor = timeLeft > 10 ? '#00e5c3' : '#f87171'
 
   if (phase === 'select') {
+    const isGuest = isGuestUser()
+    const colors: Record<Difficulty, string> = {
+      'かんたん': '#4ade80',
+      'ふつう': '#60a5fa',
+      'むずかしい': '#f87171',
+    }
     return (
       <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6">
         <Link href="/lab" className="absolute top-6 left-6 text-[#8892b0] hover:text-[#00e5c3] text-sm transition-colors">
@@ -128,15 +141,25 @@ export default function MathChallenge() {
         </Link>
         <div className="text-6xl mb-4">🔢</div>
         <h1 className="text-4xl font-black mb-2 text-[#60a5fa]">計算チャレンジ</h1>
-        <p className="text-[#8892b0] mb-10 text-center">制限時間内に何問解けるかな？</p>
+        <p className="text-[#8892b0] mb-8 text-center">制限時間内に何問解けるかな？</p>
+
+        {isGuest && (
+          <div className="w-full max-w-sm mb-4 px-3 py-2 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
+            <p className="text-[#f0c040] text-xs font-bold">体験中: かんたん・ふつうが使えます</p>
+          </div>
+        )}
 
         <div className="grid gap-4 w-full max-w-sm">
           {(['かんたん', 'ふつう', 'むずかしい'] as Difficulty[]).map((d) => {
             const cfg = DIFFICULTY_CONFIG[d]
-            const colors: Record<Difficulty, string> = {
-              'かんたん': '#4ade80',
-              'ふつう': '#60a5fa',
-              'むずかしい': '#f87171',
+            const locked = isGuest && !GUEST_DIFFICULTIES.includes(d)
+            if (locked) {
+              return (
+                <div key={d} className="w-full py-5 rounded-2xl font-black text-xl text-center opacity-40 bg-white/5 border border-white/10 cursor-not-allowed">
+                  🔒 {d}
+                  <span className="block text-xs font-normal mt-1">登録で解放</span>
+                </div>
+              )
             }
             return (
               <button

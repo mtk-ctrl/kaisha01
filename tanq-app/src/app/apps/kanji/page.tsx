@@ -127,6 +127,13 @@ function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
 
 type Phase = 'home' | 'playing' | 'result'
 
+function isGuestUser(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem('tanq-lab-auth') === 'guest'
+}
+
+const GUEST_GRADES: Grade[] = ['小1', '小2']
+
 export default function KanjiQuiz() {
   const [phase, setPhase] = useState<Phase>('home')
   const [grade, setGrade] = useState<Grade>('小4')
@@ -205,6 +212,7 @@ export default function KanjiQuiz() {
   // ── HOME ──
   if (phase === 'home') {
     const masteredPct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0
+    const isGuest = isGuestUser()
     return (
       <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center px-6 py-16 pt-20">
         <Link href="/lab" className="absolute top-6 left-6 text-[#8892b0] hover:text-[#c4a8ff] text-sm transition-colors">← ラボに戻る</Link>
@@ -221,11 +229,26 @@ export default function KanjiQuiz() {
         <p className="text-[#8892b0] text-xs mb-8 text-center">漢字→読み方 ＆ 読み方→漢字の2方向で練習。間隔反復で効率的に習得！</p>
 
         {/* Grade selector */}
+        {isGuest && (
+          <div className="w-full max-w-sm mb-3 px-3 py-2 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl">
+            <p className="text-[#f0c040] text-xs font-bold">体験中: 小1・小2のみ使えます</p>
+            <Link href="/register" className="text-[#c4a8ff] text-[10px] hover:underline">登録すると全学年解放 →</Link>
+          </div>
+        )}
         <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm mb-5">
           {(Object.keys(KANJI_DATA) as Grade[]).map((g) => {
             const gs = gradeStats(g, store)
             const pct = gs.total > 0 ? Math.round((gs.mastered / gs.total) * 100) : 0
             const sel = g === grade
+            const locked = isGuest && !GUEST_GRADES.includes(g)
+            if (locked) {
+              return (
+                <div key={g} className="py-3 px-2 rounded-xl text-sm text-center opacity-40 bg-white/4 border border-white/8 cursor-not-allowed">
+                  🔒 {g}
+                  <div className="text-[10px] mt-0.5">登録で解放</div>
+                </div>
+              )
+            }
             return (
               <button key={g} onClick={() => setGrade(g)}
                 className={`py-3 px-2 rounded-xl font-bold text-sm transition-all ${sel ? 'scale-105 text-[#050b14]' : 'text-[#8892b0] hover:text-white'}`}

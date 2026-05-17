@@ -206,8 +206,8 @@ function HomeScreen({ completed, onSelect }: { completed: string[]; onSelect: (u
       {/* Header */}
       <div className="flex flex-col items-center pt-8 pb-4 px-6">
         <div className="self-start mb-2">
-          <Link href="/" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-tanquu-purple transition-colors">
-            ← ホームへ戻る
+          <Link href="/lab" className="inline-flex items-center gap-1 text-xs text-gray-400 hover:text-tanquu-purple transition-colors">
+            ← アプリラボへ
           </Link>
         </div>
         <Image src={EMOTION_SRC.happy} alt="TANQuu" width={100} height={100} className="drop-shadow-md pop-in" priority />

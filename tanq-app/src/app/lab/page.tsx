@@ -6,9 +6,24 @@ import Link from 'next/link'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
-// ── [TRIAL] ゲストセッション値（削除時はこの定数と参照箇所をまとめて消す）
 const GUEST_VALUE = 'guest'
+const TESTER_VALUE = 'tester'
+const MEMBER_VALUE = 'member'
 const PROFILE_KEY = 'tanq_profile_v1'
+
+type UserType = 'guest' | 'tester' | 'member'
+
+function canAccessApp(appId: string, userType: UserType): boolean {
+  if (userType === 'tester') return true
+  if (userType === 'member') return appId !== 'tanq'
+  return appId === 'math' || appId === 'kanji'
+}
+
+function lockLabel(appId: string, userType: UserType): string | null {
+  if (canAccessApp(appId, userType)) return null
+  if (userType === 'member' && appId === 'tanq') return '近日公開'
+  return '登録して解放'
+}
 
 interface Profile { name: string; grade: string; color: string }
 const DEFAULT_PROFILE: Profile = { name: 'たんきゅう', grade: '小4', color: '#c4a8ff' }
@@ -63,37 +78,33 @@ type Tab = 'home' | 'apps' | 'records' | 'settings'
 // ─────────────────────────────────────────
 // PasswordGate
 // ─────────────────────────────────────────
-function PasswordGate({ onUnlock }: { onUnlock: (asGuest?: boolean) => void }) {
+function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
   const [input, setInput] = useState('')
   const [error, setError] = useState(false)
   const [shake, setShake] = useState(false)
 
-  // ── [TRIAL] ?trial=1 でアクセスされたら自動でゲスト体験スタート
   useEffect(() => {
     if (new URLSearchParams(window.location.search).get('trial') === '1') {
-      sessionStorage.setItem(SESSION_KEY, GUEST_VALUE)
-      onUnlock(true)
+      localStorage.setItem(SESSION_KEY, GUEST_VALUE)
+      onUnlock('guest')
     }
   }, [onUnlock])
-  // ── [TRIAL] END ──
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (input === LAB_PASSWORD) {
-      sessionStorage.setItem(SESSION_KEY, '1')
-      onUnlock(false)
+      localStorage.setItem(SESSION_KEY, MEMBER_VALUE)
+      onUnlock('member')
     } else {
       setError(true); setShake(true); setInput('')
       setTimeout(() => setShake(false), 500)
     }
   }
 
-  // ── [TRIAL] ゲスト体験ボタンのハンドラ
   function handleGuestTrial() {
-    sessionStorage.setItem(SESSION_KEY, GUEST_VALUE)
-    onUnlock(true)
+    localStorage.setItem(SESSION_KEY, GUEST_VALUE)
+    onUnlock('guest')
   }
-  // ── [TRIAL] END ──
 
   return (
     <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex items-center justify-center px-6">
@@ -122,19 +133,23 @@ function PasswordGate({ onUnlock }: { onUnlock: (asGuest?: boolean) => void }) {
         </form>
 
         <div className="mt-5 pt-5 border-t border-white/10">
-          <p className="text-center text-[#94a3c4] text-xs mb-3">パスワードなしでも遊べる！</p>
+          <p className="text-center text-[#94a3c4] text-xs mb-1">パスワードなしで体験できます</p>
+          <p className="text-center text-[#94a3c4] text-[10px] mb-3">（計算・漢字のL1〜L2が使えます）</p>
           <button
             onClick={handleGuestTrial}
             className="w-full py-3.5 rounded-xl font-black text-lg text-white border-2 border-[#c4a8ff]/50 hover:border-[#c4a8ff] hover:bg-[#c4a8ff]/10 transition-all"
           >
             まず試してみる →
           </button>
-          <p className="text-center text-[#94a3c4] text-[11px] mt-2">進捗はこのデバイスだけに保存されます</p>
         </div>
 
         <div className="mt-4 text-center">
           <p className="text-[#94a3c4] text-xs mb-1">パスワードをお持ちでない方</p>
           <Link href="/register" className="text-[#c4a8ff] text-sm font-bold hover:underline">無料で登録する →</Link>
+        </div>
+
+        <div className="mt-3 text-center">
+          <Link href="/tester" className="text-[#94a3c4] text-xs hover:text-[#c4a8ff]">テスター入口</Link>
         </div>
 
         <p className="text-center mt-4"><Link href="/" className="text-[#94a3c4] text-sm hover:text-[#c4a8ff]">← ホームへ</Link></p>
@@ -162,10 +177,11 @@ function Avatar({ name, color, size = 40 }: { name: string; color: string; size?
 // ─────────────────────────────────────────
 // HomeTab
 // ─────────────────────────────────────────
-function HomeTab({ profile, stats, onNav }: {
+function HomeTab({ profile, stats, onNav, userType }: {
   profile: Profile
   stats: ReturnType<typeof computeStats>
   onNav: (tab: Tab) => void
+  userType: UserType
 }) {
   const totalMastered = stats.kanjiMastered + stats.engMastered
   const totalLearning = stats.kanjiLearning + stats.engLearning
@@ -213,10 +229,16 @@ function HomeTab({ profile, stats, onNav }: {
           <button onClick={() => onNav('apps')} className="text-[#94a3c4] text-xs hover:text-[#c4a8ff]">全アプリ →</button>
         </div>
         <div className="grid grid-cols-2 gap-3">
-          {[
-            { app: APPS.find(a => a.id === 'kanji')!, prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0, desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` },
-            { app: APPS.find(a => a.id === 'english')!, prog: stats.engTotal > 0 ? Math.round(stats.engMastered / stats.engTotal * 100) : 0, desc: `${stats.engMastered}/${stats.engTotal}語 習得` },
-          ].map(({ app, prog, desc }) => (
+          {(userType === 'guest'
+            ? [
+                { app: APPS.find(a => a.id === 'math')!,  prog: 0, desc: 'L1・L2が体験できます' },
+                { app: APPS.find(a => a.id === 'kanji')!, prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0, desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` },
+              ]
+            : [
+                { app: APPS.find(a => a.id === 'kanji')!, prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0, desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` },
+                { app: APPS.find(a => a.id === 'english')!, prog: stats.engTotal > 0 ? Math.round(stats.engMastered / stats.engTotal * 100) : 0, desc: `${stats.engMastered}/${stats.engTotal}語 習得` },
+              ]
+          ).map(({ app, prog, desc }) => (
             <Link key={app.id} href={app.url}
               className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
               <div className="text-3xl mb-2">{app.emoji}</div>
@@ -258,20 +280,46 @@ function HomeTab({ profile, stats, onNav }: {
 // ─────────────────────────────────────────
 // AppsTab
 // ─────────────────────────────────────────
-function AppsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
+function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; userType: UserType }) {
   const appStats: Record<string, { mastered: number; total: number }> = {
     kanji: { mastered: stats.kanjiMastered, total: stats.kanjiTotal },
     english: { mastered: stats.engMastered, total: stats.engTotal },
   }
 
+  const guestSubtitle = userType === 'guest'
+    ? '計算・漢字のL1〜L2を体験中 — 登録すると全アプリ解放！'
+    : `全${APPS.length}アプリ使い放題`
+
   return (
     <div className="px-4 pt-6 pb-4">
       <h2 className="font-black text-[#e8f0fe] text-lg mb-1">アプリ一覧</h2>
-      <p className="text-[#94a3c4] text-xs mb-5">全{APPS.length}アプリ使い放題</p>
+      <p className="text-[#94a3c4] text-xs mb-5">{guestSubtitle}</p>
       <div className="grid grid-cols-2 gap-3">
         {APPS.map((app) => {
+          const lock = lockLabel(app.id, userType)
           const s = appStats[app.id]
           const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
+
+          if (lock) {
+            return (
+              <div key={app.id} className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60 relative">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="text-3xl grayscale">{app.emoji}</div>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">
+                    🔒 {lock}
+                  </span>
+                </div>
+                <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
+                <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
+                {userType === 'guest' && lock === '登録して解放' && (
+                  <Link href="/register" className="block mt-2 text-[10px] text-[#c4a8ff] font-bold hover:underline">
+                    無料登録で解放 →
+                  </Link>
+                )}
+              </div>
+            )
+          }
+
           const cardClass = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
           const inner = (
             <>
@@ -476,7 +524,7 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
 // ─────────────────────────────────────────
 // AppHub (main dashboard)
 // ─────────────────────────────────────────
-function AppHub({ isGuest }: { isGuest: boolean }) {
+function AppHub({ userType }: { userType: UserType }) {
   const [tab, setTab] = useState<Tab>('home')
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
   const [stats, setStats] = useState(computeStats())
@@ -508,23 +556,26 @@ function AppHub({ isGuest }: { isGuest: boolean }) {
         </div>
       </div>
 
-      {/* ── [TRIAL] ゲスト体験バナー（テストデータ収集後に削除） */}
-      {isGuest && (
+      {userType === 'guest' && (
         <div className="mx-4 mt-4 px-4 py-3 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-2xl flex items-center justify-between gap-3">
           <div>
-            <p className="text-[#f0c040] text-xs font-bold">👋 ゲスト体験中</p>
-            <p className="text-[#94a3c4] text-[10px] mt-0.5">登録すると記録がずっと残るよ！</p>
+            <p className="text-[#f0c040] text-xs font-bold">👋 体験中</p>
+            <p className="text-[#94a3c4] text-[10px] mt-0.5">計算・漢字のL1〜L2が使えます</p>
           </div>
           <Link href="/register" className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-black text-[#050b14]" style={{ background: '#f0c040' }}>
-            無料登録 →
+            全部使う →
           </Link>
         </div>
       )}
-      {/* ── [TRIAL] END ── */}
+      {userType === 'tester' && (
+        <div className="mx-4 mt-4 px-4 py-3 bg-[#00e5c3]/10 border border-[#00e5c3]/30 rounded-2xl">
+          <p className="text-[#00e5c3] text-xs font-bold">🔬 テスターモード — 全アプリ解放中</p>
+        </div>
+      )}
 
       {/* Tab content */}
-      {tab === 'home' && <HomeTab profile={profile} stats={stats} onNav={setTab} />}
-      {tab === 'apps' && <AppsTab stats={stats} />}
+      {tab === 'home' && <HomeTab profile={profile} stats={stats} onNav={setTab} userType={userType} />}
+      {tab === 'apps' && <AppsTab stats={stats} userType={userType} />}
       {tab === 'records' && <RecordsTab stats={stats} />}
       {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} />}
 
@@ -539,16 +590,13 @@ function AppHub({ isGuest }: { isGuest: boolean }) {
 export default function LabPage() {
   const [unlocked, setUnlocked] = useState(false)
   const [checking, setChecking] = useState(true)
-  // ── [TRIAL] ゲストフラグ（削除時はこの行と isGuest 参照箇所をまとめて消す）
-  const [isGuest, setIsGuest] = useState(false)
-  // ── [TRIAL] END ──
+  const [userType, setUserType] = useState<UserType>('guest')
 
   useEffect(() => {
-    const saved = sessionStorage.getItem(SESSION_KEY)
-    if (saved === '1') { setUnlocked(true) }
-    // ── [TRIAL]
-    else if (saved === GUEST_VALUE) { setUnlocked(true); setIsGuest(true) }
-    // ── [TRIAL] END ──
+    const saved = localStorage.getItem(SESSION_KEY)
+    if (saved === MEMBER_VALUE) { setUserType('member'); setUnlocked(true) }
+    else if (saved === TESTER_VALUE) { setUserType('tester'); setUnlocked(true) }
+    else if (saved === GUEST_VALUE) { setUserType('guest'); setUnlocked(true) }
     setChecking(false)
   }, [])
 
@@ -560,14 +608,12 @@ export default function LabPage() {
     )
   }
 
-  // ── [TRIAL] onUnlock にゲストフラグを受け取る引数を追加
-  function handleUnlock(asGuest = false) {
-    setIsGuest(asGuest)
+  function handleUnlock(type: UserType) {
+    setUserType(type)
     setUnlocked(true)
   }
-  // ── [TRIAL] END ──
 
   return unlocked
-    ? <AppHub isGuest={isGuest} />
+    ? <AppHub userType={userType} />
     : <PasswordGate onUnlock={handleUnlock} />
 }
