@@ -53,7 +53,7 @@ export default function Navbar() {
             href="/register"
             className="px-6 py-2.5 rounded-full btn-glow-teal text-sm tracking-wide"
           >
-            無料で始める
+            無料で登録する
           </Link>
         </div>
 
@@ -93,7 +93,7 @@ export default function Navbar() {
             className="mt-3 px-6 py-3 rounded-full btn-glow-teal text-sm text-center"
             onClick={() => setMenuOpen(false)}
           >
-            無料で始める
+            無料で登録する
           </Link>
         </div>
       )}

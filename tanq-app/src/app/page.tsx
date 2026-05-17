@@ -148,16 +148,15 @@ export default function CorporateHome() {
               受験にも対応しながら、一生使える思考力を育てます。
             </p>
 
-            {/* ── [TRIAL] 体験ボタンを最初に（削除時は2行目のみ残す） */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/lab?trial=1" className="px-9 py-4 rounded-full btn-glow-teal text-lg font-bold text-center">
-                ログインなしで試してみる →
+                まず試してみる →
               </Link>
               <Link href="/register" className="px-9 py-4 rounded-full border border-corp-teal/30 text-corp-teal font-semibold text-lg hover:bg-corp-teal/10 transition-all text-center">
-                アカウントを作成
+                無料で登録する
               </Link>
             </div>
-            {/* ── [TRIAL] END ── */}
+            <p className="text-corp-muted text-xs mt-3">登録不要・3秒で開始</p>
           </div>
 
           {/* TANQuu mascot */}
@@ -251,10 +250,10 @@ export default function CorporateHome() {
                 TANQuu が驚きのフックで会話を始め、子どもが自分で「そういうことか！」と気づく瞬間を演出します。
               </p>
               <Link
-                href="/tanq"
+                href="/lab?trial=1"
                 className="inline-flex items-center gap-2 text-corp-teal hover:text-white transition-colors font-bold text-lg group"
               >
-                実際に体験する
+                まず試してみる
                 <span className="group-hover:translate-x-1 transition-transform">→</span>
               </Link>
             </div>
@@ -352,13 +351,14 @@ export default function CorporateHome() {
                 無料で体験できます。お子さんと一緒に、「発見する喜び」を体験してください。
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/register" className="px-10 py-4 rounded-full btn-glow-teal text-lg font-bold">
-                  アカウントを作成する →
+                <Link href="/lab?trial=1" className="px-10 py-4 rounded-full btn-glow-teal text-lg font-bold">
+                  まず試してみる →
                 </Link>
-                <Link href="/contact" className="px-10 py-4 rounded-full border border-corp-muted/30 text-corp-muted font-semibold text-lg hover:border-corp-teal/40 hover:text-corp-teal transition-all">
-                  お問い合わせ
+                <Link href="/register" className="px-10 py-4 rounded-full border border-corp-teal/30 text-corp-teal font-semibold text-lg hover:bg-corp-teal/10 transition-all">
+                  無料で登録する
                 </Link>
               </div>
+              <p className="text-corp-muted text-xs mt-4">登録不要・まず体験してから決められます</p>
             </div>
           </div>
         </div>
@@ -387,25 +387,22 @@ export default function CorporateHome() {
                 <br />
                 TANQラボに入れば全部遊べるよ！
               </p>
-              {/* ── [TRIAL] 体験優先ボタン（削除時は /lab?trial=1 → /lab に戻し「無料登録はこちら」のみ残す） */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link
                   href="/lab?trial=1"
                   className="inline-flex items-center justify-center gap-2 px-10 py-5 rounded-2xl text-xl font-black text-[#050b14] transition-all hover:scale-[1.04]"
                   style={{ background: 'linear-gradient(135deg, #00e5c3, #c4a8ff)', boxShadow: '0 0 40px rgba(0,229,195,0.4)' }}
                 >
-                  ログインなしで試してみる
-                  <span className="text-2xl">→</span>
+                  まず試してみる →
                 </Link>
                 <Link
                   href="/register"
                   className="inline-flex items-center justify-center gap-2 px-8 py-5 rounded-2xl text-lg font-bold border-2 border-corp-teal/40 text-corp-teal hover:bg-corp-teal/10 transition-all"
                 >
-                  アカウントを作成
+                  無料で登録する
                 </Link>
               </div>
-              {/* ── [TRIAL] END ── */}
-              <p className="text-corp-muted text-xs mt-3">アカウントを作ると記録が残るよ ✨</p>
+              <p className="text-corp-muted text-xs mt-3">登録すると記録がずっと残るよ ✨</p>
             </div>
             {/* Right — app icons grid */}
             <div className="flex-shrink-0">

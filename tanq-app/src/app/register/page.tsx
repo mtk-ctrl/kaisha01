@@ -257,7 +257,7 @@ export default function RegisterPage() {
                         </svg>
                         登録中...
                       </span>
-                    ) : '無料で始める →'}
+                    ) : '無料で登録する →'}
                   </button>
 
                   <p className="text-center text-xs text-corp-muted leading-relaxed">
@@ -267,10 +267,14 @@ export default function RegisterPage() {
                   </p>
                 </form>
 
-                <div className="mt-6 pt-6 border-t border-white/10 text-center">
+                <div className="mt-6 pt-6 border-t border-white/10 text-center space-y-2">
                   <p className="text-corp-muted text-sm">
                     すでにアカウントをお持ちの方は
-                    <Link href="/tanq" className="text-corp-teal hover:underline ml-1">こちら</Link>
+                    <Link href="/lab" className="text-corp-teal hover:underline ml-1">ラボへ →</Link>
+                  </p>
+                  <p className="text-corp-muted text-sm">
+                    まず試したい方は
+                    <Link href="/lab?trial=1" className="text-corp-teal hover:underline ml-1">登録なしで体験 →</Link>
                   </p>
                 </div>
               </div>
