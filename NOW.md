@@ -1,7 +1,7 @@
 # NOW — 現在地（新セッション開始時は CLAUDE.md の次に必読）
 
 > **更新ルール**: インフラ変更時・タスク完了直後に即更新。セッション終了を待たない。  
-> **最終更新**: 2026-05-17 | 更新者: Jobs
+> **最終更新**: 2026-05-18 | 更新者: Jobs
 
 ---
 
@@ -44,26 +44,19 @@
 **フェーズ**: Phase 1 — プロダクト完成 + 初期ユーザー獲得
 
 **今すぐやること（優先順）**:
-1. **リアルユーザー（小学生）へのテスト提供** — 招待フロー・メール文案を整備
-2. **ゆい（小1）UXレビュー** — 時計・漢字アプリを低学年目線でチェック
-3. **ソラにGA4分析依頼** — 現時点のアクセス・離脱ポイントを把握
+1. **LPから理科アプリの過度な露出を削除** — アキ指摘: 理科bias除去（体験版は計算・漢字が主役）
+2. **テスター招待フローの確認** — `/tester` ページのURLを招待する人にシェアする
+3. **ゆい（小1）UXレビュー** — 時計・漢字アプリを低学年目線でチェック
 
 ---
 
 ## ④ オーナー対応待ち（物理的にJobsができないもの）
 
-### Vercel 永続デプロイ（5分で完了・最優先）
-
-**STEP 1**: Vercel → kaisha01プロジェクト → Settings → Git → GitHubリポジトリ連携  
-**STEP 2**: GitHub Secrets に追加 → https://github.com/mtk-ctrl/kaisha01/settings/secrets/actions
-
-| Secret名 | 取得方法 |
-|---------|---------|
-| `VERCEL_TOKEN` | Vercel → Settings → Tokens で生成 |
-| `RESEND_API_KEY` | resend.com → 無料登録 → API Keys |
-| `ANTHROPIC_API_KEY` | Claude Code で使用中のキー |
-
-**完了後にJobsがやること**: GitHub Actionsに `vercel --prod --token=$VERCEL_TOKEN` を追加
+| 項目 | 内容 |
+|------|------|
+| RESEND_API_KEY | resend.com → 無料登録 → API Keys → GitHub Secrets登録 |
+| ANTHROPIC_API_KEY | Claude Code使用中のキー → GitHub Secrets登録 |
+| テスター招待 | /tester のURLと PIN「2026」を対象者にシェア |
 
 ---
 
@@ -71,14 +64,14 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
-| 2026-05-16 | ゲスト体験ボタン実装（[TRIAL]タグ付き・削除可能） | `logs/sessions/2026-05-16_001_jobs_trial-button-and-ui-fix.md` |
-| 2026-05-16 | TANQ Story UIバグ修正（余白・hook-emoji・ナビゲーション） | 同上 |
-| 2026-05-16 | リン QAチェックリスト強化（観点7・8追加） | 同上 |
-| 2026-05-16 | CLAUDE.md・NOW.md 再設計（エフェメラルセッション対応） | 同上 |
+| 2026-05-18 | 3階層アクセス制御実装（guest/tester/member）、/tester新設、ガバナンス改革 | `logs/sessions/2026-05-18_001_jobs_3tier-access-governance.md` |
+| 2026-05-16 | ゲスト体験ボタン実装・ボタン文言統一・ナビゲーション修正 | `logs/sessions/2026-05-16_001_jobs_trial-button-and-ui-fix.md` |
 | 2026-05-14 | Supabase接続・GA4・プライバシーポリシー・料金2本化 | `logs/sessions/2026-05-14_001_*.md` |
 
 ---
 
 ## ⑥ 現在の作業ブランチ
 
-`claude/company-analysis-consulting-mlKeC` → GitHub Actions で main に自動マージ
+`claude/naughty-lewin-4447d6` → GitHub Actions で main に自動マージ → Vercel自動デプロイ
+
+**テスター入口URL**: `https://tanq-app.vercel.app/tester` | PIN: `2026`
