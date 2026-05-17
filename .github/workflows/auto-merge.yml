@@ -1,4 +1,4 @@
-name: Auto-merge AI branches → main
+name: Auto-merge AI branches → main + Vercel Deploy
 
 # Jobs (AI CEO) が claude/* ブランチにプッシュすると
 # 自動的に main へマージし、Vercel が即時デプロイする
@@ -30,26 +30,43 @@ jobs:
         run: |
           git fetch origin main
           git checkout main
-          
+
           # マージ試行 - コンフリクト時は自動で feature ブランチの内容を採用
           git merge origin/${{ github.ref_name }} \
             --no-ff \
             -m "🚀 Auto-deploy: ${{ github.ref_name }}
-          
+
           Merged by Jobs (AI CEO) via GitHub Actions.
           Source commit: ${{ github.sha }}" || \
           {
             # コンフリクト発生時、feature ブランチの版を使用
             echo "Merge conflict detected, resolving..."
             git merge --abort || true
-            
+
             # リベース戦略: feature ブランチの変更を優先
             git merge -X theirs origin/${{ github.ref_name }} \
               --no-ff \
               -m "🚀 Auto-deploy: ${{ github.ref_name }}
-          
+
           Merged by Jobs (AI CEO) via GitHub Actions.
           Source commit: ${{ github.sha }} (conflict resolved with 'theirs' strategy)"
           }
-          
+
           git push origin main
+
+      - name: Deploy to Vercel
+        working-directory: ./tanq-app
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️ VERCEL_TOKEN が未設定 — スキップ"
+            exit 0
+          fi
+          npm install --global vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel build --prod --token="$VERCEL_TOKEN"
+          vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+
