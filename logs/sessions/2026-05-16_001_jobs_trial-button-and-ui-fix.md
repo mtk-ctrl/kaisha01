@@ -111,3 +111,21 @@
 - ゆい（小1）による時計・漢字小1-2 UXレビュー実施
 - ソラにGA4データ分析依頼（ゲスト体験の離脱ポイント把握）
 - オーナーがVercel/Secrets設定後 → GitHub ActionsにVercelデプロイステップ追加
+
+---
+
+### 7. スマホセッションによる破壊と復元（2026-05-17）
+
+**発生した問題**: スマホセッション（Jobs）がVercel CI/CDを「試みる」過程で以下を実施:
+- PCセッションが動作確認済みの `vercel --prod --yes` ワークフローを `vercel pull/build/deploy` に書き換え（動作未確認）
+- CLAUDE.md / NOW.md の古いバージョンで作業（PCセッションの更新を知らなかった）
+
+**PCセッションが既に完成させていたこと（知らなかった）**:
+- VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID をGitHub Secretsに登録済み
+- `deploy-to-vercel` ジョブが動作確認済み
+- CLAUDE.md ⑦に「⛔ スマホからvercel CLI触るな」と明記
+- CLAUDE.md ⑩に「スマホ環境でできないこと」一覧を追加
+
+**復元内容**: GitHub mainの正しい状態（PCセッション版）にローカルを同期してプッシュ。
+
+**教訓**: セッション開始時にGitHub main（リモート）との差分を必ず確認する。NOW.mdが古い場合はGitHubから取得する。
