@@ -83,8 +83,11 @@
 
 ## ⑦ デプロイフロー
 
-`claude/*` ブランチ push → GitHub Actions → main 自動マージ → Vercel デプロイ  
-※ Vercel GitHub App が現在未接続。詳細は `NOW.md` のサービス状態を確認。
+`claude/*` ブランチ push → GitHub Actions → main 自動マージ → Vercel 自動デプロイ
+
+**⛔ Vercel CLI を自分でインストール・ログイン・実行しようとしてはいけない。**  
+デプロイは GitHub Actions が自動でやる。Jobs がやることは `push` だけ。  
+（VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID は全て GitHub Secrets 登録済み）
 
 ---
 
@@ -97,4 +100,4 @@
 
 ---
 
-*最終更新: 2026-05-16 | 更新者: Jobs (AI CEO)*
+*最終更新: 2026-05-18 | 更新者: Jobs (AI CEO)*
