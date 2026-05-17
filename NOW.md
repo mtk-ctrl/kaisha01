@@ -1,7 +1,7 @@
 # NOW — 現在地（新セッション開始時は CLAUDE.md の次に必読）
 
 > **更新ルール**: インフラ変更時・タスク完了直後に即更新。セッション終了を待たない。  
-> **最終更新**: 2026-05-16 | 更新者: Jobs
+> **最終更新**: 2026-05-17 | 更新者: Jobs
 
 ---
 
@@ -10,7 +10,7 @@
 | サービス | 状態 | 備考 |
 |---------|------|------|
 | GitHub Actions | ✅ 稼働中 | `claude/*` → main 自動マージ |
-| Vercel | ⚠️ 自動デプロイ不可 | GitHub App 未接続（オーナー対応待ち） |
+| Vercel | ✅ CI自動デプロイ完成 | tanq-app.vercel.app / VERCEL_TOKEN Secret登録済・GitHub Actions自動化完了 |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
 | Resend | ❌ 未設定 | X投稿メール用（Secret未登録） |
