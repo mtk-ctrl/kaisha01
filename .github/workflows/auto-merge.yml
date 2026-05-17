@@ -72,4 +72,3 @@ jobs:
       - name: Deploy to Vercel Production
         run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
         working-directory: tanq-app
-
