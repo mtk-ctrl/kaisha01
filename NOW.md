@@ -1,7 +1,7 @@
 # NOW — 現在地（新セッション開始時は CLAUDE.md の次に必読）
 
 > **更新ルール**: インフラ変更時・タスク完了直後に即更新。セッション終了を待たない。  
-> **最終更新**: 2026-05-16 | 更新者: Jobs
+> **最終更新**: 2026-05-17 | 更新者: Jobs
 
 ---
 
@@ -10,7 +10,7 @@
 | サービス | 状態 | 備考 |
 |---------|------|------|
 | GitHub Actions | ✅ 稼働中 | `claude/*` → main 自動マージ |
-| Vercel | ⚠️ 自動デプロイ不可 | GitHub App 未接続（オーナー対応待ち） |
+| Vercel | ✅ 手動デプロイ済 / CI準備完了 | https://tanq-app.vercel.app（音声機能反映済）。CI自動化はVERCEL_TOKEN Secret登録で完成 |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
 | Resend | ❌ 未設定 | X投稿メール用（Secret未登録） |
@@ -52,18 +52,19 @@
 
 ## ④ オーナー対応待ち（物理的にJobsができないもの）
 
-### Vercel 永続デプロイ（5分で完了・最優先）
+### CI自動デプロイの完成（1ステップのみ残り）
 
-**STEP 1**: Vercel → kaisha01プロジェクト → Settings → Git → GitHubリポジトリ連携  
-**STEP 2**: GitHub Secrets に追加 → https://github.com/mtk-ctrl/kaisha01/settings/secrets/actions
+GitHub Actions に Vercel デプロイジョブ追加済み。あと1つのSecret登録で完全自動化。
 
-| Secret名 | 取得方法 |
-|---------|---------|
-| `VERCEL_TOKEN` | Vercel → Settings → Tokens で生成 |
-| `RESEND_API_KEY` | resend.com → 無料登録 → API Keys |
-| `ANTHROPIC_API_KEY` | Claude Code で使用中のキー |
+**GitHub Secrets に追加** → https://github.com/mtk-ctrl/kaisha01/settings/secrets/actions
 
-**完了後にJobsがやること**: GitHub Actionsに `vercel --prod --token=$VERCEL_TOKEN` を追加
+| Secret名 | 取得方法 | 優先度 |
+|---------|---------|------|
+| `VERCEL_TOKEN` | Vercel → Settings → Tokens で生成 | 🔴 最優先（CI自動化） |
+| `RESEND_API_KEY` | resend.com → 無料登録 → API Keys | 🟡 X文案メール用 |
+| `ANTHROPIC_API_KEY` | Claude Code で使用中のキー | 🟡 X文案生成用 |
+
+**登録後**: 次回スマホからの変更も自動でVercelにデプロイされる
 
 ---
 
@@ -71,7 +72,9 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
-| 2026-05-16 | ゲスト体験ボタン実装（[TRIAL]タグ付き・削除可能） | `logs/sessions/2026-05-16_001_jobs_trial-button-and-ui-fix.md` |
+| 2026-05-17 | 音声機能を本番デプロイ・GitHub Actions CI自動化追加 | `logs/sessions/2026-05-17_001_jobs_deploy-and-ci-setup.md` |
+| 2026-05-16 | 音声読み上げ＋正誤サウンド追加（スマホセッション） | `logs/sessions/2026-05-16_001_jobs_trial-button-and-ui-fix.md` |
+| 2026-05-16 | ゲスト体験ボタン実装（[TRIAL]タグ付き・削除可能） | 同上 |
 | 2026-05-16 | TANQ Story UIバグ修正（余白・hook-emoji・ナビゲーション） | 同上 |
 | 2026-05-16 | リン QAチェックリスト強化（観点7・8追加） | 同上 |
 | 2026-05-16 | CLAUDE.md・NOW.md 再設計（エフェメラルセッション対応） | 同上 |
@@ -81,4 +84,4 @@
 
 ## ⑥ 現在の作業ブランチ
 
-`claude/company-analysis-consulting-mlKeC` → GitHub Actions で main に自動マージ
+`claude/naughty-lewin-4447d6` → GitHub Actions で main に自動マージ → Vercel 自動デプロイ（VERCEL_TOKEN登録後）
