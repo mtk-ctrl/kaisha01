@@ -52,19 +52,16 @@
 
 ## ④ オーナー対応待ち（物理的にJobsができないもの）
 
-### CI自動デプロイの完成（1ステップのみ残り）
+### ✅ Vercel CI/CD — 完了済み（2026-05-17）
+VERCEL_TOKEN はPCのローカルトークンを流用してGitHub Secretsに登録済み。
+**Jobs がこれ以上やることはない。スマホからでも push するだけで自動デプロイされる。**
 
-GitHub Actions に Vercel デプロイジョブ追加済み。あと1つのSecret登録で完全自動化。
+### 残り対応（優先度低）
 
-**GitHub Secrets に追加** → https://github.com/mtk-ctrl/kaisha01/settings/secrets/actions
-
-| Secret名 | 取得方法 | 優先度 |
-|---------|---------|------|
-| `VERCEL_TOKEN` | Vercel → Settings → Tokens で生成 | 🔴 最優先（CI自動化） |
-| `RESEND_API_KEY` | resend.com → 無料登録 → API Keys | 🟡 X文案メール用 |
-| `ANTHROPIC_API_KEY` | Claude Code で使用中のキー | 🟡 X文案生成用 |
-
-**登録後**: 次回スマホからの変更も自動でVercelにデプロイされる
+| Secret名 | 用途 | 取得方法 |
+|---------|------|---------|
+| `RESEND_API_KEY` | X文案メール自動送信 | resend.com → 無料登録 → API Keys |
+| `ANTHROPIC_API_KEY` | X文案AI生成 | claude.ai → API Keys |
 
 ---
 
@@ -84,4 +81,5 @@ GitHub Actions に Vercel デプロイジョブ追加済み。あと1つのSecre
 
 ## ⑥ 現在の作業ブランチ
 
-`claude/naughty-lewin-4447d6` → GitHub Actions で main に自動マージ → Vercel 自動デプロイ（VERCEL_TOKEN登録後）
+`claude/*` ブランチ push → GitHub Actions で main 自動マージ → **Vercel 自動デプロイ（tanq-app.vercel.app）**  
+⚠️ スマホセッションが `vercel` CLI コマンドを直接実行しようとするのは不要・不可。push するだけでよい。
