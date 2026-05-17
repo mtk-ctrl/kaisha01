@@ -108,7 +108,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (asGuest?: boolean) => void }) {
             <Image src="/tanquu/surprised.png" alt="TANQuu" width={100} height={100} className="relative z-10 drop-shadow-[0_0_30px_rgba(196,168,255,0.5)]" />
           </div>
           <h1 className="text-4xl font-black mb-2 bg-gradient-to-r from-[#00e5c3] to-[#c4a8ff] bg-clip-text text-transparent">アプリラボ</h1>
-          <p className="text-[#94a3c4] text-sm">パスワードを入力してください</p>
+          <p className="text-[#94a3c4] text-sm">登録するともらえるパスワードを入力</p>
         </div>
         <form onSubmit={handleSubmit} className={`bg-white/5 border border-white/15 rounded-2xl p-8 ${shake ? 'animate-[shake_0.4s_ease]' : ''}`}>
           <input type="password" value={input} onChange={(e) => { setInput(e.target.value); setError(false) }}
@@ -121,20 +121,23 @@ function PasswordGate({ onUnlock }: { onUnlock: (asGuest?: boolean) => void }) {
           </button>
         </form>
 
-        {/* ── [TRIAL] ログインなし体験ボタン（テストデータ収集後に削除） */}
         <div className="mt-5 pt-5 border-t border-white/10">
-          <p className="text-center text-[#94a3c4] text-xs mb-3">パスワードがなくてもOK！</p>
+          <p className="text-center text-[#94a3c4] text-xs mb-3">パスワードなしでも遊べる！</p>
           <button
             onClick={handleGuestTrial}
             className="w-full py-3.5 rounded-xl font-black text-lg text-white border-2 border-[#c4a8ff]/50 hover:border-[#c4a8ff] hover:bg-[#c4a8ff]/10 transition-all"
           >
-            🚀 ログインなしで体験する
+            まず試してみる →
           </button>
           <p className="text-center text-[#94a3c4] text-[11px] mt-2">進捗はこのデバイスだけに保存されます</p>
         </div>
-        {/* ── [TRIAL] END ── */}
 
-        <p className="text-center mt-5"><Link href="/" className="text-[#94a3c4] text-sm hover:text-[#c4a8ff]">← ホームへ</Link></p>
+        <div className="mt-4 text-center">
+          <p className="text-[#94a3c4] text-xs mb-1">パスワードをお持ちでない方</p>
+          <Link href="/register" className="text-[#c4a8ff] text-sm font-bold hover:underline">無料で登録する →</Link>
+        </div>
+
+        <p className="text-center mt-4"><Link href="/" className="text-[#94a3c4] text-sm hover:text-[#c4a8ff]">← ホームへ</Link></p>
       </div>
       <style jsx>{`
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
