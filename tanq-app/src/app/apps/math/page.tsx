@@ -65,14 +65,12 @@ export default function MathChallenge() {
   const [timeLeft, setTimeLeft] = useState(45)
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [showAnswer, setShowAnswer] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const next = useCallback((diff: Difficulty) => {
     setProblem(makeProblem(diff))
     setInput('')
     setFeedback(null)
-    inputRef.current?.focus()
   }, [])
 
   const startGame = (diff: Difficulty) => {
@@ -89,7 +87,6 @@ export default function MathChallenge() {
 
   useEffect(() => {
     if (phase !== 'playing') return
-    inputRef.current?.focus()
     timerRef.current = setInterval(() => {
       setTimeLeft((t) => {
         if (t <= 1) {
@@ -103,10 +100,9 @@ export default function MathChallenge() {
     return () => clearInterval(timerRef.current!)
   }, [phase])
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!input.trim() || phase !== 'playing') return
-    const val = parseInt(input, 10)
+  function submitAnswer(currentInput: string) {
+    if (!currentInput.trim() || phase !== 'playing') return
+    const val = parseInt(currentInput, 10)
     if (val === problem.answer) {
       playCorrect()
       setScore((s) => s + 1)
@@ -119,9 +115,29 @@ export default function MathChallenge() {
       setFeedback('wrong')
       setShowAnswer(true)
       setInput('')
-      setTimeout(() => { setFeedback(null); setShowAnswer(false); inputRef.current?.focus() }, 1800)
+      setTimeout(() => { setFeedback(null); setShowAnswer(false) }, 1800)
     }
   }
+
+  function handleNumpad(key: string) {
+    if (phase !== 'playing' || feedback !== null) return
+    if (key === '⌫') { setInput(prev => prev.slice(0, -1)); return }
+    if (key === '✓') { submitAnswer(input); return }
+    if (input.length >= 5) return
+    setInput(prev => prev + key)
+  }
+
+  useEffect(() => {
+    if (phase !== 'playing') return
+    function onKey(e: KeyboardEvent) {
+      if (feedback !== null) return
+      if (e.key >= '0' && e.key <= '9') setInput(prev => prev.length < 5 ? prev + e.key : prev)
+      else if (e.key === 'Backspace') setInput(prev => prev.slice(0, -1))
+      else if (e.key === 'Enter') setInput(prev => { submitAnswer(prev); return prev })
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [phase, feedback, input])
 
   const total = DIFFICULTY_CONFIG[difficulty].time
   const pct = (timeLeft / total) * 100
@@ -270,23 +286,31 @@ export default function MathChallenge() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <input
-            ref={inputRef}
-            type="number"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="こたえは？"
-            className="text-center text-3xl font-black w-52 py-4 rounded-2xl bg-white/10 border border-white/20 text-white outline-none focus:border-[#60a5fa] focus:ring-2 focus:ring-[#60a5fa]/30 transition-all"
-            autoComplete="off"
-          />
-          <button
-            type="submit"
-            className="block mx-auto mt-5 px-10 py-3.5 rounded-2xl font-black text-[#050b14] text-lg bg-[#60a5fa] hover:scale-[1.03] transition-all"
-          >
-            決定 →
-          </button>
-        </form>
+        {/* Answer display */}
+        <div className="w-52 py-4 rounded-2xl bg-white/10 border-2 border-white/20 text-white text-4xl font-black text-center mb-6 min-h-[68px] transition-all"
+          style={{ borderColor: feedback === 'correct' ? '#4ade80' : feedback === 'wrong' ? '#f87171' : undefined }}>
+          {input || <span className="text-white/25 text-3xl">?</span>}
+        </div>
+
+        {/* Numpad */}
+        <div className="grid grid-cols-3 gap-3 w-full max-w-[240px]">
+          {['7','8','9','4','5','6','1','2','3','⌫','0','✓'].map((key) => (
+            <button
+              key={key}
+              onClick={() => handleNumpad(key)}
+              disabled={feedback !== null}
+              className={`py-4 rounded-2xl font-black text-2xl transition-all active:scale-90 select-none ${
+                key === '✓'
+                  ? 'bg-[#60a5fa] text-[#050b14] hover:brightness-110 disabled:opacity-40'
+                  : key === '⌫'
+                  ? 'bg-white/10 text-[#f87171] hover:bg-white/20 disabled:opacity-40'
+                  : 'bg-white/10 text-white hover:bg-white/20 disabled:opacity-40'
+              }`}
+            >
+              {key}
+            </button>
+          ))}
+        </div>
       </div>
 
       <style jsx>{`
