@@ -16,7 +16,7 @@ type UserType = 'guest' | 'tester' | 'member'
 function canAccessApp(appId: string, userType: UserType): boolean {
   if (userType === 'tester') return true
   if (userType === 'member') return appId !== 'tanq'
-  return appId === 'math' || appId === 'kanji'
+  return appId === 'math' || appId === 'kanji' || appId === 'word-math'
 }
 
 function lockLabel(appId: string, userType: UserType): string | null {
@@ -68,9 +68,10 @@ const APPS = [
   { id: 'math',    name: '計算',          emoji: '🔢', color: '#60a5fa', url: '/apps/math',    badge: '速さで勝負' },
   { id: 'kanji',   name: '漢字',          emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',  badge: '330字' },
   { id: 'clock',   name: '時計',          emoji: '🕐', color: '#f0c040', url: '/apps/clock',  badge: '時間計算' },
-  { id: 'english', name: '英語',          emoji: '🌍', color: '#f87171', url: '/apps/english', badge: '120語' },
-  { id: 'shapes',  name: '図形',          emoji: '🔷', color: '#c4a8ff', url: '/apps/shapes', badge: '8図形' },
-  { id: 'coding',  name: 'プログラミング', emoji: '💻', color: '#4ade80', url: '/apps/coding', badge: '5ステージ' },
+  { id: 'english',   name: '英語',          emoji: '🌍', color: '#f87171', url: '/apps/english',    badge: '275語' },
+  { id: 'word-math', name: '算数文章題',   emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '小1〜小3' },
+  { id: 'shapes',    name: '図形',          emoji: '🔷', color: '#c4a8ff', url: '/apps/shapes',    badge: '8図形' },
+  { id: 'coding',    name: 'プログラミング', emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ' },
 ]
 
 type Tab = 'home' | 'apps' | 'records' | 'settings'
