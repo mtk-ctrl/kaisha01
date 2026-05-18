@@ -7,6 +7,28 @@ import type { WordEntry } from '@/data/englishData'
 
 type QuestionFormat = 'en2jp' | 'jp2en'
 
+function speak(text: string) {
+  if (typeof window === 'undefined' || !window.speechSynthesis) return
+  window.speechSynthesis.cancel()
+  const u = new SpeechSynthesisUtterance(text)
+  u.lang = 'en-US'
+  u.rate = 0.85
+  u.pitch = 1.0
+  window.speechSynthesis.speak(u)
+}
+
+function SpeakButton({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' | 'lg' }) {
+  const cls = size === 'lg' ? 'text-3xl px-4 py-2' : size === 'sm' ? 'text-base px-2 py-1' : 'text-xl px-3 py-1.5'
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); speak(text) }}
+      className={`${cls} rounded-full bg-[#f87171]/15 border border-[#f87171]/30 hover:bg-[#f87171]/30 active:scale-95 transition-all select-none`}
+      title="発音を聞く" aria-label="発音">
+      🔊
+    </button>
+  )
+}
+
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5)
 }
@@ -354,7 +376,10 @@ export default function EnglishQuiz() {
         ) : (
           <>
             <div className="text-[7rem] leading-none mb-2 select-none">{q.word.emoji}</div>
-            <p className="text-3xl font-black text-[#f87171] mb-1">{q.word.english}</p>
+            <div className="flex items-center justify-center gap-3 mb-1">
+              <p className="text-3xl font-black text-[#f87171]">{q.word.english}</p>
+              <SpeakButton text={q.word.english} size="md" />
+            </div>
             <p className="text-[#94a3c4] text-xs mb-2">{q.word.category}</p>
             <p className="text-[#94a3c4] text-xs mb-5 italic">"{q.word.sentence}"</p>
           </>
@@ -399,11 +424,14 @@ export default function EnglishQuiz() {
                 background: isCorrect ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.1)',
                 borderColor: isCorrect ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.4)',
               }}>
-              <p className="font-black text-sm mb-1" style={{ color: isCorrect ? '#4ade80' : '#f87171' }}>
-                {isCorrect
-                  ? `✓ 正解！「${q.word.japanese}」 = "${q.word.english}"`
-                  : `✗ 正解は「${q.correct}」`}
-              </p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="font-black text-sm" style={{ color: isCorrect ? '#4ade80' : '#f87171' }}>
+                  {isCorrect
+                    ? `✓ 正解！「${q.word.japanese}」 = "${q.word.english}"`
+                    : `✗ 正解は「${q.correct}」`}
+                </p>
+                <SpeakButton text={q.word.english} size="sm" />
+              </div>
               <p className="text-[#e8f0fe] text-sm leading-relaxed mb-2">{q.word.tip}</p>
               <div className="bg-white/5 rounded-xl px-3 py-2 border border-white/10">
                 <p className="text-[#94a3c4] text-xs italic">"{q.word.sentence}"</p>

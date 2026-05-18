@@ -82,7 +82,7 @@ export const grade1Kanji: KanjiEntry[] = [
   // 動作
   { kanji: '見', reading: 'みる', meaning: '見る（see/look）', example: '見学・発見', tip: '目（め）の下に足（人）＝見に行く形！音読み「ケン」（見学・発見・意見）👁️' },
   { kanji: '出', reading: 'でる', meaning: '出る（go out）', example: '出口・出発', tip: '二本の芽が出る形！音読み「シュツ」（出口・出発・提出）。入の反対↗️' },
-  { kanji: '入', reading: 'いる', meaning: '入る（enter）', example: '入口・入学', tip: 'ものが入る形。音読み「ニュウ」（入学・入口）。出の反対↙️' },
+  { kanji: '入', reading: 'はいる', meaning: '入る（enter）', example: '入口・入学', tip: 'ものが入る形。音読み「ニュウ」（入学・入口）。出の反対↙️' },
   { kanji: '立', reading: 'たつ', meaning: '立つ（stand）', example: '立体・独立', tip: '人が大地に立つ形！音読み「リツ・リュウ」（立体・独立・起立）🧍' },
   { kanji: '正', reading: 'ただしい', meaning: '正しい（correct）', example: '正解・正月', tip: '音読み「セイ・ショウ」（正解・正月）。一（いち）の方向に一歩ずつ→正しい✅' },
   { kanji: '早', reading: 'はやい', meaning: '早い（fast/early）', example: '早起き・早速', tip: '日（ひ）が十分登った形＝早朝！音読み「ソウ」（早期・早速）⏰' },

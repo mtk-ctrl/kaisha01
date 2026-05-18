@@ -32,7 +32,14 @@ const GRADES = ['小1', '小2', '小3', '小4', '小5', '小6', '中1', '中2', 
 
 function loadProfile(): Profile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE
-  try { return { ...DEFAULT_PROFILE, ...JSON.parse(localStorage.getItem(PROFILE_KEY) || '{}') } } catch { return DEFAULT_PROFILE }
+  try {
+    const stored = localStorage.getItem(PROFILE_KEY)
+    const saved = stored ? JSON.parse(stored) : {}
+    // テスターページで入力した名前をフォールバックとして使う
+    const testerName = localStorage.getItem('tanq-tester-name') || ''
+    const name = saved.name || testerName || DEFAULT_PROFILE.name
+    return { ...DEFAULT_PROFILE, ...saved, name }
+  } catch { return DEFAULT_PROFILE }
 }
 function saveProfile(p: Profile) {
   if (typeof window === 'undefined') return
@@ -75,6 +82,39 @@ const APPS = [
 ]
 
 type Tab = 'home' | 'apps' | 'records' | 'settings'
+
+// ─────────────────────────────────────────
+// ExternalLinkModal
+// ─────────────────────────────────────────
+function ExternalLinkModal({ url, name, onConfirm, onCancel }: {
+  url: string; name: string; onConfirm: () => void; onCancel: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-6" onClick={onCancel}>
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      <div className="relative z-10 w-full max-w-sm bg-[#0d1f3c] border border-white/20 rounded-3xl p-6 text-center shadow-2xl"
+        onClick={(e) => e.stopPropagation()}>
+        <div className="text-4xl mb-3">🌐</div>
+        <h3 className="text-lg font-black text-[#e8f0fe] mb-2">べつのサイトに移動します</h3>
+        <p className="text-sm text-[#94a3c4] mb-2">
+          <span className="font-bold text-[#f0c040]">「{name}」</span> は TANQラボの外のサービスです。
+        </p>
+        <p className="text-xs text-[#94a3c4] mb-5">もどるには、ブラウザの「←」ボタンを使ってね。</p>
+        <div className="flex gap-3">
+          <button onClick={onCancel}
+            className="flex-1 py-3 rounded-2xl font-bold text-sm border border-white/20 text-[#94a3c4] hover:text-white transition-all">
+            キャンセル
+          </button>
+          <button onClick={onConfirm}
+            className="flex-1 py-3 rounded-2xl font-black text-sm text-[#050b14] transition-all hover:scale-[1.02]"
+            style={{ background: '#f0c040' }}>
+            移動する →
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 // ─────────────────────────────────────────
 // PasswordGate
@@ -282,78 +322,137 @@ function HomeTab({ profile, stats, onNav, userType }: {
 // AppsTab
 // ─────────────────────────────────────────
 function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; userType: UserType }) {
+  const [extPending, setExtPending] = useState<{ url: string; name: string } | null>(null)
+
   const appStats: Record<string, { mastered: number; total: number }> = {
     kanji: { mastered: stats.kanjiMastered, total: stats.kanjiTotal },
     english: { mastered: stats.engMastered, total: stats.engTotal },
   }
 
+  const internalApps = APPS.filter(a => !a.external)
+  const externalApps = APPS.filter(a => a.external)
+
   const guestSubtitle = userType === 'guest'
     ? '計算・漢字のL1〜L2を体験中 — 登録すると全アプリ解放！'
-    : `全${APPS.length}アプリ使い放題`
+    : `全${internalApps.length}アプリ使い放題`
+
+  function AppCard({ app }: { app: typeof APPS[number] }) {
+    const lock = lockLabel(app.id, userType)
+    const s = appStats[app.id]
+    const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
+
+    if (lock) {
+      return (
+        <div className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60 relative">
+          <div className="flex items-start justify-between mb-3">
+            <div className="text-3xl grayscale">{app.emoji}</div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">
+              🔒 {lock}
+            </span>
+          </div>
+          <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
+          <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
+          {userType === 'guest' && lock === '登録して解放' && (
+            <Link href="/register" className="block mt-2 text-[10px] text-[#c4a8ff] font-bold hover:underline">無料登録で解放 →</Link>
+          )}
+        </div>
+      )
+    }
+
+    const inner = (
+      <>
+        <div className="flex items-start justify-between mb-3">
+          <div className="text-3xl">{app.emoji}</div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+            style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
+            {app.badge}
+          </span>
+        </div>
+        <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
+        {pct !== null ? (
+          <>
+            <div className="text-[#94a3c4] text-[10px] mb-2">{s!.mastered}/{s!.total}語 習得</div>
+            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: app.color }} />
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-1 mt-1">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
+            <span className="text-[#94a3c4] text-[10px]">開く →</span>
+          </div>
+        )}
+      </>
+    )
+
+    const cardBase = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
+    return (
+      <Link href={app.url} className={cardBase}>{inner}</Link>
+    )
+  }
 
   return (
     <div className="px-4 pt-6 pb-4">
+      {extPending && (
+        <ExternalLinkModal
+          url={extPending.url} name={extPending.name}
+          onConfirm={() => { window.open(extPending.url, '_blank', 'noopener,noreferrer'); setExtPending(null) }}
+          onCancel={() => setExtPending(null)}
+        />
+      )}
+
       <h2 className="font-black text-[#e8f0fe] text-lg mb-1">アプリ一覧</h2>
       <p className="text-[#94a3c4] text-xs mb-5">{guestSubtitle}</p>
-      <div className="grid grid-cols-2 gap-3">
-        {APPS.map((app) => {
-          const lock = lockLabel(app.id, userType)
-          const s = appStats[app.id]
-          const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
 
-          if (lock) {
-            return (
-              <div key={app.id} className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60 relative">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="text-3xl grayscale">{app.emoji}</div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">
-                    🔒 {lock}
-                  </span>
-                </div>
-                <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
-                <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
-                {userType === 'guest' && lock === '登録して解放' && (
-                  <Link href="/register" className="block mt-2 text-[10px] text-[#c4a8ff] font-bold hover:underline">
-                    無料登録で解放 →
-                  </Link>
-                )}
-              </div>
-            )
-          }
-
-          const cardClass = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
-          const inner = (
-            <>
-              <div className="flex items-start justify-between mb-3">
-                <div className="text-3xl">{app.emoji}</div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-                  style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
-                  {app.badge}
-                </span>
-              </div>
-              <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
-              {pct !== null ? (
-                <>
-                  <div className="text-[#94a3c4] text-[10px] mb-2">{s!.mastered}/{s!.total}語 習得</div>
-                  <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: app.color }} />
-                  </div>
-                </>
-              ) : (
-                <div className="flex items-center gap-1 mt-1">
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
-                  <span className="text-[#94a3c4] text-[10px]">開く →</span>
-                </div>
-              )}
-            </>
-          )
-          return app.external ? (
-            <a key={app.id} href={app.url} target="_blank" rel="noopener noreferrer" className={cardClass}>{inner}</a>
-          ) : (
-            <Link key={app.id} href={app.url} className={cardClass}>{inner}</Link>
-          )
-        })}
+      {/* TANQアプリ */}
+      <div className="grid grid-cols-2 gap-3 mb-6">
+        {internalApps.map((app) => <AppCard key={app.id} app={app} />)}
       </div>
+
+      {/* 提携サービス */}
+      {externalApps.length > 0 && (
+        <>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-px bg-white/15 flex-1" />
+            <span className="text-[10px] font-bold text-[#94a3c4] tracking-wider">提携サービス</span>
+            <div className="h-px bg-white/15 flex-1" />
+          </div>
+          <p className="text-[10px] text-[#94a3c4] mb-3 text-center">TANQラボの外のパートナーサービスです</p>
+          <div className="grid grid-cols-2 gap-3">
+            {externalApps.map((app) => {
+              const lock = lockLabel(app.id, userType)
+              if (lock) {
+                return (
+                  <div key={app.id} className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="text-3xl grayscale">{app.emoji}</div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">🔒 {lock}</span>
+                    </div>
+                    <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
+                    <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
+                  </div>
+                )
+              }
+              return (
+                <button key={app.id} onClick={() => setExtPending({ url: app.url, name: app.name })}
+                  className="bg-white/5 border border-[#f0c040]/20 rounded-2xl p-4 hover:border-[#f0c040]/40 transition-all hover:scale-[1.02] active:scale-[0.98] text-left w-full">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="text-3xl">{app.emoji}</div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                      style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
+                      {app.badge}
+                    </span>
+                  </div>
+                  <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
+                  <div className="flex items-center gap-1 mt-1">
+                    <span className="text-[#94a3c4] text-[10px]">外部サイトを開く ↗</span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }
