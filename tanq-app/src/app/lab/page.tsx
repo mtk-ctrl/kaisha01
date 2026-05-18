@@ -506,7 +506,7 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
   ]
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[#0a1628]/95 backdrop-blur-md border-t border-white/10 z-50">
-      <div className="flex max-w-lg mx-auto">
+      <div className="flex max-w-md mx-auto">
         {items.map(({ id, label, icon }) => (
           <button key={id} onClick={() => onChange(id)}
             className="flex-1 flex flex-col items-center py-3 gap-1 transition-all"
@@ -542,7 +542,8 @@ function AppHub({ userType }: { userType: UserType }) {
   }, [tab, refreshStats])
 
   return (
-    <div className="min-h-screen bg-[#0a1628] text-[#e8f0fe] font-sans pb-20">
+    <div className="min-h-screen bg-[#0a1628] text-[#e8f0fe] font-sans">
+      <div className="min-h-screen max-w-md mx-auto pb-20 lg:border-x lg:border-white/8 relative">
       {/* Top bar */}
       <div className="sticky top-0 z-40 bg-[#0a1628]/95 backdrop-blur-md border-b border-white/8 px-4 py-3 flex items-center justify-between">
         <span className="font-black text-[#e8f0fe] text-base">🔬 TANQ ラボ</span>
@@ -580,6 +581,7 @@ function AppHub({ userType }: { userType: UserType }) {
       {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} />}
 
       <BottomNav tab={tab} onChange={setTab} />
+      </div>
     </div>
   )
 }
