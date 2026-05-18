@@ -9,8 +9,8 @@
 
 | サービス | 状態 | 備考 |
 |---------|------|------|
-| GitHub Actions | ✅ 稼働中 | `claude/*` → main 自動マージ |
-| Vercel | ✅ CI自動デプロイ完成 | https://tanq-app.vercel.app / VERCEL_TOKEN登録済・GitHub Actions自動化動作確認済み |
+| GitHub Actions | ✅ 稼働中・動作確認済 | `claude/*` → main 自動マージ → Vercel デプロイまで success確認（2026-05-18） |
+| Vercel | ✅ CI自動デプロイ完成 | tanq-app.vercel.app / VERCEL_TOKEN Secret登録済・スマホからの指示だけで本番反映可能 |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
 | Resend | ❌ 未設定 | X投稿メール用（Secret未登録） |
