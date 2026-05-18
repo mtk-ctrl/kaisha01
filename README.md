@@ -26,3 +26,7 @@
 
 公開URL（本番）
 https://tanq-app.vercel.app/
+
+テスター入口URL（関係者限定）
+https://tanq-app.vercel.app/tester
+テスターコード: 2026
