@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 
 /* ─────────────────────────────────────────
@@ -354,6 +354,18 @@ function simulatePath(grid: string[][], cmds: Dir[]): [number, number][] {
 
 const CELL = 56
 
+const CODING_PROGRESS_KEY = 'tanq_coding_progress_v1'
+
+function loadProgress(): number {
+  if (typeof window === 'undefined') return 0
+  try { return Math.min(parseInt(localStorage.getItem(CODING_PROGRESS_KEY) || '0', 10), PUZZLES.length - 1) } catch { return 0 }
+}
+
+function saveProgress(idx: number) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(CODING_PROGRESS_KEY, String(idx))
+}
+
 export default function CodingPuzzle() {
   const [puzzleIdx, setPuzzleIdx] = useState(0)
   const [selected, setSelected] = useState<Dir[]>([])
@@ -362,6 +374,12 @@ export default function CodingPuzzle() {
   const [phase, setPhase] = useState<'intro' | 'playing' | 'finished'>('intro')
   const [animPath, setAnimPath] = useState<[number, number][]>([])
   const [animStep, setAnimStep] = useState(0)
+  const [savedIdx, setSavedIdx] = useState(0)
+
+  useEffect(() => {
+    const idx = loadProgress()
+    setSavedIdx(idx)
+  }, [])
 
   const puzzle = PUZZLES[puzzleIdx]
   const [goalR, goalC] = findPos(puzzle.grid, 'G')
@@ -404,11 +422,25 @@ export default function CodingPuzzle() {
       setPhase('finished')
       return
     }
-    setPuzzleIdx((i) => i + 1)
+    const nextIdx = puzzleIdx + 1
+    setPuzzleIdx(nextIdx)
+    saveProgress(nextIdx)
+    setSavedIdx(nextIdx)
     setSelected([])
     setResult('idle')
     setAnimPath([])
     setAnimStep(0)
+  }
+
+  function startFromSaved() {
+    const idx = loadProgress()
+    setPuzzleIdx(idx)
+    setSelected([])
+    setResult('idle')
+    setAnimPath([])
+    setAnimStep(0)
+    setScore(0)
+    setPhase('playing')
   }
 
   const currentPos = animPath.length > 0 && animStep > 0
@@ -424,13 +456,23 @@ export default function CodingPuzzle() {
         <p className="text-[#94a3c4] mb-6 max-w-sm leading-relaxed">
           TANQuu を⭐ゴールまで導こう！<br />コマンドを正しい順番に並べて<br />プログラムを作れ！
         </p>
-        <button
-          onClick={() => setPhase('playing')}
-          className="px-12 py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.04]"
-          style={{ background: '#4ade80', boxShadow: '0 0 40px rgba(74,222,128,0.4)' }}
-        >
-          スタート！
-        </button>
+        <div className="flex flex-col gap-3 w-full max-w-xs">
+          <button
+            onClick={() => { setPuzzleIdx(0); setScore(0); setSelected([]); setResult('idle'); setAnimPath([]); setAnimStep(0); setPhase('playing') }}
+            className="w-full px-12 py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.04]"
+            style={{ background: '#4ade80', boxShadow: '0 0 40px rgba(74,222,128,0.4)' }}
+          >
+            はじめから！
+          </button>
+          {savedIdx > 0 && (
+            <button
+              onClick={startFromSaved}
+              className="w-full px-12 py-4 rounded-2xl font-bold text-lg border-2 border-[#4ade80]/60 text-[#4ade80] hover:bg-[#4ade80]/10 transition-all"
+            >
+              続きから（ステージ {savedIdx + 1}）
+            </button>
+          )}
+        </div>
       </div>
     )
   }
@@ -446,7 +488,7 @@ export default function CodingPuzzle() {
         <div className="text-[#94a3c4] text-sm mb-10">/ {PUZZLES.length} 問 正解</div>
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <button
-            onClick={() => { setPuzzleIdx(0); setSelected([]); setResult('idle'); setAnimPath([]); setAnimStep(0); setScore(0); setPhase('playing') }}
+            onClick={() => { saveProgress(0); setSavedIdx(0); setPuzzleIdx(0); setSelected([]); setResult('idle'); setAnimPath([]); setAnimStep(0); setScore(0); setPhase('playing') }}
             className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] bg-[#4ade80] hover:scale-[1.02] transition-all"
           >
             もう一回！

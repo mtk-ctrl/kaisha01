@@ -1,6 +1,6 @@
-// 英語クイズ単語データ — Phase 1: 120語
-// Ken（コンテンツディレクター）仕様: 文科省「小学校英語」必修600語の20%
-// 8カテゴリ: 身の回り20 / 食べ物20 / 動物15 / 自然15 / 動作15 / 気持ち15 / 家族10 / 場所10
+// 英語クイズ単語データ — Phase 2: 275語
+// Ken（コンテンツディレクター）仕様: 文科省「小学校英語」必修600語の約46%
+// カテゴリ: 身の回り / 食べ物 / 動物 / 自然 / 動作 / 気持ち / 家族 / 場所 / からだ / スポーツ / 数・時間
 
 export interface WordEntry {
   emoji: string
@@ -14,7 +14,7 @@ export interface WordEntry {
 
 export const WORDS: WordEntry[] = [
 
-  // ── 身の回りのもの（20語） ───────────────────────────────────────
+  // ── 身の回りのもの（35語） ───────────────────────────────────────
   { emoji: '📚', japanese: 'ほん', english: 'book', category: '身の回り', tip: '"ブック"と読む。1冊・2冊はone book / two books。複数形はsをつけよう📖', sentence: 'She reads a book before bed.', sentenceJP: '彼女は寝る前に本を読みます。' },
   { emoji: '✏️', japanese: 'えんぴつ', english: 'pencil', category: '身の回り', tip: '"ペンスル"と読む。pen（ペン）との違いは消せること。stationery（文房具）の仲間！', sentence: 'Please write with a pencil.', sentenceJP: 'えんぴつで書いてください。' },
   { emoji: '🎒', japanese: 'ランドセル・リュック', english: 'backpack', category: '身の回り', tip: '"バックパック"と読む。ランドセルは日本独特！海外ではbackpackと呼ぶよ🎒', sentence: 'I put my books in my backpack.', sentenceJP: 'リュックに本を入れました。' },
@@ -35,8 +35,23 @@ export const WORDS: WordEntry[] = [
   { emoji: '☕', japanese: 'カップ', english: 'cup', category: '身の回り', tip: '"カップ"と読む。cup（お茶・コーヒー用）とglass（水・ジュース用）で使い分けるよ☕', sentence: 'She drinks coffee from a cup.', sentenceJP: '彼女はカップでコーヒーを飲みます。' },
   { emoji: '☂️', japanese: 'かさ', english: 'umbrella', category: '身の回り', tip: '"アンブレラ"と読む。雨の日には I have an umbrella.（かさを持っている）！☂️', sentence: 'Don\'t forget your umbrella today.', sentenceJP: '今日はかさを忘れないでください。' },
   { emoji: '✂️', japanese: 'はさみ', english: 'scissors', category: '身の回り', tip: '"シザーズ"と読む。常に複数形（a pair of scissors）で使うよ。cut with scissors=はさみで切る✂️', sentence: 'I need scissors to cut the paper.', sentenceJP: '紙を切るためにはさみが必要です。' },
+  { emoji: '📱', japanese: 'でんわ・スマートフォン', english: 'phone', category: '身の回り', tip: '"フォン"と読む。telephone=でんわ。smartphone=スマートフォン。call me!=電話して！📞', sentence: 'I called my mother on the phone.', sentenceJP: '電話でお母さんに連絡しました。' },
+  { emoji: '💻', japanese: 'コンピューター', english: 'computer', category: '身の回り', tip: '"コンピューター"と読む。compute=計算するから来た言葉。laptop=ノートPC。keyboard=キーボード💻', sentence: 'I use a computer to do my homework.', sentenceJP: '宿題をするためにコンピューターを使います。' },
+  { emoji: '📺', japanese: 'テレビ', english: 'television', category: '身の回り', tip: '"テレビジョン"と読む。略してTV。tele=遠く + vision=見る。remote control=リモコン📺', sentence: 'We watch television after dinner.', sentenceJP: '夕食の後にテレビを見ます。' },
+  { emoji: '📷', japanese: 'しゃしん・カメラ', english: 'camera', category: '身の回り', tip: '"カメラ"と読む。camera はラテン語で「部屋」の意味。take a photo=写真を撮る📸', sentence: 'I took a photo with my camera.', sentenceJP: 'カメラで写真を撮りました。' },
+  { emoji: '🎩', japanese: 'ぼうし', english: 'hat', category: '身の回り', tip: '"ハット"と読む。cap（キャップ）は前にひさしがある帽子。hat trick=ハットトリック（3点）🎩', sentence: 'He always wears a hat outside.', sentenceJP: '彼は外では必ずぼうしをかぶります。' },
+  { emoji: '👟', japanese: 'くつ', english: 'shoe', category: '身の回り', tip: '"シュー"と読む。常に複数形（shoes）で使うことが多い。put on your shoes=くつをはいて！👟', sentence: 'I wear shoes to school every day.', sentenceJP: '毎日学校にくつをはいて行きます。' },
+  { emoji: '👕', japanese: 'シャツ', english: 'shirt', category: '身の回り', tip: '"シャート"と読む。T-shirt=Tシャツ。dress shirt=ワイシャツ。put on a shirt=シャツを着る👕', sentence: 'I wear a white shirt today.', sentenceJP: '今日は白いシャツを着ています。' },
+  { emoji: '🧦', japanese: 'くつした', english: 'socks', category: '身の回り', tip: '"ソックス"と読む。常に複数形（a pair of socks）。knock someone\'s socks off=すごく感動させる🧦', sentence: 'I put on clean socks every morning.', sentenceJP: '毎朝きれいなくつしたをはきます。' },
+  { emoji: '🛏️', japanese: 'ベッド', english: 'bed', category: '身の回り', tip: '"ベッド"と読む。go to bed=ねる。make the bed=ベッドを整える。bunk bed=2段ベッド🛏️', sentence: 'I go to bed at nine o\'clock.', sentenceJP: '私は9時にベッドに行きます。' },
+  { emoji: '🪞', japanese: 'かがみ', english: 'mirror', category: '身の回り', tip: '"ミラー"と読む。mirror image=鏡像。side mirror=サイドミラー（車）。mirror mirror=おとぎ話🪞', sentence: 'I look in the mirror every morning.', sentenceJP: '毎朝かがみを見ます。' },
+  { emoji: '🧼', japanese: 'せっけん', english: 'soap', category: '身の回り', tip: '"ソープ"と読む。soap opera=ソープオペラ（昼ドラ）。wash your hands with soap=せっけんで手を洗う🧼', sentence: 'Please wash your hands with soap.', sentenceJP: 'せっけんで手を洗ってください。' },
+  { emoji: '🪥', japanese: 'はぶらし', english: 'toothbrush', category: '身の回り', tip: '"トゥースブラシ"と読む。tooth（歯）+ brush（ブラシ）。brush your teeth=歯をみがく🦷', sentence: 'I brush my teeth with a toothbrush.', sentenceJP: 'はぶらしで歯をみがきます。' },
+  { emoji: '🔑', japanese: 'かぎ', english: 'key', category: '身の回り', tip: '"キー"と読む。keyboard=キーボード（鍵盤）。key point=重要なポイント。key=鍵（ひけつ）とも使う🔑', sentence: 'Don\'t forget your house key.', sentenceJP: '家のかぎを忘れないでください。' },
+  { emoji: '🪆', japanese: 'おもちゃ', english: 'toy', category: '身の回り', tip: '"トイ"と読む。toy store=おもちゃ屋。Toy Story=トイ・ストーリー（映画）🎠', sentence: 'The children are playing with their toys.', sentenceJP: '子供たちはおもちゃで遊んでいます。' },
+  { emoji: '🎨', japanese: 'え・絵', english: 'picture', category: '身の回り', tip: '"ピクチャー"と読む。picture book=絵本。take a picture=写真をとる。motion picture=映画🎨', sentence: 'She drew a beautiful picture.', sentenceJP: '彼女は美しい絵を描きました。' },
 
-  // ── 食べ物・飲み物（20語） ───────────────────────────────────────
+  // ── 食べ物・飲み物（40語） ───────────────────────────────────────
   { emoji: '🍎', japanese: 'リンゴ', english: 'apple', category: '食べ物', tip: '"アップル"と読む。ニュートンがリンゴを見て重力を発見！Apple社のロゴもリンゴ🍏', sentence: 'I eat an apple every day.', sentenceJP: '私は毎日リンゴを食べます。' },
   { emoji: '🍙', japanese: 'おにぎり', english: 'rice ball', category: '食べ物', tip: '"ライスボール"と読む。onigiriがそのまま英語になってきてるよ🍙', sentence: 'I made a rice ball for lunch.', sentenceJP: '昼食におにぎりを作りました。' },
   { emoji: '🍊', japanese: 'みかん・オレンジ', english: 'orange', category: '食べ物', tip: '"オレンジ"と読む。色のオレンジも同じ単語！The sky turned orange（空がオレンジ色に）🍊', sentence: 'An orange is sweet and juicy.', sentenceJP: 'みかんは甘くてジューシーです。' },
@@ -57,8 +72,29 @@ export const WORDS: WordEntry[] = [
   { emoji: '🍦', japanese: 'アイスクリーム', english: 'ice cream', category: '食べ物', tip: '"アイスクリーム"と読む。ice（氷）+ cream（クリーム）。soft serve=ソフトクリーム🍦', sentence: 'I love eating ice cream in summer.', sentenceJP: '私は夏にアイスクリームを食べるのが大好きです。' },
   { emoji: '🍫', japanese: 'チョコレート', english: 'chocolate', category: '食べ物', tip: '"チョコレット"と読む。カカオから作る。dark chocolate=ビター、milk chocolate=ミルク🍫', sentence: 'She gave me a box of chocolate.', sentenceJP: '彼女はチョコレートの箱をくれました。' },
   { emoji: '🥪', japanese: 'サンドイッチ', english: 'sandwich', category: '食べ物', tip: '"サンドウィッチ"と読む。Sandwich伯爵（英国の貴族）が考案したと言われてるよ🥪', sentence: 'I made a sandwich for lunch.', sentenceJP: '昼食にサンドイッチを作りました。' },
+  { emoji: '🍓', japanese: 'いちご', english: 'strawberry', category: '食べ物', tip: '"ストロベリー"と読む。straw（わら）+ berry（果実）。strawberry milk=いちごミルク🍓', sentence: 'I love strawberry ice cream.', sentenceJP: 'いちごアイスが大好きです。' },
+  { emoji: '🍅', japanese: 'トマト', english: 'tomato', category: '食べ物', tip: '"トメイトウ"と読む。英米で発音が違う！野菜？果物？実は果実！ketchup=ケチャップもトマトから🍅', sentence: 'I put tomato in my salad.', sentenceJP: 'サラダにトマトを入れます。' },
+  { emoji: '🌽', japanese: 'とうもろこし', english: 'corn', category: '食べ物', tip: '"コーン"と読む。popcorn=ポップコーン。corn on the cob=とうもろこしの丸ごと焼き🌽', sentence: 'I like corn soup very much.', sentenceJP: 'コーンスープがとても好きです。' },
+  { emoji: '🥕', japanese: 'にんじん', english: 'carrot', category: '食べ物', tip: '"キャロット"と読む。うさぎが好き！carrot cake=キャロットケーキ。vitamins（ビタミン）たっぷり🥕', sentence: 'Rabbits love to eat carrots.', sentenceJP: 'うさぎはにんじんを食べるのが大好きです。' },
+  { emoji: '🧅', japanese: 'たまねぎ', english: 'onion', category: '食べ物', tip: '"アニオン"と読む。cutting onions makes you cry!（目が痛い）。spring onion=葱🧅', sentence: 'My mother cooks with onion.', sentenceJP: '私のお母さんはたまねぎで料理します。' },
+  { emoji: '🧀', japanese: 'チーズ', english: 'cheese', category: '食べ物', tip: '"チーズ"と読む。写真を撮るとき "Cheese!"と言うのは笑顔になるから！チーズバーガーも大人気🧀', sentence: 'I like pizza with lots of cheese.', sentenceJP: 'チーズたっぷりのピザが好きです。' },
+  { emoji: '🍪', japanese: 'クッキー', english: 'cookie', category: '食べ物', tip: '"クッキー"と読む。Cookie Monster=クッキーモンスター（セサミストリート）。コンピューターのcookieも同じ単語🍪', sentence: 'My grandmother baked cookies for me.', sentenceJP: 'おばあちゃんが私のためにクッキーを焼いてくれました。' },
+  { emoji: '🍬', japanese: 'あめ・キャンディ', english: 'candy', category: '食べ物', tip: '"キャンディ"と読む。candy bar=チョコバー。Halloween candy=ハロウィンのお菓子🍬', sentence: 'She gave me a candy.', sentenceJP: '彼女がキャンディをくれました。' },
+  { emoji: '🍋', japanese: 'レモン', english: 'lemon', category: '食べ物', tip: '"レモン"と読む。lemonade=レモネード。"When life gives you lemons, make lemonade"（逆境をチャンスに）🍋', sentence: 'Lemons taste very sour.', sentenceJP: 'レモンはとても酸っぱいです。' },
+  { emoji: '🍔', japanese: 'ハンバーガー', english: 'hamburger', category: '食べ物', tip: '"ハンバーガー"と読む。ドイツのHamburg（ハンブルク）が語源！burger=ハンバーガーとも言う🍔', sentence: 'I eat a hamburger for lunch sometimes.', sentenceJP: '時々昼食にハンバーガーを食べます。' },
+  { emoji: '🥗', japanese: 'サラダ', english: 'salad', category: '食べ物', tip: '"サラダ"と読む。tossed salad=混ぜサラダ。salad dressing=ドレッシング。fresh and healthy！🥗', sentence: 'I eat salad every day for my health.', sentenceJP: '健康のために毎日サラダを食べます。' },
+  { emoji: '🍮', japanese: 'プリン', english: 'pudding', category: '食べ物', tip: '"プディング"と読む。日本の「プリン」は英語でcustard pudding。proof is in the pudding=結果が大事🍮', sentence: 'Pudding is my favorite dessert.', sentenceJP: 'プリンは私の大好きなデザートです。' },
+  { emoji: '🍉', japanese: 'スイカ', english: 'watermelon', category: '食べ物', tip: '"ウォーターメロン"と読む。water（水）+ melon（メロン）。夏の果物の王様！seeds=種🍉', sentence: 'We eat watermelon in summer.', sentenceJP: '夏にスイカを食べます。' },
+  { emoji: '🍑', japanese: 'もも', english: 'peach', category: '食べ物', tip: '"ピーチ"と読む。peachy=素晴らしい（俗語）。桃太郎の桃もpeach！peach color=ピーチ色🍑', sentence: 'This peach is very sweet.', sentenceJP: 'このもももはとても甘いです。' },
+  { emoji: '🍍', japanese: 'パイナップル', english: 'pineapple', category: '食べ物', tip: '"パイナップル"と読む。pine（松）+ apple（リンゴ）。松ぼっくりに似た形から！🍍', sentence: 'Pineapple juice is very refreshing.', sentenceJP: 'パイナップルジュースはとてもさわやかです。' },
+  { emoji: '🍈', japanese: 'メロン', english: 'melon', category: '食べ物', tip: '"メロン"と読む。honeydew melon=ハネデューメロン。melon pan=メロンパン（日本特有）🍈', sentence: 'Melon is sweet and delicious.', sentenceJP: 'メロンは甘くておいしいです。' },
+  { emoji: '🍒', japanese: 'さくらんぼ', english: 'cherry', category: '食べ物', tip: '"チェリー"と読む。cherry blossom=さくらの花。cherry on top=仕上げの一品（慣用句）🍒', sentence: 'I love cherry ice cream.', sentenceJP: 'さくらんぼアイスが大好きです。' },
+  { emoji: '🥦', japanese: 'やさい', english: 'vegetable', category: '食べ物', tip: '"ベジタブル"と読む。veggie=野菜（略語）。vegetarian=肉を食べない人。eat your veggies！🥦', sentence: 'Vegetables are good for your health.', sentenceJP: '野菜は体に良いです。' },
+  { emoji: '🍣', japanese: 'さかなりょうり・おさしみ', english: 'sushi', category: '食べ物', tip: '"スシ"と読む。日本語がそのまま英語になった！sashimi=さしみも英語として使われる🍣', sentence: 'Sushi is a famous Japanese food.', sentenceJP: 'すしは有名な日本料理です。' },
+  { emoji: '🍝', japanese: 'パスタ', english: 'pasta', category: '食べ物', tip: '"パスタ"と読む。イタリア語から来た言葉。spaghetti・macaroni・penneも全部pasta🍝', sentence: 'I love eating pasta for dinner.', sentenceJP: '夕食にパスタを食べるのが大好きです。' },
+  { emoji: '🍜', japanese: 'めん・ラーメン', english: 'noodle', category: '食べ物', tip: '"ヌードル"と読む。ramen=ラーメン、udon=うどん、soba=そばも全部noodle！🍜', sentence: 'I like noodle soup on cold days.', sentenceJP: '寒い日にはめんのスープが好きです。' },
 
-  // ── 動物（15語） ────────────────────────────────────────────────
+  // ── 動物（25語） ────────────────────────────────────────────────
   { emoji: '🐕', japanese: 'イヌ', english: 'dog', category: '動物', tip: '"ドッグ"と読む。"It\'s raining cats and dogs"（土砂降り）という慣用句があるよ！', sentence: 'My dog loves to run in the park.', sentenceJP: '私のイヌは公園を走るのが大好きです。' },
   { emoji: '🐱', japanese: 'ネコ', english: 'cat', category: '動物', tip: '"キャット"と読む。英語でネコの鳴き声は meow（ミャオ）と書くよ🐾', sentence: 'The cat is sleeping on the sofa.', sentenceJP: 'ネコはソファの上で寝ています。' },
   { emoji: '🐟', japanese: 'さかな', english: 'fish', category: '動物', tip: '"フィッシュ"と読む。fish は単複同形が多い（1 fish, 2 fish）。fish and chips は英国名物！', sentence: 'There are many fish in the river.', sentenceJP: '川にはたくさんの魚がいます。' },
@@ -74,8 +110,18 @@ export const WORDS: WordEntry[] = [
   { emoji: '🐝', japanese: 'ハチ', english: 'bee', category: '動物', tip: '"ビー"と読む。spelling bee=スペリングコンテスト（英語）。busy as a bee=とても忙しい🐝', sentence: 'Bees make honey.', sentenceJP: 'ハチははちみつを作ります。' },
   { emoji: '🐻', japanese: 'クマ', english: 'bear', category: '動物', tip: '"ベア"と読む。teddy bear=テディベア（ぬいぐるみ）。polar bear=白熊。bear hug=強いハグ🐻', sentence: 'A bear sleeps all winter.', sentenceJP: 'クマは冬中眠ります。' },
   { emoji: '🐢', japanese: 'カメ', english: 'turtle', category: '動物', tip: '"タートル"と読む。tortoise=陸のカメ、turtle=海のカメ。"slow and steady wins the race"🐢', sentence: 'Turtles live for a very long time.', sentenceJP: 'カメはとても長生きします。' },
+  { emoji: '🐄', japanese: 'うし', english: 'cow', category: '動物', tip: '"カウ"と読む。cow=めすのうし。milk comes from cows！cowboy=カウボーイ🤠', sentence: 'The cow gives us milk.', sentenceJP: 'うしは私たちにぎゅうにゅうをくれます。' },
+  { emoji: '🐷', japanese: 'ぶた', english: 'pig', category: '動物', tip: '"ピッグ"と読む。piggy bank=ぶちょきん箱。"When pigs fly"=ありえない話！🐷', sentence: 'Pigs are very smart animals.', sentenceJP: 'ぶたはとても賢い動物です。' },
+  { emoji: '🐑', japanese: 'ひつじ', english: 'sheep', category: '動物', tip: '"シープ"と読む。単複同形（1 sheep, 2 sheep）。wool（ウール）はひつじから！🐑', sentence: 'The sheep has soft white wool.', sentenceJP: 'ひつじは柔らかい白いウールを持っています。' },
+  { emoji: '🦆', japanese: 'あひる', english: 'duck', category: '動物', tip: '"ダック"と読む。duck=あひる。Donald Duck=ドナルドダック！rubber duck=ゴムのあひる🦆', sentence: 'The duck swims in the pond.', sentenceJP: 'あひるは池で泳ぎます。' },
+  { emoji: '🐍', japanese: 'へび', english: 'snake', category: '動物', tip: '"スネイク"と読む。snake charmer=蛇使い。Snakes and Ladders=へびとはしご（ゲーム）🐍', sentence: 'The snake moves very quietly.', sentenceJP: 'へびはとても静かに動きます。' },
+  { emoji: '🐭', japanese: 'ネズミ', english: 'mouse', category: '動物', tip: '"マウス"と読む。コンピューターの「マウス」も同じ単語！Mickey Mouse=ミッキーマウス🐭', sentence: 'The mouse is very small and fast.', sentenceJP: 'ネズミはとても小さくて速いです。' },
+  { emoji: '🐯', japanese: 'トラ', english: 'tiger', category: '動物', tip: '"タイガー"と読む。Tiger Woods=タイガー・ウッズ（ゴルファー）。eye of the tiger！🐯', sentence: 'The tiger has orange and black stripes.', sentenceJP: 'トラはオレンジと黒のしまもようをしています。' },
+  { emoji: '🦒', japanese: 'キリン', english: 'giraffe', category: '動物', tip: '"ジラフ"と読む。世界一首の長い動物。neck=首。tall as a giraffe=とても背が高い🦒', sentence: 'Giraffes have very long necks.', sentenceJP: 'キリンはとても長い首を持っています。' },
+  { emoji: '🐋', japanese: 'クジラ', english: 'whale', category: '動物', tip: '"ウェイル"と読む。blue whale=シロナガスクジラ（世界最大の動物）。whale watching=ホエールウォッチング🐋', sentence: 'Whales are the biggest animals in the sea.', sentenceJP: 'クジラは海で一番大きな動物です。' },
+  { emoji: '🐬', japanese: 'イルカ', english: 'dolphin', category: '動物', tip: '"ドルフィン"と読む。dolphin kick=ドルフィンキック（水泳）。dolphins are very smart!🐬', sentence: 'Dolphins are very smart and friendly.', sentenceJP: 'イルカはとても賢くて友好的です。' },
 
-  // ── 自然・天気（15語） ───────────────────────────────────────────
+  // ── 自然・天気（25語） ───────────────────────────────────────────
   { emoji: '🌸', japanese: 'はな', english: 'flower', category: '自然', tip: '"フラワー"と読む。桜は cherry blossom（チェリーブロッサム）。お花見は blossom viewing🌸', sentence: 'The flowers in the garden are beautiful.', sentenceJP: '庭の花は美しいです。' },
   { emoji: '🌙', japanese: 'つき', english: 'moon', category: '自然', tip: '"ムーン"と読む。月曜日は Monday — Moon\'s day（月の日）が語源！full moon=満月🌙', sentence: 'The moon is bright tonight.', sentenceJP: '今夜は月が明るい。' },
   { emoji: '☀️', japanese: 'たいよう', english: 'sun', category: '自然', tip: '"サン"と読む。日曜日はSunday—Sun\'s day（太陽の日）。sunflower=ひまわり☀️', sentence: 'The sun rises in the east.', sentenceJP: '太陽は東から昇ります。' },
@@ -91,8 +137,18 @@ export const WORDS: WordEntry[] = [
   { emoji: '🏞️', japanese: 'かわ', english: 'river', category: '自然', tip: '"リバー"と読む。riverbank=川岸。Amazon River（アマゾン川）は世界最大の川。river fish=川魚🏞️', sentence: 'We caught fish in the river.', sentenceJP: '私たちは川で魚を釣りました。' },
   { emoji: '🌤️', japanese: 'そら', english: 'sky', category: '自然', tip: '"スカイ"と読む。skyline=スカイライン（都市の輪郭）。the sky is the limit=可能性は無限大！🌤️', sentence: 'The sky is clear and blue today.', sentenceJP: '今日は空が澄んで青い。' },
   { emoji: '🍂', japanese: 'はっぱ・葉', english: 'leaf', category: '自然', tip: '"リーフ"と読む。leaflet=チラシ（小さな葉）。four-leaf clover=四つ葉のクローバー（幸運）🍃', sentence: 'The leaves turn red in autumn.', sentenceJP: '葉は秋に赤くなります。' },
+  { emoji: '🔥', japanese: 'ひ・ほのお', english: 'fire', category: '自然', tip: '"ファイア"と読む。fire station=消防署。firefly=ほたる。campfire=キャンプファイヤー🔥', sentence: 'We made a fire at the campsite.', sentenceJP: 'キャンプ場でひをおこしました。' },
+  { emoji: '🪨', japanese: 'いし・岩', english: 'stone', category: '自然', tip: '"ストーン"と読む。stepping stone=飛び石。stone age=石器時代。Rolling Stones=ローリングストーンズ🪨', sentence: 'I found a shiny stone by the river.', sentenceJP: '川のそばできれいないしを見つけました。' },
+  { emoji: '🏖️', japanese: 'すな', english: 'sand', category: '自然', tip: '"サンド"と読む。sandbox=砂場。sandstorm=砂嵐。sandcastle=砂のお城🏖️', sentence: 'We made a sandcastle at the beach.', sentenceJP: 'ビーチで砂のお城を作りました。' },
+  { emoji: '🌿', japanese: 'くさ', english: 'grass', category: '自然', tip: '"グラス"と読む。grasshopper=バッタ。"The grass is always greener on the other side"（隣の芝は青い）🌿', sentence: 'The grass in the park is very green.', sentenceJP: '公園のくさはとても緑です。' },
+  { emoji: '🌲', japanese: 'もり', english: 'forest', category: '自然', tip: '"フォレスト"と読む。Forrest Gump=フォレスト・ガンプ（映画）。rainforest=熱帯雨林🌲', sentence: 'There are many animals in the forest.', sentenceJP: 'もりにはたくさんの動物がいます。' },
+  { emoji: '🏝️', japanese: 'しま', english: 'island', category: '自然', tip: '"アイランド"と読む。the British Isles=英国諸島。island hopping=島めぐり。desert island=無人島🏝️', sentence: 'We visited a beautiful island.', sentenceJP: '美しいしまを訪れました。' },
+  { emoji: '🏞️', japanese: 'いけ', english: 'pond', category: '自然', tip: '"ポンド"と読む。fishpond=養魚池。duck pond=あひるのいけ。smaller than a lake（湖より小さい）🐟', sentence: 'There are fish in the pond.', sentenceJP: 'いけには魚がいます。' },
+  { emoji: '🌍', japanese: 'ちきゅう・世界', english: 'earth', category: '自然', tip: '"アース"と読む。Earth Day=アースデー（地球の日）。go green=エコにする。one earth🌍', sentence: 'We must protect the earth.', sentenceJP: '私たちはちきゅうを守らなければなりません。' },
+  { emoji: '🍂', japanese: 'きせつ', english: 'season', category: '自然', tip: '"シーズン"と読む。4 seasons=四季（spring・summer・autumn・winter）。baseball season=野球シーズン🍂', sentence: 'My favorite season is autumn.', sentenceJP: '私の好きなきせつは秋です。' },
+  { emoji: '🌋', japanese: 'やま・火山', english: 'volcano', category: '自然', tip: '"ボルケイノ"と読む。lava=溶岩。active volcano=活火山。ローマ神話の火の神Vulcan（バルカン）が語源🌋', sentence: 'The volcano erupted many years ago.', sentenceJP: 'その火山は何年も前に噴火しました。' },
 
-  // ── 動作・動詞（15語） ───────────────────────────────────────────
+  // ── 動作・動詞（35語） ───────────────────────────────────────────
   { emoji: '🏃', japanese: 'はしる', english: 'run', category: '動作', tip: '"ラン"と読む。run も多義語！プログラムを実行するもrun（run a program）と言うよ💻', sentence: 'She runs five kilometers every morning.', sentenceJP: '彼女は毎朝5キロ走ります。' },
   { emoji: '🏊', japanese: 'およぐ', english: 'swim', category: '動作', tip: '"スウィム"と読む。swimmer（水泳選手）、swimming pool（プール）。I can swim!=泳げる！🏊', sentence: 'I can swim very fast.', sentenceJP: '私はとても速く泳げます。' },
   { emoji: '🤸', japanese: 'とぶ・ジャンプする', english: 'jump', category: '動作', tip: '"ジャンプ"と読む。jump rope=なわとび。high jump=走り高跳び。bungee jumping=バンジージャンプ🤸', sentence: 'Can you jump over this rope?', sentenceJP: 'このなわを飛び越えられますか？' },
@@ -108,8 +164,29 @@ export const WORDS: WordEntry[] = [
   { emoji: '📚', japanese: 'べんきょうする', english: 'study', category: '動作', tip: '"スタディ"と読む。student=生徒（勉強する人）。study hard=一生懸命勉強する📚', sentence: 'I study English every day.', sentenceJP: '私は毎日英語を勉強します。' },
   { emoji: '👂', japanese: 'きく', english: 'listen', category: '動作', tip: '"リッスン"と読む。listen to music=音楽を聴く。listen carefully=注意深く聞く👂', sentence: 'Please listen to your teacher.', sentenceJP: '先生の言うことをよく聞いてください。' },
   { emoji: '👁️', japanese: 'みる・みている', english: 'watch', category: '動作', tip: '"ウォッチ"と読む。watch TV=テレビを見る。wristwatch=腕時計。watch out!=気をつけて！👀', sentence: 'We watch TV after dinner.', sentenceJP: '私たちは夕食後にテレビを見ます。' },
+  { emoji: '🗣️', japanese: 'はなす・しゃべる', english: 'speak', category: '動作', tip: '"スピーク"と読む。speaker=話す人・スピーカー。public speaking=人前でのスピーチ🎙️', sentence: 'Can you speak English?', sentenceJP: '英語を話せますか？' },
+  { emoji: '💭', japanese: 'かんがえる', english: 'think', category: '動作', tip: '"スィンク"と読む。thinker=考える人。"Think outside the box"（型にはまらず考える）💡', sentence: 'Think carefully before you answer.', sentenceJP: '答える前によく考えてください。' },
+  { emoji: '💡', japanese: 'しっている・わかる', english: 'know', category: '動作', tip: '"ノウ"と読む。knowledge=知識。"You know what?"（ねえ、知ってる？）。no と know は発音が同じ！', sentence: 'Do you know the answer?', sentenceJP: '答えを知っていますか？' },
+  { emoji: '❤️', japanese: 'すきだ', english: 'like', category: '動作', tip: '"ライク"と読む。I like cats（ネコが好き）。like=SNSの「いいね」も同じ単語！likewise=同様に❤️', sentence: 'I like playing soccer very much.', sentenceJP: 'サッカーをするのがとても好きです。' },
+  { emoji: '🤝', japanese: 'たすける', english: 'help', category: '動作', tip: '"ヘルプ"と読む。helper=助ける人。Help!=たすけて！SOS と同じ意味🤝', sentence: 'Can you help me with my homework?', sentenceJP: '宿題を手伝ってもらえますか？' },
+  { emoji: '🎁', japanese: 'あげる・わたす', english: 'give', category: '動作', tip: '"ギブ"と読む。give up=あきらめる。give a present=プレゼントをあげる。give and take🎁', sentence: 'She gave me a birthday present.', sentenceJP: '彼女は私に誕生日プレゼントをくれました。' },
+  { emoji: '🛠️', japanese: 'つくる', english: 'make', category: '動作', tip: '"メイク"と読む。make a mistake=まちがえる。make friends=友達をつくる。maker=作る人🛠️', sentence: 'I want to make a robot.', sentenceJP: 'ロボットを作りたいです。' },
+  { emoji: '✏️', japanese: 'えをかく', english: 'draw', category: '動作', tip: '"ドロー"と読む。drawing=絵を描くこと。drawer=引き出し（かく人）。draw a picture=絵を描く🎨', sentence: 'I love to draw pictures.', sentenceJP: '絵を描くのが大好きです。' },
+  { emoji: '🧹', japanese: 'そうじする', english: 'clean', category: '動作', tip: '"クリーン"と読む。cleaning=掃除。spring cleaning=大掃除（春）。cleaner=掃除する人・洗剤🧹', sentence: 'I clean my room every weekend.', sentenceJP: '毎週末部屋をそうじします。' },
+  { emoji: '🔧', japanese: 'つかう', english: 'use', category: '動作', tip: '"ユーズ"と読む。useful=役に立つ。user=使う人。use it or lose it=使わないと忘れる！🔧', sentence: 'I use a dictionary to study English.', sentenceJP: '英語を勉強するために辞書を使います。' },
+  { emoji: '🛑', japanese: 'とまる・やめる', english: 'stop', category: '動作', tip: '"ストップ"と読む。stop sign=止まれの標識。bus stop=バス停。stop it!=やめなさい！🛑', sentence: 'Please stop running in the hallway.', sentenceJP: '廊下では走るのをやめてください。' },
+  { emoji: '▶️', japanese: 'はじめる・スタート', english: 'start', category: '動作', tip: '"スタート"と読む。starter=スタートする人・前菜。start from scratch=ゼロから始める▶️', sentence: 'Let\'s start our English lesson.', sentenceJP: '英語のレッスンを始めましょう。' },
+  { emoji: '🔍', japanese: 'みつける・さがす', english: 'find', category: '動作', tip: '"ファインド"と読む。finder=見つける人。find out=調べる。lost and found=遺失物係り🔍', sentence: 'Did you find your pencil?', sentenceJP: 'えんぴつは見つかりましたか？' },
+  { emoji: '⌛', japanese: 'まつ', english: 'wait', category: '動作', tip: '"ウェイト"と読む。waiter=ウェイター（待つ人→料理を待つ人）。wait and see=様子を見る⌛', sentence: 'Please wait here for a moment.', sentenceJP: 'ここでちょっと待ってください。' },
+  { emoji: '💪', japanese: 'やってみる・ためす', english: 'try', category: '動作', tip: '"トライ"と読む。try your best=ベストを尽くす。try on=（服を）試着する。try again!=もう一回！💪', sentence: 'Always try your best!', sentenceJP: '常にベストを尽くしてください！' },
+  { emoji: '📦', japanese: 'もってくる', english: 'bring', category: '動作', tip: '"ブリング"と読む。bring up=育てる・持ち出す。"Bring it on!"=かかってこい！bring a friend=友達を連れてくる📦', sentence: 'Please bring your textbook tomorrow.', sentenceJP: '明日教科書を持ってきてください。' },
+  { emoji: '🚀', japanese: 'とぶ・飛ぶ', english: 'fly', category: '動作', tip: '"フライ"と読む。fly a kite=凧を上げる。time flies=時間が経つのは早い。pilot=パイロット✈️', sentence: 'Birds can fly in the sky.', sentenceJP: 'とりは空を飛べます。' },
+  { emoji: '🌅', japanese: 'おきる', english: 'wake', category: '動作', tip: '"ウェイク"と読む。wake up=起きる。alarm clock=目覚まし時計。wake up call=電話モーニングコール🌅', sentence: 'I wake up at seven every morning.', sentenceJP: '私は毎朝7時に起きます。' },
+  { emoji: '😊', japanese: 'わらう', english: 'laugh', category: '動作', tip: '"ラフ"と読む。laughter=笑い声。laugh out loud=大笑いする（LOL）。laughing gas=笑気ガス😄', sentence: 'The funny movie made me laugh.', sentenceJP: 'おかしい映画を見て笑いました。' },
+  { emoji: '🏃', japanese: 'かける・かえる', english: 'go', category: '動作', tip: '"ゴー"と読む。go to school=学校に行く。let\'s go!=行こう！go + 動詞ingで「～しに行く」になる🏃', sentence: 'Let\'s go to the park today.', sentenceJP: '今日は公園に行きましょう。' },
+  { emoji: '🏠', japanese: 'かえる・もどる', english: 'come', category: '動作', tip: '"カム"と読む。come back=帰ってくる。come on!=さあ！来て！come true=実現する🌟', sentence: 'Please come to school on time.', sentenceJP: '時間通りに学校に来てください。' },
 
-  // ── 気持ち・形容詞（15語） ───────────────────────────────────────
+  // ── 気持ち・形容詞（35語） ───────────────────────────────────────
   { emoji: '😊', japanese: 'うれしい・しあわせ', english: 'happy', category: '気持ち', tip: '"ハッピー"と読む。Happy birthday! Happy New Year! お祝いの定番表現😊', sentence: 'I am very happy today!', sentenceJP: '今日はとてもうれしいです！' },
   { emoji: '😢', japanese: 'かなしい', english: 'sad', category: '気持ち', tip: '"サッド"と読む。I\'m sad.（かなしいな）、Don\'t be sad!（かなしまないで）😢', sentence: 'He looked sad after losing the game.', sentenceJP: '彼は試合に負けた後かなしそうにしていた。' },
   { emoji: '🔴', japanese: 'あかい', english: 'red', category: '気持ち', tip: '"レッド"と読む。red card（レッドカード）、red carpet（レッドカーペット）🔴', sentence: 'The traffic light is red.', sentenceJP: '信号が赤です。' },
@@ -125,8 +202,29 @@ export const WORDS: WordEntry[] = [
   { emoji: '😄', japanese: 'おかしい・たのしい', english: 'funny', category: '気持ち', tip: '"ファニー"と読む。funny face=おかしい顔。funny story=おかしい話。That\'s funny!=おかしい！😄', sentence: 'He told a very funny joke.', sentenceJP: '彼はとてもおかしいジョークを言いました。' },
   { emoji: '✨', japanese: 'あたらしい', english: 'new', category: '気持ち', tip: '"ニュー"と読む。new year=新年。brand new=新品。news=ニュース（新しいできごと）✨', sentence: 'I got a new smartphone.', sentenceJP: '新しいスマートフォンを買いました。' },
   { emoji: '🥰', japanese: 'かわいい', english: 'cute', category: '気持ち', tip: '"キュート"と読む。cuteness=かわいさ。Cute!（かわいい！）は英語でもよく使う表現🥰', sentence: 'That puppy is so cute!', sentenceJP: 'その子犬はとてもかわいいです！' },
+  { emoji: '😪', japanese: 'つかれた', english: 'tired', category: '気持ち', tip: '"タイアード"と読む。I\'m tired.（つかれた）。tireless=疲れを知らない。tireが tire（タイヤ）と同じスペル😪', sentence: 'I am very tired after school.', sentenceJP: '学校の後はとてもつかれます。' },
+  { emoji: '😲', japanese: 'おどろいた', english: 'surprised', category: '気持ち', tip: '"サープライズド"と読む。surprise party=サプライズパーティー！surprise=びっくりすること😲', sentence: 'I was surprised by the loud noise.', sentenceJP: '大きな音におどろきました。' },
+  { emoji: '😱', japanese: 'こわい', english: 'scared', category: '気持ち', tip: '"スケアード"と読む。scary movie=こわい映画。Don\'t be scared!=こわくないよ！boo!=わっ（脅し）😱', sentence: 'I was scared of the thunder.', sentenceJP: '雷がこわかったです。' },
+  { emoji: '🤩', japanese: 'わくわく・こうふん', english: 'excited', category: '気持ち', tip: '"エクサイテッド"と読む。exciting game=わくわくする試合。I\'m so excited!=とてもわくわくしてる！🤩', sentence: 'I was excited about the school trip.', sentenceJP: '修学旅行にわくわくしました。' },
+  { emoji: '🧍', japanese: 'たかい（身長）', english: 'tall', category: '気持ち', tip: '"トール"と読む。tall building=高い建物。stand tall=背筋を伸ばして立つ。shortの反対🧍', sentence: 'My father is very tall.', sentenceJP: '私のお父さんはとても背が高いです。' },
+  { emoji: '📏', japanese: 'みじかい・ひくい', english: 'short', category: '気持ち', tip: '"ショート"と読む。short cut=近道・ショートカット。in short=要するに。tallの反対📏', sentence: 'She has short hair.', sentenceJP: '彼女は短い髪をしています。' },
+  { emoji: '↔️', japanese: 'ながい', english: 'long', category: '気持ち', tip: '"ロング"と読む。long time no see=久しぶり。long jump=走り幅跳び。shortの反対↔️', sentence: 'The river is very long.', sentenceJP: '川はとても長いです。' },
+  { emoji: '⬜', japanese: 'しろい', english: 'white', category: '気持ち', tip: '"ホワイト"と読む。white board=ホワイトボード。white lie=罪のないうそ。Snow White=白雪姫⬜', sentence: 'The snow is white and beautiful.', sentenceJP: '雪は白くてきれいです。' },
+  { emoji: '⬛', japanese: 'くろい', english: 'black', category: '気持ち', tip: '"ブラック"と読む。blackboard=黒板。black belt=黒帯（空手）。Black Friday=ブラックフライデー⬛', sentence: 'The cat has black fur.', sentenceJP: 'ネコは黒い毛をしています。' },
+  { emoji: '🟡', japanese: 'きいろ', english: 'yellow', category: '気持ち', tip: '"イエロー"と読む。yellow card=イエローカード（警告）。yellow brick road=黄金の道（オズの魔法使い）🟡', sentence: 'The banana is yellow.', sentenceJP: 'バナナは黄色です。' },
+  { emoji: '🌸', japanese: 'ピンク', english: 'pink', category: '気持ち', tip: '"ピンク"と読む。pink panther=ピンクパンサー。in the pink=とても元気。think pink!=前向きに考えて🌸', sentence: 'She likes pink flowers.', sentenceJP: '彼女はピンクの花が好きです。' },
+  { emoji: '💜', japanese: 'むらさき', english: 'purple', category: '気持ち', tip: '"パープル"と読む。昔は王様だけが使える色！"born to the purple"=王族生まれ。Purple Rain=名曲💜', sentence: 'The grapes are dark purple.', sentenceJP: 'ぶどうは濃いむらさき色です。' },
+  { emoji: '💗', japanese: 'やさしい・親切', english: 'kind', category: '気持ち', tip: '"カインド"と読む。kindness=やさしさ。"Be kind"=やさしくして。mankind=人類（人の種類）💗', sentence: 'She is very kind to everyone.', sentenceJP: '彼女はみんなにとてもやさしいです。' },
+  { emoji: '💪', japanese: 'つよい', english: 'strong', category: '気持ち', tip: '"ストロング"と読む。strengthen=強くする。strong wind=強い風。weakの反対💪', sentence: 'He is strong and healthy.', sentenceJP: '彼は強くて健康です。' },
+  { emoji: '☀️', japanese: 'あかるい・明るい', english: 'bright', category: '気持ち', tip: '"ブライト"と読む。bright idea=すごいアイデア。bright student=頭の良い生徒。bright future=明るい未来☀️', sentence: 'The sun is very bright today.', sentenceJP: '今日は太陽がとても明るいです。' },
+  { emoji: '🤫', japanese: 'しずか', english: 'quiet', category: '気持ち', tip: '"クワイエット"と読む。Be quiet!=静かにして！quiet time=静かな時間。quiet place=静かな場所🤫', sentence: 'The library is always quiet.', sentenceJP: '図書館はいつも静かです。' },
+  { emoji: '😋', japanese: 'おいしい', english: 'delicious', category: '気持ち', tip: '"デリシャス"と読む。Yummy!=おいしい！（くだけた表現）。That\'s delicious!=おいしい！😋', sentence: 'This cake is very delicious.', sentenceJP: 'このケーキはとてもおいしいです。' },
+  { emoji: '🏃', japanese: 'おそい', english: 'slow', category: '気持ち', tip: '"スロウ"と読む。slow motion=スローモーション。go slow=ゆっくり進む。fastの反対🐌', sentence: 'The turtle walks very slow.', sentenceJP: 'カメはとてもゆっくり歩きます。' },
+  { emoji: '🌟', japanese: 'すばらしい・すごい', english: 'great', category: '気持ち', tip: '"グレイト"と読む。Great Wall of China=万里の長城。Alexander the Great=アレキサンダー大王。Great job!🌟', sentence: 'You did a great job today!', sentenceJP: '今日はとてもよくできました！' },
+  { emoji: '❓', japanese: 'ふしぎ・むずかしい', english: 'difficult', category: '気持ち', tip: '"ディフィカルト"と読む。difficulty=難しさ。難しいときはask for help!（助けを求めよう）❓', sentence: 'Math is difficult but interesting.', sentenceJP: '算数は難しいけれど面白いです。' },
+  { emoji: '😆', japanese: 'たのしい', english: 'fun', category: '気持ち', tip: '"ファン"と読む。have fun=楽しむ。it\'s fun!=楽しい！funny（おかしい）とは少し違うよ😆', sentence: 'Swimming is a lot of fun.', sentenceJP: '水泳はとても楽しいです。' },
 
-  // ── 家族・人（10語） ─────────────────────────────────────────────
+  // ── 家族・人（20語） ─────────────────────────────────────────────
   { emoji: '👩', japanese: 'おかあさん', english: 'mother', category: '家族', tip: '"マザー"と読む。mom（ママ）・mum（英）とも言う。Mother\'s Day=母の日（5月第2日曜日）👩', sentence: 'My mother cooks delicious food.', sentenceJP: '私の母はおいしい料理を作ります。' },
   { emoji: '👨', japanese: 'おとうさん', english: 'father', category: '家族', tip: '"ファーザー"と読む。dad（パパ）とも言う。Father\'s Day=父の日（6月第3日曜日）👨', sentence: 'My father goes to work by train.', sentenceJP: '私の父は電車で仕事に行きます。' },
   { emoji: '👦', japanese: 'おにいさん・あに', english: 'brother', category: '家族', tip: '"ブラザー"と読む。older brother=兄、younger brother=弟。brothers=兄弟👦', sentence: 'My brother plays soccer every day.', sentenceJP: '私の兄は毎日サッカーをします。' },
@@ -137,8 +235,18 @@ export const WORDS: WordEntry[] = [
   { emoji: '👧', japanese: 'おんなのこ', english: 'girl', category: '家族', tip: '"ガール"と読む。girl scout=ガールスカウト。girlfriend=ガールフレンド。girl power!👧', sentence: 'The girl is reading a book.', sentenceJP: '女の子は本を読んでいます。' },
   { emoji: '👩‍🏫', japanese: 'せんせい', english: 'teacher', category: '家族', tip: '"ティーチャー"と読む。teach=教える→teacher=教える人。Thank you, teacher!（先生ありがとう）👩‍🏫', sentence: 'My teacher is very kind.', sentenceJP: '私の先生はとても親切です。' },
   { emoji: '🎒', japanese: 'せいと・がくせい', english: 'student', category: '家族', tip: '"ストゥーデント"と読む。study=勉強する→student=勉強する人。elementary student=小学生📚', sentence: 'I am a student at this school.', sentenceJP: '私はこの学校の生徒です。' },
+  { emoji: '👴', japanese: 'おじいさん', english: 'grandfather', category: '家族', tip: '"グランドファーザー"と読む。grandpa（おじいちゃん）とも言う。grandfather clock=大きな柱時計👴', sentence: 'My grandfather tells me funny stories.', sentenceJP: '私のおじいさんはおかしい話をしてくれます。' },
+  { emoji: '👵', japanese: 'おばあさん', english: 'grandmother', category: '家族', tip: '"グランドマザー"と読む。grandma（おばあちゃん）とも言う。grandmother\'s recipe=おばあちゃんのレシピ👵', sentence: 'My grandmother bakes delicious cookies.', sentenceJP: '私のおばあさんはおいしいクッキーを焼きます。' },
+  { emoji: '🧔', japanese: 'おじさん', english: 'uncle', category: '家族', tip: '"アンクル"と読む。Uncle Sam=サム叔父さん（アメリカのシンボル）。step uncle=義理のおじ🧔', sentence: 'My uncle lives in Tokyo.', sentenceJP: '私のおじさんは東京に住んでいます。' },
+  { emoji: '👩', japanese: 'おばさん', english: 'aunt', category: '家族', tip: '"アント"と読む。Aunty（おばちゃん）。Ant（アリ）と同じ発音！Aunt May=メイおばさん（スパイダーマン）👩', sentence: 'My aunt gave me a nice present.', sentenceJP: '私のおばさんは素敵なプレゼントをくれました。' },
+  { emoji: '👨‍👩‍👧‍👦', japanese: 'かぞく', english: 'family', category: '家族', tip: '"ファミリー"と読む。family name=名字。family tree=家系図。family restaurant=ファミレス🏠', sentence: 'My family is very important to me.', sentenceJP: '私の家族は私にとってとても大切です。' },
+  { emoji: '🧒', japanese: 'こども', english: 'child', category: '家族', tip: '"チャイルド"と読む。複数形はchildren（チルドレン）。childish=子どもっぽい。childhood=子ども時代🧒', sentence: 'Every child loves to play.', sentenceJP: 'すべてのこどもはあそぶのが大好きです。' },
+  { emoji: '🧑', japanese: 'おとな', english: 'adult', category: '家族', tip: '"アダルト"と読む。adulthood=大人になること。adult education=生涯学習。grow up to be an adult🧑', sentence: 'Adults have many responsibilities.', sentenceJP: 'おとなにはたくさんの責任があります。' },
+  { emoji: '🏥', japanese: 'いしゃ・医者', english: 'doctor', category: '家族', tip: '"ドクター"と読む。Dr.=博士・医師の敬称。Doctor Who=ドクター・フー（英国のドラマ）👨‍⚕️', sentence: 'The doctor helped me feel better.', sentenceJP: 'いしゃさんは私を元気にしてくれました。' },
+  { emoji: '👮', japanese: 'けいさつかん', english: 'police', category: '家族', tip: '"ポリース"と読む。police officer=警察官。police car=パトカー。call the police!=警察を呼んで！👮', sentence: 'The police officer is very brave.', sentenceJP: 'けいさつかんはとても勇敢です。' },
+  { emoji: '🍳', japanese: 'りょうりにん・シェフ', english: 'chef', category: '家族', tip: '"シェフ"と読む。フランス語から来た言葉。head chef=料理長。Top Chef=テップシェフ（料理番組）👨‍🍳', sentence: 'The chef cooked a wonderful meal.', sentenceJP: 'シェフは素晴らしい料理を作りました。' },
 
-  // ── 場所・施設（10語） ───────────────────────────────────────────
+  // ── 場所・施設（20語） ───────────────────────────────────────────
   { emoji: '🏠', japanese: 'いえ・おうち', english: 'house', category: '場所', tip: '"ハウス"と読む。house=建物、home=「家（場所+気持ち）」。Home is where the heart is💙', sentence: 'My house has a big garden.', sentenceJP: '私の家には大きな庭があります。' },
   { emoji: '🏫', japanese: 'がっこう', english: 'school', category: '場所', tip: '"スクール"と読む。elementary school=小学校。school bus=スクールバス。after school=放課後🏫', sentence: 'I go to school by bicycle.', sentenceJP: '私は自転車で学校に行きます。' },
   { emoji: '🏥', japanese: 'びょういん', english: 'hospital', category: '場所', tip: '"ホスピタル"と読む。hospitality=おもてなし（同じ語源）。nurse=看護師。doctor=医師🏥', sentence: 'My grandfather is in the hospital.', sentenceJP: '私の祖父は病院にいます。' },
@@ -149,4 +257,60 @@ export const WORDS: WordEntry[] = [
   { emoji: '🦁', japanese: 'どうぶつえん', english: 'zoo', category: '場所', tip: '"ズー"と読む。zoology=動物学（zooの語源）。zookeeper=飼育員。zoo map=園内マップ🦁', sentence: 'We saw many animals at the zoo.', sentenceJP: '私たちは動物園でたくさんの動物を見ました。' },
   { emoji: '🍽️', japanese: 'レストラン', english: 'restaurant', category: '場所', tip: '"レストラン"と読む。フランス語から来た言葉！reserve a table=席を予約する。menu=メニュー🍽️', sentence: 'We had dinner at a nice restaurant.', sentenceJP: '私たちは素敵なレストランで夕食を食べました。' },
   { emoji: '📮', japanese: 'ゆうびんきょく', english: 'post office', category: '場所', tip: '"ポストオフィス"と読む。post=郵便。postcard=はがき。mailman（米）=郵便配達員📮', sentence: 'I sent a letter from the post office.', sentenceJP: '私は郵便局から手紙を送りました。' },
+  { emoji: '🏛️', japanese: 'はくぶつかん・美術館', english: 'museum', category: '場所', tip: '"ミュージアム"と読む。art museum=美術館。natural history museum=自然史博物館。museum tour=館内見学🏛️', sentence: 'We visited the science museum.', sentenceJP: '科学はくぶつかんを訪れました。' },
+  { emoji: '🏪', japanese: 'スーパーマーケット', english: 'supermarket', category: '場所', tip: '"スーパーマーケット"と読む。super（大きな）+ market（市場）。grocery store=食料品店🛒', sentence: 'My mother shops at the supermarket.', sentenceJP: '私の母はスーパーマーケットで買い物をします。' },
+  { emoji: '✈️', japanese: 'くうこう', english: 'airport', category: '場所', tip: '"エアポート"と読む。air（空）+ port（港）。departure=出発。arrival=到着。check in=チェックイン✈️', sentence: 'We went to the airport by bus.', sentenceJP: 'バスでくうこうに行きました。' },
+  { emoji: '🏖️', japanese: 'ビーチ・砂浜', english: 'beach', category: '場所', tip: '"ビーチ"と読む。beach volleyball=ビーチバレー。sandy beach=砂浜。lifeguard=監視員🏖️', sentence: 'We played at the beach in summer.', sentenceJP: '夏にビーチで遊びました。' },
+  { emoji: '🏨', japanese: 'ホテル', english: 'hotel', category: '場所', tip: '"ホテル"と読む。フランス語から来た言葉。check in=チェックイン。room service=ルームサービス🏨', sentence: 'We stayed at a hotel during our trip.', sentenceJP: '旅行中はホテルに泊まりました。' },
+  { emoji: '🏯', japanese: 'しろ・城', english: 'castle', category: '場所', tip: '"キャッスル"と読む。Osaka Castle=大阪城。Newcastle=ニューカッスル（英国の都市）。Bouncy castle=ふわふわ城🏯', sentence: 'We visited an old castle.', sentenceJP: '古いしろを訪れました。' },
+  { emoji: '🌉', japanese: 'はし・橋', english: 'bridge', category: '場所', tip: '"ブリッジ"と読む。bridge（カードゲーム）。build bridges=橋渡し役を担う。Brooklyn Bridge=ブルックリン橋🌉', sentence: 'We crossed the bridge by car.', sentenceJP: '車で橋を渡りました。' },
+  { emoji: '🛒', japanese: 'いちば・マーケット', english: 'market', category: '場所', tip: '"マーケット"と読む。supermarket=スーパー。stock market=株式市場。flea market=フリーマーケット🛒', sentence: 'We buy fresh vegetables at the market.', sentenceJP: '市場で新鮮な野菜を買います。' },
+  { emoji: '🚜', japanese: 'のうじょう・ファーム', english: 'farm', category: '場所', tip: '"ファーム"と読む。farmer=農家の人。farmhouse=農家。farm fresh=農場直送。Old MacDonald had a farm🚜', sentence: 'We visited a farm during summer vacation.', sentenceJP: '夏休みに農場を訪れました。' },
+  { emoji: '⛩️', japanese: 'てら・じんじゃ', english: 'temple', category: '場所', tip: '"テンプル"と読む。Japanese temple=日本のお寺。temple run=テンプルラン（ゲーム）。ancient temple=古い神殿⛩️', sentence: 'There is a famous temple in this city.', sentenceJP: 'この町には有名なお寺があります。' },
+
+  // ── からだ（15語） ───────────────────────────────────────────────
+  { emoji: '🗣️', japanese: 'あたま', english: 'head', category: 'からだ', tip: '"ヘッド"と読む。headache=頭痛。head of school=校長。nod your head=うなずく🗣️', sentence: 'I have a headache today.', sentenceJP: '今日は頭が痛いです。' },
+  { emoji: '👁️', japanese: 'め', english: 'eye', category: 'からだ', tip: '"アイ"と読む。eyebrow=まゆ。eye contact=目を合わせる。I（私）と同じ発音！👁️', sentence: 'My eyes are brown.', sentenceJP: '私の目は茶色です。' },
+  { emoji: '👂', japanese: 'みみ', english: 'ear', category: 'からだ', tip: '"イア"と読む。earring=ピアス。ear drum=鼓膜。lend me your ear=ちょっと聞いて！👂', sentence: 'I listen to music with my ears.', sentenceJP: '耳で音楽を聴きます。' },
+  { emoji: '👃', japanese: 'はな', english: 'nose', category: 'からだ', tip: '"ノーズ"と読む。nose bleed=鼻血。follow your nose=勘に従う。keep your nose clean=まじめにする👃', sentence: 'Dogs have a very good nose.', sentenceJP: 'イヌは鼻がとても良いです。' },
+  { emoji: '👄', japanese: 'くち', english: 'mouth', category: 'からだ', tip: '"マウス"と読む。mouthwash=マウスウォッシュ。word of mouth=口コミ。open your mouth wide!👄', sentence: 'Open your mouth and say "Ah."', sentenceJP: 'くちを開けて「あー」と言ってください。' },
+  { emoji: '✋', japanese: 'て', english: 'hand', category: 'からだ', tip: '"ハンド"と読む。handshake=握手。hand in hand=手をつないで。lend a hand=助ける✋', sentence: 'Please raise your hand if you know the answer.', sentenceJP: '答えを知っている人は手を挙げてください。' },
+  { emoji: '🦶', japanese: 'あし（足）', english: 'foot', category: 'からだ', tip: '"フット"と読む。複数形はfeet（フィート）。football=サッカー（英）。foot note=脚注🦶', sentence: 'I have big feet.', sentenceJP: '私は足が大きいです。' },
+  { emoji: '❤️', japanese: 'こころ・ハート', english: 'heart', category: 'からだ', tip: '"ハート"と読む。heart beat=鼓動。sweetheart=恋人・大事な人。heart of gold=心が純粋❤️', sentence: 'My heart beats fast when I run.', sentenceJP: '走るとこころがドキドキします。' },
+  { emoji: '💪', japanese: 'うで', english: 'arm', category: 'からだ', tip: '"アーム"と読む。armchair=肘かけ椅子。arm in arm=腕を組んで。firearms=銃（武器）💪', sentence: 'I broke my arm last year.', sentenceJP: '去年うでを骨折しました。' },
+  { emoji: '🦵', japanese: 'あし（脚）', english: 'leg', category: 'からだ', tip: '"レッグ"と読む。leg room=足元のスペース（飛行機）。pull someone\'s leg=からかう。leggings=レギンス🦵', sentence: 'My legs are tired after running.', sentenceJP: '走った後はあしがつかれます。' },
+  { emoji: '👆', japanese: 'ゆび', english: 'finger', category: 'からだ', tip: '"フィンガー"と読む。fingertip=指先。fingerprint=指紋。Fish Fingers=魚のフィンガーフライ👆', sentence: 'I cut my finger while cooking.', sentenceJP: '料理中にゆびを切りました。' },
+  { emoji: '💇', japanese: 'かみ・かみのけ', english: 'hair', category: 'からだ', tip: '"ヘア"と読む。haircut=髪を切る。hair band=ヘアバンド。fair hair=金髪。dark hair=黒髪💇', sentence: 'She has long beautiful hair.', sentenceJP: '彼女は長くて美しい髪をしています。' },
+  { emoji: '😊', japanese: 'かお', english: 'face', category: 'からだ', tip: '"フェイス"と読む。face to face=対面で。about-face=方向転換。Facebook=フェイスブック😊', sentence: 'Please wash your face in the morning.', sentenceJP: '朝はかおを洗ってください。' },
+  { emoji: '🤷', japanese: 'かた・肩', english: 'shoulder', category: 'からだ', tip: '"ショルダー"と読む。shoulder bag=ショルダーバッグ。stand on someone\'s shoulders=先人の知恵を借りる🤷', sentence: 'He has broad shoulders.', sentenceJP: '彼は肩幅が広いです。' },
+  { emoji: '🔙', japanese: 'せなか・後ろ', english: 'back', category: 'からだ', tip: '"バック"と読む。backpack=リュック。back up=バックアップ（データ）。get back=帰る🔙', sentence: 'My back hurts after sitting too long.', sentenceJP: '長く座っているとせなかが痛くなります。' },
+
+  // ── スポーツ・趣味（15語） ──────────────────────────────────────
+  { emoji: '⚽', japanese: 'サッカー', english: 'soccer', category: 'スポーツ', tip: '"サッカー"と読む。英国ではfootball。FIFA=国際サッカー連盟。World Cup=ワールドカップ⚽', sentence: 'I play soccer with my friends.', sentenceJP: '友達とサッカーをします。' },
+  { emoji: '⚾', japanese: 'やきゅう', english: 'baseball', category: 'スポーツ', tip: '"ベースボール"と読む。base（ベース）+ ball（ボール）。pitcher=ピッチャー。home run=ホームラン⚾', sentence: 'Baseball is very popular in Japan.', sentenceJP: 'やきゅうは日本でとても人気があります。' },
+  { emoji: '🎾', japanese: 'テニス', english: 'tennis', category: 'スポーツ', tip: '"テニス"と読む。love=0点（テニス）。match point=マッチポイント。Wimbledon=ウィンブルドン🎾', sentence: 'She plays tennis every Sunday.', sentenceJP: '彼女は毎週日曜日にテニスをします。' },
+  { emoji: '🏀', japanese: 'バスケットボール', english: 'basketball', category: 'スポーツ', tip: '"バスケットボール"と読む。basket（かご）+ ball（ボール）。NBA=プロバスケリーグ（米）🏀', sentence: 'We play basketball at school.', sentenceJP: '学校でバスケットボールをします。' },
+  { emoji: '🏐', japanese: 'バレーボール', english: 'volleyball', category: 'スポーツ', tip: '"バレーボール"と読む。volley（空中でボールを打つ）+ ball。beach volleyball=ビーチバレー🏐', sentence: 'Our school team is good at volleyball.', sentenceJP: '私たちの学校チームはバレーボールが得意です。' },
+  { emoji: '🏸', japanese: 'バドミントン', english: 'badminton', category: 'スポーツ', tip: '"バドミントン"と読む。shuttle cock=羽根（バドミントンの）。英国の村Badmintonが語源🏸', sentence: 'Badminton is easy to play.', sentenceJP: 'バドミントンはやりやすいスポーツです。' },
+  { emoji: '🤸', japanese: 'たいそう・体操', english: 'gymnastics', category: 'スポーツ', tip: '"ジムナスティクス"と読む。gym（ジム）が語源。gymnast=体操選手。floor exercise=床演技🤸', sentence: 'She is very good at gymnastics.', sentenceJP: '彼女はたいそうがとても得意です。' },
+  { emoji: '🥋', japanese: 'じゅうどう・武道', english: 'judo', category: 'スポーツ', tip: '"ジュードウ"と読む。日本語がそのまま英語になった！"judo"は「柔の道」。世界中で人気の武道🥋', sentence: 'Judo is a Japanese martial art.', sentenceJP: 'じゅうどうは日本の武道です。' },
+  { emoji: '🚴', japanese: 'サイクリング', english: 'cycling', category: 'スポーツ', tip: '"サイクリング"と読む。cycle=自転車で走る。cyclist=サイクリスト。Tour de France=世界最大のレース🚴', sentence: 'I enjoy cycling in the park.', sentenceJP: '公園でサイクリングを楽しみます。' },
+  { emoji: '🎳', japanese: 'ボーリング', english: 'bowling', category: 'スポーツ', tip: '"ボウリング"と読む。strike=全部倒す。spare=残りを全部倒す。bowling alley=ボーリング場🎳', sentence: 'Let\'s go bowling this weekend!', sentenceJP: '今週末ボーリングに行きましょう！' },
+  { emoji: '⛷️', japanese: 'スキー', english: 'skiing', category: 'スポーツ', tip: '"スキーイング"と読む。ski resort=スキー場。ski lift=リフト。downhill skiing=ダウンヒルスキー⛷️', sentence: 'We went skiing in Hokkaido.', sentenceJP: '北海道にスキーをしに行きました。' },
+  { emoji: '🏊', japanese: 'すいえい・水泳', english: 'swimming', category: 'スポーツ', tip: '"スウィミング"と読む。swimming pool=プール。swimmer=水泳選手。swimming lesson=水泳教室🏊', sentence: 'I take swimming lessons every week.', sentenceJP: '毎週水泳のレッスンを受けています。' },
+  { emoji: '🏃', japanese: 'マラソン・ランニング', english: 'marathon', category: 'スポーツ', tip: '"マラソン"と読む。ギリシャのMarathon（マラトン）という場所が語源！42.195km=フルマラソン🏃', sentence: 'He finished the marathon in three hours.', sentenceJP: '彼は3時間でマラソンを完走しました。' },
+  { emoji: '⛳', japanese: 'ゴルフ', english: 'golf', category: 'スポーツ', tip: '"ゴルフ"と読む。hole in one=ホールインワン。golf course=ゴルフコース。fore!=前方注意⛳', sentence: 'My father plays golf on weekends.', sentenceJP: '私のお父さんは週末にゴルフをします。' },
+  { emoji: '🏅', japanese: 'スポーツ', english: 'sport', category: 'スポーツ', tip: '"スポーツ"と読む。sportsmanship=スポーツマン精神。sports day=運動会。play sports=スポーツをする🏅', sentence: 'I love playing all kinds of sports.', sentenceJP: '私はあらゆるスポーツをするのが大好きです。' },
+
+  // ── 数・時間（10語） ─────────────────────────────────────────────
+  { emoji: '🌅', japanese: 'あさ', english: 'morning', category: '数・時間', tip: '"モーニング"と読む。good morning=おはようございます。morning person=朝型の人。morning glory=アサガオ🌅', sentence: 'I eat breakfast in the morning.', sentenceJP: '朝に朝食を食べます。' },
+  { emoji: '☀️', japanese: 'ひる・午後', english: 'afternoon', category: '数・時間', tip: '"アフタヌーン"と読む。after（後）+ noon（正午）。good afternoon=こんにちは。afternoon tea=アフタヌーンティー☕', sentence: 'I play with friends in the afternoon.', sentenceJP: '午後に友達と遊びます。' },
+  { emoji: '🌆', japanese: 'よる・夜', english: 'night', category: '数・時間', tip: '"ナイト"と読む。good night=おやすみなさい。knight（騎士）と同じ発音！night sky=夜空🌆', sentence: 'I read books at night.', sentenceJP: '夜に本を読みます。' },
+  { emoji: '📅', japanese: 'きょう', english: 'today', category: '数・時間', tip: '"トゥデイ"と読む。to（この）+ day（日）。today\'s news=今日のニュース。Carpe diem=今日を生きろ📅', sentence: 'What day is today?', sentenceJP: '今日は何日ですか？' },
+  { emoji: '📅', japanese: 'あした・明日', english: 'tomorrow', category: '数・時間', tip: '"トゥモロウ"と読む。Tomorrow never comes=明日は来ない（先延ばしは禁物）。see you tomorrow!=また明日！📅', sentence: 'I have a test tomorrow.', sentenceJP: '明日テストがあります。' },
+  { emoji: '📅', japanese: 'きのう・昨日', english: 'yesterday', category: '数・時間', tip: '"イェスタデイ"と読む。Beatles の名曲「Yesterday」！Once upon a yesterday=昔むかし📅', sentence: 'Yesterday was my birthday.', sentenceJP: '昨日は私の誕生日でした。' },
+  { emoji: '📆', japanese: 'しゅう・週', english: 'week', category: '数・時間', tip: '"ウィーク"と読む。weekday=平日。weekend=週末。next week=来週。weak（弱い）と同じ発音📆', sentence: 'There are seven days in a week.', sentenceJP: '1週間は7日あります。' },
+  { emoji: '📅', japanese: 'つき・月', english: 'month', category: '数・時間', tip: '"マンス"と読む。月曜日=Monday（moon\'s day）。January～Decemberの12ヶ月。monthly=毎月📅', sentence: 'There are twelve months in a year.', sentenceJP: '1年は12ヶ月あります。' },
+  { emoji: '📆', japanese: 'とし・年', english: 'year', category: '数・時間', tip: '"イア"と読む。New Year=新年。leap year=うるう年（366日）。Happy New Year!=明けましておめでとう！🎊', sentence: 'A new year starts in January.', sentenceJP: '新年は1月に始まります。' },
+  { emoji: '⏰', japanese: 'じかん', english: 'time', category: '数・時間', tip: '"タイム"と読む。Time is money=時は金なり。part time=パートタイム。time flies=時間が経つのは早い⏰', sentence: 'What time is it now?', sentenceJP: '今何時ですか？' },
 ]
