@@ -54,7 +54,7 @@ export default function TesterPage() {
               onChange={(e) => { setName(e.target.value); setError(false) }}
               placeholder="例：たろう"
               autoFocus
-              className="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-[#e8f0fe] text-lg font-bold outline-none focus:border-[#00e5c3] transition-colors"
+              className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-lg font-bold outline-none focus:border-[#00e5c3] transition-colors placeholder:text-gray-400"
               required
             />
           </div>
@@ -68,7 +68,7 @@ export default function TesterPage() {
               placeholder="○○○○"
               maxLength={4}
               inputMode="numeric"
-              className={`w-full bg-white/8 border rounded-xl px-4 py-3 text-[#e8f0fe] text-center text-2xl tracking-widest font-black outline-none focus:border-[#00e5c3] transition-colors ${error ? 'border-[#f87171]/60' : 'border-white/15'}`}
+              className={`w-full bg-white border rounded-xl px-4 py-3 text-gray-900 text-center text-2xl tracking-widest font-black outline-none focus:border-[#00e5c3] transition-colors placeholder:text-gray-300 ${error ? 'border-[#f87171]' : 'border-gray-200'}`}
               required
             />
             {error && <p className="text-[#f87171] text-xs text-center mt-2">お名前またはコードが正しくありません</p>}

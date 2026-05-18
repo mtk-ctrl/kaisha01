@@ -24,5 +24,5 @@
 
 *TANQ Inc. | 探究する子どもたちのために*
 
-公開URL
-https://kaisha01-git-main-mtk-ctrls-projects.vercel.app/
+公開URL（本番）
+https://tanq-app.vercel.app/
