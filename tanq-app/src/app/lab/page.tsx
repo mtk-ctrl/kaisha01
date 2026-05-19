@@ -35,7 +35,7 @@ function lockLabel(appId: string, userType: UserType): string | null {
 interface Profile { name: string; grade: string; color: string }
 const DEFAULT_PROFILE: Profile = { name: 'たんきゅう', grade: '小4', color: '#c4a8ff' }
 const AVATAR_COLORS = ['#c4a8ff', '#00e5c3', '#f0c040', '#f87171', '#60a5fa']
-const GRADES = ['小1', '小2', '小3', '小4', '小5', '小6', '中1', '中2', '中3']
+const GRADES = ['幼稚園', '小1', '小2', '小3', '小4', '小5', '小6', '中1', '中2', '中3']
 
 function loadProfile(userType: UserType = 'member'): Profile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE
@@ -84,24 +84,28 @@ function computeStats() {
 type AppAudience = 'shougakusei' | 'youji'
 const _YB = '/youji/apps'  // public/youji/apps/ に内製コピー済み
 
-const APPS = [
-  // ── 小学生向け（内製アプリ） ──────────────────────────────
-  { id: 'tanq',      name: 'TANQ理科',      emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei' as AppAudience },
-  { id: 'math',      name: '計算',          emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: '速さで勝負',       audience: 'shougakusei' as AppAudience },
-  { id: 'kanji',     name: '漢字',          emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei' as AppAudience },
-  { id: 'clock',     name: '時計',          emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '時間計算',         audience: 'shougakusei' as AppAudience },
-  { id: 'english',   name: '英語',          emoji: '🌍', color: '#f87171', url: '/apps/english',   badge: `${TOTAL_ENGLISH}語`, audience: 'shougakusei' as AppAudience },
-  { id: 'word-math', name: '算数文章題',    emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '小1〜小3',         audience: 'shougakusei' as AppAudience },
-  { id: 'shapes',    name: '図形',          emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',    badge: '8図形',            audience: 'shougakusei' as AppAudience },
-  { id: 'coding',    name: 'プログラミング', emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ',        audience: 'shougakusei' as AppAudience },
-  // ── 幼稚園向け（public/youji/ に内製コピー）──────────────
-  { id: 'youji-kanji',    name: 'かんじだいすき',     emoji: '📚', color: '#f87171', url: `${_YB}/kanji/`,    badge: '80字',     audience: 'youji' as AppAudience },
-  { id: 'youji-math',     name: 'さんすうおやつ',     emoji: '🍎', color: '#f0a050', url: `${_YB}/math/`,     badge: '20まで',   audience: 'youji' as AppAudience },
-  { id: 'youji-juucombo', name: '10のなかよし',      emoji: '🔟', color: '#60a5fa', url: `${_YB}/juucombo/`, badge: 'たして10', audience: 'youji' as AppAudience },
-  { id: 'youji-hiragana', name: 'ひらがなどっちかな', emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/`,      badge: '100もん',  audience: 'youji' as AppAudience },
-  { id: 'youji-clock',    name: 'とけいをよもう',     emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/`,    badge: '8レベル',  audience: 'youji' as AppAudience },
-  { id: 'youji-animals',  name: 'どうぶつかぞえ',     emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/`,  badge: '20まで',   audience: 'youji' as AppAudience },
-  { id: 'youji-zokusei',  name: 'ぞくせいしわけ工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/`,  badge: '分類',     audience: 'shougakusei' as AppAudience },
+// targetAge: カードに表示する対象年齢チップ
+const APPS: {
+  id: string; name: string; emoji: string; color: string; url: string;
+  badge: string; audience: AppAudience; targetAge: string
+}[] = [
+  // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
+  { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei', targetAge: '小4〜小6' },
+  { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: 'タイムアタック',   audience: 'shougakusei', targetAge: '小2〜小6' },
+  { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
+  { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '分・時間計算',     audience: 'shougakusei', targetAge: '小2〜小4' },
+  { id: 'english',      name: '英語ボキャブラリー', emoji: '🌍', color: '#f87171', url: '/apps/english',   badge: `${TOTAL_ENGLISH}語`, audience: 'shougakusei', targetAge: '小3〜小6' },
+  { id: 'word-math',    name: '算数文章題',        emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '文章から立式',     audience: 'shougakusei', targetAge: '小1〜小3' },
+  { id: 'shapes',       name: '図形トレーニング',  emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',    badge: '8図形',            audience: 'shougakusei', targetAge: '小3〜小5' },
+  { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ',        audience: 'shougakusei', targetAge: '小3〜小6' },
+  { id: 'youji-zokusei', name: 'ぞくせい仕分け工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/`, badge: 'ベン図・分類',    audience: 'shougakusei', targetAge: '小1〜小3' },
+  // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ）──────
+  { id: 'youji-kanji',    name: 'はじめての かんじ',   emoji: '📚', color: '#f87171', url: `${_YB}/kanji/`,    badge: 'にちじょうご80字', audience: 'youji', targetAge: '4〜6才' },
+  { id: 'youji-math',     name: 'たべものと かずあそび', emoji: '🍎', color: '#f0a050', url: `${_YB}/math/`,     badge: '20まで',          audience: 'youji', targetAge: '3〜6才' },
+  { id: 'youji-juucombo', name: '10に なる かずを さがせ！', emoji: '🔟', color: '#60a5fa', url: `${_YB}/juucombo/`, badge: 'たして10',      audience: 'youji', targetAge: '5〜6才' },
+  { id: 'youji-hiragana', name: 'にた ひらがな どっち？', emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/`,      badge: 'そっくりもじ識別',  audience: 'youji', targetAge: '4〜6才' },
+  { id: 'youji-clock',    name: 'なんじ かな？',        emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/`,    badge: '何時・何時半',     audience: 'youji', targetAge: '4〜6才' },
+  { id: 'youji-animals',  name: 'どうぶつ さんすう',    emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/`,  badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才' },
 ]
 
 type Tab = 'home' | 'records' | 'settings'
@@ -255,13 +259,13 @@ function HomeTab({ profile, stats, userType }: {
 
   function SectionLabel({ emoji, label, sub }: { emoji: string; label: string; sub: string }) {
     return (
-      <div className="flex items-center gap-3 mb-3 mt-6">
-        <div className="flex items-center gap-1.5">
+      <div className="mb-3 mt-6">
+        <div className="flex items-center gap-2 mb-0.5">
           <span className="text-base">{emoji}</span>
           <span className="font-black text-[#e8f0fe] text-sm">{label}</span>
+          <div className="h-px bg-white/12 flex-1" />
         </div>
-        <div className="h-px bg-white/12 flex-1" />
-        <span className="text-[10px] text-[#94a3c4]">{sub}</span>
+        <p className="text-[10px] text-[#94a3c4] pl-6 font-bold">{sub}</p>
       </div>
     )
   }
@@ -293,23 +297,30 @@ function HomeTab({ profile, stats, userType }: {
     const cardClass = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
     const cardInner = (
       <>
-        <div className="flex items-start justify-between mb-3">
+        <div className="flex items-start justify-between mb-2">
           <div className="text-3xl">{app.emoji}</div>
           <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
             style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
             {app.badge}
           </span>
         </div>
-        <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
+        <div className="font-black text-[#e8f0fe] text-sm mb-0.5 leading-tight">{app.name}</div>
+        {/* 年齢バッジ */}
+        <div className="text-[9px] font-bold text-[#94a3c4] mb-1.5 flex items-center gap-1">
+          <span style={{ color: app.audience === 'youji' ? '#fb923c' : '#60a5fa' }}>
+            {app.audience === 'youji' ? '🌱' : '📘'}
+          </span>
+          {app.targetAge}
+        </div>
         {pct !== null ? (
           <>
-            <div className="text-[#94a3c4] text-[10px] mb-2">{s!.mastered}/{s!.total} 習得</div>
+            <div className="text-[#94a3c4] text-[10px] mb-1.5">{s!.mastered}/{s!.total} 習得</div>
             <div className="h-1 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full rounded-full" style={{ width: `${pct}%`, background: app.color }} />
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-1 mt-1">
+          <div className="flex items-center gap-1">
             <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
             <span className="text-[#94a3c4] text-[10px]">開く →</span>
           </div>
@@ -324,6 +335,8 @@ function HomeTab({ profile, stats, userType }: {
 
   const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
   const youjiApps = APPS.filter(a => a.audience === 'youji')
+  // 幼稚園プロフィールなら幼稚園セクションを先に表示
+  const isYoujiProfile = profile.grade === '幼稚園'
 
   return (
     <div className="px-4 pb-4 pt-6">
@@ -363,7 +376,10 @@ function HomeTab({ profile, stats, userType }: {
 
       {/* Today's recommended */}
       <div className="mb-2">
-        <h2 className="font-black text-[#e8f0fe] text-sm mb-3">今日の学習</h2>
+        <h2 className="font-black text-[#e8f0fe] text-sm mb-1">今日の学習</h2>
+        <p className="text-[#94a3c4] text-[10px] mb-3 font-bold">
+          {profile.grade === '幼稚園' ? '🌱 就学前向けのおすすめ' : `📘 ${profile.grade}向けのおすすめ`}
+        </p>
         <div className="grid grid-cols-2 gap-3">
           {(userType === 'guest'
             ? [
@@ -396,17 +412,46 @@ function HomeTab({ profile, stats, userType }: {
         </div>
       )}
 
-      {/* All apps — 小学生向け */}
-      <SectionLabel emoji="📘" label="小学生向け" sub={`${shougakuseiApps.length}アプリ`} />
-      <div className="grid grid-cols-2 gap-3 mb-2">
-        {shougakuseiApps.map(app => <AppCard key={app.id} app={app} />)}
-      </div>
-
-      {/* All apps — 幼稚園向け */}
-      <SectionLabel emoji="🌸" label="幼稚園向け" sub={`${youjiApps.length}アプリ`} />
-      <div className="grid grid-cols-2 gap-3">
-        {youjiApps.map(app => <AppCard key={app.id} app={app} />)}
-      </div>
+      {/* All apps — プロフィールに応じて順番を切り替え */}
+      {isYoujiProfile ? (
+        <>
+          <SectionLabel
+            emoji="🌱"
+            label="就学前（幼稚園・年長）"
+            sub="3〜6才｜遊びながら学ぶ"
+          />
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            {youjiApps.map(app => <AppCard key={app.id} app={app} />)}
+          </div>
+          <SectionLabel
+            emoji="📘"
+            label="小学生（小1〜小6）"
+            sub="6〜12才｜学年別カリキュラム"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            {shougakuseiApps.map(app => <AppCard key={app.id} app={app} />)}
+          </div>
+        </>
+      ) : (
+        <>
+          <SectionLabel
+            emoji="📘"
+            label="小学生（小1〜小6）"
+            sub="6〜12才｜学年別カリキュラム"
+          />
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            {shougakuseiApps.map(app => <AppCard key={app.id} app={app} />)}
+          </div>
+          <SectionLabel
+            emoji="🌱"
+            label="就学前（幼稚園・年長）"
+            sub="3〜6才｜遊びながら学ぶ"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            {youjiApps.map(app => <AppCard key={app.id} app={app} />)}
+          </div>
+        </>
+      )}
     </div>
   )
 }
