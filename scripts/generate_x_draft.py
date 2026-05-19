@@ -93,7 +93,7 @@ def generate_drafts(slot: str) -> str:
 💡 使い方のヒント: 気に入ったものをそのままコピペするか、一言アレンジして投稿してください。夕方パターンは今日のMLB結果を入れてください。
 """
 
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key={GEMINI_API_KEY}"
     payload = json.dumps({
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {"maxOutputTokens": 800, "temperature": 0.9},
@@ -166,7 +166,7 @@ def main():
         print("ERROR: RESEND_API_KEY が設定されていません", file=sys.stderr)
         sys.exit(1)
 
-    print(f"[{TIME_SLOT}] 文案生成中... (Gemini 1.5 Flash)")
+    print(f"[{TIME_SLOT}] 文案生成中... (Gemini 2.5 Flash-Lite)")
     drafts = generate_drafts(TIME_SLOT)
     print(drafts)
 
