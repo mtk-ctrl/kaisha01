@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#ec4899">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>いろと かたち | TANQラボ</title>
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../common/back-to-hub.css">
+  <link rel="stylesheet" href="../../common/youji-setup.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../common/tanq-ui.js"></script>
+</head>
+<body>
+
+<!-- ===== メニュー ===== -->
+<div class="screen active" id="screen-menu">
+  <!-- 背景の形や色 -->
+  <div class="menu-shapes" aria-hidden="true">
+    <div class="ms ms-circle" style="background:#ef4444;top:8%;left:6%"></div>
+    <div class="ms ms-square" style="background:#3b82f6;top:14%;right:8%"></div>
+    <div class="ms ms-triangle" style="border-bottom-color:#22c55e;top:50%;left:4%"></div>
+    <div class="ms ms-circle" style="background:#f59e0b;bottom:18%;right:10%"></div>
+  </div>
+
+  <div class="menu-title-badge">🌈 いろと かたち 🌈</div>
+  <p class="menu-subtitle">いろと かたちを おぼえよう！</p>
+
+  <div class="menu-btns">
+    <button class="btn-start" onclick="showScreen('setup')">▶ はじめる</button>
+    <button class="btn-records" onclick="showScreen('records')">🏆 きろく</button>
+  </div>
+</div>
+
+<!-- ===== セットアップ ===== -->
+<div class="screen" id="screen-setup">
+  <div class="setup-scroll">
+    <h2 class="setup-title">⚙️ せってい</h2>
+
+    <!-- モード選択 -->
+    <div class="setup-section">
+      <p class="setup-label">もんだいのしゅるい</p>
+      <div class="mode-btns" id="mode-btns">
+        <button class="mode-btn active" data-mode="iro" onclick="selectMode(this)">
+          🎨 いろ
+          <span class="mode-sub">いろのなまえをこたえよう</span>
+        </button>
+        <button class="mode-btn" data-mode="katachi" onclick="selectMode(this)">
+          🔷 かたち
+          <span class="mode-sub">かたちのなまえをこたえよう</span>
+        </button>
+        <button class="mode-btn" data-mode="mix" onclick="selectMode(this)">
+          🌈 まぜまぜ
+          <span class="mode-sub">いろとかたちをまぜてれんしゅう</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 問題数 -->
+    <div class="setup-section">
+      <p class="setup-label">もんだいすう</p>
+      <div class="count-btns">
+        <button class="count-btn" data-count="5" onclick="selectCount(this)">5もん</button>
+        <button class="count-btn active" data-count="10" onclick="selectCount(this)">10もん</button>
+        <button class="count-btn" data-count="15" onclick="selectCount(this)">15もん</button>
+      </div>
+    </div>
+
+    <button class="btn-start" onclick="startGame()">🚀 スタート！</button>
+    <button class="btn-back" onclick="showScreen('menu')">← もどる</button>
+  </div>
+</div>
+
+<!-- ===== ゲーム ===== -->
+<div class="screen" id="screen-game">
+
+  <!-- トップバー -->
+  <div class="game-topbar">
+    <button class="btn-quit" onclick="confirmQuit()">✕ やめる</button>
+    <div class="game-progress-wrap">
+      <div class="game-progress-fill" id="game-progress-fill"></div>
+    </div>
+    <div class="game-score-text">⭐ <span id="g-score">0</span></div>
+  </div>
+
+  <!-- 問題エリア -->
+  <div class="question-area">
+    <div class="q-counter">
+      <span id="g-current">1</span> / <span id="g-total">10</span>
+    </div>
+    <div class="combo-badge hidden" id="combo-badge">
+      🔥 <span id="combo-num">2</span>れんぞく！
+    </div>
+
+    <!-- 問いかけ文 -->
+    <div class="q-prompt" id="q-prompt">これは なにいろ？</div>
+
+    <!-- 図形・色の表示 -->
+    <div class="shape-display" id="shape-display">
+      <!-- SVGは JS で描画 -->
+    </div>
+  </div>
+
+  <!-- 選択肢ボタン -->
+  <div class="choices-wrap">
+    <div class="choices-grid" id="choices-grid">
+      <button class="choice-btn" id="c0" onclick="answer(0)"></button>
+      <button class="choice-btn" id="c1" onclick="answer(1)"></button>
+      <button class="choice-btn" id="c2" onclick="answer(2)"></button>
+      <button class="choice-btn" id="c3" onclick="answer(3)"></button>
+    </div>
+  </div>
+
+  <!-- フィードバックオーバーレイ -->
+  <div class="feedback-overlay hidden" id="feedback-overlay">
+    <div class="feedback-card">
+      <div class="feedback-mark" id="feedback-mark">○</div>
+      <div class="feedback-text" id="feedback-text"></div>
+      <div class="feedback-shape" id="feedback-shape"></div>
+      <button class="btn-next" onclick="nextQuestion()">つぎへ ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== リザルト ===== -->
+<div class="screen" id="screen-result">
+  <div class="result-content">
+    <div class="result-emoji-big" id="result-emoji">🎉</div>
+    <h2 class="result-title" id="result-title">すごい！</h2>
+    <div class="result-stars" id="result-stars">⭐⭐⭐</div>
+    <div class="result-score-box">
+      <div class="result-score-row">
+        <span class="result-lbl">せいかい</span>
+        <span class="result-val"><span id="r-correct">0</span> / <span id="r-total">10</span></span>
+      </div>
+      <div class="result-score-row">
+        <span class="result-lbl">とくてん</span>
+        <span class="result-val result-pts" id="r-score">0てん</span>
+      </div>
+    </div>
+    <div class="result-btns">
+      <button class="btn-start" onclick="startGame()">🔄 もういちど</button>
+      <button class="btn-back" onclick="showScreen('setup')">⚙️ せってい</button>
+      <button class="btn-back" onclick="showScreen('menu')">🏠 メニュー</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== きろく ===== -->
+<div class="screen" id="screen-records">
+  <h2 class="setup-title">🏆 きろく</h2>
+  <div id="records-content" class="records-content"></div>
+  <button class="btn-back" onclick="showScreen('menu')">← もどる</button>
+</div>
+
+<!-- ===== やめる確認 ===== -->
+<div id="quit-overlay" style="display:none">
+  <div id="quit-card">
+    <div class="quit-icon">🌈</div>
+    <p class="quit-title">やめちゃうの？</p>
+    <p class="quit-sub">これまでのこたえは きえてしまうよ…</p>
+    <button class="quit-btn-continue" onclick="closeQuitDialog()">▶ つづける！</button>
+    <button class="quit-btn-leave" onclick="doQuit()">🏠 やめる</button>
+  </div>
+</div>
+
+<a id="back-to-hub" href="/lab" style="display:none">
+  <span class="hub-icon">🏠</span>ぜんぶメニュー
+</a>
+
+<script src="../../common/speech.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

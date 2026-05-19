@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#f59e0b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>九九マスター | TANQラボ</title>
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="../../common/back-to-hub.css">
+  <link rel="stylesheet" href="../../common/youji-setup.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="../../common/tanq-ui.js"></script>
+</head>
+<body>
+
+<!-- ===== メニュー ===== -->
+<div class="screen active" id="screen-menu">
+  <div class="menu-hero" aria-hidden="true">
+    <span class="hero-num">×</span>
+  </div>
+  <div class="menu-title-badge">✖️ 九九マスター ✖️</div>
+  <p class="menu-subtitle">かけ算を おぼえよう！</p>
+
+  <div class="menu-btns">
+    <button class="btn-start" onclick="showScreen('setup-dan')">▶ れんしゅう</button>
+    <button class="btn-attack" onclick="showScreen('setup-attack')">⚡ タイムアタック</button>
+    <button class="btn-records" onclick="showScreen('records')">🏆 きろく</button>
+  </div>
+
+  <!-- 段一覧プレビュー -->
+  <div class="dan-preview">
+    <span>2の段</span><span>3の段</span><span>4の段</span>
+    <span>5の段</span><span>6の段</span><span>7の段</span>
+    <span>8の段</span><span>9の段</span>
+  </div>
+</div>
+
+<!-- ===== れんしゅう セットアップ ===== -->
+<div class="screen" id="screen-setup-dan">
+  <div class="setup-scroll">
+    <h2 class="setup-title">⚙️ れんしゅうの せってい</h2>
+
+    <!-- 段選択 -->
+    <div class="setup-section">
+      <p class="setup-label">どの だんを れんしゅうする？</p>
+      <div class="dan-btns" id="dan-btns">
+        <button class="dan-btn" data-dan="2" onclick="selectDan(this)">2の段</button>
+        <button class="dan-btn" data-dan="3" onclick="selectDan(this)">3の段</button>
+        <button class="dan-btn" data-dan="4" onclick="selectDan(this)">4の段</button>
+        <button class="dan-btn" data-dan="5" onclick="selectDan(this)">5の段</button>
+        <button class="dan-btn" data-dan="6" onclick="selectDan(this)">6の段</button>
+        <button class="dan-btn" data-dan="7" onclick="selectDan(this)">7の段</button>
+        <button class="dan-btn" data-dan="8" onclick="selectDan(this)">8の段</button>
+        <button class="dan-btn" data-dan="9" onclick="selectDan(this)">9の段</button>
+        <button class="dan-btn dan-btn-all active" data-dan="all" onclick="selectDan(this)">ぜんぶ</button>
+      </div>
+    </div>
+
+    <!-- こたえ方 -->
+    <div class="setup-section">
+      <p class="setup-label">こたえかた</p>
+      <div class="ans-mode-btns" id="ans-mode-btns">
+        <button class="ans-mode-btn active" data-mode="4choice" onclick="selectAnsMode(this)">
+          <span>📋</span> 4つから えらぶ
+        </button>
+        <button class="ans-mode-btn" data-mode="input" onclick="selectAnsMode(this)">
+          <span>✏️</span> こたえを にゅうりょく
+        </button>
+      </div>
+    </div>
+
+    <!-- 問題数 -->
+    <div class="setup-section">
+      <p class="setup-label">もんだいすう</p>
+      <div class="count-btns" id="count-btns-dan">
+        <button class="count-btn" data-count="9" onclick="selectCount('dan',this)">9もん<br><small>1周</small></button>
+        <button class="count-btn active" data-count="18" onclick="selectCount('dan',this)">18もん<br><small>2周</small></button>
+        <button class="count-btn" data-count="27" onclick="selectCount('dan',this)">27もん<br><small>3周</small></button>
+      </div>
+    </div>
+
+    <button class="btn-start" onclick="startPractice()">🚀 スタート！</button>
+    <button class="btn-back" onclick="showScreen('menu')">← もどる</button>
+  </div>
+</div>
+
+<!-- ===== タイムアタック セットアップ ===== -->
+<div class="screen" id="screen-setup-attack">
+  <div class="setup-scroll">
+    <h2 class="setup-title">⚡ タイムアタック せってい</h2>
+    <p class="setup-desc">ぜんぶの九九 81問を<br>どれだけ はやく こたえられるか？</p>
+
+    <!-- こたえ方 -->
+    <div class="setup-section">
+      <p class="setup-label">こたえかた</p>
+      <div class="ans-mode-btns" id="ans-mode-btns-attack">
+        <button class="ans-mode-btn active" data-mode="4choice" onclick="selectAnsModeAttack(this)">
+          <span>📋</span> 4つから えらぶ
+        </button>
+        <button class="ans-mode-btn" data-mode="input" onclick="selectAnsModeAttack(this)">
+          <span>✏️</span> こたえを にゅうりょく
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-attack" onclick="startAttack()">⚡ タイムアタック スタート！</button>
+    <button class="btn-back" onclick="showScreen('menu')">← もどる</button>
+  </div>
+</div>
+
+<!-- ===== ゲーム ===== -->
+<div class="screen" id="screen-game">
+
+  <!-- トップバー -->
+  <div class="game-topbar">
+    <button class="btn-quit" onclick="confirmQuit()">✕ やめる</button>
+    <div class="game-progress-wrap">
+      <div class="game-progress-fill" id="game-progress-fill"></div>
+    </div>
+    <div class="topbar-right">
+      <div id="timer-disp" class="timer-disp hidden">⏱ <span id="timer-num">0.0</span>s</div>
+      <div class="game-score-text">⭐ <span id="g-score">0</span></div>
+    </div>
+  </div>
+
+  <!-- 問題エリア -->
+  <div class="question-area">
+    <!-- コンボバッジ -->
+    <div class="combo-badge hidden" id="combo-badge">🔥 <span id="combo-num">2</span>れんぞく！</div>
+
+    <!-- 問題式 -->
+    <div class="equation-box" id="equation-box">
+      <span id="eq-left" class="eq-num">3</span>
+      <span class="eq-op">×</span>
+      <span id="eq-right" class="eq-num">7</span>
+      <span class="eq-eq">=</span>
+      <span class="eq-ans">?</span>
+    </div>
+    <div class="q-counter-small">
+      <span id="g-current">1</span> / <span id="g-total">18</span>
+    </div>
+  </div>
+
+  <!-- 4択エリア -->
+  <div id="area-4choice" class="answer-area">
+    <div class="choices-grid" id="choices-grid">
+      <button class="choice-btn" id="c0" onclick="answer(0)"></button>
+      <button class="choice-btn" id="c1" onclick="answer(1)"></button>
+      <button class="choice-btn" id="c2" onclick="answer(2)"></button>
+      <button class="choice-btn" id="c3" onclick="answer(3)"></button>
+    </div>
+  </div>
+
+  <!-- 数字入力エリア -->
+  <div id="area-input" class="answer-area" style="display:none">
+    <div class="numpad-box">
+      <div class="numpad-display" id="numpad-display">?</div>
+    </div>
+    <div class="numpad-grid">
+      <button class="nb" onclick="numpadPress(7)">7</button>
+      <button class="nb" onclick="numpadPress(8)">8</button>
+      <button class="nb" onclick="numpadPress(9)">9</button>
+      <button class="nb" onclick="numpadPress(4)">4</button>
+      <button class="nb" onclick="numpadPress(5)">5</button>
+      <button class="nb" onclick="numpadPress(6)">6</button>
+      <button class="nb" onclick="numpadPress(1)">1</button>
+      <button class="nb" onclick="numpadPress(2)">2</button>
+      <button class="nb" onclick="numpadPress(3)">3</button>
+      <button class="nb nb-del" onclick="numpadDelete()">⌫</button>
+      <button class="nb" onclick="numpadPress(0)">0</button>
+      <button class="nb nb-ok" onclick="numpadConfirm()">OK ✓</button>
+    </div>
+  </div>
+
+  <!-- 正誤オーバーレイ -->
+  <div class="feedback-overlay hidden" id="feedback-overlay">
+    <div class="feedback-card">
+      <div class="feedback-mark" id="feedback-mark">○</div>
+      <div class="feedback-formula" id="feedback-formula"></div>
+      <div class="feedback-combo" id="feedback-combo" style="display:none"></div>
+      <button class="btn-next" onclick="nextQuestion()">つぎへ ▶</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== リザルト ===== -->
+<div class="screen" id="screen-result">
+  <div class="result-content">
+    <div class="result-emoji-big" id="result-emoji">🎉</div>
+    <h2 class="result-title" id="result-title">すごい！</h2>
+    <div class="result-stars" id="result-stars">⭐⭐⭐</div>
+
+    <!-- タイムアタック結果 -->
+    <div id="result-time-row" class="result-time-row" style="display:none">
+      <span class="result-time-val" id="result-time">0.0</span>
+      <span class="result-time-unit">びょう</span>
+    </div>
+
+    <div class="result-score-box">
+      <div class="result-score-row">
+        <span class="result-lbl">せいかい</span>
+        <span class="result-val"><span id="r-correct">0</span> / <span id="r-total">18</span></span>
+      </div>
+      <div class="result-score-row">
+        <span class="result-lbl">とくてん</span>
+        <span class="result-val result-pts" id="r-score">0てん</span>
+      </div>
+      <div class="result-score-row">
+        <span class="result-lbl">さいこうコンボ</span>
+        <span class="result-val" id="r-combo">0コンボ</span>
+      </div>
+    </div>
+
+    <!-- ミス一覧 -->
+    <div id="miss-list-wrap" class="miss-list-wrap">
+      <div class="miss-title">まちがえた もんだい</div>
+      <div id="miss-list" class="miss-list"></div>
+    </div>
+
+    <div class="result-btns">
+      <button class="btn-start" onclick="restartSame()">🔄 もういちど</button>
+      <button class="btn-back" onclick="showScreen('setup-dan')">⚙️ せってい</button>
+      <button class="btn-back" onclick="showScreen('menu')">🏠 メニュー</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== きろく ===== -->
+<div class="screen" id="screen-records">
+  <h2 class="setup-title">🏆 きろく</h2>
+  <div id="records-content" class="records-content"></div>
+  <button class="btn-back" onclick="showScreen('menu')">← もどる</button>
+</div>
+
+<!-- ===== やめる確認 ===== -->
+<div id="quit-overlay" style="display:none">
+  <div id="quit-card">
+    <div class="quit-icon">😿</div>
+    <p class="quit-title">やめちゃうの？</p>
+    <p class="quit-sub">これまでのきろくは きえてしまうよ…</p>
+    <button class="quit-btn-continue" onclick="closeQuitDialog()">▶ つづける！</button>
+    <button class="quit-btn-leave" onclick="doQuit()">🏠 やめる</button>
+  </div>
+</div>
+
+<a id="back-to-hub" href="/lab" style="display:none">
+  <span class="hub-icon">🏠</span>ぜんぶメニュー
+</a>
+
+<script src="../../common/speech.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
