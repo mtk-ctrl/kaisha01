@@ -20,7 +20,7 @@ jobs:
 
       - name: 夜の文案を生成してメール送信
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           TIME_SLOT: 夜
           TO_EMAIL: mtk551141@gmail.com

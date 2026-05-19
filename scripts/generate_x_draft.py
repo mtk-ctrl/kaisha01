@@ -1,12 +1,12 @@
 """
 TANQ Inc. — X投稿文案生成スクリプト
-GitHub Actions から呼び出される。Claude API で文案を生成し Resend でメール送信。
+GitHub Actions から呼び出される。Gemini API で文案を生成し Resend でメール送信。
 
 環境変数:
-  ANTHROPIC_API_KEY  — Claude API キー
-  RESEND_API_KEY     — Resend API キー
-  TIME_SLOT          — 朝 / 昼 / 夕 / 夜
-  TO_EMAIL           — 送信先メールアドレス (デフォルト: mtk551141@gmail.com)
+  GEMINI_API_KEY  — Google AI Studio の無料 API キー
+  RESEND_API_KEY  — Resend API キー
+  TIME_SLOT       — 朝 / 昼 / 夕 / 夜
+  TO_EMAIL        — 送信先メールアドレス
 """
 
 import os
@@ -20,7 +20,7 @@ JST = timezone(timedelta(hours=9))
 
 TIME_SLOT = os.environ.get("TIME_SLOT", "朝")
 TO_EMAIL = os.environ.get("TO_EMAIL", "mtk551141@gmail.com")
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 
 SLOT_CONFIG = {
@@ -93,26 +93,22 @@ def generate_drafts(slot: str) -> str:
 💡 使い方のヒント: 気に入ったものをそのままコピペするか、一言アレンジして投稿してください。夕方パターンは今日のMLB結果を入れてください。
 """
 
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
     payload = json.dumps({
-        "model": "claude-haiku-4-5-20251001",
-        "max_tokens": 800,
-        "messages": [{"role": "user", "content": prompt}],
+        "contents": [{"parts": [{"text": prompt}]}],
+        "generationConfig": {"maxOutputTokens": 800, "temperature": 0.9},
     }).encode("utf-8")
 
     req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages",
+        url,
         data=payload,
-        headers={
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        },
+        headers={"Content-Type": "application/json"},
         method="POST",
     )
     with urllib.request.urlopen(req) as resp:
         result = json.loads(resp.read().decode("utf-8"))
 
-    return result["content"][0]["text"]
+    return result["candidates"][0]["content"]["parts"][0]["text"]
 
 
 def send_email(subject: str, body_text: str, slot: str) -> None:
@@ -163,14 +159,14 @@ def send_email(subject: str, body_text: str, slot: str) -> None:
 
 
 def main():
-    if not ANTHROPIC_API_KEY:
-        print("ERROR: ANTHROPIC_API_KEY が設定されていません", file=sys.stderr)
+    if not GEMINI_API_KEY:
+        print("ERROR: GEMINI_API_KEY が設定されていません", file=sys.stderr)
         sys.exit(1)
     if not RESEND_API_KEY:
         print("ERROR: RESEND_API_KEY が設定されていません", file=sys.stderr)
         sys.exit(1)
 
-    print(f"[{TIME_SLOT}] 文案生成中...")
+    print(f"[{TIME_SLOT}] 文案生成中... (Gemini 1.5 Flash)")
     drafts = generate_drafts(TIME_SLOT)
     print(drafts)
 

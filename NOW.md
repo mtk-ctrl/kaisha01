@@ -13,8 +13,8 @@
 | Vercel | ✅ CI自動デプロイ完成 | tanq-app.vercel.app / VERCEL_TOKEN Secret登録済・スマホからの指示だけで本番反映可能 |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
-| Resend | ❌ 未設定 | X投稿メール用（Secret未登録） |
-| Anthropic API | ❌ 未設定 | X投稿文案生成用（Secret未登録） |
+| Resend | ⚠️ 登録済み（要動作確認） | X投稿メール用・Secret登録済み |
+| Gemini API | ❌ 未設定 | X投稿文案生成用・無料・GEMINI_API_KEY をGitHub Secretsに登録 |
 
 **各サービスの確認コマンド・詳細設定 → `product/infra.md` を参照**
 
