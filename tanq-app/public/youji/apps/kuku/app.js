@@ -70,6 +70,17 @@ function showScreen(name) {
   if (name === 'records') renderRecords();
 }
 
+// ===== メニューから直接セットアップ画面へ =====
+function openSetup(mode) {
+  cfg.mode = mode;
+  showScreen('setup-dan');
+}
+
+function openAttack() {
+  cfg.mode = 'attack';
+  showScreen('setup-attack');
+}
+
 // ===== セットアップ =====
 function selectDan(btn) {
   document.querySelectorAll('.dan-btn').forEach(b => b.classList.remove('active'));

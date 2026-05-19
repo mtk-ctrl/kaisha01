@@ -75,6 +75,12 @@ function showScreen(name) {
   if (name === 'records') renderRecords();
 }
 
+// ===== メニューから直接モード指定でスタート =====
+function startWithMode(mode) {
+  cfg.mode = mode;
+  startGame();
+}
+
 // ===== セットアップ =====
 function selectMode(btn) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));

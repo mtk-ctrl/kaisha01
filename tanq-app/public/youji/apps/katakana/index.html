@@ -11,29 +11,54 @@
   <link rel="stylesheet" href="../../common/youji-setup.css">
   <link rel="stylesheet" href="style.css">
   <script src="../../common/tanq-ui.js"></script>
+  <style>
+  /* 画面切替の保証 */
+  .screen { position: fixed !important; inset: 0 !important; top: 36px !important; display: none !important; flex-direction: column !important; align-items: center !important; overflow-y: auto !important; background: #0a1628 !important; }
+  .screen.active { display: flex !important; }
+  body { background: #0a1628 !important; overflow: hidden !important; }
+  </style>
 </head>
 <body>
 
 <!-- ===== メニュー ===== -->
 <div class="screen active" id="screen-menu">
-  <div class="menu-deco" aria-hidden="true">
-    <span class="deco-kata">ア</span>
-    <span class="deco-kata">イ</span>
-    <span class="deco-kata">ウ</span>
-  </div>
-  <div class="menu-title-badge">🔡 カタカナ れんしゅう 🔡</div>
-  <p class="menu-subtitle">カタカナを おぼえよう！</p>
-
-  <div class="menu-btns">
-    <button class="btn-start" onclick="showScreen('setup')">▶ はじめる</button>
-    <button class="btn-records" onclick="showScreen('records')">🏆 きろく</button>
-  </div>
-
-  <!-- 50音表プレビュー -->
-  <div class="kana-preview">
-    <div class="kana-row-preview">ア イ ウ エ オ</div>
-    <div class="kana-row-preview">カ キ ク ケ コ</div>
-    <div class="kana-row-preview">サ シ ス セ ソ …</div>
+  <div class="hero">
+    <div class="hero-icon">🔡</div>
+    <h1 class="hero-title">カタカナ れんしゅう</h1>
+    <p class="hero-sub">カタカナを おぼえよう！</p>
+    <div class="mode-list">
+      <button class="mode-card" onclick="startWithMode('hira2kata')">
+        <span class="mode-star" style="color:#4ade80">★</span>
+        <div class="mode-info">
+          <div class="mode-name">あ → ア</div>
+          <div class="mode-desc">ひらがなをみて カタカナをえらぶ</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="startWithMode('kata2hira')">
+        <span class="mode-star" style="color:#f0c040">★★</span>
+        <div class="mode-info">
+          <div class="mode-name">ア → あ</div>
+          <div class="mode-desc">カタカナをみて よみをえらぶ</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="startWithMode('word')">
+        <span class="mode-star" style="color:#c4a8ff">★★★</span>
+        <div class="mode-info">
+          <div class="mode-name">🍦 えことば</div>
+          <div class="mode-desc">絵をみて カタカナことばをえらぶ</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="showScreen('records')">
+        <span class="mode-star" style="color:#94a3c4">🏆</span>
+        <div class="mode-info">
+          <div class="mode-name">きろく</div>
+          <div class="mode-desc">これまでの成績を見る</div>
+        </div>
+      </button>
+    </div>
   </div>
 </div>
 
