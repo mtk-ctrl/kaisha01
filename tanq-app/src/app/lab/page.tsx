@@ -37,15 +37,20 @@ const DEFAULT_PROFILE: Profile = { name: 'たんきゅう', grade: '小4', color
 const AVATAR_COLORS = ['#c4a8ff', '#00e5c3', '#f0c040', '#f87171', '#60a5fa']
 const GRADES = ['小1', '小2', '小3', '小4', '小5', '小6', '中1', '中2', '中3']
 
-function loadProfile(): Profile {
+function loadProfile(userType: UserType = 'member'): Profile {
   if (typeof window === 'undefined') return DEFAULT_PROFILE
   try {
+    if (userType === 'tester') {
+      const name = localStorage.getItem('tanq-tester-name') || 'テスター'
+      return { ...DEFAULT_PROFILE, name }
+    }
+    if (userType === 'guest') {
+      return { ...DEFAULT_PROFILE, name: 'ゲスト' }
+    }
+    // member
     const stored = localStorage.getItem(PROFILE_KEY)
     const saved = stored ? JSON.parse(stored) : {}
-    // テスターページで入力した名前をフォールバックとして使う
-    const testerName = localStorage.getItem('tanq-tester-name') || ''
-    const name = saved.name || testerName || DEFAULT_PROFILE.name
-    return { ...DEFAULT_PROFILE, ...saved, name }
+    return { ...DEFAULT_PROFILE, ...saved }
   } catch { return DEFAULT_PROFILE }
 }
 function saveProfile(p: Profile) {
@@ -96,10 +101,10 @@ const APPS = [
   { id: 'youji-hiragana', name: 'ひらがなどっちかな', emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/`,      badge: '100もん',  audience: 'youji' as AppAudience },
   { id: 'youji-clock',    name: 'とけいをよもう',     emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/`,    badge: '8レベル',  audience: 'youji' as AppAudience },
   { id: 'youji-animals',  name: 'どうぶつかぞえ',     emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/`,  badge: '20まで',   audience: 'youji' as AppAudience },
-  { id: 'youji-zokusei',  name: 'ぞくせいしわけ工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/`,  badge: '分類',     audience: 'youji' as AppAudience },
+  { id: 'youji-zokusei',  name: 'ぞくせいしわけ工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/`,  badge: '分類',     audience: 'shougakusei' as AppAudience },
 ]
 
-type Tab = 'home' | 'apps' | 'records' | 'settings'
+type Tab = 'home' | 'records' | 'settings'
 
 // ─────────────────────────────────────────
 // ExternalLinkModal
@@ -236,14 +241,89 @@ function Avatar({ name, color, size = 40 }: { name: string; color: string; size?
 // ─────────────────────────────────────────
 // HomeTab
 // ─────────────────────────────────────────
-function HomeTab({ profile, stats, onNav, userType }: {
+function HomeTab({ profile, stats, userType }: {
   profile: Profile
   stats: ReturnType<typeof computeStats>
-  onNav: (tab: Tab) => void
   userType: UserType
 }) {
   const totalMastered = stats.kanjiMastered + stats.engMastered
   const totalLearning = stats.kanjiLearning + stats.engLearning
+  const appStats: Record<string, { mastered: number; total: number }> = {
+    kanji: { mastered: stats.kanjiMastered, total: stats.kanjiTotal },
+    english: { mastered: stats.engMastered, total: stats.engTotal },
+  }
+
+  function SectionLabel({ emoji, label, sub }: { emoji: string; label: string; sub: string }) {
+    return (
+      <div className="flex items-center gap-3 mb-3 mt-6">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">{emoji}</span>
+          <span className="font-black text-[#e8f0fe] text-sm">{label}</span>
+        </div>
+        <div className="h-px bg-white/12 flex-1" />
+        <span className="text-[10px] text-[#94a3c4]">{sub}</span>
+      </div>
+    )
+  }
+
+  function AppCard({ app }: { app: typeof APPS[number] }) {
+    const lock = lockLabel(app.id, userType)
+    const s = appStats[app.id]
+    const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
+    const isStatic = app.url.startsWith('/youji/')
+
+    if (lock) {
+      return (
+        <div className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60">
+          <div className="flex items-start justify-between mb-3">
+            <div className="text-3xl grayscale">{app.emoji}</div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">
+              🔒 {lock}
+            </span>
+          </div>
+          <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
+          <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
+          {userType === 'guest' && lock === '登録して解放' && (
+            <Link href="/register" className="block mt-2 text-[10px] text-[#c4a8ff] font-bold hover:underline">無料登録で解放 →</Link>
+          )}
+        </div>
+      )
+    }
+
+    const cardClass = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
+    const cardInner = (
+      <>
+        <div className="flex items-start justify-between mb-3">
+          <div className="text-3xl">{app.emoji}</div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+            style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
+            {app.badge}
+          </span>
+        </div>
+        <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
+        {pct !== null ? (
+          <>
+            <div className="text-[#94a3c4] text-[10px] mb-2">{s!.mastered}/{s!.total} 習得</div>
+            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: app.color }} />
+            </div>
+          </>
+        ) : (
+          <div className="flex items-center gap-1 mt-1">
+            <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
+            <span className="text-[#94a3c4] text-[10px]">開く →</span>
+          </div>
+        )}
+      </>
+    )
+
+    return isStatic
+      ? <a href={app.url} className={cardClass}>{cardInner}</a>
+      : <Link href={app.url} className={cardClass}>{cardInner}</Link>
+  }
+
+  const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
+  const youjiApps = APPS.filter(a => a.audience === 'youji')
 
   return (
     <div className="px-4 pb-4 pt-6">
@@ -282,11 +362,8 @@ function HomeTab({ profile, stats, onNav, userType }: {
       </div>
 
       {/* Today's recommended */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="font-black text-[#e8f0fe] text-sm">今日の学習</h2>
-          <button onClick={() => onNav('apps')} className="text-[#94a3c4] text-xs hover:text-[#c4a8ff]">全アプリ →</button>
-        </div>
+      <div className="mb-2">
+        <h2 className="font-black text-[#e8f0fe] text-sm mb-3">今日の学習</h2>
         <div className="grid grid-cols-2 gap-3">
           {(userType === 'guest'
             ? [
@@ -311,144 +388,29 @@ function HomeTab({ profile, stats, onNav, userType }: {
         </div>
       </div>
 
-      {/* Quick access */}
-      <div>
-        <h2 className="font-black text-[#e8f0fe] text-sm mb-3">クイックアクセス</h2>
-        <div className="grid grid-cols-4 gap-2">
-          {APPS.filter(a => a.audience === 'shougakusei').slice(0, 4).map((app) => (
-            <Link key={app.id} href={app.url}
-              className="flex flex-col items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl py-3 px-2 hover:border-white/20 transition-all">
-              <span className="text-2xl">{app.emoji}</span>
-              <span className="text-[#94a3c4] text-[10px] text-center leading-tight">{app.name}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ─────────────────────────────────────────
-// AppsTab
-// ─────────────────────────────────────────
-function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; userType: UserType }) {
-  const appStats: Record<string, { mastered: number; total: number }> = {
-    kanji: { mastered: stats.kanjiMastered, total: stats.kanjiTotal },
-    english: { mastered: stats.engMastered, total: stats.engTotal },
-  }
-
-  const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
-  const youjiApps = APPS.filter(a => a.audience === 'youji')
-
-  // ── 内製アプリカード ──
-  function InternalCard({ app }: { app: typeof APPS[number] }) {
-    const lock = lockLabel(app.id, userType)
-    const s = appStats[app.id]
-    const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
-
-    if (lock) {
-      return (
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60">
-          <div className="flex items-start justify-between mb-3">
-            <div className="text-3xl grayscale">{app.emoji}</div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">
-              🔒 {lock}
-            </span>
-          </div>
-          <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
-          <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
-          {userType === 'guest' && lock === '登録して解放' && (
-            <Link href="/register" className="block mt-2 text-[10px] text-[#c4a8ff] font-bold hover:underline">無料登録で解放 →</Link>
-          )}
-        </div>
-      )
-    }
-    return (
-      <Link href={app.url}
-        className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block">
-        <div className="flex items-start justify-between mb-3">
-          <div className="text-3xl">{app.emoji}</div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-            style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
-            {app.badge}
-          </span>
-        </div>
-        <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
-        {pct !== null ? (
-          <>
-            <div className="text-[#94a3c4] text-[10px] mb-2">{s!.mastered}/{s!.total} 習得</div>
-            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: app.color }} />
-            </div>
-          </>
-        ) : (
-          <div className="flex items-center gap-1 mt-1">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
-            <span className="text-[#94a3c4] text-[10px]">開く →</span>
-          </div>
-        )}
-      </Link>
-    )
-  }
-
-  // ── 幼稚園アプリカード（内製静的ファイル / <a>タグでフルナビ） ──
-  function YoujiCard({ app }: { app: typeof APPS[number] }) {
-    return (
-      <a href={app.url}
-        className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block">
-        <div className="flex items-start justify-between mb-3">
-          <div className="text-3xl">{app.emoji}</div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-            style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
-            {app.badge}
-          </span>
-        </div>
-        <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
-        <div className="flex items-center gap-1 mt-1">
-          <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
-          <span className="text-[#94a3c4] text-[10px]">開く →</span>
-        </div>
-      </a>
-    )
-  }
-
-  // ── セクション見出し ──
-  function SectionLabel({ emoji, label, sub }: { emoji: string; label: string; sub: string }) {
-    return (
-      <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-base">{emoji}</span>
-          <span className="font-black text-[#e8f0fe] text-sm">{label}</span>
-        </div>
-        <div className="h-px bg-white/12 flex-1" />
-        <span className="text-[10px] text-[#94a3c4]">{sub}</span>
-      </div>
-    )
-  }
-
-  return (
-    <div className="px-4 pt-6 pb-6">
+      {/* Guest banner */}
       {userType === 'guest' && (
-        <div className="mb-5 px-3 py-2.5 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
+        <div className="mt-4 px-3 py-2.5 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
           <p className="text-[#f0c040] text-xs font-bold">体験中: 計算・漢字のL1〜L2が使えます</p>
           <Link href="/register" className="text-[#c4a8ff] text-[11px] hover:underline font-bold">無料登録で全アプリ解放 →</Link>
         </div>
       )}
 
-      {/* ── 小学生向け ── */}
+      {/* All apps — 小学生向け */}
       <SectionLabel emoji="📘" label="小学生向け" sub={`${shougakuseiApps.length}アプリ`} />
       <div className="grid grid-cols-2 gap-3 mb-2">
-        {shougakuseiApps.map(app => <InternalCard key={app.id} app={app} />)}
+        {shougakuseiApps.map(app => <AppCard key={app.id} app={app} />)}
       </div>
 
-      {/* ── 幼稚園向け ── */}
+      {/* All apps — 幼稚園向け */}
       <SectionLabel emoji="🌸" label="幼稚園向け" sub={`${youjiApps.length}アプリ`} />
       <div className="grid grid-cols-2 gap-3">
-        {youjiApps.map(app => <YoujiCard key={app.id} app={app} />)}
+        {youjiApps.map(app => <AppCard key={app.id} app={app} />)}
       </div>
     </div>
   )
 }
+
 
 // ─────────────────────────────────────────
 // RecordsTab
@@ -593,7 +555,6 @@ function SettingsTab({ profile, onSave }: { profile: Profile; onSave: (p: Profil
 function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
   const items: { id: Tab; label: string; icon: string }[] = [
     { id: 'home', label: 'ホーム', icon: '🏠' },
-    { id: 'apps', label: 'アプリ', icon: '🎮' },
     { id: 'records', label: 'きろく', icon: '📊' },
     { id: 'settings', label: 'せってい', icon: '⚙️' },
   ]
@@ -623,9 +584,9 @@ function AppHub({ userType }: { userType: UserType }) {
   const [stats, setStats] = useState(computeStats())
 
   useEffect(() => {
-    setProfile(loadProfile())
+    setProfile(loadProfile(userType))
     setStats(computeStats())
-  }, [])
+  }, [userType])
 
   const refreshStats = useCallback(() => setStats(computeStats()), [])
 
@@ -668,8 +629,7 @@ function AppHub({ userType }: { userType: UserType }) {
       )}
 
       {/* Tab content */}
-      {tab === 'home' && <HomeTab profile={profile} stats={stats} onNav={setTab} userType={userType} />}
-      {tab === 'apps' && <AppsTab stats={stats} userType={userType} />}
+      {tab === 'home' && <HomeTab profile={profile} stats={stats} userType={userType} />}
       {tab === 'records' && <RecordsTab stats={stats} />}
       {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} />}
 
