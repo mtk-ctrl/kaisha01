@@ -22,7 +22,8 @@ type UserType = 'guest' | 'tester' | 'member'
 function canAccessApp(appId: string, userType: UserType): boolean {
   if (userType === 'tester') return true
   if (userType === 'member') return appId !== 'tanq'
-  return appId === 'math' || appId === 'kanji' || appId === 'word-math'
+  // ゲスト: 内製基本アプリ + 幼稚園外部アプリは全解放
+  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId.startsWith('youji-')
 }
 
 function lockLabel(appId: string, userType: UserType): string | null {
@@ -75,16 +76,27 @@ function computeStats() {
   }
 }
 
+type AppAudience = 'shougakusei' | 'youji'
+const _YB = 'https://ukun-cre.github.io/youti_master_v1/apps'
+
 const APPS = [
-  { id: 'tanq',    name: 'TANQ理科',     emoji: '🔬', color: '#00e5c3', url: '/tanq',         badge: 'Season 1' },
-  { id: 'youti',   name: '幼稚マスター', emoji: '🌟', color: '#f0c040', url: 'https://ukun-cre.github.io/youti_master_v1/', badge: 'Live', external: true },
-  { id: 'math',    name: '計算',          emoji: '🔢', color: '#60a5fa', url: '/apps/math',    badge: '速さで勝負' },
-  { id: 'kanji',   name: '漢字',          emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',  badge: `${TOTAL_KANJI}字` },
-  { id: 'clock',   name: '時計',          emoji: '🕐', color: '#f0c040', url: '/apps/clock',  badge: '時間計算' },
-  { id: 'english',   name: '英語',          emoji: '🌍', color: '#f87171', url: '/apps/english',    badge: `${TOTAL_ENGLISH}語` },
-  { id: 'word-math', name: '算数文章題',   emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '小1〜小3' },
-  { id: 'shapes',    name: '図形',          emoji: '🔷', color: '#c4a8ff', url: '/apps/shapes',    badge: '8図形' },
-  { id: 'coding',    name: 'プログラミング', emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ' },
+  // ── 小学生向け（内製アプリ） ──────────────────────────────
+  { id: 'tanq',      name: 'TANQ理科',      emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei' as AppAudience },
+  { id: 'math',      name: '計算',          emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: '速さで勝負',       audience: 'shougakusei' as AppAudience },
+  { id: 'kanji',     name: '漢字',          emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei' as AppAudience },
+  { id: 'clock',     name: '時計',          emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '時間計算',         audience: 'shougakusei' as AppAudience },
+  { id: 'english',   name: '英語',          emoji: '🌍', color: '#f87171', url: '/apps/english',   badge: `${TOTAL_ENGLISH}語`, audience: 'shougakusei' as AppAudience },
+  { id: 'word-math', name: '算数文章題',    emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '小1〜小3',         audience: 'shougakusei' as AppAudience },
+  { id: 'shapes',    name: '図形',          emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',    badge: '8図形',            audience: 'shougakusei' as AppAudience },
+  { id: 'coding',    name: 'プログラミング', emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ',        audience: 'shougakusei' as AppAudience },
+  // ── 幼稚園向け（外部アプリ）──────────────────────────────
+  { id: 'youji-kanji',    name: 'かんじだいすき',     emoji: '📚', color: '#f87171', url: `${_YB}/kanji/index.html`,    badge: '80字',    external: true, audience: 'youji' as AppAudience },
+  { id: 'youji-math',     name: 'さんすうおやつ',     emoji: '🍎', color: '#f0a050', url: `${_YB}/math/index.html`,     badge: '20まで',  external: true, audience: 'youji' as AppAudience },
+  { id: 'youji-juucombo', name: '10のなかよし',      emoji: '🔟', color: '#60a5fa', url: `${_YB}/juucombo/index.html`, badge: 'たして10', external: true, audience: 'youji' as AppAudience },
+  { id: 'youji-hiragana', name: 'ひらがなどっちかな', emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/index.html`,      badge: '100もん', external: true, audience: 'youji' as AppAudience },
+  { id: 'youji-clock',    name: 'とけいをよもう',     emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/index.html`,    badge: '8レベル', external: true, audience: 'youji' as AppAudience },
+  { id: 'youji-animals',  name: 'どうぶつかぞえ',     emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/index.html`,  badge: '20まで',  external: true, audience: 'youji' as AppAudience },
+  { id: 'youji-zokusei',  name: 'ぞくせいしわけ工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/index.html`,  badge: '分類',    external: true, audience: 'youji' as AppAudience },
 ]
 
 type Tab = 'home' | 'apps' | 'records' | 'settings'
@@ -303,20 +315,12 @@ function HomeTab({ profile, stats, onNav, userType }: {
       <div>
         <h2 className="font-black text-[#e8f0fe] text-sm mb-3">クイックアクセス</h2>
         <div className="grid grid-cols-4 gap-2">
-          {APPS.slice(0, 4).map((app) => (
-            app.external ? (
-              <a key={app.id} href={app.url} target="_blank" rel="noopener noreferrer"
-                className="flex flex-col items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl py-3 px-2 hover:border-white/20 transition-all">
-                <span className="text-2xl">{app.emoji}</span>
-                <span className="text-[#94a3c4] text-[10px] text-center leading-tight">{app.name}</span>
-              </a>
-            ) : (
-              <Link key={app.id} href={app.url}
-                className="flex flex-col items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl py-3 px-2 hover:border-white/20 transition-all">
-                <span className="text-2xl">{app.emoji}</span>
-                <span className="text-[#94a3c4] text-[10px] text-center leading-tight">{app.name}</span>
-              </Link>
-            )
+          {APPS.filter(a => a.audience === 'shougakusei').slice(0, 4).map((app) => (
+            <Link key={app.id} href={app.url}
+              className="flex flex-col items-center gap-1.5 bg-white/5 border border-white/10 rounded-xl py-3 px-2 hover:border-white/20 transition-all">
+              <span className="text-2xl">{app.emoji}</span>
+              <span className="text-[#94a3c4] text-[10px] text-center leading-tight">{app.name}</span>
+            </Link>
           ))}
         </div>
       </div>
@@ -335,21 +339,18 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
     english: { mastered: stats.engMastered, total: stats.engTotal },
   }
 
-  const internalApps = APPS.filter(a => !a.external)
-  const externalApps = APPS.filter(a => a.external)
+  const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
+  const youjiApps = APPS.filter(a => a.audience === 'youji')
 
-  const guestSubtitle = userType === 'guest'
-    ? '計算・漢字のL1〜L2を体験中 — 登録すると全アプリ解放！'
-    : `全${internalApps.length}アプリ使い放題`
-
-  function AppCard({ app }: { app: typeof APPS[number] }) {
+  // ── 内製アプリカード ──
+  function InternalCard({ app }: { app: typeof APPS[number] }) {
     const lock = lockLabel(app.id, userType)
     const s = appStats[app.id]
     const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
 
     if (lock) {
       return (
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60 relative">
+        <div className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60">
           <div className="flex items-start justify-between mb-3">
             <div className="text-3xl grayscale">{app.emoji}</div>
             <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">
@@ -364,9 +365,9 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
         </div>
       )
     }
-
-    const inner = (
-      <>
+    return (
+      <Link href={app.url}
+        className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block">
         <div className="flex items-start justify-between mb-3">
           <div className="text-3xl">{app.emoji}</div>
           <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
@@ -377,7 +378,7 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
         <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
         {pct !== null ? (
           <>
-            <div className="text-[#94a3c4] text-[10px] mb-2">{s!.mastered}/{s!.total}語 習得</div>
+            <div className="text-[#94a3c4] text-[10px] mb-2">{s!.mastered}/{s!.total} 習得</div>
             <div className="h-1 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full rounded-full" style={{ width: `${pct}%`, background: app.color }} />
             </div>
@@ -388,17 +389,46 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
             <span className="text-[#94a3c4] text-[10px]">開く →</span>
           </div>
         )}
-      </>
+      </Link>
     )
+  }
 
-    const cardBase = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
+  // ── 外部（幼稚園）アプリカード ──
+  function YoujiCard({ app }: { app: typeof APPS[number] }) {
     return (
-      <Link href={app.url} className={cardBase}>{inner}</Link>
+      <button onClick={() => setExtPending({ url: app.url, name: app.name })}
+        className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] text-left w-full">
+        <div className="flex items-start justify-between mb-3">
+          <div className="text-3xl">{app.emoji}</div>
+          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+            style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
+            {app.badge}
+          </span>
+        </div>
+        <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
+        <div className="flex items-center gap-1 mt-1">
+          <span className="text-[#94a3c4] text-[10px]">↗ 外部サイト</span>
+        </div>
+      </button>
+    )
+  }
+
+  // ── セクション見出し ──
+  function SectionLabel({ emoji, label, sub }: { emoji: string; label: string; sub: string }) {
+    return (
+      <div className="flex items-center gap-3 mb-3 mt-6 first:mt-0">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">{emoji}</span>
+          <span className="font-black text-[#e8f0fe] text-sm">{label}</span>
+        </div>
+        <div className="h-px bg-white/12 flex-1" />
+        <span className="text-[10px] text-[#94a3c4]">{sub}</span>
+      </div>
     )
   }
 
   return (
-    <div className="px-4 pt-6 pb-4">
+    <div className="px-4 pt-6 pb-6">
       {extPending && (
         <ExternalLinkModal
           url={extPending.url} name={extPending.name}
@@ -407,58 +437,25 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
         />
       )}
 
-      <h2 className="font-black text-[#e8f0fe] text-lg mb-1">アプリ一覧</h2>
-      <p className="text-[#94a3c4] text-xs mb-5">{guestSubtitle}</p>
+      {userType === 'guest' && (
+        <div className="mb-5 px-3 py-2.5 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
+          <p className="text-[#f0c040] text-xs font-bold">体験中: 計算・漢字のL1〜L2が使えます</p>
+          <Link href="/register" className="text-[#c4a8ff] text-[11px] hover:underline font-bold">無料登録で全アプリ解放 →</Link>
+        </div>
+      )}
 
-      {/* TANQアプリ */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {internalApps.map((app) => <AppCard key={app.id} app={app} />)}
+      {/* ── 小学生向け ── */}
+      <SectionLabel emoji="📘" label="小学生向け" sub={`${shougakuseiApps.length}アプリ`} />
+      <div className="grid grid-cols-2 gap-3 mb-2">
+        {shougakuseiApps.map(app => <InternalCard key={app.id} app={app} />)}
       </div>
 
-      {/* 提携サービス */}
-      {externalApps.length > 0 && (
-        <>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-px bg-white/15 flex-1" />
-            <span className="text-[10px] font-bold text-[#94a3c4] tracking-wider">提携サービス</span>
-            <div className="h-px bg-white/15 flex-1" />
-          </div>
-          <p className="text-[10px] text-[#94a3c4] mb-3 text-center">TANQラボの外のパートナーサービスです</p>
-          <div className="grid grid-cols-2 gap-3">
-            {externalApps.map((app) => {
-              const lock = lockLabel(app.id, userType)
-              if (lock) {
-                return (
-                  <div key={app.id} className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="text-3xl grayscale">{app.emoji}</div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">🔒 {lock}</span>
-                    </div>
-                    <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
-                    <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
-                  </div>
-                )
-              }
-              return (
-                <button key={app.id} onClick={() => setExtPending({ url: app.url, name: app.name })}
-                  className="bg-white/5 border border-[#f0c040]/20 rounded-2xl p-4 hover:border-[#f0c040]/40 transition-all hover:scale-[1.02] active:scale-[0.98] text-left w-full">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="text-3xl">{app.emoji}</div>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-                      style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
-                      {app.badge}
-                    </span>
-                  </div>
-                  <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
-                  <div className="flex items-center gap-1 mt-1">
-                    <span className="text-[#94a3c4] text-[10px]">外部サイトを開く ↗</span>
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </>
-      )}
+      {/* ── 幼稚園向け ── */}
+      <SectionLabel emoji="🌸" label="幼稚園向け" sub="外部サービス" />
+      <p className="text-[10px] text-[#94a3c4] mb-3">タップすると別のサイトに移動します</p>
+      <div className="grid grid-cols-2 gap-3">
+        {youjiApps.map(app => <YoujiCard key={app.id} app={app} />)}
+      </div>
     </div>
   )
 }
