@@ -86,16 +86,27 @@ function buildSession(grade: Grade, store: SRSStore, mode: 'normal' | 'weak'): K
 
 interface Question { fmt: QuestionFormat; item: KanjiEntry; correct: string; choices: string[] }
 
+/** 重複なし・必ず4択を保証するヘルパー */
+function pick4Unique(correct: string, candidates: string[]): string[] {
+  const seen = new Set([correct])
+  const others: string[] = []
+  for (const c of candidates) {
+    if (others.length === 3) break
+    if (!seen.has(c)) { seen.add(c); others.push(c) }
+  }
+  return shuffle([correct, ...others])
+}
+
 function makeQuestion(item: KanjiEntry, pool: KanjiEntry[]): Question {
   const fmt: QuestionFormat = Math.random() < 0.65 ? 'k2r' : 'r2k'
   if (fmt === 'k2r') {
     const correct = item.reading
-    const others = shuffle(pool.filter(k => k.reading !== item.reading)).slice(0, 3).map(k => k.reading)
-    return { fmt, item, correct, choices: shuffle([correct, ...others]) }
+    const candidates = shuffle(pool.filter(k => k.reading !== item.reading)).map(k => k.reading)
+    return { fmt, item, correct, choices: pick4Unique(correct, candidates) }
   }
   const correct = item.kanji
-  const others = shuffle(pool.filter(k => k.kanji !== item.kanji)).slice(0, 3).map(k => k.kanji)
-  return { fmt, item, correct, choices: shuffle([correct, ...others]) }
+  const candidates = shuffle(pool.filter(k => k.kanji !== item.kanji)).map(k => k.kanji)
+  return { fmt, item, correct, choices: pick4Unique(correct, candidates) }
 }
 
 function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
@@ -417,18 +428,26 @@ export default function KanjiQuiz() {
               style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : '#e8f0fe' }}>
               {q.item.kanji}
             </div>
+            {/* k2r: 漢字が問題なのでヒントは常に表示OK */}
             <p className="text-[#8892b0] text-sm mb-1">{q.item.meaning}</p>
             <p className="text-xs mb-5" style={{ color: `${color}90` }}>例）{q.item.example}</p>
           </>
         ) : (
           <>
             <p className="text-[#8892b0] text-xs mb-2 uppercase tracking-widest">この読み方の漢字は？</p>
-            <div className="text-5xl font-black mb-2 select-none"
+            <div className="text-5xl font-black mb-4 select-none"
               style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : color }}>
               {q.item.reading}
             </div>
-            <p className="text-[#8892b0] text-sm mb-1">{q.item.meaning}</p>
-            <p className="text-xs mb-5" style={{ color: `${color}90` }}>例）{q.item.example}</p>
+            {/* r2k: 選択前はヒント非表示（意味・例に答えの漢字が含まれるため） */}
+            {selected !== null ? (
+              <>
+                <p className="text-[#8892b0] text-sm mb-1">{q.item.meaning}</p>
+                <p className="text-xs mb-4" style={{ color: `${color}90` }}>例）{q.item.example}</p>
+              </>
+            ) : (
+              <div className="mb-5" />
+            )}
           </>
         )}
 
