@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ぞくせい仕分け工場！</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../common/back-to-hub.css">
+  <link rel="manifest" href="../../manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ===== メニュー ===== -->
+    <div id="view-menu" class="view active">
+      <div class="factory-sign" aria-hidden="true">🏭</div>
+      <h1>ぞくせい<br>しわけ工場！</h1>
+      <p class="menu-sub">アイテムを ベン図に ならべよう！</p>
+      <button class="btn btn-primary" onclick="App.showStageSelect()">▶ あそぶ！</button>
+      <button class="btn btn-ghost" onclick="App.showRecords()">🏆 きろく</button>
+    </div>
+
+    <!-- ===== ステージえらび ===== -->
+    <div id="view-stages" class="view">
+      <h2>ステージをえらんでね</h2>
+      <div class="stage-list" id="stage-list"></div>
+      <button class="btn btn-ghost" onclick="App.switchView('view-menu')">もどる</button>
+    </div>
+
+    <!-- ===== ゲーム ===== -->
+    <div id="view-game" class="view">
+      <!-- ヘッダー -->
+      <div class="game-header">
+        <div class="hdr-l">
+          <span id="stage-label" class="stage-label">ステージ 1</span>
+          <span id="combo-badge" class="combo-badge hidden">🔥 1コンボ</span>
+        </div>
+        <div class="hdr-r">
+          <span id="score-disp" class="score-disp">⭐ 0</span>
+          <button class="btn-quit" onclick="App.quitGame()">やめる</button>
+        </div>
+      </div>
+
+      <!-- 問題カード: アイテム表示 -->
+      <div class="item-area">
+        <div id="item-card" class="item-card">
+          <div id="item-emoji" class="item-emoji">🍎</div>
+          <div id="item-name"  class="item-name">りんご</div>
+        </div>
+        <div class="question-prompt">これは どこに はいる？</div>
+      </div>
+
+      <!-- ベン図 + ゾーンボタン -->
+      <div class="venn-area">
+        <!-- SVG ビジュアル -->
+        <svg id="venn-svg" viewBox="0 0 360 200" xmlns="http://www.w3.org/2000/svg"
+             aria-hidden="true" focusable="false">
+          <circle id="svg-left"  cx="130" cy="100" r="90"
+                  fill="rgba(255,100,100,0.18)" stroke="#FF6464" stroke-width="3.5"/>
+          <circle id="svg-right" cx="230" cy="100" r="90"
+                  fill="rgba(100,150,255,0.18)" stroke="#6496FF" stroke-width="3.5"/>
+          <!-- zone hint text -->
+          <text class="vt" x="68"  y="105">ひだりだけ</text>
+          <text class="vt" x="180" y="98" >りょう</text>
+          <text class="vt" x="180" y="118">ほう</text>
+          <text class="vt" x="292" y="105">みぎだけ</text>
+        </svg>
+
+        <!-- 4 タップゾーン (SVGに重ねた透明ボタン) -->
+        <button id="btn-left"    class="zone-btn zone-left"
+                onclick="App.answer('left')"    aria-label="ひだりだけ"></button>
+        <button id="btn-both"    class="zone-btn zone-both"
+                onclick="App.answer('both')"    aria-label="りょうほう"></button>
+        <button id="btn-right"   class="zone-btn zone-right"
+                onclick="App.answer('right')"   aria-label="みぎだけ"></button>
+      </div>
+
+      <!-- どちらでもない -->
+      <button id="btn-neither" class="neither-btn"
+              onclick="App.answer('neither')">
+        <span class="neither-icon">❌</span>
+        <span class="neither-text">どちらでもない</span>
+      </button>
+
+      <!-- タイムバー -->
+      <div class="time-bar-wrap">
+        <div id="time-bar" class="time-bar"></div>
+      </div>
+
+      <!-- フィードバック -->
+      <div id="feedback" class="feedback hidden"></div>
+    </div>
+
+    <!-- ===== リザルト ===== -->
+    <div id="view-result" class="view">
+      <div id="res-emoji"  class="res-emoji">🎉</div>
+      <div id="res-title"  class="res-title">すごい！</div>
+      <div class="res-card">
+        <div class="res-row">
+          <span class="res-lbl">せいかいすう</span>
+          <span class="res-val">
+            <span id="res-correct">0</span> / <span id="res-total">8</span>
+          </span>
+        </div>
+        <div id="res-stars" class="res-stars"></div>
+        <div class="res-row">
+          <span class="res-lbl">とくてん</span>
+          <span id="res-score" class="res-val res-score-big">0てん</span>
+        </div>
+        <div class="res-row">
+          <span class="res-lbl">さいこうコンボ</span>
+          <span id="res-combo" class="res-val">0コンボ</span>
+        </div>
+      </div>
+      <button class="btn btn-primary"  onclick="App.retry()">🔄 もういちど！</button>
+      <button class="btn btn-ghost"    onclick="App.showStageSelect()">📋 ステージえらび</button>
+      <button class="btn btn-ghost"    onclick="App.switchView('view-menu')">🏠 メニューへ</button>
+    </div>
+
+    <!-- ===== きろく ===== -->
+    <div id="view-records" class="view">
+      <h2>🏆 きろく</h2>
+      <div id="records-content" class="records-content"></div>
+      <button class="btn btn-ghost" onclick="App.switchView('view-menu')">もどる</button>
+    </div>
+
+  </div><!-- #app -->
+
+  <a id="back-to-hub" href="../../index.html">
+    <span class="hub-icon">🏠</span>ぜんぶメニュー
+  </a>
+
+  <script src="../../common/speech.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

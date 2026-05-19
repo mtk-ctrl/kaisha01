@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#5B8DEF">
+  <title>10の なかよし！</title>
+  <link rel="manifest" href="../../manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../../common/back-to-hub.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ===== ぜんぶメニューへ戻るボタン ===== -->
+<a id="back-to-hub" href="../../index.html">
+  <span class="hub-icon">🏠</span>ぜんぶメニュー
+</a>
+
+<!-- ===== メインコンテンツ ===== -->
+<div class="screen active" id="screen-menu">
+  <div class="menu-bg">
+    <div class="float-num n1">1</div>
+    <div class="float-num n2">9</div>
+    <div class="float-num n3">5</div>
+    <div class="float-num n4">5</div>
+    <div class="float-num n5">2</div>
+    <div class="float-num n6">8</div>
+  </div>
+
+  <div class="menu-header">
+    <div class="title-badge">
+      <span>🔢</span>
+      <span>10の なかよし！</span>
+    </div>
+    <div class="sub-title">たして 10に なる かずを おぼえよう！</div>
+  </div>
+
+  <div class="demo-area">
+    <div class="demo-equation" id="demoEquation">
+      <span class="num-btn active" id="num1">？</span>
+      <span class="plus">＋</span>
+      <span class="num-btn" id="num2">？</span>
+      <span class="plus">＝</span>
+      <span class="num-result">10</span>
+    </div>
+    <div class="demo-dots" id="demoDots"></div>
+  </div>
+
+  <div class="menu-buttons">
+    <button class="menu-btn btn-start" onclick="goSetup()">
+      <span>🎮 ゲームスタート</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== セットアップ画面 ===== -->
+<div class="screen" id="screen-setup">
+  <div class="setup-wrap">
+    <div class="setup-title">もんだいを なんもん やる？</div>
+    <div class="setup-choices">
+      <button class="setup-cnt-btn active" data-n="5"  onclick="selectCount(5)">5もん</button>
+      <button class="setup-cnt-btn"        data-n="7"  onclick="selectCount(7)">7もん</button>
+      <button class="setup-cnt-btn"        data-n="10" onclick="selectCount(10)">10もん</button>
+    </div>
+    <button class="menu-btn btn-start" style="margin-top:24px" onclick="startGame()">
+      <span>🎮 スタート！</span>
+    </button>
+    <button class="menu-btn" style="margin-top:10px;background:#ccc;color:#555" onclick="showScreen('menu')">
+      <span>← もどる</span>
+    </button>
+  </div>
+</div>
+
+<!-- ===== ゲーム画面 ===== -->
+<div class="screen" id="screen-game">
+  <div class="game-topbar">
+    <button class="quit-btn" onclick="quitGame()">✖</button>
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="score-chip" id="scoreChip">⭐ 0</div>
+  </div>
+
+  <div class="question-area">
+    <div class="speech-bubble" id="speechBubble">
+      <span id="speechText">□ に はいる かずは どれかな？</span>
+    </div>
+  </div>
+
+  <div class="equation-display" id="equationDisplay">
+    <span class="eq-num" id="eqLeft">?</span>
+    <span class="eq-op">＋</span>
+    <span class="eq-blank">□</span>
+    <span class="eq-op">＝</span>
+    <span class="eq-num eq-ten">10</span>
+  </div>
+
+  <div class="dot-display" id="dotDisplay"></div>
+
+  <div class="choices-grid" id="choicesGrid"></div>
+
+  <div class="combo-display" id="comboDisplay"></div>
+  <button id="nextBtn" class="next-btn" onclick="goNext()" style="display:none">つぎへ →</button>
+</div>
+
+<!-- ===== リザルト画面 ===== -->
+<div class="screen" id="screen-result">
+  <div class="result-body">
+    <div class="result-emoji" id="resultEmoji">🎉</div>
+    <div class="result-title" id="resultTitle">すごい！</div>
+    <div class="result-score-wrap">
+      <div class="result-score-label">せいかいすう</div>
+      <div class="result-score" id="resultScore">0 / 10</div>
+    </div>
+    <div class="result-buttons">
+      <button class="result-btn btn-retry" onclick="startGame()">🔄 もういちど</button>
+      <button class="result-btn btn-menu" onclick="showScreen('menu')">🏠 メニューへ</button>
+    </div>
+  </div>
+</div>
+
+<script src="../../common/speech.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

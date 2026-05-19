@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>とけいをよもう！</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../../common/back-to-hub.css">
+    <link rel="manifest" href="../../manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="app">
+        <canvas id="confetti-canvas"></canvas>
+
+        <!-- ===== メニュー ===== -->
+        <div id="view-menu" class="view active">
+            <div class="owl-mascot" id="menu-owl"></div>
+            <h1>🕐 とけいを<br>よもう！</h1>
+            <div class="speech-bubble" id="menu-bubble">じかんを おぼえよう！🦉</div>
+            <button class="btn btn-primary" onclick="app.goToSettings()">▶ はじめる！</button>
+            <button class="btn btn-secondary" onclick="app.switchView('view-records'); app.renderRecords();">🏆 きろく</button>
+        </div>
+
+        <!-- ===== レベル選択 ===== -->
+        <div id="view-level" class="view">
+            <h2>🎯 レベルをえらんでね</h2>
+            <div class="level-list" id="level-list"></div>
+            <button class="btn btn-secondary" onclick="app.switchView('view-menu')">もどる</button>
+        </div>
+
+        <!-- ===== 設定 ===== -->
+        <div id="view-settings" class="view" style="justify-content: flex-start; padding-top: 16px;">
+            <h2>🎯 レベル・せってい</h2>
+
+            <div class="setting-group">
+                <label>レベルをえらんでね</label>
+                <div class="level-list" id="level-list-settings" style="max-height: none;"></div>
+            </div>
+
+            <div class="setting-group">
+                <label>もんだいのスタイル</label>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="style" value="choice" id="radio-choice"> 4たく</label>
+                    <label class="radio-label"><input type="radio" name="style" value="input" id="radio-input"> じぶんでいれる</label>
+                    <label class="radio-label"><input type="radio" name="style" value="mixed" id="radio-mixed" checked> まぜまぜ</label>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>もんだいすう</label>
+                <div class="count-group">
+                    <button class="btn btn-count" onclick="app.setCount(5)" id="count-5">5もん</button>
+                    <button class="btn btn-count active" onclick="app.setCount(7)" id="count-7">7もん</button>
+                    <button class="btn btn-count" onclick="app.setCount(10)" id="count-10">10もん</button>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>おと</label>
+                <button id="btn-sound" class="btn btn-toggle" onclick="app.toggleSound()">ON</button>
+            </div>
+
+            <button class="btn btn-primary" onclick="app.startGame()">▶ スタート！</button>
+            <button class="btn btn-secondary" onclick="app.switchView('view-menu')">もどる</button>
+        </div>
+
+        <!-- ===== 記録 ===== -->
+        <div id="view-records" class="view">
+            <h2>🏆 きろく</h2>
+            <div id="records-content" class="records-scroll"></div>
+            <button class="btn btn-secondary" onclick="app.switchView('view-menu')">もどる</button>
+        </div>
+
+        <!-- ===== ゲーム ===== -->
+        <div id="view-game" class="view">
+            <div class="game-header">
+                <div class="game-info-left">
+                    <span id="question-counter">1 / 7</span>
+                    <span id="combo-display" class="combo-badge hidden">🔥 0コンボ</span>
+                </div>
+                <div class="game-info-right">
+                    <span id="score-display" class="score-badge">⭐ 0</span>
+                    <button class="btn btn-quit" onclick="app.quitGame()">やめる</button>
+                </div>
+            </div>
+
+            <div id="level-indicator" class="level-indicator"></div>
+
+            <div id="question-area" class="question-area">
+                <!-- 問題文 -->
+                <div id="question-text" class="question-text"></div>
+
+                <!-- 時計SVG -->
+                <div id="clock-container" class="clock-container">
+                    <svg id="clock-svg" viewBox="0 0 200 200" width="180" height="180">
+                        <!-- 文字盤 -->
+                        <circle cx="100" cy="100" r="96" fill="white" stroke="#2c3e50" stroke-width="4"/>
+                        <circle cx="100" cy="100" r="90" fill="#fefefe" stroke="#bdc3c7" stroke-width="1"/>
+                        <!-- 目盛り（JSで描画） -->
+                        <g id="clock-ticks"></g>
+                        <!-- 数字（JSで描画） -->
+                        <g id="clock-numbers"></g>
+                        <!-- 針 -->
+                        <line id="hour-hand"   x1="100" y1="100" x2="100" y2="55"  stroke="#2c3e50" stroke-width="7"  stroke-linecap="round"/>
+                        <line id="minute-hand" x1="100" y1="100" x2="100" y2="30"  stroke="#e74c3c" stroke-width="4"  stroke-linecap="round"/>
+                        <!-- 中心点 -->
+                        <circle cx="100" cy="100" r="6" fill="#2c3e50"/>
+                        <circle cx="100" cy="100" r="3" fill="white"/>
+                    </svg>
+                </div>
+
+                <!-- 問題2（経過時間系：2つの時計） -->
+                <div id="clock2-container" class="clock2-container hidden">
+                    <div class="clock2-label" id="clock2-from-label">しゅっぱつ</div>
+                    <svg id="clock-svg2" viewBox="0 0 200 200" width="140" height="140">
+                        <circle cx="100" cy="100" r="96" fill="white" stroke="#2c3e50" stroke-width="4"/>
+                        <circle cx="100" cy="100" r="90" fill="#fefefe" stroke="#bdc3c7" stroke-width="1"/>
+                        <g id="clock2-ticks"></g>
+                        <g id="clock2-numbers"></g>
+                        <line id="hour-hand2"   x1="100" y1="100" x2="100" y2="55" stroke="#2c3e50" stroke-width="7" stroke-linecap="round"/>
+                        <line id="minute-hand2" x1="100" y1="100" x2="100" y2="30" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="100" cy="100" r="6" fill="#2c3e50"/>
+                        <circle cx="100" cy="100" r="3" fill="white"/>
+                    </svg>
+                    <div class="clock2-arrow">→</div>
+                    <div class="clock2-label" id="clock2-to-label">とうちゃく</div>
+                    <svg id="clock-svg3" viewBox="0 0 200 200" width="140" height="140">
+                        <circle cx="100" cy="100" r="96" fill="white" stroke="#2c3e50" stroke-width="4"/>
+                        <circle cx="100" cy="100" r="90" fill="#fefefe" stroke="#bdc3c7" stroke-width="1"/>
+                        <g id="clock3-ticks"></g>
+                        <g id="clock3-numbers"></g>
+                        <line id="hour-hand3"   x1="100" y1="100" x2="100" y2="55" stroke="#2c3e50" stroke-width="7" stroke-linecap="round"/>
+                        <line id="minute-hand3" x1="100" y1="100" x2="100" y2="30" stroke="#e74c3c" stroke-width="4" stroke-linecap="round"/>
+                        <circle cx="100" cy="100" r="6" fill="#2c3e50"/>
+                        <circle cx="100" cy="100" r="3" fill="white"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- ヒントボタン -->
+            <div id="hint-area" class="hint-area hidden">
+                <button class="btn btn-hint" id="btn-hint" onclick="app.showHint()">💡 ヒント</button>
+                <div id="hint-text" class="hint-text hidden"></div>
+            </div>
+
+            <!-- 4択エリア -->
+            <div id="choices-container" class="choices-area"></div>
+
+            <!-- テンキー入力エリア -->
+            <div id="input-container" class="input-area hidden">
+                <div class="time-input-row">
+                    <div class="time-input-box">
+                        <div class="time-input-label">じ</div>
+                        <div id="input-hour" class="time-input-val" onclick="app.setInputField('hour')">__</div>
+                    </div>
+                    <div class="time-input-sep">：</div>
+                    <div class="time-input-box">
+                        <div class="time-input-label">ふん</div>
+                        <div id="input-minute" class="time-input-val" onclick="app.setInputField('min')">__</div>
+                    </div>
+                </div>
+                <!-- 経過時間入力（Lv8〜） -->
+                <div id="duration-input-row" class="time-input-row hidden">
+                    <div class="time-input-box">
+                        <div class="time-input-label">じかん</div>
+                        <div id="input-dhour" class="time-input-val" onclick="app.setInputField('dhour')">__</div>
+                    </div>
+                    <div class="time-input-sep">じかん</div>
+                    <div class="time-input-box">
+                        <div class="time-input-label">ふん</div>
+                        <div id="input-dmin" class="time-input-val" onclick="app.setInputField('dmin')">__</div>
+                    </div>
+                    <div class="time-input-sep">ふん</div>
+                </div>
+                <div class="numpad">
+                    <button class="numpad-btn" onclick="app.numpadInput('7')">7</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('8')">8</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('9')">9</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('4')">4</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('5')">5</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('6')">6</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('1')">1</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('2')">2</button>
+                    <button class="numpad-btn" onclick="app.numpadInput('3')">3</button>
+                    <button class="numpad-btn numpad-zero" onclick="app.numpadInput('0')">0</button>
+                    <button class="numpad-btn numpad-del" onclick="app.numpadDelete()">⌫</button>
+                    <button class="numpad-btn numpad-ok" onclick="app.numpadOK()">OK</button>
+                </div>
+                <div id="input-focus-label" class="input-focus-label">「じ」をいれてね</div>
+            </div>
+
+            <!-- フィードバック -->
+            <div id="feedback" class="feedback hidden"></div>
+
+            <!-- 次へボタン -->
+            <button id="btn-next" class="btn btn-primary hidden" onclick="app.nextQuestion()">つぎへ →</button>
+        </div>
+
+        <!-- ===== リザルト ===== -->
+        <div id="view-result" class="view">
+            <canvas id="result-confetti" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100;"></canvas>
+            <div class="result-owl" id="result-owl"></div>
+            <div class="result-title-text" id="result-title">すごい！✨</div>
+            <div class="result-score-card">
+                <div class="result-score-label">せいかいすう</div>
+                <div class="result-score-display">
+                    <span id="result-correct" class="result-big-num">0</span>
+                    <span class="result-divider"> / </span>
+                    <span id="result-total" class="result-total-num">7</span>
+                </div>
+                <div id="result-stars" class="result-stars-row"></div>
+                <div class="result-score-label" style="margin-top:10px;">とくてん</div>
+                <div id="result-point" class="result-point-num">0 てん</div>
+            </div>
+            <div id="result-badges" class="result-badges"></div>
+            <button class="btn btn-primary" onclick="app.startGame()">🔄 もういちど！</button>
+            <button class="btn btn-secondary" onclick="app.switchView('view-menu')">🏠 メニューへ</button>
+        </div>
+    </div>
+
+    <a id="back-to-hub" href="../../index.html">
+        <span class="hub-icon">🏠</span>ぜんぶメニュー
+    </a>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+:root {
+    --sky:    #5BA4EF;
+    --sun:    #FFD700;
+    --night:  #2C3E6B;
+    --orange: #FF8C42;
+    --green:  #4ECDC4;
+    --pink:   #FF6B9D;
+    --bg:     #EEF6FF;
+    --text:   #2D2D2D;
+}
+
+* { box-sizing: border-box; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+body {
+    margin: 0; padding: 0;
+    font-family: 'Kosugi Maru', 'Noto Sans JP', sans-serif;
+    background: linear-gradient(160deg, #EEF6FF 0%, #FFF5E0 100%);
+    color: var(--text);
+    overflow: hidden;
+}
+
+#app {
+    width: 100vw; height: 100vh;
+    position: relative;
+    display: flex; justify-content: center; align-items: center;
+}
+
+canvas#confetti-canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 100;
+}
+
+.view {
+    display: none; width: 100%; max-width: 500px; height: 100%;
+    padding: 20px 16px; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; overflow-y: auto;
+}
+.view.active { display: flex; }
+
+h1 {
+    color: var(--night);
+    font-size: clamp(1.8rem, 6vw, 2.6rem);
+    line-height: 1.2;
+    margin: 8px 0;
+    text-shadow: 2px 2px 0 rgba(255,215,0,0.4);
+}
+h2 { color: var(--sky); font-size: 1.8rem; margin-bottom: 16px; }
+
+/* ===== ふくろう先生 ===== */
+.owl-mascot, .result-owl {
+    width: 110px; height: 110px;
+    animation: owlFloat 3.5s ease-in-out infinite;
+    flex-shrink: 0;
+}
+@keyframes owlFloat {
+    0%,100% { transform: translateY(0) rotate(-3deg); }
+    50%      { transform: translateY(-12px) rotate(3deg); }
+}
+
+.speech-bubble {
+    background: white; border: 3px solid var(--sky);
+    border-radius: 20px 20px 20px 4px;
+    padding: 10px 16px; max-width: 220px;
+    box-shadow: 0 4px 12px rgba(91,164,239,0.2);
+    font-size: 1rem; font-weight: 700;
+    margin-bottom: 8px;
+}
+
+/* ===== ボタン ===== */
+.btn {
+    border: none; border-radius: 20px; padding: 14px 28px;
+    font-size: 1.4rem; font-weight: bold; cursor: pointer;
+    margin: 8px; width: 80%; max-width: 380px;
+    font-family: 'Kosugi Maru', sans-serif;
+    box-shadow: 0 6px 0 rgba(0,0,0,0.12);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn:active { transform: translateY(6px); box-shadow: 0 0 0; }
+.btn-primary   { background: var(--sky);    color: white; }
+.btn-secondary { background: var(--green);  color: white; }
+.btn-quit      { background: #ddd; color: #555; padding: 8px 16px; font-size: 0.9rem; width: auto; margin: 0; box-shadow: 0 3px 0 rgba(0,0,0,0.1); }
+.btn-hint      { background: #FFF3CD; color: #856404; border: 2px solid #FFD700; padding: 8px 20px; font-size: 1rem; width: auto; margin: 4px; box-shadow: 0 3px 0 rgba(0,0,0,0.08); }
+.btn-toggle    { background: var(--sky); color: white; padding: 10px 24px; width: auto; }
+
+/* ===== 設定 ===== */
+.setting-group {
+    margin: 12px 0; width: 85%; text-align: left;
+}
+.setting-group > label {
+    display: block; font-size: 1.1rem; margin-bottom: 6px; font-weight: 900; color: var(--night);
+}
+.radio-group {
+    display: flex; gap: 8px; flex-wrap: wrap;
+}
+.radio-label {
+    background: white; border: 2px solid #bbb; border-radius: 12px;
+    padding: 8px 14px; font-size: 1rem; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: border-color 0.15s, background 0.15s;
+}
+.radio-label input { accent-color: var(--sky); }
+.count-group {
+    display: flex; gap: 8px;
+}
+.btn-count {
+    flex: 1; padding: 10px 6px; font-size: 1rem;
+    background: white; border: 2px solid #bbb; color: #555;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08); margin: 0; width: auto;
+}
+.btn-count.active {
+    background: var(--sky); border-color: var(--sky); color: white;
+}
+
+/* ===== レベルリスト ===== */
+.level-list {
+    width: 100%; max-width: 420px;
+    display: flex; flex-direction: column; gap: 8px;
+    max-height: 65vh; overflow-y: auto;
+    padding: 4px;
+}
+.level-btn {
+    background: white; border: 2.5px solid #bbb; border-radius: 14px;
+    padding: 12px 16px; cursor: pointer; text-align: left;
+    display: flex; align-items: center; gap: 10px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    box-shadow: 0 3px 0 rgba(0,0,0,0.08);
+    font-family: 'Kosugi Maru', sans-serif;
+}
+.level-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.08); }
+.level-btn.selected { border-color: var(--sky); background: #EEF6FF; }
+.level-btn .lv-num {
+    background: var(--sky); color: white;
+    border-radius: 8px; padding: 4px 10px;
+    font-weight: 900; font-size: 1rem; min-width: 50px; text-align: center;
+}
+.level-btn .lv-name { font-weight: 700; font-size: 1rem; color: var(--night); }
+.level-btn .lv-desc { font-size: 0.8rem; color: #888; }
+.level-stars { font-size: 0.9rem; margin-left: auto; }
+
+/* ===== 記録 ===== */
+.records-scroll {
+    width: 100%; max-width: 420px;
+    max-height: 65vh; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px;
+}
+.record-row {
+    background: white; border-radius: 14px;
+    padding: 12px 16px; box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+    display: flex; align-items: center; justify-content: space-between;
+    border-left: 5px solid var(--sky);
+}
+.record-lv-name { font-weight: 700; font-size: 0.95rem; color: var(--night); }
+.record-detail  { font-size: 0.85rem; color: #666; }
+.record-stars   { font-size: 1.1rem; }
+
+/* ===== ゲームヘッダー ===== */
+.game-header {
+    width: 100%; display: flex; justify-content: space-between; align-items: center;
+    position: absolute; top: 12px; left: 0; padding: 0 14px;
+}
+.game-info-left, .game-info-right {
+    display: flex; align-items: center; gap: 8px;
+}
+#question-counter { font-size: 1.2rem; font-weight: 900; color: var(--sky); }
+.combo-badge {
+    background: #FF6B6B; color: white;
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 0.85rem; font-weight: 900;
+}
+.score-badge {
+    background: var(--sun); color: #5a3e00;
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 0.85rem; font-weight: 900;
+}
+.hidden { display: none !important; }
+
+/* ===== レベルインジケーター ===== */
+.level-indicator {
+    font-size: 0.85rem; color: #888; font-weight: 700;
+    margin-top: 48px; margin-bottom: 2px;
+}
+
+/* ===== 問題エリア ===== */
+.question-area {
+    display: flex; flex-direction: column; align-items: center;
+    width: 100%;
+}
+.question-text {
+    font-size: clamp(1rem, 4vw, 1.3rem);
+    font-weight: 900; color: var(--night);
+    margin-bottom: 8px; line-height: 1.4;
+    min-height: 2em;
+}
+
+/* ===== 時計 ===== */
+.clock-container {
+    display: flex; justify-content: center; align-items: center;
+    margin: 4px 0;
+}
+.clock2-container {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; flex-wrap: wrap; margin: 4px 0;
+}
+.clock2-label {
+    font-size: 0.85rem; font-weight: 900;
+    color: var(--sky); text-align: center;
+    writing-mode: horizontal-tb;
+}
+.clock2-arrow {
+    font-size: 2rem; color: var(--orange); font-weight: 900;
+}
+
+/* ===== ヒント ===== */
+.hint-area {
+    display: flex; flex-direction: column; align-items: center;
+    margin: 2px 0;
+}
+.hint-text {
+    background: #FFFBEA; border: 2px solid var(--sun);
+    border-radius: 12px; padding: 8px 14px;
+    font-size: 0.9rem; font-weight: 700; color: #7a5800;
+    max-width: 340px; margin-top: 4px;
+    line-height: 1.5;
+}
+
+/* ===== 4択 ===== */
+.choices-area {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; width: 100%; max-width: 380px;
+    margin-top: 6px;
+}
+.btn-choice {
+    background: white; border: 3px solid var(--sky);
+    border-radius: 16px; padding: 14px 8px;
+    font-size: 1.3rem; font-weight: 900;
+    cursor: pointer; color: var(--night);
+    font-family: 'Kosugi Maru', sans-serif;
+    box-shadow: 0 5px 0 rgba(91,164,239,0.3);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-choice:active { transform: translateY(5px); box-shadow: 0 0 0; }
+.btn-choice.correct { background: #D4EDDA; border-color: #28a745; }
+.btn-choice.wrong   { background: #F8D7DA; border-color: #dc3545; }
+
+/* ===== テンキー入力 ===== */
+.input-area {
+    display: flex; flex-direction: column;
+    align-items: center; width: 100%; max-width: 320px;
+    margin-top: 4px;
+}
+.time-input-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+}
+.time-input-box {
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.time-input-label { font-size: 0.8rem; color: #888; font-weight: 700; }
+.time-input-val {
+    background: white; border: 3px solid var(--sky);
+    border-radius: 10px; width: 64px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; font-weight: 900; color: var(--night);
+}
+.time-input-val.active-field {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(255,140,66,0.3);
+}
+.time-input-sep { font-size: 1.6rem; font-weight: 900; color: var(--night); }
+
+.numpad {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 8px; width: 100%; max-width: 240px;
+}
+.numpad-btn {
+    background: white; border: 2px solid #ccc; border-radius: 12px;
+    padding: 14px 0; font-size: 1.4rem; font-weight: 900;
+    cursor: pointer; color: var(--night);
+    font-family: 'Kosugi Maru', sans-serif;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+.numpad-btn:active { transform: translateY(4px); box-shadow: 0 0 0; }
+.numpad-zero { grid-column: span 1; }
+.numpad-del  { background: #FFF0F0; border-color: #ffb3b3; color: #c0392b; }
+.numpad-ok   { background: var(--sky); border-color: var(--sky); color: white; }
+
+.input-focus-label {
+    font-size: 0.85rem; color: var(--orange); font-weight: 700;
+    margin-top: 4px;
+}
+
+/* ===== フィードバック ===== */
+.feedback {
+    font-size: 1.3rem; font-weight: 900;
+    padding: 8px 20px; border-radius: 20px;
+    margin-top: 6px;
+    animation: feedbackPop 0.3s ease;
+}
+@keyframes feedbackPop {
+    0% { transform: scale(0.8); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+}
+.feedback-correct { background: #D4EDDA; color: #155724; }
+.feedback-wrong   { background: #F8D7DA; color: #721c24; }
+
+/* ===== リザルト ===== */
+#view-result {
+    background: linear-gradient(160deg, #EEF6FF, #FFF5E0);
+    gap: 12px; overflow-y: auto;
+    justify-content: flex-start;
+    padding-top: 20px;
+}
+.result-title-text {
+    font-size: 2rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--sky), var(--night));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.result-score-card {
+    background: white; border-radius: 24px; padding: 16px 32px;
+    text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    border: 3px solid var(--sun);
+}
+.result-score-label  { font-size: 0.9rem; color: #888; font-weight: 700; margin-bottom: 4px; }
+.result-score-display { display: flex; align-items: baseline; justify-content: center; gap: 4px; }
+.result-big-num   { font-size: 3.6rem; font-weight: 900; color: #FF6B6B; }
+.result-divider   { font-size: 1.8rem; color: #888; }
+.result-total-num { font-size: 1.8rem; font-weight: 900; color: var(--sky); }
+.result-stars-row { font-size: 1.8rem; margin-top: 6px; letter-spacing: 4px; }
+.result-point-num { font-size: 2rem; font-weight: 900; color: var(--orange); }
+.result-badges {
+    display: flex; flex-wrap: wrap; justify-content: center;
+    gap: 6px; max-width: 300px;
+}
+.result-badge { font-size: 1.2rem; font-weight: 900; padding: 4px 12px; border-radius: 10px; }
+.badge-ok { background: #E8FFF4; border: 2px solid #4ECDC4; color: #27AE60; }
+.badge-ng { background: #FFF0F0; border: 2px solid #FF6B6B; color: #FF4757; }
+
+/* ===== 次へボタン（常に画面下部に表示） ===== */
+#btn-next {
+    position: sticky;
+    bottom: 16px;
+    z-index: 10;
+    margin-top: 8px;
+}
+
+/* ===== 時入力ボックス（タップで選択可能） ===== */
+.time-input-val {
+    cursor: pointer;
+}
+
+/* ===== ゲームビュー（コンテンツ上から配置） ===== */
+#view-game {
+    justify-content: flex-start;
+    padding-top: 16px;
+}
+
+/* ===== スクロールバー ===== */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 3px; }
