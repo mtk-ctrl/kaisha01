@@ -3,6 +3,12 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { KANJI_DATA } from '@/data/kanjiData'
+import { WORDS } from '@/data/englishData'
+
+// アプリが提供する全体数（SRS済み数ではなく全データ数）
+const TOTAL_KANJI = Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0)
+const TOTAL_ENGLISH = WORDS.length
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -63,8 +69,8 @@ function computeStats() {
   const english = readSRS('tanq_english_srs_v1')
   const sum = (items: SRSItem[], b: number) => items.filter(x => x.b === b).length
   return {
-    kanjiMastered: sum(kanji, 2), kanjiLearning: sum(kanji, 1), kanjiTotal: kanji.length,
-    engMastered: sum(english, 2), engLearning: sum(english, 1), engTotal: english.length,
+    kanjiMastered: sum(kanji, 2), kanjiLearning: sum(kanji, 1), kanjiTotal: TOTAL_KANJI,
+    engMastered: sum(english, 2), engLearning: sum(english, 1), engTotal: TOTAL_ENGLISH,
     streak: Math.max(getStreak('tanq_kanji_streak_v1'), getStreak('tanq_english_streak_v1')),
   }
 }
@@ -73,9 +79,9 @@ const APPS = [
   { id: 'tanq',    name: 'TANQ理科',     emoji: '🔬', color: '#00e5c3', url: '/tanq',         badge: 'Season 1' },
   { id: 'youti',   name: '幼稚マスター', emoji: '🌟', color: '#f0c040', url: 'https://ukun-cre.github.io/youti_master_v1/', badge: 'Live', external: true },
   { id: 'math',    name: '計算',          emoji: '🔢', color: '#60a5fa', url: '/apps/math',    badge: '速さで勝負' },
-  { id: 'kanji',   name: '漢字',          emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',  badge: '330字' },
+  { id: 'kanji',   name: '漢字',          emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',  badge: `${TOTAL_KANJI}字` },
   { id: 'clock',   name: '時計',          emoji: '🕐', color: '#f0c040', url: '/apps/clock',  badge: '時間計算' },
-  { id: 'english',   name: '英語',          emoji: '🌍', color: '#f87171', url: '/apps/english',    badge: '275語' },
+  { id: 'english',   name: '英語',          emoji: '🌍', color: '#f87171', url: '/apps/english',    badge: `${TOTAL_ENGLISH}語` },
   { id: 'word-math', name: '算数文章題',   emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '小1〜小3' },
   { id: 'shapes',    name: '図形',          emoji: '🔷', color: '#c4a8ff', url: '/apps/shapes',    badge: '8図形' },
   { id: 'coding',    name: 'プログラミング', emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ' },
