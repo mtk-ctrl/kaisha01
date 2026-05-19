@@ -1,0 +1,37 @@
+/* ==========================================
+   共通: メインメニューに戻るボタン
+   全サブアプリのHTMLでこのCSSをインクルードしてください
+   ========================================== */
+
+#back-to-hub {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.92);
+  border: 2.5px solid #FF6B9D;
+  color: #FF6B9D;
+  border-radius: 50px;
+  padding: 8px 14px 8px 10px;
+  font-family: 'Kosugi Maru', 'Noto Sans JP', sans-serif;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255,107,157,0.25);
+  text-decoration: none;
+  transition: background 0.2s, transform 0.1s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#back-to-hub:active {
+  transform: translateY(2px);
+  background: rgba(255,240,248,0.98);
+}
+
+#back-to-hub .hub-icon {
+  font-size: 18px;
+  line-height: 1;
+}

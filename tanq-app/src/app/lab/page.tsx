@@ -77,7 +77,7 @@ function computeStats() {
 }
 
 type AppAudience = 'shougakusei' | 'youji'
-const _YB = 'https://ukun-cre.github.io/youti_master_v1/apps'
+const _YB = '/youji/apps'  // public/youji/apps/ に内製コピー済み
 
 const APPS = [
   // ── 小学生向け（内製アプリ） ──────────────────────────────
@@ -89,14 +89,14 @@ const APPS = [
   { id: 'word-math', name: '算数文章題',    emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '小1〜小3',         audience: 'shougakusei' as AppAudience },
   { id: 'shapes',    name: '図形',          emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',    badge: '8図形',            audience: 'shougakusei' as AppAudience },
   { id: 'coding',    name: 'プログラミング', emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ',        audience: 'shougakusei' as AppAudience },
-  // ── 幼稚園向け（外部アプリ）──────────────────────────────
-  { id: 'youji-kanji',    name: 'かんじだいすき',     emoji: '📚', color: '#f87171', url: `${_YB}/kanji/index.html`,    badge: '80字',    external: true, audience: 'youji' as AppAudience },
-  { id: 'youji-math',     name: 'さんすうおやつ',     emoji: '🍎', color: '#f0a050', url: `${_YB}/math/index.html`,     badge: '20まで',  external: true, audience: 'youji' as AppAudience },
-  { id: 'youji-juucombo', name: '10のなかよし',      emoji: '🔟', color: '#60a5fa', url: `${_YB}/juucombo/index.html`, badge: 'たして10', external: true, audience: 'youji' as AppAudience },
-  { id: 'youji-hiragana', name: 'ひらがなどっちかな', emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/index.html`,      badge: '100もん', external: true, audience: 'youji' as AppAudience },
-  { id: 'youji-clock',    name: 'とけいをよもう',     emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/index.html`,    badge: '8レベル', external: true, audience: 'youji' as AppAudience },
-  { id: 'youji-animals',  name: 'どうぶつかぞえ',     emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/index.html`,  badge: '20まで',  external: true, audience: 'youji' as AppAudience },
-  { id: 'youji-zokusei',  name: 'ぞくせいしわけ工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/index.html`,  badge: '分類',    external: true, audience: 'youji' as AppAudience },
+  // ── 幼稚園向け（public/youji/ に内製コピー）──────────────
+  { id: 'youji-kanji',    name: 'かんじだいすき',     emoji: '📚', color: '#f87171', url: `${_YB}/kanji/`,    badge: '80字',     audience: 'youji' as AppAudience },
+  { id: 'youji-math',     name: 'さんすうおやつ',     emoji: '🍎', color: '#f0a050', url: `${_YB}/math/`,     badge: '20まで',   audience: 'youji' as AppAudience },
+  { id: 'youji-juucombo', name: '10のなかよし',      emoji: '🔟', color: '#60a5fa', url: `${_YB}/juucombo/`, badge: 'たして10', audience: 'youji' as AppAudience },
+  { id: 'youji-hiragana', name: 'ひらがなどっちかな', emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/`,      badge: '100もん',  audience: 'youji' as AppAudience },
+  { id: 'youji-clock',    name: 'とけいをよもう',     emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/`,    badge: '8レベル',  audience: 'youji' as AppAudience },
+  { id: 'youji-animals',  name: 'どうぶつかぞえ',     emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/`,  badge: '20まで',   audience: 'youji' as AppAudience },
+  { id: 'youji-zokusei',  name: 'ぞくせいしわけ工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/`,  badge: '分類',     audience: 'youji' as AppAudience },
 ]
 
 type Tab = 'home' | 'apps' | 'records' | 'settings'
@@ -332,8 +332,6 @@ function HomeTab({ profile, stats, onNav, userType }: {
 // AppsTab
 // ─────────────────────────────────────────
 function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; userType: UserType }) {
-  const [extPending, setExtPending] = useState<{ url: string; name: string } | null>(null)
-
   const appStats: Record<string, { mastered: number; total: number }> = {
     kanji: { mastered: stats.kanjiMastered, total: stats.kanjiTotal },
     english: { mastered: stats.engMastered, total: stats.engTotal },
@@ -393,11 +391,11 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
     )
   }
 
-  // ── 外部（幼稚園）アプリカード ──
+  // ── 幼稚園アプリカード（内製静的ファイル / <a>タグでフルナビ） ──
   function YoujiCard({ app }: { app: typeof APPS[number] }) {
     return (
-      <button onClick={() => setExtPending({ url: app.url, name: app.name })}
-        className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] text-left w-full">
+      <a href={app.url}
+        className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block">
         <div className="flex items-start justify-between mb-3">
           <div className="text-3xl">{app.emoji}</div>
           <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
@@ -407,9 +405,10 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
         </div>
         <div className="font-black text-[#e8f0fe] text-sm mb-1">{app.name}</div>
         <div className="flex items-center gap-1 mt-1">
-          <span className="text-[#94a3c4] text-[10px]">↗ 外部サイト</span>
+          <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
+          <span className="text-[#94a3c4] text-[10px]">開く →</span>
         </div>
-      </button>
+      </a>
     )
   }
 
@@ -429,14 +428,6 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
 
   return (
     <div className="px-4 pt-6 pb-6">
-      {extPending && (
-        <ExternalLinkModal
-          url={extPending.url} name={extPending.name}
-          onConfirm={() => { window.open(extPending.url, '_blank', 'noopener,noreferrer'); setExtPending(null) }}
-          onCancel={() => setExtPending(null)}
-        />
-      )}
-
       {userType === 'guest' && (
         <div className="mb-5 px-3 py-2.5 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
           <p className="text-[#f0c040] text-xs font-bold">体験中: 計算・漢字のL1〜L2が使えます</p>
@@ -451,8 +442,7 @@ function AppsTab({ stats, userType }: { stats: ReturnType<typeof computeStats>; 
       </div>
 
       {/* ── 幼稚園向け ── */}
-      <SectionLabel emoji="🌸" label="幼稚園向け" sub="外部サービス" />
-      <p className="text-[10px] text-[#94a3c4] mb-3">タップすると別のサイトに移動します</p>
+      <SectionLabel emoji="🌸" label="幼稚園向け" sub={`${youjiApps.length}アプリ`} />
       <div className="grid grid-cols-2 gap-3">
         {youjiApps.map(app => <YoujiCard key={app.id} app={app} />)}
       </div>
