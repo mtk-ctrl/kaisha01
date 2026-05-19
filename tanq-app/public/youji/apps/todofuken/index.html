@@ -11,57 +11,61 @@
   <link rel="stylesheet" href="../../common/youji-setup.css">
   <link rel="stylesheet" href="style.css">
   <script src="../../common/tanq-ui.js"></script>
+  <style>
+  /* 画面切替の保証 */
+  .screen { position: fixed !important; inset: 0 !important; top: 36px !important; display: none !important; flex-direction: column !important; align-items: center !important; overflow-y: auto !important; background: #0a1628 !important; }
+  .screen.active { display: flex !important; }
+  body { background: #0a1628 !important; overflow: hidden !important; }
+  </style>
 </head>
 <body>
 
 <!-- ===== メニュー ===== -->
 <div class="screen active" id="screen-menu">
-  <div class="menu-header">
-    <div class="menu-title">🗾 都道府県マスター</div>
-    <div class="menu-sub">47都道府県を おぼえよう！</div>
-  </div>
-
-  <div class="menu-btns">
-    <button class="btn-mode btn-shape" onclick="openSetup('shape')">
-      <span class="btn-mode-icon">🔷</span>
-      <span class="btn-mode-name">かたちクイズ</span>
-      <span class="btn-mode-desc">形から県名を当てよう</span>
-    </button>
-    <button class="btn-mode btn-location" onclick="openSetup('location')">
-      <span class="btn-mode-icon">🗾</span>
-      <span class="btn-mode-name">どこかなクイズ</span>
-      <span class="btn-mode-desc">地図でどこか当てよう</span>
-    </button>
-    <button class="btn-mode btn-famous" onclick="openSetup('famous')">
-      <span class="btn-mode-icon">🍎</span>
-      <span class="btn-mode-name">めいぶつクイズ</span>
-      <span class="btn-mode-desc">名物からどこか当てよう</span>
-    </button>
-    <button class="btn-mode btn-flashcard" onclick="openFlashcard()">
-      <span class="btn-mode-icon">📚</span>
-      <span class="btn-mode-name">フラッシュカード</span>
-      <span class="btn-mode-desc">都道府県を確認しよう</span>
-    </button>
-    <button class="btn-mode btn-records" onclick="showScreen('screen-records')">
-      <span class="btn-mode-icon">🏆</span>
-      <span class="btn-mode-name">きろく</span>
-      <span class="btn-mode-desc">これまでの成績</span>
-    </button>
-  </div>
-
-  <!-- 地方レジェンド -->
-  <div class="region-legend">
-    <div class="legend-title">ちほう（地方）</div>
-    <div class="legend-list">
-      <span class="legend-item" style="color:#0ea5e9">● 北海道</span>
-      <span class="legend-item" style="color:#8b5cf6">● 東北</span>
-      <span class="legend-item" style="color:#ef4444">● 関東</span>
-      <span class="legend-item" style="color:#f59e0b">● 中部</span>
-      <span class="legend-item" style="color:#ec4899">● 近畿</span>
-      <span class="legend-item" style="color:#10b981">● 中国</span>
-      <span class="legend-item" style="color:#f97316">● 四国</span>
-      <span class="legend-item" style="color:#22c55e">● 九州</span>
-      <span class="legend-item" style="color:#06b6d4">● 沖縄</span>
+  <div class="hero">
+    <div class="hero-icon">🗾</div>
+    <h1 class="hero-title">都道府県マスター</h1>
+    <p class="hero-sub">47都道府県を おぼえよう！</p>
+    <div class="mode-list">
+      <button class="mode-card" onclick="openSetup('shape')">
+        <span class="mode-star" style="color:#00e5c3">🔷</span>
+        <div class="mode-info">
+          <div class="mode-name">かたちクイズ</div>
+          <div class="mode-desc">形から県名を当てよう</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="openSetup('location')">
+        <span class="mode-star" style="color:#4ade80">🗾</span>
+        <div class="mode-info">
+          <div class="mode-name">どこかなクイズ</div>
+          <div class="mode-desc">地図でどこか当てよう</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="openSetup('famous')">
+        <span class="mode-star" style="color:#f0c040">🍎</span>
+        <div class="mode-info">
+          <div class="mode-name">めいぶつクイズ</div>
+          <div class="mode-desc">名物からどこか当てよう</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="openFlashcard()">
+        <span class="mode-star" style="color:#c4a8ff">📚</span>
+        <div class="mode-info">
+          <div class="mode-name">フラッシュカード</div>
+          <div class="mode-desc">都道府県を確認しよう</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="showScreen('screen-records')">
+        <span class="mode-star" style="color:#94a3c4">🏆</span>
+        <div class="mode-info">
+          <div class="mode-name">きろく</div>
+          <div class="mode-desc">これまでの成績</div>
+        </div>
+      </button>
     </div>
   </div>
 </div>

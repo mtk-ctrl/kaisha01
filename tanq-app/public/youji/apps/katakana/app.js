@@ -227,6 +227,12 @@ function makeChoices(q, allQuestions) {
   return shuffle([correct, ...distractors]);
 }
 
+// ===== メニューから直接モード指定でスタート =====
+function startWithMode(mode) {
+  cfg.mode = mode;
+  startGame();
+}
+
 // ===== ゲーム開始 =====
 function startGame() {
   G.questions = buildQuestions();

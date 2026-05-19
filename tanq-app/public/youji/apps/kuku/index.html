@@ -11,28 +11,46 @@
   <link rel="stylesheet" href="../../common/youji-setup.css">
   <link rel="stylesheet" href="style.css">
   <script src="../../common/tanq-ui.js"></script>
+  <style>
+  /* 画面切替の保証 */
+  .screen { position: fixed !important; inset: 0 !important; top: 36px !important; display: none !important; flex-direction: column !important; align-items: center !important; overflow-y: auto !important; background: #0a1628 !important; }
+  .screen.active { display: flex !important; }
+  body { background: #0a1628 !important; overflow: hidden !important; }
+  </style>
 </head>
 <body>
 
 <!-- ===== メニュー ===== -->
 <div class="screen active" id="screen-menu">
-  <div class="menu-hero" aria-hidden="true">
-    <span class="hero-num">×</span>
-  </div>
-  <div class="menu-title-badge">✖️ 九九マスター ✖️</div>
-  <p class="menu-subtitle">かけ算を おぼえよう！</p>
-
-  <div class="menu-btns">
-    <button class="btn-start" onclick="showScreen('setup-dan')">▶ れんしゅう</button>
-    <button class="btn-attack" onclick="showScreen('setup-attack')">⚡ タイムアタック</button>
-    <button class="btn-records" onclick="showScreen('records')">🏆 きろく</button>
-  </div>
-
-  <!-- 段一覧プレビュー -->
-  <div class="dan-preview">
-    <span>2の段</span><span>3の段</span><span>4の段</span>
-    <span>5の段</span><span>6の段</span><span>7の段</span>
-    <span>8の段</span><span>9の段</span>
+  <div class="hero">
+    <div class="hero-icon">✖️</div>
+    <h1 class="hero-title">九九マスター</h1>
+    <p class="hero-sub">かけ算を おぼえよう！</p>
+    <div class="mode-list">
+      <button class="mode-card" onclick="openSetup('practice')">
+        <span class="mode-star" style="color:#4ade80">★</span>
+        <div class="mode-info">
+          <div class="mode-name">れんしゅう</div>
+          <div class="mode-desc">だんをえらんで れんしゅうしよう</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="openAttack()">
+        <span class="mode-star" style="color:#c4a8ff">★★★</span>
+        <div class="mode-info">
+          <div class="mode-name">⚡ タイムアタック</div>
+          <div class="mode-desc">81問を できるだけ はやく！</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="showScreen('records')">
+        <span class="mode-star" style="color:#f0c040">🏆</span>
+        <div class="mode-info">
+          <div class="mode-name">きろく</div>
+          <div class="mode-desc">これまでの成績を見る</div>
+        </div>
+      </button>
+    </div>
   </div>
 </div>
 

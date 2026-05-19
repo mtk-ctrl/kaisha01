@@ -11,25 +11,47 @@
   <link rel="stylesheet" href="../../common/youji-setup.css">
   <link rel="stylesheet" href="style.css">
   <script src="../../common/tanq-ui.js"></script>
+  <style>
+  /* 画面切替の保証 */
+  .screen { position: fixed !important; inset: 0 !important; top: 36px !important; display: none !important; flex-direction: column !important; align-items: center !important; overflow-y: auto !important; background: #0a1628 !important; }
+  .screen.active { display: flex !important; }
+  body { background: #0a1628 !important; overflow: hidden !important; }
+  </style>
 </head>
 <body>
 
 <!-- ===== メニュー ===== -->
 <div class="screen active" id="screen-menu">
-  <!-- 背景の形や色 -->
-  <div class="menu-shapes" aria-hidden="true">
-    <div class="ms ms-circle" style="background:#ef4444;top:8%;left:6%"></div>
-    <div class="ms ms-square" style="background:#3b82f6;top:14%;right:8%"></div>
-    <div class="ms ms-triangle" style="border-bottom-color:#22c55e;top:50%;left:4%"></div>
-    <div class="ms ms-circle" style="background:#f59e0b;bottom:18%;right:10%"></div>
-  </div>
-
-  <div class="menu-title-badge">🌈 いろと かたち 🌈</div>
-  <p class="menu-subtitle">いろと かたちを おぼえよう！</p>
-
-  <div class="menu-btns">
-    <button class="btn-start" onclick="showScreen('setup')">▶ はじめる</button>
-    <button class="btn-records" onclick="showScreen('records')">🏆 きろく</button>
+  <div class="hero">
+    <div class="hero-icon">🌈</div>
+    <h1 class="hero-title">いろと かたち</h1>
+    <p class="hero-sub">いろと かたちを おぼえよう！</p>
+    <div class="mode-list">
+      <button class="mode-card" onclick="startWithMode('iro')">
+        <span class="mode-star" style="color:#ef4444">🎨</span>
+        <div class="mode-info">
+          <div class="mode-name">いろクイズ</div>
+          <div class="mode-desc">なにいろかな？</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="startWithMode('katachi')">
+        <span class="mode-star" style="color:#3b82f6">🔷</span>
+        <div class="mode-info">
+          <div class="mode-name">かたちクイズ</div>
+          <div class="mode-desc">かたちのなまえは なあに？</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+      <button class="mode-card" onclick="startWithMode('mix')">
+        <span class="mode-star" style="color:#c4a8ff">★</span>
+        <div class="mode-info">
+          <div class="mode-name">まぜまぜ</div>
+          <div class="mode-desc">いろとかたちをまぜてれんしゅう</div>
+        </div>
+        <span class="mode-badge free">無料</span>
+      </button>
+    </div>
   </div>
 </div>
 
