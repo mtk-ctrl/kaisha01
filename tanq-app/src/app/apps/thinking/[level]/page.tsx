@@ -11,6 +11,17 @@ import {
   type ThinkingProgress
 } from '@/lib/thinkingProgress'
 
+const SESSION_KEY = 'tanq-lab-auth'
+const GUEST_FREE_LEVELS = 2
+
+function getUserType(): 'guest' | 'tester' | 'member' {
+  if (typeof window === 'undefined') return 'guest'
+  const v = localStorage.getItem(SESSION_KEY)
+  if (v === 'member') return 'member'
+  if (v === 'tester') return 'tester'
+  return 'guest'
+}
+
 // ─── キャラクター（ネコ）──────────────────────────────────
 type CatMood = 'normal' | 'happy' | 'excited' | 'dancing' | 'cheer' | 'celebrate'
 
@@ -255,6 +266,13 @@ function LevelResultScreen({
         </div>
       </div>
 
+      {score >= QUESTIONS_PER_LEVEL && (
+        <div className="bg-gradient-to-r from-yellow-400 to-amber-500 rounded-2xl px-6 py-3 w-full shadow-md">
+          <div className="text-white font-bold text-lg">🎊 パーフェクト！</div>
+          <div className="text-yellow-100 text-sm">5問全部正解！すごい！！</div>
+        </div>
+      )}
+
       {cleared ? (
         <div className="bg-green-50 border border-green-200 rounded-2xl px-6 py-3">
           <div className="text-green-700 font-bold">
@@ -340,6 +358,11 @@ export default function ThinkingGamePage() {
   useEffect(() => {
     const p = loadProgress()
     setProgress(p)
+    // ゲストはLv2までのみ
+    if (getUserType() === 'guest' && level > GUEST_FREE_LEVELS) {
+      router.replace('/register')
+      return
+    }
     if (!isLevelUnlocked(level, p)) {
       router.replace('/apps/thinking')
       return
@@ -453,14 +476,15 @@ export default function ThinkingGamePage() {
             </div>
             <div className="flex gap-1">
               {questions.map((_, i) => {
-                const done = i < current
-                const isCorrect = done && correctIds.includes(questions[i].id)
+                // review フェーズ中は current 問も回答済みとして色を出す
+                const answered = i < current || (phase === 'review' && i === current)
+                const isCorrect = answered && correctIds.includes(questions[i].id)
                 return (
                   <div
                     key={i}
                     className={`w-4 h-2 rounded-full transition-all
-                      ${i === current ? 'bg-blue-400'
-                        : done ? (isCorrect ? 'bg-green-400' : 'bg-red-300')
+                      ${answered ? (isCorrect ? 'bg-green-400' : 'bg-red-300')
+                        : i === current ? 'bg-blue-400'
                         : 'bg-gray-200'}`}
                   />
                 )

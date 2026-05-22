@@ -7,12 +7,25 @@ import { TOTAL_LEVELS, UNLOCK_THRESHOLD, QUESTIONS_PER_LEVEL } from '@/data/thin
 import { BADGES } from '@/data/thinkingBadges'
 import type { ThinkingProgress } from '@/lib/thinkingProgress'
 
+const SESSION_KEY = 'tanq-lab-auth'
+const GUEST_FREE_LEVELS = 2  // ゲストはLv1〜2まで無料体験
+
+function getUserType(): 'guest' | 'tester' | 'member' {
+  if (typeof window === 'undefined') return 'guest'
+  const v = localStorage.getItem(SESSION_KEY)
+  if (v === 'member') return 'member'
+  if (v === 'tester') return 'tester'
+  return 'guest'
+}
+
 export default function ThinkingTopPage() {
   const [progress, setProgress] = useState<ThinkingProgress | null>(null)
   const [tab, setTab] = useState<'levels' | 'badges'>('levels')
+  const [userType, setUserType] = useState<'guest' | 'tester' | 'member'>('guest')
 
   useEffect(() => {
     setProgress(loadProgress())
+    setUserType(getUserType())
   }, [])
 
   if (!progress) return null
@@ -26,7 +39,7 @@ export default function ThinkingTopPage() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/lab" className="text-gray-400 hover:text-gray-600 text-lg">←</Link>
-          <h1 className="text-lg font-bold text-gray-800 flex-1">🧠 思考力トレーニング</h1>
+          <h1 className="text-lg font-bold text-gray-800 flex-1">🧩 かんがえる力ジム</h1>
           <div className="text-sm text-gray-500">
             🥇{goldCount} 🥈{silverCount}
           </div>
@@ -56,7 +69,7 @@ export default function ThinkingTopPage() {
 
       <div className="max-w-lg mx-auto px-4 pt-4">
         {tab === 'levels' ? (
-          <LevelGrid progress={progress} />
+          <LevelGrid progress={progress} userType={userType} />
         ) : (
           <BadgeGrid progress={progress} />
         )}
@@ -65,50 +78,71 @@ export default function ThinkingTopPage() {
   )
 }
 
-function LevelGrid({ progress }: { progress: ThinkingProgress }) {
+function LevelGrid({ progress, userType }: { progress: ThinkingProgress; userType: 'guest' | 'tester' | 'member' }) {
+  const isGuest = userType === 'guest'
   return (
-    <div className="grid grid-cols-4 gap-3">
-      {Array.from({ length: TOTAL_LEVELS }, (_, i) => i + 1).map(level => {
-        const unlocked = isLevelUnlocked(level, progress)
-        const lp = getLevelProgress(level, progress)
-        const stars = getLevelStars(lp.bestScore)
-        const done = lp.bestScore >= UNLOCK_THRESHOLD
-
-        return (
-          <div key={level}>
-            {unlocked ? (
-              <Link href={`/apps/thinking/${level}`}>
-                <LevelCard level={level} stars={stars} done={done} score={lp.bestScore} />
-              </Link>
-            ) : (
-              <LevelCard level={level} locked />
-            )}
+    <>
+      {isGuest && (
+        <div className="mb-4 bg-indigo-50 border border-indigo-200 rounded-2xl px-4 py-3 flex items-center gap-3">
+          <span className="text-xl">🔓</span>
+          <div className="flex-1">
+            <div className="text-sm font-bold text-indigo-700">Lv1・Lv2が無料で体験できるよ！</div>
+            <Link href="/register" className="text-xs text-indigo-500 font-bold hover:underline">
+              無料登録でLv3〜20も全部解放 →
+            </Link>
           </div>
-        )
-      })}
-    </div>
+        </div>
+      )}
+      <div className="grid grid-cols-4 gap-3">
+        {Array.from({ length: TOTAL_LEVELS }, (_, i) => i + 1).map(level => {
+          const guestLocked = isGuest && level > GUEST_FREE_LEVELS
+          const unlocked = !guestLocked && isLevelUnlocked(level, progress)
+          const lp = getLevelProgress(level, progress)
+          const stars = getLevelStars(lp.bestScore)
+          const done = lp.bestScore >= UNLOCK_THRESHOLD
+
+          return (
+            <div key={level}>
+              {unlocked ? (
+                <Link href={`/apps/thinking/${level}`}>
+                  <LevelCard level={level} stars={stars} done={done} score={lp.bestScore} />
+                </Link>
+              ) : guestLocked ? (
+                <Link href="/register">
+                  <LevelCard level={level} locked guestLocked />
+                </Link>
+              ) : (
+                <LevelCard level={level} locked />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </>
   )
 }
 
 function LevelCard({
-  level, stars = 0, done = false, locked = false, score = 0
+  level, stars = 0, done = false, locked = false, guestLocked = false, score = 0
 }: {
-  level: number; stars?: number; done?: boolean; locked?: boolean; score?: number
+  level: number; stars?: number; done?: boolean; locked?: boolean; guestLocked?: boolean; score?: number
 }) {
   return (
     <div className={`rounded-2xl p-3 text-center transition-all select-none
       ${locked
-        ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+        ? guestLocked
+          ? 'bg-indigo-50 border border-indigo-200 cursor-pointer active:scale-95'
+          : 'bg-gray-100 text-gray-300 cursor-not-allowed'
         : done
           ? 'bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-md active:scale-95'
           : 'bg-white text-gray-700 shadow-md border-2 border-blue-200 active:scale-95'
       }`}
     >
-      <div className={`text-xs font-bold mb-1 ${locked ? 'text-gray-300' : done ? 'text-blue-100' : 'text-blue-400'}`}>
+      <div className={`text-xs font-bold mb-1 ${locked ? (guestLocked ? 'text-indigo-400' : 'text-gray-300') : done ? 'text-blue-100' : 'text-blue-400'}`}>
         Lv{level}
       </div>
       {locked ? (
-        <div className="text-xl">🔒</div>
+        <div className="text-xl">{guestLocked ? '🔐' : '🔒'}</div>
       ) : (
         <>
           <div className="text-lg font-bold">{score > 0 ? `${score}/${QUESTIONS_PER_LEVEL}` : '━'}</div>
@@ -172,7 +206,7 @@ function BadgeGrid({ progress }: { progress: ThinkingProgress }) {
                 {silver ? badge.name : '???'}
               </div>
               {silver && (
-                <div className={`text-xs mt-0.5 leading-tight ${gold ? 'text-amber-700' : 'text-gray-500'}`}>
+                <div className={`text-[10px] mt-0.5 leading-tight line-clamp-2 ${gold ? 'text-amber-700' : 'text-gray-500'}`}>
                   {badge.description}
                 </div>
               )}

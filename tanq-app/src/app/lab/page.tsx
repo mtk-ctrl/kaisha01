@@ -22,8 +22,8 @@ type UserType = 'guest' | 'tester' | 'member'
 function canAccessApp(appId: string, userType: UserType): boolean {
   if (userType === 'tester') return true
   if (userType === 'member') return appId !== 'tanq'
-  // ゲスト: 内製基本アプリ + 幼稚園外部アプリは全解放
-  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId.startsWith('youji-')
+  // ゲスト: 内製基本アプリ + 幼稚園外部アプリ + 思考力（Lv1-2のみ・制限はアプリ側で制御）
+  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId.startsWith('youji-')
 }
 
 function lockLabel(appId: string, userType: UserType): string | null {
@@ -95,7 +95,7 @@ const APPS: {
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '分・時間計算',     audience: 'shougakusei', targetAge: '小2〜小4' },
   { id: 'english',      name: '英語ボキャブラリー', emoji: '🌍', color: '#f87171', url: '/apps/english',   badge: `${TOTAL_ENGLISH}語`, audience: 'shougakusei', targetAge: '小3〜小6' },
-  { id: 'thinking',     name: '思考力トレーニング', emoji: '🧠', color: '#6366f1', url: '/apps/thinking',  badge: '25バッジ・20Lv',  audience: 'shougakusei', targetAge: '小4〜小6' },
+  { id: 'thinking',     name: 'かんがえる力ジム',   emoji: '🧩', color: '#6366f1', url: '/apps/thinking',  badge: '100問 / 25バッジ', audience: 'shougakusei', targetAge: '小4〜小6' },
   { id: 'word-math',    name: '算数文章題',        emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '文章から立式',     audience: 'shougakusei', targetAge: '小1〜小3' },
   { id: 'shapes',       name: '図形トレーニング',  emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',    badge: '8図形',            audience: 'shougakusei', targetAge: '小3〜小5' },
   { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ',        audience: 'shougakusei', targetAge: '小3〜小6' },
@@ -207,7 +207,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
 
         <div className="mt-5 pt-5 border-t border-white/10">
           <p className="text-center text-[#94a3c4] text-xs mb-1">パスワードなしで体験できます</p>
-          <p className="text-center text-[#94a3c4] text-[10px] mb-3">（計算・漢字のL1〜L2が使えます）</p>
+          <p className="text-center text-[#94a3c4] text-[10px] mb-3">（計算・漢字・思考力トレーニングが体験できます）</p>
           <button
             onClick={handleGuestTrial}
             className="w-full py-3.5 rounded-xl font-black text-lg text-white border-2 border-[#c4a8ff]/50 hover:border-[#c4a8ff] hover:bg-[#c4a8ff]/10 transition-all"
@@ -388,7 +388,7 @@ function HomeTab({ profile, stats, userType }: {
         <div className="grid grid-cols-2 gap-3">
           {(userType === 'guest'
             ? [
-                { app: APPS.find(a => a.id === 'math')!,  prog: 0, desc: 'L1・L2が体験できます' },
+                { app: APPS.find(a => a.id === 'thinking')!, prog: 0, desc: 'Lv1・Lv2が体験できます' },
                 { app: APPS.find(a => a.id === 'kanji')!, prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0, desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` },
               ]
             : [
@@ -412,7 +412,7 @@ function HomeTab({ profile, stats, userType }: {
       {/* Guest banner */}
       {userType === 'guest' && (
         <div className="mt-4 px-3 py-2.5 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
-          <p className="text-[#f0c040] text-xs font-bold">体験中: 計算・漢字のL1〜L2が使えます</p>
+          <p className="text-[#f0c040] text-xs font-bold">体験中: 計算・漢字・思考力トレーニング（Lv1〜2）が使えます</p>
           <Link href="/register" className="text-[#c4a8ff] text-[11px] hover:underline font-bold">無料登録で全アプリ解放 →</Link>
         </div>
       )}
