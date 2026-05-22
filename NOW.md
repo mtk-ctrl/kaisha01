@@ -44,9 +44,9 @@
 **フェーズ**: Phase 1 — プロダクト完成 + 初期ユーザー獲得
 
 **今すぐやること（優先順）**:
-1. **テスター招待フローの確認** — `/tester` ページのURLを招待する人にシェアする
-2. **図形SRS実装** — 英語と同様のSRSパターンを移植（次スプリント）
-3. **ゆい（小1）UXレビュー** — 算数文章題アプリの小1問題を低学年目線でチェック
+1. **思考力トレーニングアプリQA** — リン（小4）目線でLv1〜3を動作確認（`/apps/thinking`）
+2. **テスター招待フローの確認** — `/tester` ページのURLを招待する人にシェアする
+3. **図形SRS実装** — 英語と同様のSRSパターンを移植（次スプリント）
 
 ---
 
@@ -64,6 +64,7 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-22 | 思考力トレーニングアプリ新規実装（小4向け・100問・25タイプ・20Lv・25バッジ） | `logs/sessions/2026-05-22_001_tetsu_thinking-training-app.md` |
 | 2026-05-18 | テツ初仕事: 算数文章題アプリ新規実装（小1〜小3・60問・SRS・4択） | `logs/sessions/2026-05-18_003_tetsu_word-math-app.md` |
 | 2026-05-18 | アプリ品質スプリント: 英語120→275語、コーディング進捗保存 | `logs/sessions/2026-05-18_002_jobs_app-quality-sprint.md` |
 | 2026-05-18 | 3階層アクセス制御実装（guest/tester/member）、/tester新設、ガバナンス改革 | `logs/sessions/2026-05-18_001_jobs_3tier-access-governance.md` |
@@ -74,6 +75,6 @@
 
 ## ⑥ 現在の作業ブランチ
 
-`claude/naughty-lewin-4447d6` → GitHub Actions で main に自動マージ → Vercel自動デプロイ
+`claude/thinking-training-app-2M1Vj` → GitHub Actions で main に自動マージ → Vercel自動デプロイ
 
 **テスター入口URL**: `https://tanq-app.vercel.app/tester` | PIN: `2026`
