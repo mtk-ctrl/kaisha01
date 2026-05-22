@@ -95,6 +95,7 @@ const APPS: {
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '分・時間計算',     audience: 'shougakusei', targetAge: '小2〜小4' },
   { id: 'english',      name: '英語ボキャブラリー', emoji: '🌍', color: '#f87171', url: '/apps/english',   badge: `${TOTAL_ENGLISH}語`, audience: 'shougakusei', targetAge: '小3〜小6' },
+  { id: 'thinking',     name: '思考力トレーニング', emoji: '🧠', color: '#6366f1', url: '/apps/thinking',  badge: '25バッジ・20Lv',  audience: 'shougakusei', targetAge: '小4〜小6' },
   { id: 'word-math',    name: '算数文章題',        emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '文章から立式',     audience: 'shougakusei', targetAge: '小1〜小3' },
   { id: 'shapes',       name: '図形トレーニング',  emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',    badge: '8図形',            audience: 'shougakusei', targetAge: '小3〜小5' },
   { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ',        audience: 'shougakusei', targetAge: '小3〜小6' },
