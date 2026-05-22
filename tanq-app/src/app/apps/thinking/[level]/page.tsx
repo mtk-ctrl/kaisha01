@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { THINKING_QUESTIONS, QUESTIONS_PER_LEVEL, UNLOCK_THRESHOLD } from '@/data/thinkingData'
@@ -42,24 +42,35 @@ function CatCharacter({ mood }: { mood: CatMood }) {
 }
 
 // ─── 花火 ────────────────────────────────────────────────
+const EMOJIS = ['🎆', '🎇', '✨', '🎉', '⭐', '💫']
+
 function Fireworks({ active }: { active: boolean }) {
+  // マウント時に1回だけ位置を確定（レンダーごとに変わらないように）
+  const particles = useMemo(() =>
+    [...Array(12)].map((_, i) => ({
+      top:      `${5 + Math.random() * 60}%`,
+      left:     `${5 + Math.random() * 90}%`,
+      duration: `${0.5 + Math.random() * 0.5}s`,
+      delay:    `${Math.random() * 0.3}s`,
+      emoji:    EMOJIS[i % EMOJIS.length],
+    })),
+  [])
+
   if (!active) return null
-  const emojis = ['🎆', '🎇', '✨', '🎉', '⭐', '💫']
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      {[...Array(12)].map((_, i) => (
+      {particles.map((p, i) => (
         <div
           key={i}
           className="absolute text-2xl animate-bounce"
           style={{
-            top: `${5 + Math.random() * 60}%`,
-            left: `${5 + Math.random() * 90}%`,
-            animationDuration: `${0.5 + Math.random() * 0.5}s`,
-            animationDelay: `${Math.random() * 0.3}s`,
+            top: p.top, left: p.left,
+            animationDuration: p.duration,
+            animationDelay: p.delay,
             opacity: 0.9,
           }}
         >
-          {emojis[i % emojis.length]}
+          {p.emoji}
         </div>
       ))}
     </div>
@@ -69,10 +80,12 @@ function Fireworks({ active }: { active: boolean }) {
 // ─── バッジ取得通知 ───────────────────────────────────────
 function BadgeToast({ badgeId, type, onDone }: { badgeId: string; type: 'silver' | 'gold'; onDone: () => void }) {
   const badge = BADGES.find(b => b.id === badgeId)
+  const onDoneRef = useRef(onDone)
   useEffect(() => {
-    const t = setTimeout(onDone, 2500)
+    // onDone はインライン関数で毎レンダー変わるため ref 経由で呼ぶ（タイマーのリセットを防ぐ）
+    const t = setTimeout(() => onDoneRef.current(), 2500)
     return () => clearTimeout(t)
-  }, [onDone])
+  }, [])
   if (!badge) return null
   return (
     <div className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-xl text-center
@@ -190,8 +203,8 @@ function ReviewScreen({
         </div>
       </div>
 
-      {/* つぎへボタン */}
-      <div className="px-4 py-4 bg-white border-t border-gray-100">
+      {/* つぎへボタン（shrink-0 で常に画面内に表示） */}
+      <div className="shrink-0 px-4 py-4 bg-white border-t border-gray-100">
         <button
           onClick={onNext}
           className="w-full bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-bold py-4 rounded-2xl text-base transition-all shadow-md"
@@ -323,7 +336,6 @@ export default function ThinkingGamePage() {
   const [showFireworks, setShowFireworks] = useState(false)
   const [toasts, setToasts] = useState<{ id: string; type: 'silver' | 'gold' }[]>([])
   const [resultData, setResultData] = useState<{ newSilver: string[]; newGold: string[] }>({ newSilver: [], newGold: [] })
-  const [catMood, setCatMood] = useState<CatMood>('normal')
 
   useEffect(() => {
     const p = loadProgress()
@@ -357,15 +369,8 @@ export default function ThinkingGamePage() {
 
     const streak = updatedProgress.consecutiveCorrect
     if (streak >= 5) {
-      setCatMood('dancing')
       setShowFireworks(true)
       setTimeout(() => setShowFireworks(false), 1500)
-    } else if (streak >= 3) {
-      setCatMood('excited')
-    } else if (correct) {
-      setCatMood('happy')
-    } else {
-      setCatMood('cheer')
     }
 
     setPhase('review')
@@ -376,7 +381,6 @@ export default function ThinkingGamePage() {
       setCurrent(c => c + 1)
       setSelected(null)
       setPhase('question')
-      setCatMood('normal')
     } else {
       if (!progress) return
       // レベル終了
@@ -395,7 +399,6 @@ export default function ThinkingGamePage() {
       }
 
       if (correctIds.length >= UNLOCK_THRESHOLD) {
-        setCatMood('celebrate')
         setShowFireworks(true)
         setTimeout(() => setShowFireworks(false), 2000)
       }
@@ -411,7 +414,6 @@ export default function ThinkingGamePage() {
     setSelected(null)
     setCorrectIds([])
     setPhase('question')
-    setCatMood('normal')
   }
 
   function handleNextLevel() {
@@ -476,7 +478,6 @@ export default function ThinkingGamePage() {
             questionIndex={current}
             total={questions.length}
             onAnswer={handleAnswer}
-            catMood={catMood}
           />
         )}
         {phase === 'review' && selected !== null && (
@@ -505,13 +506,12 @@ export default function ThinkingGamePage() {
 
 // ─── 問題画面 ─────────────────────────────────────────────
 function QuestionScreen({
-  question, questionIndex, total, onAnswer, catMood,
+  question, questionIndex, total, onAnswer,
 }: {
   question: (typeof THINKING_QUESTIONS)[0]
   questionIndex: number
   total: number
   onAnswer: (idx: number) => void
-  catMood: CatMood
 }) {
   const diffColors: Record<number, string> = {
     1: 'bg-green-100 text-green-600',
@@ -535,14 +535,6 @@ function QuestionScreen({
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
           <div className="text-base leading-relaxed text-gray-800 font-medium">
             {question.question}
-          </div>
-        </div>
-
-        {/* ネコキャラ */}
-        <div className="py-1">
-          <CatCharacter mood={catMood} />
-          <div className="text-center text-xs text-gray-400 mt-1">
-            {catMood === 'normal' ? 'よく読んで考えてみよう！' : 'がんばれ〜！'}
           </div>
         </div>
 

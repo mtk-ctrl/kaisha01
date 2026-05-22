@@ -171,6 +171,11 @@ function BadgeGrid({ progress }: { progress: ThinkingProgress }) {
               <div className={`text-xs font-bold leading-tight ${gold ? 'text-amber-800' : silver ? 'text-gray-600' : 'text-gray-300'}`}>
                 {silver ? badge.name : '???'}
               </div>
+              {silver && (
+                <div className={`text-xs mt-0.5 leading-tight ${gold ? 'text-amber-700' : 'text-gray-500'}`}>
+                  {badge.description}
+                </div>
+              )}
               {(silver || gold) && (
                 <div className="mt-1 text-xs">
                   {gold ? '🥇' : '🥈'}
