@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { KANJI_DATA } from '@/data/kanjiData'
 import { WORDS } from '@/data/englishData'
+import { getDataKey } from '@/lib/storage'
 
 // アプリが提供する全体数（SRS済み数ではなく全データ数）
 const TOTAL_KANJI = Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0)
@@ -62,12 +63,12 @@ interface SRSItem { b: 0 | 1 | 2 }
 
 function readSRS(key: string): SRSItem[] {
   if (typeof window === 'undefined') return []
-  try { return Object.values(JSON.parse(localStorage.getItem(key) || '{}')) as SRSItem[] } catch { return [] }
+  try { return Object.values(JSON.parse(localStorage.getItem(getDataKey(key)) || '{}')) as SRSItem[] } catch { return [] }
 }
 
 function getStreak(key: string): number {
   if (typeof window === 'undefined') return 0
-  try { return JSON.parse(localStorage.getItem(key) || '{"n":0}').n } catch { return 0 }
+  try { return JSON.parse(localStorage.getItem(getDataKey(key)) || '{"n":0}').n } catch { return 0 }
 }
 
 function computeStats() {

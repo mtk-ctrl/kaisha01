@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { getDataKey } from '@/lib/storage'
 
 /* ─────────────────────────────────────────
    プログラミング思考 — コマンド順番並べゲーム
@@ -358,12 +359,12 @@ const CODING_PROGRESS_KEY = 'tanq_coding_progress_v1'
 
 function loadProgress(): number {
   if (typeof window === 'undefined') return 0
-  try { return Math.min(parseInt(localStorage.getItem(CODING_PROGRESS_KEY) || '0', 10), PUZZLES.length - 1) } catch { return 0 }
+  try { return Math.min(parseInt(localStorage.getItem(getDataKey(CODING_PROGRESS_KEY)) || '0', 10), PUZZLES.length - 1) } catch { return 0 }
 }
 
 function saveProgress(idx: number) {
   if (typeof window === 'undefined') return
-  localStorage.setItem(CODING_PROGRESS_KEY, String(idx))
+  localStorage.setItem(getDataKey(CODING_PROGRESS_KEY), String(idx))
 }
 
 export default function CodingPuzzle() {
