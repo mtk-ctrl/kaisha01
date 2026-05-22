@@ -1034,7 +1034,7 @@ export const THINKING_QUESTIONS: ThinkingQuestion[] = [
     }
   },
   {
-    id: 97, level: 20, type: 'D4', difficulty: 3,
+    id: 97, level: 20, type: 'D2', difficulty: 3,
     question: 'もしずっと昼だったら（夜がなかったら）、どうなる？',
     options: ['生き物が休めなくなり、植物も育ちにくくなる', '明るくて便利になる', '気温が下がる', '雨が増える'],
     correctIndex: 0,

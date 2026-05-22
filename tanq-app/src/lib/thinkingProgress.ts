@@ -118,7 +118,6 @@ export function recordLevelResult(
 
     // ゴールド：タイプ全問正解チェック
     const badgeQuestions = THINKING_QUESTIONS.filter(q2 => TYPE_TO_BADGE[q2.type] === badgeId)
-    const allCorrectIds = updatedLevel.answeredCorrectly
     // 他レベルの正解も含める
     const allAnswered = new Set<number>()
     Object.values(newProgress.levels).forEach(lp => lp.answeredCorrectly.forEach(id => allAnswered.add(id)))
