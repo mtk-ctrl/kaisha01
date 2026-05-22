@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { KANJI_DATA } from '@/data/kanjiData'
 import type { Grade, KanjiEntry } from '@/data/kanjiData'
 import { playCorrect, playWrong } from '@/lib/audio'
+import { getDataKey } from '@/lib/storage'
 
 type QuestionFormat = 'k2r' | 'r2k'
 
@@ -33,25 +34,25 @@ type SRSStore = Record<string, ItemState>
 
 function loadSRS(): SRSStore {
   if (typeof window === 'undefined') return {}
-  try { return JSON.parse(localStorage.getItem(SRS_KEY) || '{}') } catch { return {} }
+  try { return JSON.parse(localStorage.getItem(getDataKey(SRS_KEY)) || '{}') } catch { return {} }
 }
 function saveSRS(store: SRSStore) {
   if (typeof window === 'undefined') return
-  localStorage.setItem(SRS_KEY, JSON.stringify(store))
+  localStorage.setItem(getDataKey(SRS_KEY), JSON.stringify(store))
 }
 function getStreakCount(): number {
   if (typeof window === 'undefined') return 0
-  try { return JSON.parse(localStorage.getItem(STREAK_KEY) || '{"n":0}').n } catch { return 0 }
+  try { return JSON.parse(localStorage.getItem(getDataKey(STREAK_KEY)) || '{"n":0}').n } catch { return 0 }
 }
 function recordStudy(): number {
   if (typeof window === 'undefined') return 0
   const today = new Date().toISOString().slice(0, 10)
   try {
-    const d = JSON.parse(localStorage.getItem(STREAK_KEY) || '{"n":0,"d":""}')
+    const d = JSON.parse(localStorage.getItem(getDataKey(STREAK_KEY)) || '{"n":0,"d":""}')
     if (d.d === today) return d.n
     const y = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
     const n = d.d === y ? d.n + 1 : 1
-    localStorage.setItem(STREAK_KEY, JSON.stringify({ n, d: today }))
+    localStorage.setItem(getDataKey(STREAK_KEY), JSON.stringify({ n, d: today }))
     return n
   } catch { return 1 }
 }

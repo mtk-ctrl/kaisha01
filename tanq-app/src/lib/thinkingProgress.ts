@@ -2,6 +2,7 @@
 
 import { THINKING_QUESTIONS, UNLOCK_THRESHOLD, QUESTIONS_PER_LEVEL, TOTAL_LEVELS } from '@/data/thinkingData'
 import { BADGES, TYPE_TO_BADGE } from '@/data/thinkingBadges'
+import { getDataKey } from '@/lib/storage'
 
 const PROGRESS_KEY = 'tanq_thinking_progress_v1'
 
@@ -40,7 +41,7 @@ function defaultProgress(): ThinkingProgress {
 export function loadProgress(): ThinkingProgress {
   if (typeof window === 'undefined') return defaultProgress()
   try {
-    const raw = localStorage.getItem(PROGRESS_KEY)
+    const raw = localStorage.getItem(getDataKey(PROGRESS_KEY))
     return raw ? { ...defaultProgress(), ...JSON.parse(raw) } : defaultProgress()
   } catch {
     return defaultProgress()
@@ -49,7 +50,7 @@ export function loadProgress(): ThinkingProgress {
 
 export function saveProgress(p: ThinkingProgress) {
   if (typeof window === 'undefined') return
-  localStorage.setItem(PROGRESS_KEY, JSON.stringify(p))
+  localStorage.setItem(getDataKey(PROGRESS_KEY), JSON.stringify(p))
 }
 
 export function isLevelUnlocked(level: number, progress: ThinkingProgress): boolean {
