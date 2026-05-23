@@ -19,13 +19,6 @@ let fcList = [];
 let fcIdx = 0;
 let fcFlipped = false;
 
-// ===== 画面切り替え =====
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) el.classList.add('active');
-}
-
 // ===== セットアップ =====
 function openSetup(mode) {
   currentMode = mode;
@@ -167,7 +160,7 @@ function renderShapeQuestion(pref) {
   const pts = parsePoints(pref.points);
   const scaled = scalePoints(pts, 200, 200, 12);
   poly.setAttribute('points', scaled);
-  poly.setAttribute('fill', pref.regionColor);
+  poly.setAttribute('fill', '#3b82f6');
 }
 
 function renderLocationQuestion(pref) {
@@ -185,13 +178,16 @@ function renderLocationQuestion(pref) {
     }
   });
 
-  // 沖縄の場合は地図のインセットをハイライト
+  // 沖縄の場合はインセットをハイライト、それ以外はリセット
+  const okinawaInset = document.querySelector('.okinawa-inset');
   if (pref.id === 'okinawa') {
-    // 全都道府県を dimmed に
     document.querySelectorAll('.map-pref').forEach(p => {
       p.classList.add('dimmed');
       p.classList.remove('highlight');
     });
+    if (okinawaInset) okinawaInset.classList.add('highlight');
+  } else {
+    if (okinawaInset) okinawaInset.classList.remove('highlight');
   }
 }
 
@@ -380,7 +376,6 @@ function renderRecords() {
 }
 
 // screen-records を開く前に renderRecords
-const _origShowScreen = showScreen;
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById(id);

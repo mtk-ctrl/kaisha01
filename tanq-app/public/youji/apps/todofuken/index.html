@@ -81,7 +81,7 @@
       <p class="setup-label">しゅつだいはんい</p>
       <div class="region-select-grid" id="region-btns">
         <button class="region-btn active" data-region="all" onclick="selectRegion(this)">ぜんぶ（47都道府県）</button>
-        <button class="region-btn" data-region="北海道" onclick="selectRegion(this)">北海道</button>
+        <button class="region-btn" data-region="北海道" disabled title="クイズには 4けん ひつよう">北海道（1けん）</button>
         <button class="region-btn" data-region="東北" onclick="selectRegion(this)">東北（6けん）</button>
         <button class="region-btn" data-region="関東" onclick="selectRegion(this)">関東（7けん）</button>
         <button class="region-btn" data-region="中部" onclick="selectRegion(this)">中部（9けん）</button>
@@ -89,7 +89,7 @@
         <button class="region-btn" data-region="中国" onclick="selectRegion(this)">中国（5けん）</button>
         <button class="region-btn" data-region="四国" onclick="selectRegion(this)">四国（4けん）</button>
         <button class="region-btn" data-region="九州" onclick="selectRegion(this)">九州（7けん）</button>
-        <button class="region-btn" data-region="沖縄" onclick="selectRegion(this)">沖縄</button>
+        <button class="region-btn" data-region="沖縄" disabled title="クイズには 4けん ひつよう">沖縄（1けん）</button>
       </div>
     </div>
 
@@ -138,7 +138,7 @@
 
     <!-- どこかなクイズ用 -->
     <div id="q-location" class="q-location hidden">
-      <div class="q-label">地図のどこに あるけん？</div>
+      <div class="q-label">ここは どこのけん？</div>
       <svg class="japan-map" id="japan-map" viewBox="0 0 600 760" xmlns="http://www.w3.org/2000/svg">
         <!-- 全都道府県のポリゴンはJSで生成 -->
       </svg>
