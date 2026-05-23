@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { useClockGame } from './hooks/useClockGame';
-import { useClockAnimation } from './hooks/useClockAnimation';
-import { playConfetti, playCorrectSound, playWrongSound, storage } from './lib/youji-shared';
-import { generateClockQuestions, getClockQuestionText } from './lib/youji-question';
-import type { ClockLevel, ClockQuestion, ClockAnswer, GameRecord } from './types/clock';
-import { CLOCK_LEVELS } from './types/clock';
+import { useClockGame } from '../hooks/useClockGame';
+import { useClockAnimation } from '../hooks/useClockAnimation';
+import { playConfetti, playCorrectSound, playWrongSound, storage } from '../lib/youji-shared';
+import { generateClockQuestions, getClockQuestionText } from '../lib/youji-question';
+import type { ClockLevel, ClockQuestion, ClockAnswer, GameRecord } from '../types/clock';
+import { CLOCK_LEVELS } from '../types/clock';
 import styles from './YoujiClock.module.css';
 
 type ViewPhase = 'menu' | 'level' | 'settings' | 'records' | 'game' | 'result';
@@ -427,10 +427,10 @@ export const YoujiClockApp: React.FC = () => {
               <svg viewBox="0 0 200 200" width="140" height="140" className={styles.clockSvg}>
                 <circle cx="100" cy="100" r="96" fill="white" stroke="#2c3e50" strokeWidth="4" />
                 <circle cx="100" cy="100" r="90" fill="#fefefe" stroke="#bdc3c7" strokeWidth="1" />
-                <g ref={(el) => (clockRefs.current.ticks2 = el)} />
-                <g ref={(el) => (clockRefs.current.nums2 = el)} />
+                <g ref={(el) => { clockRefs.current.ticks2 = el }} />
+                <g ref={(el) => { clockRefs.current.nums2 = el }} />
                 <line
-                  ref={(el) => (clockRefs.current.hourHand2 = el)}
+                  ref={(el) => { clockRefs.current.hourHand2 = el }}
                   x1="100"
                   y1="100"
                   x2="100"
@@ -440,7 +440,7 @@ export const YoujiClockApp: React.FC = () => {
                   strokeLinecap="round"
                 />
                 <line
-                  ref={(el) => (clockRefs.current.minuteHand2 = el)}
+                  ref={(el) => { clockRefs.current.minuteHand2 = el }}
                   x1="100"
                   y1="100"
                   x2="100"
@@ -457,10 +457,10 @@ export const YoujiClockApp: React.FC = () => {
               <svg viewBox="0 0 200 200" width="140" height="140" className={styles.clockSvg}>
                 <circle cx="100" cy="100" r="96" fill="white" stroke="#2c3e50" strokeWidth="4" />
                 <circle cx="100" cy="100" r="90" fill="#fefefe" stroke="#bdc3c7" strokeWidth="1" />
-                <g ref={(el) => (clockRefs.current.ticks3 = el)} />
-                <g ref={(el) => (clockRefs.current.nums3 = el)} />
+                <g ref={(el) => { clockRefs.current.ticks3 = el }} />
+                <g ref={(el) => { clockRefs.current.nums3 = el }} />
                 <line
-                  ref={(el) => (clockRefs.current.hourHand3 = el)}
+                  ref={(el) => { clockRefs.current.hourHand3 = el }}
                   x1="100"
                   y1="100"
                   x2="100"
@@ -470,7 +470,7 @@ export const YoujiClockApp: React.FC = () => {
                   strokeLinecap="round"
                 />
                 <line
-                  ref={(el) => (clockRefs.current.minuteHand3 = el)}
+                  ref={(el) => { clockRefs.current.minuteHand3 = el }}
                   x1="100"
                   y1="100"
                   x2="100"
@@ -488,10 +488,10 @@ export const YoujiClockApp: React.FC = () => {
               <svg viewBox="0 0 200 200" width="180" height="180" className={styles.clockSvg}>
                 <circle cx="100" cy="100" r="96" fill="white" stroke="#2c3e50" strokeWidth="4" />
                 <circle cx="100" cy="100" r="90" fill="#fefefe" stroke="#bdc3c7" strokeWidth="1" />
-                <g ref={(el) => (clockRefs.current.ticks = el)} />
-                <g ref={(el) => (clockRefs.current.nums = el)} />
+                <g ref={(el) => { clockRefs.current.ticks = el }} />
+                <g ref={(el) => { clockRefs.current.nums = el }} />
                 <line
-                  ref={(el) => (clockRefs.current.hourHand = el)}
+                  ref={(el) => { clockRefs.current.hourHand = el }}
                   x1="100"
                   y1="100"
                   x2="100"
@@ -501,7 +501,7 @@ export const YoujiClockApp: React.FC = () => {
                   strokeLinecap="round"
                 />
                 <line
-                  ref={(el) => (clockRefs.current.minuteHand = el)}
+                  ref={(el) => { clockRefs.current.minuteHand = el }}
                   x1="100"
                   y1="100"
                   x2="100"
