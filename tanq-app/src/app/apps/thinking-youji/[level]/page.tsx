@@ -262,7 +262,7 @@ function LevelResultScreen({
                 </span>
               ) : null
             })}
-            {newSilver.map(id => {
+            {newSilver.filter(id => !newGold.includes(id)).map(id => {
               const b = YOUJI_BADGES.find(x => x.id === id)
               return b ? (
                 <span key={id} className="text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
@@ -391,6 +391,7 @@ export default function YoujiGamePage() {
     setCurrent(0)
     setSelected(null)
     setCorrectIds([])
+    setToasts([])
     setPhase('question')
   }
 

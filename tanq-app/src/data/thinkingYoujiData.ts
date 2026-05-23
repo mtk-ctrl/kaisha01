@@ -175,7 +175,7 @@ export const YOUJI_QUESTIONS: YoujiQuestion[] = [
     correctIndex: 0,
     feedback: {
       correct: 'やったね！📺テレビは　しかく（ほうけい）のかたちだね！',
-      incorrect: '📺テレビのかたちを　みてみよう。しかい（ほうけい）かたちだよ！',
+      incorrect: '📺テレビのかたちを　みてみよう。しかく（ほうけい）のかたちだよ！',
     }
   },
 
@@ -373,7 +373,7 @@ export const YOUJI_QUESTIONS: YoujiQuestion[] = [
     correctIndex: 0,
     feedback: {
       correct: 'やったね！🐱ねこは　🛏ベッドのした（ひくいところ）にいるね！',
-      incorrect: 'した（した）というのは　ひくいところ。🛏ベッドのした、うらがわに　🐱ねこがかくれているよ！',
+      incorrect: 'した（下）というのは　ひくいところ。🛏ベッドのした、うらがわに　🐱ねこがかくれているよ！',
     }
   },
   {
