@@ -1,13 +1,26 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter, Noto_Sans_JP } from 'next/font/google'
+import { Zen_Maru_Gothic, Hachi_Maru_Pop, Fredoka } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
-const notoSansJP = Noto_Sans_JP({
+const zenMaru = Zen_Maru_Gothic({
   subsets: ['latin'],
   weight: ['400', '500', '700', '900'],
-  variable: '--font-noto',
+  variable: '--font-zen',
+  display: 'swap',
+})
+
+const hachiMaru = Hachi_Maru_Pop({
+  subsets: ['latin'],
+  weight: ['400'],
+  variable: '--font-hachi',
+  display: 'swap',
+})
+
+const fredoka = Fredoka({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-fredoka',
   display: 'swap',
 })
 
@@ -31,11 +44,17 @@ const GA_ID = process.env.NEXT_PUBLIC_GA_ID
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
+    <html
+      lang="ja"
+      className={`${zenMaru.variable} ${hachiMaru.variable} ${fredoka.variable}`}
+    >
       <head>
         {GA_ID && (
           <>
-            <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="afterInteractive" />
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
             <Script id="ga4-init" strategy="afterInteractive">{`
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}

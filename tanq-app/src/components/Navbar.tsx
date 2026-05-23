@@ -1,99 +1,320 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 const navLinks = [
-  { href: '/#app',     label: 'アプリ' },
-  { href: '/pricing',  label: '料金' },
-  { href: '/lab',      label: '🔑 ラボ' },
-  { href: '/#about',   label: '会社について' },
-  { href: '/contact',  label: 'お問い合わせ' },
+  { href: '/lab',      label: 'アプリ' },
+  { href: '/tanq',     label: 'ストーリー' },
+  { href: '/pricing',  label: 'りょうきん' },
+  { href: '/contact',  label: 'おといあわせ' },
 ]
 
-export default function Navbar() {
-  const [scrolled,  setScrolled]  = useState(false)
-  const [menuOpen,  setMenuOpen]  = useState(false)
+function LogoMark({ size = 32 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 40 40" width={size} height={size} aria-hidden="true">
+      <circle cx="20" cy="20" r="17" fill="#FFC83D" stroke="#3A2E2A" strokeWidth="2.5" />
+      <path
+        d="M14 17l3 3 9-9"
+        stroke="#3A2E2A"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  )
+}
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 50)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+export default function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  const isActive = (href: string) => pathname === href
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled
-          ? 'bg-[#050b14]/90 backdrop-blur-2xl border-b border-[#00e5c3]/10 shadow-[0_4px_40px_rgba(0,229,195,0.05)]'
-          : 'bg-transparent'
-      }`}
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        background: '#ffffff',
+        borderBottom: '2.5px solid #3A2E2A',
+        height: '64px',
+      }}
     >
-      <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+      <div
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 24px',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-1.5 group">
-          <span className="text-2xl font-black tracking-wider text-gradient transition-opacity group-hover:opacity-80">
+        <Link
+          href="/"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            textDecoration: 'none',
+            filter: 'drop-shadow(2px 2px 0 #3A2E2A)',
+          }}
+        >
+          <LogoMark size={32} />
+          <span
+            style={{
+              fontFamily: 'var(--font-fredoka), sans-serif',
+              fontWeight: 700,
+              fontSize: '24px',
+              letterSpacing: '0.04em',
+              color: '#3A2E2A',
+              lineHeight: 1,
+            }}
+          >
             TANQ
           </span>
-          <span className="text-[10px] text-corp-muted font-light uppercase tracking-widest mt-1">Inc.</span>
+          <span
+            style={{
+              fontFamily: 'var(--font-hachi), cursive',
+              fontSize: '11px',
+              color: '#6B5A52',
+              marginTop: '2px',
+              lineHeight: 1,
+            }}
+          >
+            タンク
+          </span>
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-8">
+        {/* Desktop nav */}
+        <div className="hidden md:flex" style={{ alignItems: 'center', gap: '28px' }}>
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="text-corp-muted hover:text-corp-text transition-colors text-sm font-medium tracking-wide"
+              style={{
+                fontWeight: 700,
+                fontSize: '14px',
+                color: isActive(href) ? '#FF6F9C' : '#3A2E2A',
+                textDecoration: 'none',
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive(href)) (e.currentTarget as HTMLElement).style.color = '#FF6F9C'
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive(href)) (e.currentTarget as HTMLElement).style.color = '#3A2E2A'
+              }}
             >
               {label}
             </Link>
           ))}
+
+          {/* ログイン */}
+          <Link
+            href="/login"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontFamily: 'var(--font-zen), sans-serif',
+              fontWeight: 700,
+              fontSize: '14px',
+              color: '#3A2E2A',
+              background: '#ffffff',
+              border: '2.5px solid #3A2E2A',
+              borderRadius: '9999px',
+              padding: '0.45em 1.2em',
+              boxShadow: '3px 3px 0 0 #3A2E2A',
+              textDecoration: 'none',
+              transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.transform = 'translate(-2px,-2px)'
+              el.style.boxShadow = '5px 5px 0 0 #3A2E2A'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.transform = ''
+              el.style.boxShadow = '3px 3px 0 0 #3A2E2A'
+            }}
+          >
+            ログイン
+          </Link>
+
+          {/* はじめる */}
           <Link
             href="/register"
-            className="px-6 py-2.5 rounded-full btn-glow-teal text-sm tracking-wide"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '4px',
+              fontFamily: 'var(--font-zen), sans-serif',
+              fontWeight: 700,
+              fontSize: '14px',
+              color: '#3A2E2A',
+              background: '#FFC83D',
+              border: '2.5px solid #3A2E2A',
+              borderRadius: '9999px',
+              padding: '0.45em 1.2em',
+              boxShadow: '3px 3px 0 0 #3A2E2A',
+              textDecoration: 'none',
+              transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.transform = 'translate(-2px,-2px)'
+              el.style.boxShadow = '5px 5px 0 0 #3A2E2A'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLElement
+              el.style.transform = ''
+              el.style.boxShadow = '3px 3px 0 0 #3A2E2A'
+            }}
           >
-            無料で登録する
+            はじめる →
           </Link>
         </div>
 
-        {/* Mobile toggle */}
+        {/* Mobile hamburger */}
         <button
-          className="md:hidden text-corp-muted hover:text-corp-text transition-colors p-1"
+          className="md:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="メニュー"
+          aria-label="メニューを開く"
+          aria-expanded={menuOpen}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-around',
+            width: '44px',
+            height: '44px',
+            padding: '10px 8px',
+            background: '#FFC83D',
+            border: '2.5px solid #3A2E2A',
+            borderRadius: '12px',
+            cursor: 'pointer',
+            boxShadow: '3px 3px 0 0 #3A2E2A',
+          }}
         >
-          {menuOpen ? (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          ) : (
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-            </svg>
-          )}
+          <span
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '3px',
+              background: '#3A2E2A',
+              borderRadius: '2px',
+              transition: 'transform 0.2s ease, opacity 0.2s ease',
+              transform: menuOpen ? 'translateY(7px) rotate(45deg)' : 'none',
+            }}
+          />
+          <span
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '3px',
+              background: '#3A2E2A',
+              borderRadius: '2px',
+              transition: 'opacity 0.2s ease',
+              opacity: menuOpen ? 0 : 1,
+            }}
+          />
+          <span
+            style={{
+              display: 'block',
+              width: '100%',
+              height: '3px',
+              background: '#3A2E2A',
+              borderRadius: '2px',
+              transition: 'transform 0.2s ease, opacity 0.2s ease',
+              transform: menuOpen ? 'translateY(-7px) rotate(-45deg)' : 'none',
+            }}
+          />
         </button>
       </div>
 
       {/* Mobile drawer */}
       {menuOpen && (
-        <div className="md:hidden bg-[#050b14]/95 backdrop-blur-2xl border-t border-white/10 px-6 py-6 flex flex-col gap-3">
+        <div
+          className="md:hidden"
+          style={{
+            background: '#FFF6E5',
+            borderBottom: '3px solid #3A2E2A',
+            boxShadow: '0 8px 0 0 #3A2E2A',
+            padding: '20px 24px 28px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+          }}
+        >
           {navLinks.map(({ href, label }) => (
             <Link
               key={href}
               href={href}
-              className="text-corp-muted hover:text-corp-text transition-colors py-2 text-sm font-medium"
               onClick={() => setMenuOpen(false)}
+              style={{
+                display: 'block',
+                padding: '12px 16px',
+                fontWeight: 700,
+                fontSize: '16px',
+                color: isActive(href) ? '#FF6F9C' : '#3A2E2A',
+                textDecoration: 'none',
+                background: '#ffffff',
+                border: '2.5px solid #3A2E2A',
+                borderRadius: '14px',
+                boxShadow: '3px 3px 0 0 #3A2E2A',
+                textAlign: 'center',
+              }}
             >
               {label}
             </Link>
           ))}
           <Link
-            href="/register"
-            className="mt-3 px-6 py-3 rounded-full btn-glow-teal text-sm text-center"
+            href="/login"
             onClick={() => setMenuOpen(false)}
+            style={{
+              display: 'block',
+              padding: '12px 16px',
+              fontWeight: 700,
+              fontSize: '16px',
+              color: '#3A2E2A',
+              textDecoration: 'none',
+              background: '#ffffff',
+              border: '2.5px solid #3A2E2A',
+              borderRadius: '14px',
+              boxShadow: '3px 3px 0 0 #3A2E2A',
+              textAlign: 'center',
+            }}
           >
-            無料で登録する
+            ログイン
+          </Link>
+          <Link
+            href="/register"
+            onClick={() => setMenuOpen(false)}
+            style={{
+              display: 'block',
+              padding: '12px 16px',
+              fontWeight: 700,
+              fontSize: '16px',
+              color: '#3A2E2A',
+              textDecoration: 'none',
+              background: '#FFC83D',
+              border: '2.5px solid #3A2E2A',
+              borderRadius: '14px',
+              boxShadow: '3px 3px 0 0 #3A2E2A',
+              textAlign: 'center',
+            }}
+          >
+            はじめる →
           </Link>
         </div>
       )}
