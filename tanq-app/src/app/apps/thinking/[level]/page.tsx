@@ -52,6 +52,25 @@ function CatCharacter({ mood }: { mood: CatMood }) {
   )
 }
 
+// ─── ふりがな（ルビ）────────────────────────────────────────
+function RubyText({ text }: { text: string }) {
+  const parts = text.split(/\[([^|]+)\|([^\]]+)\]/g)
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (i % 3 === 0) return part || null
+        if (i % 3 === 1) return (
+          <ruby key={i}>
+            {part}
+            <rt className="text-[0.6em] text-gray-400">{parts[i + 1]}</rt>
+          </ruby>
+        )
+        return null
+      })}
+    </>
+  )
+}
+
 // ─── 花火 ────────────────────────────────────────────────
 const EMOJIS = ['🎆', '🎇', '✨', '🎉', '⭐', '💫']
 
@@ -161,7 +180,7 @@ function ReviewScreen({
         {/* 問題の振り返り */}
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="text-xs text-gray-400 font-medium mb-2">📌 もんだいのふりかえり</div>
-          <div className="text-sm text-gray-700 leading-relaxed">{question.question}</div>
+          <div className="text-sm text-gray-700 leading-relaxed"><RubyText text={question.question} /></div>
         </div>
 
         {/* 答え比較 */}
@@ -172,13 +191,13 @@ function ReviewScreen({
           >
             <span>{correct ? '✅' : '❌'}</span>
             <span className="font-medium">あなたのこたえ：</span>
-            <span>{question.options[selectedIndex]}</span>
+            <span><RubyText text={question.options[selectedIndex]} /></span>
           </div>
           {!correct && (
             <div className="flex items-center gap-2 p-2 rounded-xl text-sm bg-green-50 text-green-700">
               <span>⭕</span>
               <span className="font-medium">正しいこたえ：</span>
-              <span>{question.options[question.correctIndex]}</span>
+              <span><RubyText text={question.options[question.correctIndex]} /></span>
             </div>
           )}
         </div>
@@ -191,10 +210,7 @@ function ReviewScreen({
           </div>
 
           <div className="text-sm text-gray-700 leading-relaxed">
-            {correct
-              ? question.feedback.correct
-              : question.feedback.incorrect
-            }
+            <RubyText text={correct ? question.feedback.correct : question.feedback.incorrect} />
           </div>
 
           {/* ★★★のみ：思考ステップ表示 */}
@@ -206,22 +222,20 @@ function ReviewScreen({
                   <span className="bg-blue-200 text-blue-700 rounded-full w-5 h-5 flex items-center justify-center font-bold shrink-0 mt-0.5">
                     {i + 1}
                   </span>
-                  <span>{step}</span>
+                  <span><RubyText text={step} /></span>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div>
-
-      {/* つぎへボタン（shrink-0 で常に画面内に表示） */}
-      <div className="shrink-0 px-4 py-4 bg-white border-t border-gray-100">
-        <button
-          onClick={onNext}
-          className="w-full bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-bold py-4 rounded-2xl text-base transition-all shadow-md"
-        >
-          わかった！　つぎへ →
-        </button>
+        <div className="pt-2 pb-6">
+          <button
+            onClick={onNext}
+            className="w-full bg-blue-500 hover:bg-blue-600 active:scale-95 text-white font-bold py-4 rounded-2xl text-base transition-all shadow-md"
+          >
+            わかった！　つぎへ →
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -558,7 +572,7 @@ function QuestionScreen({
       <div className="px-4 pb-3 flex-1 flex flex-col gap-4 overflow-y-auto">
         <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
           <div className="text-base leading-relaxed text-gray-800 font-medium">
-            {question.question}
+            <RubyText text={question.question} />
           </div>
         </div>
 
@@ -576,7 +590,7 @@ function QuestionScreen({
               <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold text-center leading-6 mr-2 shrink-0">
                 {['ア', 'イ', 'ウ', 'エ'][i]}
               </span>
-              {opt}
+              <RubyText text={opt} />
             </button>
           ))}
         </div>
