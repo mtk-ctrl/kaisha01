@@ -29,6 +29,7 @@
 | 現在地・次アクション・サービス状態 | `NOW.md`（このファイル） |
 | サービス確認コマンド・環境変数詳細 | `product/infra.md` |
 | 全アプリ一覧・URLとデータファイル | `product/apps.md` |
+| 訪問者ルート・アクセス制御・ユーザー種別 | `product/routes.md` |
 | 料金プラン・収益戦略 | `company/monetization.md` |
 | ターゲットユーザー詳細 | `company/users.md` |
 | スタッフ定義（リン・Ken等） | `agents/` フォルダ |
