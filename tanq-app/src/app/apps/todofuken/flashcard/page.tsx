@@ -22,7 +22,7 @@ export default function Flashcard() {
 
   const pref = prefs[cardIndex]
   const shapePath = PREF_PATHS[pref.id]?.shapePath ?? ''
-  const easyFamous = pref.famous.filter(f => f.difficulty === 1).slice(0, 5)
+  const easyFamous = pref.famous.filter(f => f.difficulty <= 2).slice(0, 6)
 
   function next() { setCardIndex(i => (i + 1) % prefs.length); setFlipped(false) }
   function prev() { setCardIndex(i => (i - 1 + prefs.length) % prefs.length); setFlipped(false) }

@@ -76,7 +76,7 @@ export default function ShapeQuiz() {
         setQIndex(i => i + 1)
         nextQ()
       }
-    }, 1200)
+    }, 2000)
   }
 
   function restart() {
@@ -84,6 +84,7 @@ export default function ShapeQuiz() {
     setQIndex(0)
     setScore(0)
     setSelected(null)
+    setCorrectHistory({})
     nextQ()
   }
 
