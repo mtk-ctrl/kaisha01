@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
+import { getDataKey } from '@/lib/storage'
 
 type Difficulty = 'jidou' | 'sanjuppun' | 'all'
 
@@ -124,6 +125,22 @@ function AnalogClock({ h, m, size = 180 }: { h: number; m: number; size?: number
   )
 }
 
+const CLOCK_BEST_KEY = 'tanq_clock_best_v1'
+type ClockBest = { jidou: number; sanjuppun: number; all: number }
+
+function loadClockBest(): ClockBest {
+  if (typeof window === 'undefined') return { jidou: 0, sanjuppun: 0, all: 0 }
+  try { return { jidou: 0, sanjuppun: 0, all: 0, ...JSON.parse(localStorage.getItem(getDataKey(CLOCK_BEST_KEY)) || '{}') } } catch { return { jidou: 0, sanjuppun: 0, all: 0 } }
+}
+function saveClockBest(difficulty: Difficulty, score: number) {
+  if (typeof window === 'undefined') return
+  const best = loadClockBest()
+  if (score > best[difficulty]) {
+    best[difficulty] = score
+    try { localStorage.setItem(getDataKey(CLOCK_BEST_KEY), JSON.stringify(best)) } catch {}
+  }
+}
+
 const DIFFICULTIES: { id: Difficulty; label: string; sub: string; badge: string; badgeColor: string; free: boolean }[] = [
   { id: 'jidou',     label: 'ちょうど',     sub: '1時、2時…ぴったりの時刻',       badge: '★',   badgeColor: '#4ade80', free: true  },
   { id: 'sanjuppun', label: '30分まで',     sub: 'ちょうどと30分の時刻',           badge: '★★',  badgeColor: '#f0c040', free: true  },
@@ -145,6 +162,11 @@ export default function ClockChallenge() {
     setIndex(0); setScore(0); setMiss(0); setSelected(null)
     setPhase('playing')
   }, [])
+
+  useEffect(() => {
+    if (phase === 'result' && difficulty !== null) saveClockBest(difficulty, score)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
 
   function choose(c: string) {
     if (selected !== null) return

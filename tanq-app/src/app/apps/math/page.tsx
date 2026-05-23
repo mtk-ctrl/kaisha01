@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { playCorrect, playWrong } from '@/lib/audio'
+import { getDataKey } from '@/lib/storage'
 
 type Op = '+' | '-' | '×' | '÷'
 type Difficulty = 'かんたん' | 'ふつう' | 'むずかしい'
@@ -14,6 +15,24 @@ interface Problem {
   op: Op
   a: number
   b: number
+}
+
+const MATH_BEST_KEY = 'tanq_math_best_v1'
+type MathBest = { easy: number; normal: number; hard: number }
+
+function loadMathBest(): MathBest {
+  if (typeof window === 'undefined') return { easy: 0, normal: 0, hard: 0 }
+  try { return { easy: 0, normal: 0, hard: 0, ...JSON.parse(localStorage.getItem(getDataKey(MATH_BEST_KEY)) || '{}') } } catch { return { easy: 0, normal: 0, hard: 0 } }
+}
+function saveMathBest(difficulty: Difficulty, score: number) {
+  if (typeof window === 'undefined') return
+  const DIFF_MAP: Record<Difficulty, keyof MathBest> = { かんたん: 'easy', ふつう: 'normal', むずかしい: 'hard' }
+  const best = loadMathBest()
+  const key = DIFF_MAP[difficulty]
+  if (score > best[key]) {
+    best[key] = score
+    try { localStorage.setItem(getDataKey(MATH_BEST_KEY), JSON.stringify(best)) } catch {}
+  }
 }
 
 const DIFFICULTY_CONFIG: Record<Difficulty, { max: number; ops: Op[]; time: number }> = {
@@ -172,6 +191,11 @@ export default function MathChallenge() {
     if (input.length >= 5) return
     setInput(prev => prev + key)
   }
+
+  useEffect(() => {
+    if (phase === 'result') saveMathBest(difficulty, score)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
 
   useEffect(() => {
     if (phase !== 'playing') return

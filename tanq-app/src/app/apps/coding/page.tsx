@@ -356,6 +356,18 @@ function simulatePath(grid: string[][], cmds: Dir[]): [number, number][] {
 const CELL = 56
 
 const CODING_PROGRESS_KEY = 'tanq_coding_progress_v1'
+const CODING_CLEARED_KEY = 'tanq_coding_cleared_v1'
+
+function loadClearedSet(): Set<number> {
+  if (typeof window === 'undefined') return new Set()
+  try { return new Set(JSON.parse(localStorage.getItem(getDataKey(CODING_CLEARED_KEY)) || '[]') as number[]) } catch { return new Set() }
+}
+function saveClearedStage(idx: number) {
+  if (typeof window === 'undefined') return
+  const s = loadClearedSet()
+  s.add(idx)
+  try { localStorage.setItem(getDataKey(CODING_CLEARED_KEY), JSON.stringify(Array.from(s))) } catch {}
+}
 
 function loadProgress(): number {
   if (typeof window === 'undefined') return 0
@@ -419,6 +431,7 @@ export default function CodingPuzzle() {
   }
 
   function next() {
+    saveClearedStage(puzzleIdx)
     if (puzzleIdx + 1 >= PUZZLES.length) {
       setPhase('finished')
       return

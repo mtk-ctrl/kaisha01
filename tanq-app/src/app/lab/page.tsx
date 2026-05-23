@@ -6,10 +6,13 @@ import Link from 'next/link'
 import { KANJI_DATA } from '@/data/kanjiData'
 import { WORDS } from '@/data/englishData'
 import { getDataKey } from '@/lib/storage'
+import { PROBLEMS as WORD_MATH_PROBLEMS } from '@/data/wordMathData'
 
 // アプリが提供する全体数（SRS済み数ではなく全データ数）
 const TOTAL_KANJI = Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0)
 const TOTAL_ENGLISH = WORDS.length
+const TOTAL_WORDMATH = WORD_MATH_PROBLEMS.length  // 61
+const CODING_TOTAL = 9  // プログラミングの全ステージ数
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -72,13 +75,88 @@ function getStreak(key: string): number {
 }
 
 function computeStats() {
-  const kanji = readSRS('tanq_kanji_srs_v1')
-  const english = readSRS('tanq_english_srs_v1')
-  const sum = (items: SRSItem[], b: number) => items.filter(x => x.b === b).length
+  if (typeof window === 'undefined') return null
+
+  const readSRSStore = (key: string): Record<string, { b: number }> => {
+    try { return JSON.parse(localStorage.getItem(getDataKey(key)) || '{}') } catch { return {} }
+  }
+  const countSRS = (store: Record<string, { b: number }>, b: number) =>
+    Object.values(store).filter(x => x.b === b).length
+
+  const kanjiStore = readSRSStore('tanq_kanji_srs_v1')
+  const englishStore = readSRSStore('tanq_english_srs_v1')
+  const wmStore = readSRSStore('tanq_wordmath_srs_v1')
+
+  const kanjiMastered = countSRS(kanjiStore, 2)
+  const kanjiLearning = countSRS(kanjiStore, 1)
+  const engMastered = countSRS(englishStore, 2)
+  const engLearning = countSRS(englishStore, 1)
+
+  const wmByGrade = (['小1', '小2', '小3'] as const).map(grade => {
+    const pool = WORD_MATH_PROBLEMS.filter(p => p.grade === grade)
+    const mastered = pool.filter(p => wmStore[p.id]?.b === 2).length
+    return { grade, total: pool.length, mastered, done: mastered === pool.length && pool.length > 0 }
+  })
+
+  let thinkingMaxLevel = 0, thinkingBadgeCount = 0
+  try {
+    const p = JSON.parse(localStorage.getItem(getDataKey('tanq_thinking_progress_v1')) || '{}')
+    for (const [lvl, lp] of Object.entries(p.levels || {})) {
+      if ((lp as { bestScore: number }).bestScore >= 3) thinkingMaxLevel = Math.max(thinkingMaxLevel, Number(lvl))
+    }
+    thinkingBadgeCount = Object.values(p.badges || {}).filter((b) => (b as { silver?: boolean; gold?: boolean }).silver || (b as { silver?: boolean; gold?: boolean }).gold).length
+  } catch {}
+
+  let youjiMaxLevel = 0, youjiBadgeCount = 0
+  try {
+    const p = JSON.parse(localStorage.getItem(getDataKey('tanq_thinking_youji_progress_v1')) || '{}')
+    for (const [lvl, lp] of Object.entries(p.levels || {})) {
+      if ((lp as { bestScore: number }).bestScore >= 4) youjiMaxLevel = Math.max(youjiMaxLevel, Number(lvl))
+    }
+    youjiBadgeCount = Object.values(p.badges || {}).filter((b) => (b as { silver?: boolean; gold?: boolean }).silver || (b as { silver?: boolean; gold?: boolean }).gold).length
+  } catch {}
+
+  let codingCleared = 0
+  try {
+    const raw = localStorage.getItem(getDataKey('tanq_coding_cleared_v1'))
+    if (raw) codingCleared = (JSON.parse(raw) as number[]).length
+  } catch {}
+
+  type MathBest = { easy: number; normal: number; hard: number }
+  let mathBest: MathBest = { easy: 0, normal: 0, hard: 0 }
+  try {
+    const raw = localStorage.getItem(getDataKey('tanq_math_best_v1'))
+    if (raw) mathBest = { ...mathBest, ...JSON.parse(raw) }
+  } catch {}
+
+  type ClockBest = { jidou: number; sanjuppun: number; all: number }
+  let clockBest: ClockBest = { jidou: 0, sanjuppun: 0, all: 0 }
+  try {
+    const raw = localStorage.getItem(getDataKey('tanq_clock_best_v1'))
+    if (raw) clockBest = { ...clockBest, ...JSON.parse(raw) }
+  } catch {}
+
+  let shapesBest = 0
+  try {
+    const raw = localStorage.getItem(getDataKey('tanq_shapes_best_v1'))
+    if (raw) shapesBest = (JSON.parse(raw) as { best: number }).best || 0
+  } catch {}
+
+  const streak = Math.max(
+    getStreak('tanq_kanji_streak_v1'),
+    getStreak('tanq_english_streak_v1'),
+    getStreak('tanq_wordmath_streak_v1'),
+  )
+
   return {
-    kanjiMastered: sum(kanji, 2), kanjiLearning: sum(kanji, 1), kanjiTotal: TOTAL_KANJI,
-    engMastered: sum(english, 2), engLearning: sum(english, 1), engTotal: TOTAL_ENGLISH,
-    streak: Math.max(getStreak('tanq_kanji_streak_v1'), getStreak('tanq_english_streak_v1')),
+    kanjiMastered, kanjiLearning, kanjiTotal: TOTAL_KANJI,
+    engMastered, engLearning, engTotal: TOTAL_ENGLISH,
+    wmByGrade,
+    thinkingMaxLevel, thinkingBadgeCount,
+    youjiMaxLevel, youjiBadgeCount,
+    codingCleared,
+    mathBest, clockBest, shapesBest,
+    streak,
   }
 }
 
@@ -134,7 +212,7 @@ function getCardColor(index: number): string {
 function getTodayRecommendations(
   profile: Profile,
   userType: UserType,
-  stats: ReturnType<typeof computeStats>,
+  stats: ReturnType<typeof computeStats> | NonNullable<ReturnType<typeof computeStats>>,
 ): { app: typeof APPS[number]; prog: number; desc: string }[] {
   if (profile.grade === '幼稚園') {
     return [
@@ -147,21 +225,21 @@ function getTodayRecommendations(
       { app: APPS.find(a => a.id === 'thinking')!, prog: 0, desc: 'Lv1・Lv2が体験できます' },
       {
         app: APPS.find(a => a.id === 'kanji')!,
-        prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
-        desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得`,
+        prog: stats && stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
+        desc: stats ? `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` : '0/0字 習得',
       },
     ]
   }
   return [
     {
       app: APPS.find(a => a.id === 'kanji')!,
-      prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
-      desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得`,
+      prog: stats && stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
+      desc: stats ? `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` : '0/0字 習得',
     },
     {
       app: APPS.find(a => a.id === 'english')!,
-      prog: stats.engTotal > 0 ? Math.round(stats.engMastered / stats.engTotal * 100) : 0,
-      desc: `${stats.engMastered}/${stats.engTotal}語 習得`,
+      prog: stats && stats.engTotal > 0 ? Math.round(stats.engMastered / stats.engTotal * 100) : 0,
+      desc: stats ? `${stats.engMastered}/${stats.engTotal}語 習得` : '0/0語 習得',
     },
   ]
 }
@@ -295,7 +373,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
 // ─────────────────────────────────────────
 function HomeTab({ profile, stats, userType }: {
   profile: Profile
-  stats: ReturnType<typeof computeStats>
+  stats: NonNullable<ReturnType<typeof computeStats>>
   userType: UserType
 }) {
   const totalMastered = stats.kanjiMastered + stats.engMastered
@@ -506,62 +584,291 @@ function HomeTab({ profile, stats, userType }: {
 // ─────────────────────────────────────────
 // RecordsTab — sticker style
 // ─────────────────────────────────────────
+function BadgeChip({ emoji, label, color, earned }: { emoji: string; label: string; color: string; earned: boolean }) {
+  return (
+    <div className="flex flex-col items-center gap-1" style={{ minWidth: 44 }}>
+      <div className="w-11 h-11 rounded-full flex items-center justify-center text-lg transition-all"
+        style={earned
+          ? { background: color, border: '2.5px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }
+          : { background: '#E8E0D8', border: '2px dashed #C4B8AE' }}>
+        <span style={{ filter: earned ? 'none' : 'grayscale(1) opacity(0.4)' }}>{emoji}</span>
+      </div>
+      <span className="text-[9px] font-black text-center leading-tight" style={{ color: earned ? '#3A2E2A' : '#B0A49C', maxWidth: 44 }}>{label}</span>
+    </div>
+  )
+}
+
+function RecordsAppCard({ bg, children }: { bg: string; children: React.ReactNode }) {
+  return (
+    <div className="rounded-[18px] p-4" style={{ background: bg, border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+      {children}
+    </div>
+  )
+}
+
+function SRSBar({ mastered, total, color }: { mastered: number; total: number; color: string }) {
+  const pct = total > 0 ? Math.round(mastered / total * 100) : 0
+  return (
+    <div className="mb-2">
+      <div className="flex justify-between text-[10px] font-bold mb-1" style={{ color: '#6B5A52' }}>
+        <span>⭐ おぼえた {mastered}{total > 0 ? `/${total}` : ''}</span>
+        <span>{pct}%</span>
+      </div>
+      <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
+  )
+}
+
 function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
-  const items = [
-    { label: '漢字', emoji: '📖', color: '#B197FC', bg: '#EFE8FF', mastered: stats.kanjiMastered, learning: stats.kanjiLearning, total: stats.kanjiTotal },
-    { label: '英語', emoji: '🌍', color: '#f87171', bg: '#FFD9D3', mastered: stats.engMastered, learning: stats.engLearning, total: stats.engTotal },
+  if (!stats) return null
+
+  const kanjiBadges = [
+    { emoji: '🌱', label: 'めがでた', color: '#7BE8B0', earned: stats.kanjiMastered >= 5 },
+    { emoji: '🔥', label: 'すごい', color: '#FB923C', earned: stats.kanjiMastered >= 20 },
+    { emoji: '⭐', label: 'はかせ', color: '#F0C040', earned: stats.kanjiMastered >= 50 },
+    { emoji: '👑', label: 'おう', color: '#B197FC', earned: stats.kanjiMastered >= 100 },
+    { emoji: '🏆', label: 'ぜんぶ！', color: '#FF6F9C', earned: stats.kanjiMastered >= stats.kanjiTotal && stats.kanjiTotal > 0 },
   ]
-  const totalMastered = stats.kanjiMastered + stats.engMastered
+  const engBadges = [
+    { emoji: '🌱', label: 'はじめの\nいっぽ', color: '#7BE8B0', earned: stats.engMastered >= 5 },
+    { emoji: '🔥', label: 'えいごずき', color: '#FB923C', earned: stats.engMastered >= 20 },
+    { emoji: '⭐', label: 'はかせ', color: '#F0C040', earned: stats.engMastered >= 50 },
+    { emoji: '👑', label: 'えいごおう', color: '#B197FC', earned: stats.engMastered >= 100 },
+    { emoji: '🏆', label: 'ぜんぶ！', color: '#FF6F9C', earned: stats.engMastered >= stats.engTotal && stats.engTotal > 0 },
+  ]
+  const wmBadges = stats.wmByGrade.map(({ grade, done }) => ({
+    emoji: grade === '小1' ? '📘' : grade === '小2' ? '📗' : '📕',
+    label: `${grade}マスター`,
+    color: grade === '小1' ? '#60A5FA' : grade === '小2' ? '#4ADE80' : '#F87171',
+    earned: done,
+  }))
+  const codingBadges = [
+    { emoji: '🖥️', label: 'はじめて', color: '#4ADE80', earned: stats.codingCleared >= 3 },
+    { emoji: '💡', label: 'プログラマー', color: '#60A5FA', earned: stats.codingCleared >= 6 },
+    { emoji: '🏆', label: 'ぜんぶクリア', color: '#FF6F9C', earned: stats.codingCleared >= CODING_TOTAL },
+  ]
+  const mathBadges = [
+    { emoji: '🥉', label: 'かんたん\nクリア', color: '#7BE8B0', earned: stats.mathBest.easy >= 10 },
+    { emoji: '🥈', label: 'ふつう\nクリア', color: '#F0C040', earned: stats.mathBest.normal >= 10 },
+    { emoji: '🥇', label: 'むずかしい\nクリア', color: '#FB923C', earned: stats.mathBest.hard >= 10 },
+  ]
+  const clockBadges = [
+    { emoji: '★', label: 'ちょうど', color: '#4ADE80', earned: stats.clockBest.jidou >= 7 },
+    { emoji: '★★', label: '30ぷん', color: '#F0C040', earned: stats.clockBest.sanjuppun >= 7 },
+    { emoji: '★★★', label: 'ぜんぶ', color: '#B197FC', earned: stats.clockBest.all >= 7 },
+  ]
+  const shapesBadges = [
+    { emoji: '🔷', label: 'ずけい\nはかせ', color: '#60A5FA', earned: stats.shapesBest >= 10 },
+    { emoji: '🏆', label: 'マスター', color: '#FF6F9C', earned: stats.shapesBest >= 14 },
+  ]
+
+  const allBadges = [...kanjiBadges, ...engBadges, ...wmBadges, ...codingBadges, ...mathBadges, ...clockBadges, ...shapesBadges]
+  const earnedCount = allBadges.filter(b => b.earned).length
+
+  const hasKanji = stats.kanjiMastered > 0
+  const hasEng = stats.engMastered > 0
+  const hasWm = stats.wmByGrade.some(g => g.mastered > 0)
+  const hasThinking = stats.thinkingMaxLevel > 0
+  const hasYouji = stats.youjiMaxLevel > 0
+  const hasCoding = stats.codingCleared > 0
+  const hasMath = stats.mathBest.easy > 0 || stats.mathBest.normal > 0 || stats.mathBest.hard > 0
+  const hasClock = stats.clockBest.jidou > 0 || stats.clockBest.sanjuppun > 0 || stats.clockBest.all > 0
+  const hasShapes = stats.shapesBest > 0
 
   return (
-    <div className="px-4 pt-5 pb-4">
+    <div className="px-4 pt-5 pb-6">
       <h2 className="font-black text-2xl mb-1" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>わたしの記録</h2>
-      <p className="text-xs font-bold mb-5" style={{ color: '#6B5A52' }}>学習の積み重ねを確認しよう</p>
+      <p className="text-xs font-bold mb-4" style={{ color: '#6B5A52' }}>がんばりのあしあとを見てみよう！</p>
 
-      {/* Total summary */}
-      <div className="rounded-[22px] p-5 mb-5 text-center"
+      {/* Summary bar */}
+      <div className="rounded-[18px] p-4 mb-5 flex items-center justify-around"
         style={{ background: '#FFF1B8', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
-        <div className="text-5xl font-black mb-1" style={{ color: '#FF6F9C', fontFamily: 'var(--font-zen)' }}>{totalMastered}</div>
-        <div className="font-black text-sm mb-0.5" style={{ color: '#3A2E2A' }}>語・問題 習得済み</div>
+        <div className="text-center">
+          <div className="text-4xl font-black" style={{ color: '#FF6F9C', fontFamily: 'var(--font-zen)' }}>{earnedCount}</div>
+          <div className="text-xs font-black" style={{ color: '#3A2E2A' }}>🏅 バッジ</div>
+        </div>
         {stats.streak > 0 && (
-          <div className="font-bold text-sm mt-2" style={{ color: '#C99700' }}>🔥 {stats.streak}日連続学習中！</div>
+          <div className="text-center">
+            <div className="text-4xl font-black" style={{ color: '#FB923C', fontFamily: 'var(--font-zen)' }}>{stats.streak}</div>
+            <div className="text-xs font-black" style={{ color: '#3A2E2A' }}>🔥 にちれんぞく</div>
+          </div>
         )}
-        {totalMastered === 0 && (
-          <p className="text-xs mt-2 font-bold" style={{ color: '#6B5A52' }}>まだ学習していないよ。アプリから始めよう！</p>
-        )}
+        <div className="text-center">
+          <div className="text-4xl font-black" style={{ color: '#B197FC', fontFamily: 'var(--font-zen)' }}>{stats.kanjiMastered + stats.engMastered}</div>
+          <div className="text-xs font-black" style={{ color: '#3A2E2A' }}>⭐ おぼえた</div>
+        </div>
       </div>
 
-      {/* Per-app breakdown */}
-      <div className="space-y-3 mb-5">
-        {items.map(({ label, emoji, color, bg, mastered, learning, total }) => {
-          const pct = total > 0 ? Math.round(mastered / total * 100) : 0
-          return (
-            <div key={label} className="rounded-[22px] p-4"
-              style={{ background: bg, border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{emoji}</span>
-                  <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>{label}</span>
-                </div>
-                <span className="font-black text-sm" style={{ color }}>{pct}%</span>
+      <div className="space-y-3">
+        {/* 漢字マスター */}
+        <RecordsAppCard bg="#EFE8FF">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">📖</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>漢字マスター</span>
+            {!hasKanji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasKanji && <SRSBar mastered={stats.kanjiMastered} total={stats.kanjiTotal} color="#B197FC" />}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {kanjiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 英語 */}
+        <RecordsAppCard bg="#FFD9D3">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">🌍</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>えいごボキャブラリー</span>
+            {!hasEng && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasEng && <SRSBar mastered={stats.engMastered} total={stats.engTotal} color="#F87171" />}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {engBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 算数文章題 */}
+        <RecordsAppCard bg="#FFF1B8">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">📐</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>さんすう文章題</span>
+            {!hasWm && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasWm && (
+            <div className="space-y-1 mb-3">
+              {stats.wmByGrade.map(({ grade, mastered, total }) => {
+                const pct = total > 0 ? Math.round(mastered / total * 100) : 0
+                const color = grade === '小1' ? '#60A5FA' : grade === '小2' ? '#4ADE80' : '#F87171'
+                return (
+                  <div key={grade} className="flex items-center gap-2">
+                    <span className="text-[10px] font-black w-6" style={{ color: '#3A2E2A' }}>{grade}</span>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+                    </div>
+                    <span className="text-[10px] font-bold" style={{ color: '#6B5A52' }}>{mastered}/{total}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {wmBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* かんがえる力ジム */}
+        <RecordsAppCard bg="#D6ECFF">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🧩</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>かんがえる力ジム</span>
+          </div>
+          {!hasThinking
+            ? <p className="text-[10px] font-bold" style={{ color: '#B0A49C' }}>まだやっていないよ</p>
+            : <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
+                <span>🏁 Lv{stats.thinkingMaxLevel} まで クリア！</span>
+                <span>🏅 バッジ {stats.thinkingBadgeCount}こ</span>
               </div>
-              <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(58,46,42,0.15)' }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
+          }
+        </RecordsAppCard>
+
+        {/* ようちえんかんがえるジム */}
+        <RecordsAppCard bg="#FFE3EE">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🐰</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようちえんかんがえるジム</span>
+          </div>
+          {!hasYouji
+            ? <p className="text-[10px] font-bold" style={{ color: '#B0A49C' }}>まだやっていないよ</p>
+            : <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
+                <span>🏁 Lv{stats.youjiMaxLevel} まで クリア！</span>
+                <span>🏅 バッジ {stats.youjiBadgeCount}こ</span>
               </div>
-              <div className="flex justify-between text-[10px] font-bold" style={{ color: '#6B5A52' }}>
-                <span>⭐ 習得 {mastered}語</span>
-                <span>📚 学習中 {learning}語</span>
-                <span>全{total}語</span>
+          }
+        </RecordsAppCard>
+
+        {/* プログラミング */}
+        <RecordsAppCard bg="#DFF6CF">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">💻</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>プログラミング</span>
+            {!hasCoding && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasCoding && (
+            <div className="mb-2">
+              <div className="flex justify-between text-[10px] font-bold mb-1" style={{ color: '#6B5A52' }}>
+                <span>クリア: {stats.codingCleared}ステージ</span>
+                <span>/ {CODING_TOTAL}</span>
+              </div>
+              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
+                <div className="h-full rounded-full" style={{ width: `${Math.round(stats.codingCleared / CODING_TOTAL * 100)}%`, background: '#4ADE80' }} />
               </div>
             </div>
-          )
-        })}
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {codingBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 計算チャレンジ */}
+        <RecordsAppCard bg="#FFE0CC">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🔢</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>計算チャレンジ</span>
+            {!hasMath && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasMath && (
+            <div className="flex gap-3 mb-2 text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+              {stats.mathBest.easy > 0 && <span>かんたん: さいこう{stats.mathBest.easy}もん</span>}
+              {stats.mathBest.normal > 0 && <span>ふつう: {stats.mathBest.normal}もん</span>}
+              {stats.mathBest.hard > 0 && <span>むずかしい: {stats.mathBest.hard}もん</span>}
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {mathBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 時計 */}
+        <RecordsAppCard bg="#9DEDDE">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🕐</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>時計・時間計算</span>
+            {!hasClock && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasClock && (
+            <div className="flex gap-3 mb-2 text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+              {stats.clockBest.jidou > 0 && <span>ちょうど: {stats.clockBest.jidou}/10</span>}
+              {stats.clockBest.sanjuppun > 0 && <span>30分: {stats.clockBest.sanjuppun}/10</span>}
+              {stats.clockBest.all > 0 && <span>ぜんぶ: {stats.clockBest.all}/10</span>}
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {clockBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 図形 */}
+        <RecordsAppCard bg="#E8F4FF">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🔷</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>図形トレーニング</span>
+            {!hasShapes && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasShapes && (
+            <p className="text-[11px] font-bold mb-2" style={{ color: '#6B5A52' }}>さいこう: {stats.shapesBest}/15もん</p>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {shapesBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
       </div>
 
       {/* SRS explanation */}
-      <div className="rounded-[22px] p-4" style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+      <div className="mt-4 rounded-[18px] p-4" style={{ background: '#FFFFFF', border: '2px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }}>
         <p className="text-xs leading-relaxed font-bold" style={{ color: '#6B5A52' }}>
-          <span className="font-black" style={{ color: '#B197FC' }}>習得の仕組み</span>: 同じ問題に3回連続・2.5秒以内で正解すると「習得」に！習得した語は7日後に確認問題として出題されるよ。
+          <span className="font-black" style={{ color: '#B197FC' }}>⭐ おぼえたって何？</span><br />
+          漢字・英語・文章題は、同じ問題に正解すると少しずつ「おぼえた」に近づくよ。3回正解すると「おぼえた！」になるんだ。
         </p>
       </div>
     </div>
@@ -723,7 +1030,7 @@ function AppHub({ userType }: { userType: UserType }) {
           }}>
           <span className="font-black text-base" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>🔬 TANQ ラボ</span>
           <div className="flex items-center gap-2">
-            {stats.streak > 0 && (
+            {stats && stats.streak > 0 && (
               <span className="text-sm font-black px-2 py-1 rounded-full" style={{ background: '#FFF1B8', border: '2px solid #3A2E2A', color: '#C99700' }}>
                 🔥{stats.streak}
               </span>
@@ -735,8 +1042,8 @@ function AppHub({ userType }: { userType: UserType }) {
         </div>
 
         {/* Tab content */}
-        {tab === 'home' && <HomeTab profile={profile} stats={stats} userType={userType} />}
-        {tab === 'records' && <RecordsTab stats={stats} />}
+        {tab === 'home' && stats && <HomeTab profile={profile} stats={stats} userType={userType} />}
+        {tab === 'records' && stats && <RecordsTab stats={stats} />}
         {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} />}
 
         <BottomNav tab={tab} onChange={setTab} />
