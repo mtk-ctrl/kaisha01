@@ -11,7 +11,7 @@
 | サービス | 状態 | 備考 |
 |---------|------|------|
 | GitHub Actions | ✅ 稼働中 | `claude/*` push → main マージ → Vercel デプロイ（`main` 直 push のみではデプロイジョブ未実行） |
-| Vercel | ✅ 本番稼働 | tanq-app.vercel.app / `trailingSlash: true`・youji各HTMLに `<base href>` 済（2026-05-23） |
+| Vercel | ✅ 本番稼働 | [tanq-app.vercel.app ](https://tanq-app.vercel.app/)/ `trailingSlash: true`・youji各HTMLに `<base href>` 済（2026-05-23） |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
 | Resend | ⚠️ 登録済み（要動作確認） | X投稿メール用・Secret登録済み |
