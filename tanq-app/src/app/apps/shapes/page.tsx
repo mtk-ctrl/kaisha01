@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
+import { getDataKey } from '@/lib/storage'
 
 interface ShapeQuestion {
   type: 'name' | 'corners' | 'sides'
@@ -130,6 +131,19 @@ const SHAPES: Shape[] = [
 
 const TOTAL = SHAPES.length  // 8問（図形の数に合わせる）
 
+const SHAPES_BEST_KEY = 'tanq_shapes_best_v1'
+
+function loadShapesBest(): number {
+  if (typeof window === 'undefined') return 0
+  try { return JSON.parse(localStorage.getItem(getDataKey(SHAPES_BEST_KEY)) || '{"best":0}').best } catch { return 0 }
+}
+function saveShapesBest(score: number) {
+  if (typeof window === 'undefined') return
+  if (score > loadShapesBest()) {
+    try { localStorage.setItem(getDataKey(SHAPES_BEST_KEY), JSON.stringify({ best: score })) } catch {}
+  }
+}
+
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5)
 }
@@ -198,6 +212,11 @@ export default function ShapesQuiz() {
     setShowExplanation(false)
     setPhase('playing')
   }, [])
+
+  useEffect(() => {
+    if (phase === 'result') saveShapesBest(score)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
 
   function choose(c: string) {
     if (selected !== null) return
