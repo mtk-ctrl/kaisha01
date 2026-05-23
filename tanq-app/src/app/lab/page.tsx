@@ -114,6 +114,41 @@ const APPS: {
   { id: 'youji-animals',  name: 'どうぶつ さんすう',    emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/`,  badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才' },
 ]
 
+function getTodayRecommendations(
+  profile: Profile,
+  userType: UserType,
+  stats: ReturnType<typeof computeStats>,
+): { app: typeof APPS[number]; prog: number; desc: string }[] {
+  if (profile.grade === '幼稚園') {
+    return [
+      { app: APPS.find(a => a.id === 'youji-katakana')!, prog: 0, desc: 'あ→ア で れんしゅう' },
+      { app: APPS.find(a => a.id === 'youji-math')!, prog: 0, desc: 'たべものと かずあそび' },
+    ]
+  }
+  if (userType === 'guest') {
+    return [
+      { app: APPS.find(a => a.id === 'thinking')!, prog: 0, desc: 'Lv1・Lv2が体験できます' },
+      {
+        app: APPS.find(a => a.id === 'kanji')!,
+        prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
+        desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得`,
+      },
+    ]
+  }
+  return [
+    {
+      app: APPS.find(a => a.id === 'kanji')!,
+      prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
+      desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得`,
+    },
+    {
+      app: APPS.find(a => a.id === 'english')!,
+      prog: stats.engTotal > 0 ? Math.round(stats.engMastered / stats.engTotal * 100) : 0,
+      desc: `${stats.engMastered}/${stats.engTotal}語 習得`,
+    },
+  ]
+}
+
 type Tab = 'home' | 'records' | 'settings'
 
 // ─────────────────────────────────────────
@@ -387,26 +422,23 @@ function HomeTab({ profile, stats, userType }: {
           {profile.grade === '幼稚園' ? '🌱 就学前向けのおすすめ' : `📘 ${profile.grade}向けのおすすめ`}
         </p>
         <div className="grid grid-cols-2 gap-3">
-          {(userType === 'guest'
-            ? [
-                { app: APPS.find(a => a.id === 'thinking')!, prog: 0, desc: 'Lv1・Lv2が体験できます' },
-                { app: APPS.find(a => a.id === 'kanji')!, prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0, desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` },
-              ]
-            : [
-                { app: APPS.find(a => a.id === 'kanji')!, prog: stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0, desc: `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` },
-                { app: APPS.find(a => a.id === 'english')!, prog: stats.engTotal > 0 ? Math.round(stats.engMastered / stats.engTotal * 100) : 0, desc: `${stats.engMastered}/${stats.engTotal}語 習得` },
-              ]
-          ).map(({ app, prog, desc }) => (
-            <Link key={app.id} href={app.url}
-              className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98]">
-              <div className="text-3xl mb-2">{app.emoji}</div>
-              <div className="font-black text-[#e8f0fe] text-sm mb-0.5">{app.name}</div>
-              <div className="text-[#94a3c4] text-[10px] mb-2">{desc}</div>
-              <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                <div className="h-full rounded-full" style={{ width: `${prog}%`, background: app.color }} />
-              </div>
-            </Link>
-          ))}
+          {getTodayRecommendations(profile, userType, stats).map(({ app, prog, desc }) => {
+            const cardClass = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
+            const cardInner = (
+              <>
+                <div className="text-3xl mb-2">{app.emoji}</div>
+                <div className="font-black text-[#e8f0fe] text-sm mb-0.5 leading-tight">{app.name}</div>
+                <div className="text-[#94a3c4] text-[10px] mb-2">{desc}</div>
+                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${prog}%`, background: app.color }} />
+                </div>
+              </>
+            )
+            const isStatic = app.url.startsWith('/youji/')
+            return isStatic
+              ? <a key={app.id} href={app.url} className={cardClass}>{cardInner}</a>
+              : <Link key={app.id} href={app.url} className={cardClass}>{cardInner}</Link>
+          })}
         </div>
       </div>
 
