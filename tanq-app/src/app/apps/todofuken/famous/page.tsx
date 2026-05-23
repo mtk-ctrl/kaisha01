@@ -108,15 +108,20 @@ export default function FamousQuiz() {
           <div className="flex flex-col gap-4">
             {([1, 2, 3] as Difficulty[]).map(diff => {
               const c = DIFF_CONFIG[diff]
+              const available = buildQuestions(diff).length > 0
               return (
-                <button key={diff} onClick={() => startQuiz(diff)}
-                  className="bg-white rounded-2xl shadow p-5 flex items-center gap-4 active:scale-95 transition-all text-left">
+                <button key={diff} onClick={() => available && startQuiz(diff)}
+                  disabled={!available}
+                  className={`rounded-2xl shadow p-5 flex items-center gap-4 transition-all text-left ${
+                    available ? 'bg-white active:scale-95' : 'bg-gray-50 opacity-60 cursor-not-allowed'
+                  }`}>
                   <div className="text-3xl w-10 text-center">{c.emoji}</div>
                   <div>
                     <div className="font-bold text-gray-800">{c.label}</div>
                     <div className="text-xs text-gray-500 mt-0.5">{c.desc}</div>
+                    {!available && <div className="text-xs text-gray-400 mt-1">🔧 データ準備中</div>}
                   </div>
-                  <div className="ml-auto text-gray-400">→</div>
+                  <div className="ml-auto text-gray-400">{available ? '→' : '🔒'}</div>
                 </button>
               )
             })}

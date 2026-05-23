@@ -77,7 +77,7 @@ export default function CapitalQuiz() {
     setTimeout(() => {
       if (qIndex + 1 >= questions.length) setMode('result')
       else { setQIndex(i => i + 1); setSelected(null) }
-    }, 1200)
+    }, 2000)
   }
 
   if (mode === 'menu') {
