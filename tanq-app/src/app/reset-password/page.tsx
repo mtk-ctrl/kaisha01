@@ -29,77 +29,100 @@ export default function ResetPasswordPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-corp-navy text-corp-text font-sans overflow-x-hidden">
-      <Navbar />
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-corp-forest opacity-20 blur-[130px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-corp-lavender opacity-10 blur-[110px]" />
-        <div className="absolute inset-0 grid-overlay opacity-40" />
-      </div>
+  const pageStyle: React.CSSProperties = {
+    background: '#FFF6E5',
+    backgroundImage: 'radial-gradient(circle, rgba(58,46,42,0.06) 1px, transparent 1.5px)',
+    backgroundSize: '22px 22px',
+    color: '#3A2E2A',
+    minHeight: '100vh',
+  }
 
-      <main className="relative z-10 min-h-screen flex items-center justify-center px-6 py-32">
+  return (
+    <div className="font-sans overflow-x-hidden" style={pageStyle}>
+      <Navbar />
+
+      <main className="min-h-screen flex items-center justify-center px-6 py-32">
         <div className="w-full max-w-md">
-          <div className="text-center mb-10">
-            <div className="relative inline-block mb-6">
-              <div className="absolute inset-0 bg-corp-teal opacity-20 blur-3xl rounded-full scale-150" />
-              <Image src="/tanquu/sad.png" alt="TANQuu" width={100} height={100} className="relative z-10 drop-shadow-[0_0_30px_rgba(196,168,255,0.5)]" />
+
+          <div className="text-center mb-8">
+            <div className="inline-block mb-4" style={{ animation: 'floatSticker 5s ease-in-out infinite' }}>
+              <Image src="/tanquu/sad.png" alt="タンキュー" width={120} height={120} unoptimized />
             </div>
-            <h1 className="text-3xl font-black mb-2">パスワードをリセット</h1>
-            <p className="text-corp-muted text-sm">登録したメールアドレスにリセットリンクを送ります</p>
+            <h1 className="text-3xl font-black mb-2" style={{ fontFamily: 'var(--font-zen)' }}>
+              パスワードを<span style={{ color: 'var(--pink)' }}>リセット</span>
+            </h1>
+            <p className="text-sm font-bold" style={{ color: 'var(--ink-soft)' }}>
+              登録したメールアドレスに リセットリンクを送ります
+            </p>
           </div>
 
           {sent ? (
-            <div className="glass-card-bright rounded-3xl p-10 text-center">
+            <div className="text-center p-8 rounded-[22px]"
+              style={{ background: '#fff', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
               <div className="text-5xl mb-4">📧</div>
-              <h2 className="text-xl font-black mb-3 text-corp-teal">メールを送信しました！</h2>
-              <p className="text-corp-muted text-sm leading-relaxed mb-6">
-                <strong className="text-corp-text">{email}</strong> にリセットリンクを送りました。<br />
+              <h2 className="text-xl font-black mb-3" style={{ color: 'var(--mint)', fontFamily: 'var(--font-zen)' }}>
+                メールを送信しました！
+              </h2>
+              <p className="text-sm font-bold leading-relaxed mb-6" style={{ color: 'var(--ink-soft)' }}>
+                <strong style={{ color: 'var(--ink)' }}>{email}</strong> にリセットリンクを送りました。<br />
                 メールが届かない場合は迷惑メールフォルダを確認してください。
               </p>
-              <Link href="/register" className="text-corp-teal text-sm hover:underline">← ログインページへ戻る</Link>
+              <Link href="/login"
+                className="btn-sticker btn-yellow inline-block px-6 py-2 text-sm font-black">
+                ← ログインページへ
+              </Link>
             </div>
           ) : (
-            <div className="glass-card-bright rounded-3xl p-8 lg:p-10">
-              <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="p-8 rounded-[22px]"
+              style={{ background: '#fff', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div>
-                  <label className="block text-xs text-corp-muted font-semibold uppercase tracking-wider mb-2">
+                  <label className="block text-sm font-black mb-2" style={{ color: 'var(--ink)', fontFamily: 'var(--font-zen)' }}>
                     保護者のメールアドレス
+                    <span className="ml-1" style={{ color: 'var(--pink)' }}>*</span>
                   </label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => { setEmail(e.target.value); setError(null) }}
                     placeholder="parent@example.com"
-                    className="corp-input"
+                    className="sticker-input w-full px-4 py-3 text-base outline-none"
+                    style={{ color: 'var(--ink)' }}
                     required
+                    autoFocus
                   />
                 </div>
 
                 {error && (
-                  <p className="text-red-400 text-sm text-center py-2 px-4 rounded-xl bg-red-400/10 border border-red-400/20">
+                  <div className="text-sm font-bold text-center py-2 px-4 rounded-xl"
+                    style={{ background: '#FFE3EE', border: '2px solid var(--pink)', color: 'var(--pink)' }}>
                     {error}
-                  </p>
+                  </div>
                 )}
 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-4 rounded-full btn-glow-teal text-lg font-bold disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="btn-sticker btn-yellow w-full py-3 text-base font-black disabled:opacity-60"
+                  style={{ borderRadius: '9999px' }}
                 >
-                  {loading ? '送信中...' : 'リセットメールを送る'}
+                  {loading ? '送信中...' : 'リセットメールを送る 📨'}
                 </button>
               </form>
 
-              <div className="mt-6 pt-6 border-t border-white/10 text-center">
-                <Link href="/register" className="text-corp-muted text-sm hover:text-corp-teal transition-colors">
-                  ← ログインページへ戻る
+              <div className="mt-6 pt-5 text-center"
+                style={{ borderTop: '2px dashed rgba(58,46,42,0.15)' }}>
+                <Link href="/login"
+                  className="text-sm font-bold hover:underline"
+                  style={{ color: 'var(--ink-soft)' }}>
+                  ← ログインへ戻る
                 </Link>
               </div>
             </div>
           )}
         </div>
       </main>
+
       <Footer />
     </div>
   )

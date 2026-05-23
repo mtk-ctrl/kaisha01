@@ -20,7 +20,10 @@ function ConfirmForm() {
 
   useEffect(() => {
     const code = searchParams.get('code')
-    if (!code) { setError('リンクが無効です。もう一度パスワードリセットを行ってください。'); return }
+    if (!code) {
+      setError('リンクが無効です。もう一度パスワードリセットを行ってください。')
+      return
+    }
     const supabase = getAnonClient()
     supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
       if (error) setError('リンクの有効期限が切れています。もう一度パスワードリセットを行ってください。')
@@ -41,103 +44,135 @@ function ConfirmForm() {
       setError('パスワードの更新に失敗しました。もう一度お試しください。')
     } else {
       setDone(true)
-      setTimeout(() => router.push('/register'), 3000)
+      setTimeout(() => router.push('/login'), 3000)
     }
   }
 
+  const cardStyle: React.CSSProperties = {
+    background: '#fff',
+    border: '3px solid #3A2E2A',
+    boxShadow: '6px 6px 0 0 #3A2E2A',
+    borderRadius: '22px',
+    padding: '2rem',
+  }
+
+  if (done) return (
+    <div style={cardStyle} className="text-center w-full max-w-md">
+      <div className="text-5xl mb-4">✅</div>
+      <h2 className="text-xl font-black mb-3" style={{ color: 'var(--mint)', fontFamily: 'var(--font-zen)' }}>
+        パスワードを更新しました！
+      </h2>
+      <p className="text-sm font-bold" style={{ color: 'var(--ink-soft)' }}>
+        3秒後にログインページへ移動します…
+      </p>
+    </div>
+  )
+
+  if (error && !ready) return (
+    <div style={cardStyle} className="text-center w-full max-w-md">
+      <div className="text-5xl mb-4">⚠️</div>
+      <p className="text-sm font-bold mb-6" style={{ color: 'var(--pink)' }}>{error}</p>
+      <Link href="/reset-password" className="btn-sticker btn-yellow px-6 py-2 text-sm font-black"
+        style={{ borderRadius: '9999px' }}>
+        もう一度リセットする
+      </Link>
+    </div>
+  )
+
+  if (!ready) return (
+    <div className="flex justify-center py-20">
+      <div className="w-8 h-8 rounded-full animate-spin"
+        style={{ border: '3px solid #3A2E2A', borderTopColor: '#FFC83D' }} />
+    </div>
+  )
+
   return (
-    <div className="w-full max-w-md">
-      <div className="text-center mb-10">
-        <div className="relative inline-block mb-6">
-          <div className="absolute inset-0 bg-corp-teal opacity-20 blur-3xl rounded-full scale-150" />
-          <Image src="/tanquu/happy.png" alt="TANQuu" width={100} height={100} className="relative z-10 drop-shadow-[0_0_30px_rgba(196,168,255,0.5)]" />
+    <div style={cardStyle} className="w-full max-w-md">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div>
+          <label className="block text-sm font-black mb-2" style={{ color: 'var(--ink)', fontFamily: 'var(--font-zen)' }}>
+            新しいパスワード<span className="ml-1" style={{ color: 'var(--pink)' }}>*</span>
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => { setPassword(e.target.value); setError(null) }}
+            placeholder="8文字以上"
+            className="sticker-input w-full px-4 py-3 text-base outline-none"
+            required
+            minLength={8}
+            autoFocus
+          />
         </div>
-        <h1 className="text-3xl font-black mb-2">新しいパスワードを設定</h1>
-        <p className="text-corp-muted text-sm">8文字以上のパスワードを入力してください</p>
+        <div>
+          <label className="block text-sm font-black mb-2" style={{ color: 'var(--ink)', fontFamily: 'var(--font-zen)' }}>
+            パスワード（確認）<span className="ml-1" style={{ color: 'var(--pink)' }}>*</span>
+          </label>
+          <input
+            type="password"
+            value={confirm}
+            onChange={(e) => { setConfirm(e.target.value); setError(null) }}
+            placeholder="もう一度入力"
+            className="sticker-input w-full px-4 py-3 text-base outline-none"
+            required
+          />
+        </div>
+
+        {error && (
+          <div className="text-sm font-bold text-center py-2 px-4 rounded-xl"
+            style={{ background: '#FFE3EE', border: '2px solid var(--pink)', color: 'var(--pink)' }}>
+            {error}
+          </div>
+        )}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="btn-sticker btn-yellow w-full py-3 text-base font-black disabled:opacity-60"
+          style={{ borderRadius: '9999px' }}
+        >
+          {loading ? '更新中...' : 'パスワードを更新する ✓'}
+        </button>
+      </form>
+
+      <div className="mt-6 pt-5 text-center"
+        style={{ borderTop: '2px dashed rgba(58,46,42,0.15)' }}>
+        <Link href="/login" className="text-sm font-bold hover:underline" style={{ color: 'var(--ink-soft)' }}>
+          ← ログインへ戻る
+        </Link>
       </div>
-
-      {done ? (
-        <div className="glass-card-bright rounded-3xl p-10 text-center">
-          <div className="text-5xl mb-4">✅</div>
-          <h2 className="text-xl font-black mb-3 text-corp-teal">パスワードを更新しました！</h2>
-          <p className="text-corp-muted text-sm">3秒後にログインページへ移動します…</p>
-        </div>
-      ) : error && !ready ? (
-        <div className="glass-card-bright rounded-3xl p-10 text-center">
-          <div className="text-5xl mb-4">⚠️</div>
-          <p className="text-red-400 text-sm mb-6">{error}</p>
-          <Link href="/reset-password" className="px-8 py-3 rounded-full btn-glow-teal font-bold">
-            もう一度リセットする
-          </Link>
-        </div>
-      ) : !ready ? (
-        <div className="flex justify-center py-20">
-          <div className="w-8 h-8 border-2 border-corp-teal border-t-transparent rounded-full animate-spin" />
-        </div>
-      ) : (
-        <div className="glass-card-bright rounded-3xl p-8 lg:p-10">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-xs text-corp-muted font-semibold uppercase tracking-wider mb-2">
-                新しいパスワード
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => { setPassword(e.target.value); setError(null) }}
-                placeholder="8文字以上"
-                className="corp-input"
-                required
-                minLength={8}
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-corp-muted font-semibold uppercase tracking-wider mb-2">
-                パスワード（確認）
-              </label>
-              <input
-                type="password"
-                value={confirm}
-                onChange={(e) => { setConfirm(e.target.value); setError(null) }}
-                placeholder="もう一度入力"
-                className="corp-input"
-                required
-              />
-            </div>
-
-            {error && (
-              <p className="text-red-400 text-sm text-center py-2 px-4 rounded-xl bg-red-400/10 border border-red-400/20">
-                {error}
-              </p>
-            )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-4 rounded-full btn-glow-teal text-lg font-bold disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? '更新中...' : 'パスワードを更新する'}
-            </button>
-          </form>
-        </div>
-      )}
     </div>
   )
 }
 
 export default function ResetPasswordConfirmPage() {
+  const pageStyle: React.CSSProperties = {
+    background: '#FFF6E5',
+    backgroundImage: 'radial-gradient(circle, rgba(58,46,42,0.06) 1px, transparent 1.5px)',
+    backgroundSize: '22px 22px',
+    color: '#3A2E2A',
+    minHeight: '100vh',
+  }
+
   return (
-    <div className="min-h-screen bg-corp-navy text-corp-text font-sans overflow-x-hidden">
+    <div className="font-sans overflow-x-hidden" style={pageStyle}>
       <Navbar />
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-corp-forest opacity-20 blur-[130px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-corp-lavender opacity-10 blur-[110px]" />
-        <div className="absolute inset-0 grid-overlay opacity-40" />
-      </div>
-      <main className="relative z-10 min-h-screen flex items-center justify-center px-6 py-32">
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 py-32 gap-8">
+        <div className="text-center">
+          <div className="inline-block mb-4" style={{ animation: 'floatSticker 5s ease-in-out infinite' }}>
+            <Image src="/tanquu/happy.png" alt="タンキュー" width={120} height={120} unoptimized />
+          </div>
+          <h1 className="text-3xl font-black mb-2" style={{ fontFamily: 'var(--font-zen)' }}>
+            新しいパスワードを<span style={{ color: 'var(--pink)' }}>設定</span>
+          </h1>
+          <p className="text-sm font-bold" style={{ color: 'var(--ink-soft)' }}>
+            8文字以上のパスワードを入力してください
+          </p>
+        </div>
         <Suspense fallback={
           <div className="flex justify-center py-20">
-            <div className="w-8 h-8 border-2 border-corp-teal border-t-transparent rounded-full animate-spin" />
+            <div className="w-8 h-8 rounded-full animate-spin"
+              style={{ border: '3px solid #3A2E2A', borderTopColor: '#FFC83D' }} />
           </div>
         }>
           <ConfirmForm />
