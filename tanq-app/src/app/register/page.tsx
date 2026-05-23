@@ -53,6 +53,7 @@ export default function RegisterPage() {
       })
       const data = await res.json()
       if (!res.ok) { setApiError(data.error ?? '登録に失敗しました'); return }
+      localStorage.setItem('tanq-lab-auth', 'member')
       setSubmitted(true)
     } catch {
       setApiError('ネットワークエラーが発生しました')

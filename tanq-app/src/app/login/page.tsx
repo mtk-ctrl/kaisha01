@@ -33,6 +33,7 @@ export default function LoginPage() {
         setApiError(data.error ?? 'ログインに失敗しました')
         return
       }
+      localStorage.setItem('tanq-lab-auth', 'member')
       router.push('/lab')
     } catch {
       setApiError('ネットワークエラーが発生しました')

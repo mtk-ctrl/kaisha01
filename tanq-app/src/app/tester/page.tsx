@@ -123,7 +123,7 @@ export default function TesterPage() {
                 type="text"
                 value={pin}
                 onChange={(e) => { setPin(e.target.value); setError(false) }}
-                placeholder="例: 2026"
+                placeholder="コードを入力"
                 maxLength={10}
                 inputMode="numeric"
                 pattern="[0-9]*"
