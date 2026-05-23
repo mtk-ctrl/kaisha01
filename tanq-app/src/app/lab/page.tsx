@@ -180,7 +180,7 @@ const APPS: {
   { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',    badge: '5ステージ',        audience: 'shougakusei', targetAge: '小3〜小6' },
   { id: 'youji-zokusei', name: 'ぞくせい仕分け工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/`, badge: 'ベン図・分類',    audience: 'shougakusei', targetAge: '小1〜小3' },
   { id: 'kuku',          name: '九九マスター',      emoji: '✖️', color: '#f59e0b', url: `${_YB}/kuku/`,    badge: '2〜9の段',        audience: 'shougakusei', targetAge: '小2〜小4' },
-  { id: 'todofuken',     name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: `${_YB}/todofuken/`, badge: '47都道府県',      audience: 'shougakusei', targetAge: '小4〜小6' },
+  { id: 'todofuken',     name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: '/apps/todofuken',    badge: '47都道府県',      audience: 'shougakusei', targetAge: '小4〜小6' },
   // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ）──────
   { id: 'youji-katakana',  name: 'カタカナ れんしゅう',  emoji: '🔡', color: '#d946ef', url: `${_YB}/katakana/`,   badge: 'ア〜ン 46字',     audience: 'youji', targetAge: '5〜6才' },
   { id: 'youji-iro',       name: 'いろと かたち',         emoji: '🌈', color: '#ec4899', url: `${_YB}/iro-katachi/`, badge: '10色・8かたち',   audience: 'youji', targetAge: '3〜5才' },
