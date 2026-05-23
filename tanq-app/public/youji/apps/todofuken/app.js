@@ -67,6 +67,8 @@ function startGame() {
   combo = 0;
   missedPrefs = [];
 
+  document.getElementById('feedback-overlay').classList.add('hidden');
+
   document.getElementById('g-total').textContent = total;
   document.getElementById('g-score').textContent = '0';
 
