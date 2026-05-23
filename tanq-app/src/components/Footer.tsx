@@ -86,18 +86,11 @@ export default function Footer() {
             <span key={href} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
               <Link
                 href={href}
+                className="text-ink hover:text-pink transition-colors duration-150"
                 style={{
                   fontSize: '13px',
-                  color: '#3A2E2A',
                   textDecoration: 'none',
                   fontWeight: 600,
-                  transition: 'color 0.15s',
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = '#FF6F9C'
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.color = '#3A2E2A'
                 }}
               >
                 {label}
