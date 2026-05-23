@@ -115,6 +115,22 @@ const APPS: {
   { id: 'thinking-youji', name: 'ようちえん かんがえるジム', emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん / 10バッジ', audience: 'youji', targetAge: '3〜6才' },
 ]
 
+// Pastel card color cycle for sticker style
+const CARD_COLORS = [
+  'bg-[#FFE3EE]', // pink-bg
+  'bg-[#9DEDDE]', // mint-soft
+  'bg-[#FFF1B8]', // yellow-soft
+  'bg-[#D6ECFF]', // blue
+  'bg-[#FFE0CC]', // orange
+  'bg-[#DFF6CF]', // green
+  'bg-[#EFE8FF]', // lav-bg
+  'bg-[#FFD9D3]', // coral
+]
+
+function getCardColor(index: number): string {
+  return CARD_COLORS[index % CARD_COLORS.length]
+}
+
 function getTodayRecommendations(
   profile: Profile,
   userType: UserType,
@@ -153,40 +169,29 @@ function getTodayRecommendations(
 type Tab = 'home' | 'records' | 'settings'
 
 // ─────────────────────────────────────────
-// ExternalLinkModal
+// Avatar
 // ─────────────────────────────────────────
-function ExternalLinkModal({ url, name, onConfirm, onCancel }: {
-  url: string; name: string; onConfirm: () => void; onCancel: () => void
-}) {
+function Avatar({ name, color, size = 40 }: { name: string; color: string; size?: number }) {
+  const ch = name ? name[0] : 'T'
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-6" onClick={onCancel}>
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      <div className="relative z-10 w-full max-w-sm bg-[#0d1f3c] border border-white/20 rounded-3xl p-6 text-center shadow-2xl"
-        onClick={(e) => e.stopPropagation()}>
-        <div className="text-4xl mb-3">🌐</div>
-        <h3 className="text-lg font-black text-[#e8f0fe] mb-2">べつのサイトに移動します</h3>
-        <p className="text-sm text-[#94a3c4] mb-2">
-          <span className="font-bold text-[#f0c040]">「{name}」</span> は TANQラボの外のサービスです。
-        </p>
-        <p className="text-xs text-[#94a3c4] mb-5">もどるには、ブラウザの「←」ボタンを使ってね。</p>
-        <div className="flex gap-3">
-          <button onClick={onCancel}
-            className="flex-1 py-3 rounded-2xl font-bold text-sm border border-white/20 text-[#94a3c4] hover:text-white transition-all">
-            キャンセル
-          </button>
-          <button onClick={onConfirm}
-            className="flex-1 py-3 rounded-2xl font-black text-sm text-[#050b14] transition-all hover:scale-[1.02]"
-            style={{ background: '#f0c040' }}>
-            移動する →
-          </button>
-        </div>
-      </div>
+    <div
+      className="rounded-full flex items-center justify-center font-black select-none flex-shrink-0"
+      style={{
+        width: size, height: size,
+        background: color,
+        border: '3px solid #3A2E2A',
+        boxShadow: '3px 3px 0 0 #3A2E2A',
+        color: '#3A2E2A',
+        fontSize: size * 0.4,
+      }}
+    >
+      {ch}
     </div>
   )
 }
 
 // ─────────────────────────────────────────
-// PasswordGate
+// PasswordGate — sticker style
 // ─────────────────────────────────────────
 function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
   const [input, setInput] = useState('')
@@ -217,52 +222,66 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex items-center justify-center px-6">
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full bg-[#1a5040] opacity-20 blur-[130px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-[#c4a8ff] opacity-10 blur-[110px]" />
-      </div>
-      <div className="relative z-10 w-full max-w-sm">
-        <div className="text-center mb-10">
-          <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-[#00e5c3] opacity-20 blur-3xl rounded-full scale-150" />
-            <Image src="/tanquu/surprised.png" alt="TANQuu" width={100} height={100} className="relative z-10 drop-shadow-[0_0_30px_rgba(196,168,255,0.5)]" />
+    <div className="min-h-screen font-sans flex items-center justify-center px-6 py-12"
+      style={{ background: '#FFF6E5', backgroundImage: 'radial-gradient(circle, rgba(58,46,42,0.06) 1px, transparent 1.5px)', backgroundSize: '22px 22px' }}>
+      <div className="w-full max-w-sm">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-block mb-4 animate-bounce">
+            <Image src="/tanquu/surprised.png" alt="タンキュー" width={100} height={100} unoptimized />
           </div>
-          <h1 className="text-4xl font-black mb-2 bg-gradient-to-r from-[#00e5c3] to-[#c4a8ff] bg-clip-text text-transparent">アプリラボ</h1>
-          <p className="text-[#94a3c4] text-sm">登録するともらえるパスワードを入力</p>
+          <h1 className="text-4xl font-black mb-2" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+            アプリラボ
+          </h1>
+          <p className="text-sm font-bold" style={{ color: '#6B5A52' }}>登録するともらえる パスワードを入れてね</p>
         </div>
-        <form onSubmit={handleSubmit} className={`bg-white/5 border border-white/15 rounded-2xl p-8 ${shake ? 'animate-[shake_0.4s_ease]' : ''}`}>
-          <input type="password" value={input} onChange={(e) => { setInput(e.target.value); setError(false) }}
-            placeholder="パスワード" autoFocus
-            className={`w-full bg-white/8 border rounded-xl px-4 py-3 text-[#e8f0fe] text-center text-xl tracking-widest outline-none focus:border-[#c4a8ff] transition-colors mb-2 ${error ? 'border-[#f87171]/60' : 'border-white/15'}`} />
-          {error && <p className="text-[#f87171] text-xs text-center mb-3">パスワードが違います</p>}
+
+        {/* Password card */}
+        <form onSubmit={handleSubmit}
+          className={`rounded-[22px] p-8 mb-4 ${shake ? '[animation:shake_0.4s_ease]' : ''}`}
+          style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
+          <input
+            type="password"
+            value={input}
+            onChange={(e) => { setInput(e.target.value); setError(false) }}
+            placeholder="パスワード"
+            autoFocus
+            className="w-full rounded-2xl px-4 py-3 text-center text-xl tracking-widest outline-none mb-2 font-bold"
+            style={{
+              border: `2.5px solid ${error ? '#FF6F9C' : '#3A2E2A'}`,
+              background: '#FFF6E5',
+              color: '#3A2E2A',
+              boxShadow: '2px 2px 0 0 #3A2E2A',
+            }}
+          />
+          {error && <p className="text-sm text-center mb-3 font-bold" style={{ color: '#FF6F9C' }}>パスワードがちがうよ</p>}
           {!error && <div className="mb-3" />}
-          <button type="submit" className="w-full py-3.5 rounded-xl font-black text-[#050b14] text-base" style={{ background: 'linear-gradient(135deg, #00e5c3, #c4a8ff)' }}>
+          <button type="submit"
+            className="w-full py-3.5 rounded-full font-black text-base transition-all hover:-translate-y-0.5"
+            style={{ background: '#FFC83D', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A', color: '#3A2E2A' }}>
             入る →
           </button>
         </form>
 
-        <div className="mt-5 pt-5 border-t border-white/10">
-          <p className="text-center text-[#94a3c4] text-xs mb-1">パスワードなしで体験できます</p>
-          <p className="text-center text-[#94a3c4] text-[10px] mb-3">（計算・漢字・思考力トレーニングが体験できます）</p>
-          <button
-            onClick={handleGuestTrial}
-            className="w-full py-3.5 rounded-xl font-black text-lg text-white border-2 border-[#c4a8ff]/50 hover:border-[#c4a8ff] hover:bg-[#c4a8ff]/10 transition-all"
-          >
+        {/* Guest trial */}
+        <div className="rounded-[22px] p-6 mb-4"
+          style={{ background: '#DBF6F0', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+          <p className="text-center font-bold text-sm mb-1" style={{ color: '#3A2E2A' }}>パスワードなしで体験できます</p>
+          <p className="text-center text-xs mb-3" style={{ color: '#6B5A52' }}>（計算・漢字・思考力が体験できます）</p>
+          <button onClick={handleGuestTrial}
+            className="w-full py-3 rounded-full font-black text-base transition-all hover:-translate-y-0.5"
+            style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', color: '#3A2E2A' }}>
             まず試してみる →
           </button>
         </div>
 
-        <div className="mt-4 text-center">
-          <p className="text-[#94a3c4] text-xs mb-1">パスワードをお持ちでない方</p>
-          <Link href="/register" className="text-[#c4a8ff] text-sm font-bold hover:underline">無料で登録する →</Link>
+        <div className="text-center space-y-2">
+          <Link href="/register" className="block font-black text-sm hover:-translate-y-0.5 transition-transform" style={{ color: '#FF6F9C' }}>
+            無料で登録する →
+          </Link>
+          <Link href="/tester" className="block text-xs font-bold hover:underline" style={{ color: '#6B5A52' }}>テスター入口</Link>
+          <Link href="/" className="block text-sm font-bold hover:underline" style={{ color: '#6B5A52' }}>← ホームへ</Link>
         </div>
-
-        <div className="mt-3 text-center">
-          <Link href="/tester" className="text-[#94a3c4] text-xs hover:text-[#c4a8ff]">テスター入口</Link>
-        </div>
-
-        <p className="text-center mt-4"><Link href="/" className="text-[#94a3c4] text-sm hover:text-[#c4a8ff]">← ホームへ</Link></p>
       </div>
       <style jsx>{`
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
@@ -272,20 +291,7 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
 }
 
 // ─────────────────────────────────────────
-// Avatar
-// ─────────────────────────────────────────
-function Avatar({ name, color, size = 40 }: { name: string; color: string; size?: number }) {
-  const ch = name ? name[0] : 'T'
-  return (
-    <div className="rounded-full flex items-center justify-center font-black select-none flex-shrink-0"
-      style={{ width: size, height: size, background: `${color}30`, border: `2px solid ${color}60`, color, fontSize: size * 0.45 }}>
-      {ch}
-    </div>
-  )
-}
-
-// ─────────────────────────────────────────
-// HomeTab
+// HomeTab — sticker style
 // ─────────────────────────────────────────
 function HomeTab({ profile, stats, userType }: {
   profile: Profile
@@ -301,193 +307,195 @@ function HomeTab({ profile, stats, userType }: {
 
   function SectionLabel({ emoji, label, sub }: { emoji: string; label: string; sub: string }) {
     return (
-      <div className="mb-3 mt-6">
-        <div className="flex items-center gap-2 mb-0.5">
-          <span className="text-base">{emoji}</span>
-          <span className="font-black text-[#e8f0fe] text-sm">{label}</span>
-          <div className="h-px bg-white/12 flex-1" />
+      <div className="mb-4 mt-6">
+        <div className="cat-head flex items-baseline justify-between gap-3 flex-wrap">
+          <h3 className="font-black text-xl flex items-center gap-2" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+            <span className="text-2xl">{emoji}</span>{label}
+          </h3>
+          <p className="text-xs font-bold" style={{ color: '#6B5A52' }}>{sub}</p>
         </div>
-        <p className="text-[10px] text-[#94a3c4] pl-6 font-bold">{sub}</p>
       </div>
     )
   }
 
-  function AppCard({ app }: { app: typeof APPS[number] }) {
+  function AppCard({ app, index }: { app: typeof APPS[number]; index: number }) {
     const lock = lockLabel(app.id, userType)
     const s = appStats[app.id]
     const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
     const isStatic = app.url.startsWith('/youji/')
+    const bgColor = getCardColor(index)
 
     if (lock) {
       return (
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-4 opacity-60">
-          <div className="flex items-start justify-between mb-3">
-            <div className="text-3xl grayscale">{app.emoji}</div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-white/10 text-[#94a3c4] border border-white/15">
-              🔒 {lock}
-            </span>
+        <div className={`relative rounded-[22px] p-4 opacity-70 ${bgColor}`}
+          style={{ border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+          {/* Lock badge */}
+          <span className="absolute top-3 right-3 text-[10px] px-2 py-0.5 rounded-full font-black"
+            style={{ background: '#3A2E2A', color: '#FFF6E5' }}>
+            🔒 {lock}
+          </span>
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 text-2xl grayscale"
+            style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A', transform: 'rotate(-3deg)' }}>
+            {app.emoji}
           </div>
-          <div className="font-black text-[#94a3c4] text-sm mb-1">{app.name}</div>
-          <div className="text-[#94a3c4] text-[10px]">{app.badge}</div>
+          <span className="inline-block text-[10px] font-black px-2 py-0.5 rounded-full mb-2"
+            style={{ background: '#FFFFFF', border: '2px solid #3A2E2A', color: '#3A2E2A' }}>
+            {app.targetAge}
+          </span>
+          <div className="font-black text-sm leading-tight mb-1" style={{ color: '#3A2E2A' }}>{app.name}</div>
+          <div className="text-[10px] font-bold" style={{ color: '#6B5A52' }}>{app.badge}</div>
           {userType === 'guest' && lock === '登録して解放' && (
-            <Link href="/register" className="block mt-2 text-[10px] text-[#c4a8ff] font-bold hover:underline">無料登録で解放 →</Link>
+            <Link href="/register" className="block mt-2 text-[10px] font-black hover:underline" style={{ color: '#FF6F9C' }}>無料登録で解放 →</Link>
           )}
         </div>
       )
     }
 
-    const cardClass = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
-    const cardInner = (
+    const cardContent = (
       <>
-        <div className="flex items-start justify-between mb-2">
-          <div className="text-3xl">{app.emoji}</div>
-          <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-            style={{ background: `${app.color}20`, color: app.color, border: `1px solid ${app.color}40` }}>
-            {app.badge}
-          </span>
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 text-2xl"
+          style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A', transform: 'rotate(-3deg)' }}>
+          {app.emoji}
         </div>
-        <div className="font-black text-[#e8f0fe] text-sm mb-0.5 leading-tight">{app.name}</div>
-        {/* 年齢バッジ */}
-        <div className="text-[9px] font-bold text-[#94a3c4] mb-1.5 flex items-center gap-1">
-          <span style={{ color: app.audience === 'youji' ? '#fb923c' : '#60a5fa' }}>
-            {app.audience === 'youji' ? '🌱' : '📘'}
-          </span>
+        <span className="inline-block text-[10px] font-black px-2 py-0.5 rounded-full mb-2"
+          style={{ background: '#FFFFFF', border: '2px solid #3A2E2A', color: '#3A2E2A' }}>
           {app.targetAge}
-        </div>
+        </span>
+        <div className="font-black text-sm leading-tight mb-0.5" style={{ color: '#3A2E2A' }}>{app.name}</div>
+        <div className="text-[10px] font-bold mb-2" style={{ color: '#6B5A52' }}>{app.badge}</div>
         {pct !== null ? (
           <>
-            <div className="text-[#94a3c4] text-[10px] mb-1.5">{s!.mastered}/{s!.total} 習得</div>
-            <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+            <div className="text-[10px] mb-1" style={{ color: '#6B5A52' }}>{s!.mastered}/{s!.total} 習得</div>
+            <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.15)' }}>
               <div className="h-full rounded-full" style={{ width: `${pct}%`, background: app.color }} />
             </div>
           </>
         ) : (
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: app.color }} />
-            <span className="text-[#94a3c4] text-[10px]">開く →</span>
-          </div>
+          <div className="text-[10px] font-black" style={{ color: '#6B5A52' }}>あそぶ →</div>
         )}
       </>
     )
 
+    const cardClass = `block rounded-[22px] p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 ${bgColor}`
+    const cardStyle = { border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }
+
     return isStatic
-      ? <a href={app.url} className={cardClass}>{cardInner}</a>
-      : <Link href={app.url} className={cardClass}>{cardInner}</Link>
+      ? <a href={app.url} className={cardClass} style={cardStyle}>{cardContent}</a>
+      : <Link href={app.url} className={cardClass} style={cardStyle}>{cardContent}</Link>
   }
 
   const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
   const youjiApps = APPS.filter(a => a.audience === 'youji')
-  // 幼稚園プロフィールなら幼稚園セクションを先に表示
   const isYoujiProfile = profile.grade === '幼稚園'
 
+  // Recommendation cards
+  const recs = getTodayRecommendations(profile, userType, stats)
+
   return (
-    <div className="px-4 pb-4 pt-6">
-      {/* Profile header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <Avatar name={profile.name} color={profile.color} size={52} />
-          <div>
-            <p className="font-black text-[#e8f0fe] text-lg leading-tight">{profile.name}</p>
-            <p className="text-[#94a3c4] text-xs">{profile.grade} | TANQ ラボ</p>
-          </div>
+    <div className="px-4 pb-4 pt-4">
+      {/* Profile strip */}
+      <div className="rounded-[26px] p-5 mb-5 flex items-center gap-4 flex-wrap"
+        style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
+        <Avatar name={profile.name} color={profile.color} size={56} />
+        <div className="flex-1 min-w-[120px]">
+          <p className="text-xs font-bold" style={{ color: '#6B5A52' }}>こんにちは！</p>
+          <h3 className="font-black text-lg leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+            {profile.name} さん{' '}
+            <span className="text-xs font-bold" style={{ color: '#6B5A52' }}>／ {profile.grade}</span>
+          </h3>
         </div>
-        {stats.streak > 0 && (
-          <div className="flex items-center gap-1 bg-[#f0c040]/15 border border-[#f0c040]/30 px-3 py-2 rounded-full">
-            <span className="text-lg">🔥</span>
-            <div className="text-right">
-              <div className="font-black text-[#f0c040] text-sm leading-none">{stats.streak}日</div>
-              <div className="text-[#94a3c4] text-[10px]">連続</div>
+        <div className="flex gap-3">
+          {[
+            { num: stats.streak, label: 'れんぞく日', bg: '#FFE3EE', numColor: '#FF6F9C' },
+            { num: totalMastered, label: 'マスター', bg: '#DBF6F0', numColor: '#2BA39A' },
+            { num: totalLearning, label: '学習中', bg: '#FFF1B8', numColor: '#C99700' },
+          ].map(({ num, label, bg, numColor }) => (
+            <div key={label} className="rounded-2xl px-3 py-2 text-center min-w-[72px]"
+              style={{ background: bg, border: '2.5px solid #3A2E2A' }}>
+              <div className="font-black text-xl leading-none" style={{ color: numColor, fontFamily: 'var(--font-zen)' }}>{num}</div>
+              <div className="text-[10px] font-bold mt-1" style={{ color: '#6B5A52' }}>{label}</div>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Stats cards */}
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {[
-          { label: '⭐ 習得', value: totalMastered, color: '#c4a8ff' },
-          { label: '📚 学習中', value: totalLearning, color: '#60a5fa' },
-          { label: '🔥 連続', value: stats.streak, color: '#f0c040', unit: '日' },
-        ].map(({ label, value, color, unit }) => (
-          <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-3 text-center">
-            <div className="font-black text-2xl" style={{ color }}>{value}{unit}</div>
-            <div className="text-[#94a3c4] text-[10px] mt-0.5">{label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Today's recommended */}
-      <div className="mb-2">
-        <h2 className="font-black text-[#e8f0fe] text-sm mb-1">今日の学習</h2>
-        <p className="text-[#94a3c4] text-[10px] mb-3 font-bold">
-          {profile.grade === '幼稚園' ? '🌱 就学前向けのおすすめ' : `📘 ${profile.grade}向けのおすすめ`}
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {getTodayRecommendations(profile, userType, stats).map(({ app, prog, desc }) => {
-            const cardClass = "bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] block"
-            const cardInner = (
-              <>
-                <div className="text-3xl mb-2">{app.emoji}</div>
-                <div className="font-black text-[#e8f0fe] text-sm mb-0.5 leading-tight">{app.name}</div>
-                <div className="text-[#94a3c4] text-[10px] mb-2">{desc}</div>
-                <div className="h-1 bg-white/10 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${prog}%`, background: app.color }} />
-                </div>
-              </>
-            )
-            const isStatic = app.url.startsWith('/youji/')
-            return isStatic
-              ? <a key={app.id} href={app.url} className={cardClass}>{cardInner}</a>
-              : <Link key={app.id} href={app.url} className={cardClass}>{cardInner}</Link>
-          })}
+          ))}
         </div>
       </div>
 
       {/* Guest banner */}
       {userType === 'guest' && (
-        <div className="mt-4 px-3 py-2.5 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
-          <p className="text-[#f0c040] text-xs font-bold">体験中: 計算・漢字・思考力トレーニング（Lv1〜2）が使えます</p>
-          <Link href="/register" className="text-[#c4a8ff] text-[11px] hover:underline font-bold">無料登録で全アプリ解放 →</Link>
+        <div className="rounded-2xl px-4 py-3 mb-4 flex items-center justify-between gap-3"
+          style={{ background: '#FFF1B8', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+          <div>
+            <p className="font-black text-xs" style={{ color: '#3A2E2A' }}>👋 たいけん中</p>
+            <p className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>計算・漢字のL1〜L2が使えます</p>
+          </div>
+          <Link href="/register"
+            className="shrink-0 px-3 py-1.5 rounded-full text-xs font-black transition-all hover:-translate-y-0.5"
+            style={{ background: '#FFC83D', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', color: '#3A2E2A' }}>
+            全部使う →
+          </Link>
+        </div>
+      )}
+      {userType === 'tester' && (
+        <div className="rounded-2xl px-4 py-3 mb-4"
+          style={{ background: '#DBF6F0', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+          <p className="font-black text-xs" style={{ color: '#2BA39A' }}>🔬 テスターモード — 全アプリ解放中</p>
         </div>
       )}
 
-      {/* All apps — プロフィールに応じて順番を切り替え */}
+      {/* Today's recommendation */}
+      <div className="mb-5">
+        <div className="flex items-baseline justify-between gap-3 mb-3">
+          <h3 className="font-black text-xl flex items-center gap-2" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+            <span className="text-2xl">⭐</span>きょうの おすすめ
+          </h3>
+          <p className="text-xs font-bold" style={{ color: '#6B5A52' }}>{profile.name} さんに ぴったりの {recs.length}つ</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {recs.map(({ app, prog, desc }, i) => {
+            const bgColor = i === 0 ? 'bg-[#DBF6F0]' : 'bg-[#EFE8FF]'
+            const cardContent = (
+              <>
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 text-2xl"
+                  style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A', transform: 'rotate(-3deg)' }}>
+                  {app.emoji}
+                </div>
+                <div className="font-black text-sm leading-tight mb-0.5" style={{ color: '#3A2E2A' }}>{app.name}</div>
+                <div className="text-[10px] font-bold mb-2" style={{ color: '#6B5A52' }}>{desc}</div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.15)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${prog}%`, background: app.color }} />
+                </div>
+              </>
+            )
+            const cls = `block rounded-[22px] p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 ${bgColor}`
+            const sty = { border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }
+            const isStatic = app.url.startsWith('/youji/')
+            return isStatic
+              ? <a key={app.id} href={app.url} className={cls} style={sty}>{cardContent}</a>
+              : <Link key={app.id} href={app.url} className={cls} style={sty}>{cardContent}</Link>
+          })}
+        </div>
+      </div>
+
+      {/* All apps sections */}
       {isYoujiProfile ? (
         <>
-          <SectionLabel
-            emoji="🌱"
-            label="就学前（幼稚園・年長）"
-            sub="3〜6才｜遊びながら学ぶ"
-          />
+          <SectionLabel emoji="🌱" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
           <div className="grid grid-cols-2 gap-3 mb-2">
-            {youjiApps.map(app => <AppCard key={app.id} app={app} />)}
+            {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
-          <SectionLabel
-            emoji="📘"
-            label="小学生（小1〜小6）"
-            sub="6〜12才｜学年別カリキュラム"
-          />
+          <SectionLabel emoji="📘" label="小学生（小1〜小6）" sub="6〜12才｜学年別カリキュラム" />
           <div className="grid grid-cols-2 gap-3">
-            {shougakuseiApps.map(app => <AppCard key={app.id} app={app} />)}
+            {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
         </>
       ) : (
         <>
-          <SectionLabel
-            emoji="📘"
-            label="小学生（小1〜小6）"
-            sub="6〜12才｜学年別カリキュラム"
-          />
+          <SectionLabel emoji="📘" label="小学生（小1〜小6）" sub="6〜12才｜学年別カリキュラム" />
           <div className="grid grid-cols-2 gap-3 mb-2">
-            {shougakuseiApps.map(app => <AppCard key={app.id} app={app} />)}
+            {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
-          <SectionLabel
-            emoji="🌱"
-            label="就学前（幼稚園・年長）"
-            sub="3〜6才｜遊びながら学ぶ"
-          />
+          <SectionLabel emoji="🌱" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
           <div className="grid grid-cols-2 gap-3">
-            {youjiApps.map(app => <AppCard key={app.id} app={app} />)}
+            {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
         </>
       )}
@@ -495,51 +503,52 @@ function HomeTab({ profile, stats, userType }: {
   )
 }
 
-
 // ─────────────────────────────────────────
-// RecordsTab
+// RecordsTab — sticker style
 // ─────────────────────────────────────────
 function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
   const items = [
-    { label: '漢字', emoji: '📖', color: '#c4a8ff', mastered: stats.kanjiMastered, learning: stats.kanjiLearning, total: stats.kanjiTotal },
-    { label: '英語', emoji: '🌍', color: '#f87171', mastered: stats.engMastered, learning: stats.engLearning, total: stats.engTotal },
+    { label: '漢字', emoji: '📖', color: '#B197FC', bg: '#EFE8FF', mastered: stats.kanjiMastered, learning: stats.kanjiLearning, total: stats.kanjiTotal },
+    { label: '英語', emoji: '🌍', color: '#f87171', bg: '#FFD9D3', mastered: stats.engMastered, learning: stats.engLearning, total: stats.engTotal },
   ]
   const totalMastered = stats.kanjiMastered + stats.engMastered
 
   return (
-    <div className="px-4 pt-6 pb-4">
-      <h2 className="font-black text-[#e8f0fe] text-lg mb-1">わたしの記録</h2>
-      <p className="text-[#94a3c4] text-xs mb-5">学習の積み重ねを確認しよう</p>
+    <div className="px-4 pt-5 pb-4">
+      <h2 className="font-black text-2xl mb-1" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>わたしの記録</h2>
+      <p className="text-xs font-bold mb-5" style={{ color: '#6B5A52' }}>学習の積み重ねを確認しよう</p>
 
       {/* Total summary */}
-      <div className="bg-gradient-to-br from-[#c4a8ff]/15 to-[#00e5c3]/10 border border-white/15 rounded-2xl p-5 mb-5 text-center">
-        <div className="text-5xl font-black text-[#c4a8ff] mb-1">{totalMastered}</div>
-        <div className="text-[#e8f0fe] font-bold text-sm mb-0.5">語・問題 習得済み</div>
+      <div className="rounded-[22px] p-5 mb-5 text-center"
+        style={{ background: '#FFF1B8', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
+        <div className="text-5xl font-black mb-1" style={{ color: '#FF6F9C', fontFamily: 'var(--font-zen)' }}>{totalMastered}</div>
+        <div className="font-black text-sm mb-0.5" style={{ color: '#3A2E2A' }}>語・問題 習得済み</div>
         {stats.streak > 0 && (
-          <div className="text-[#f0c040] text-sm mt-2">🔥 {stats.streak}日連続学習中！</div>
+          <div className="font-bold text-sm mt-2" style={{ color: '#C99700' }}>🔥 {stats.streak}日連続学習中！</div>
         )}
         {totalMastered === 0 && (
-          <p className="text-[#94a3c4] text-xs mt-2">まだ学習していないよ。アプリから始めよう！</p>
+          <p className="text-xs mt-2 font-bold" style={{ color: '#6B5A52' }}>まだ学習していないよ。アプリから始めよう！</p>
         )}
       </div>
 
       {/* Per-app breakdown */}
       <div className="space-y-3 mb-5">
-        {items.map(({ label, emoji, color, mastered, learning, total }) => {
+        {items.map(({ label, emoji, color, bg, mastered, learning, total }) => {
           const pct = total > 0 ? Math.round(mastered / total * 100) : 0
           return (
-            <div key={label} className="bg-white/5 border border-white/10 rounded-2xl p-4">
+            <div key={label} className="rounded-[22px] p-4"
+              style={{ background: bg, border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{emoji}</span>
-                  <span className="font-black text-[#e8f0fe] text-sm">{label}</span>
+                  <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>{label}</span>
                 </div>
                 <span className="font-black text-sm" style={{ color }}>{pct}%</span>
               </div>
-              <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-2">
+              <div className="h-2 rounded-full overflow-hidden mb-2" style={{ background: 'rgba(58,46,42,0.15)' }}>
                 <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: color }} />
               </div>
-              <div className="flex justify-between text-[10px] text-[#94a3c4]">
+              <div className="flex justify-between text-[10px] font-bold" style={{ color: '#6B5A52' }}>
                 <span>⭐ 習得 {mastered}語</span>
                 <span>📚 学習中 {learning}語</span>
                 <span>全{total}語</span>
@@ -550,9 +559,9 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
       </div>
 
       {/* SRS explanation */}
-      <div className="bg-white/3 border border-white/8 rounded-2xl p-4">
-        <p className="text-[#94a3c4] text-xs leading-relaxed">
-          <span className="text-[#c4a8ff] font-bold">習得の仕組み</span>: 同じ問題に3回連続・2.5秒以内で正解すると「習得」に！習得した語は7日後に確認問題として出題されるよ。
+      <div className="rounded-[22px] p-4" style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+        <p className="text-xs leading-relaxed font-bold" style={{ color: '#6B5A52' }}>
+          <span className="font-black" style={{ color: '#B197FC' }}>習得の仕組み</span>: 同じ問題に3回連続・2.5秒以内で正解すると「習得」に！習得した語は7日後に確認問題として出題されるよ。
         </p>
       </div>
     </div>
@@ -560,7 +569,7 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
 }
 
 // ─────────────────────────────────────────
-// SettingsTab
+// SettingsTab — sticker style
 // ─────────────────────────────────────────
 function SettingsTab({ profile, onSave }: { profile: Profile; onSave: (p: Profile) => void }) {
   const [draft, setDraft] = useState(profile)
@@ -574,9 +583,9 @@ function SettingsTab({ profile, onSave }: { profile: Profile; onSave: (p: Profil
   }
 
   return (
-    <div className="px-4 pt-6 pb-4">
-      <h2 className="font-black text-[#e8f0fe] text-lg mb-1">せってい</h2>
-      <p className="text-[#94a3c4] text-xs mb-6">プロフィールを自分らしくしよう</p>
+    <div className="px-4 pt-5 pb-4">
+      <h2 className="font-black text-2xl mb-1" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>せってい</h2>
+      <p className="text-xs font-bold mb-6" style={{ color: '#6B5A52' }}>プロフィールを自分らしくしよう</p>
 
       {/* Avatar preview */}
       <div className="flex justify-center mb-6">
@@ -584,35 +593,45 @@ function SettingsTab({ profile, onSave }: { profile: Profile; onSave: (p: Profil
       </div>
 
       {/* Color picker */}
-      <div className="mb-6">
-        <label className="block text-xs text-[#94a3c4] font-bold uppercase tracking-wider mb-3">カラー</label>
+      <div className="rounded-[22px] p-5 mb-4" style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+        <label className="block text-xs font-black uppercase tracking-wider mb-3" style={{ color: '#6B5A52' }}>カラー</label>
         <div className="flex gap-3 justify-center">
           {AVATAR_COLORS.map((c) => (
             <button key={c} onClick={() => setDraft({ ...draft, color: c })}
               className="w-10 h-10 rounded-full transition-all hover:scale-110"
-              style={{ background: c, border: draft.color === c ? `3px solid white` : '3px solid transparent', boxShadow: draft.color === c ? `0 0 15px ${c}80` : 'none' }} />
+              style={{
+                background: c,
+                border: draft.color === c ? `3px solid #3A2E2A` : '3px solid transparent',
+                boxShadow: draft.color === c ? '3px 3px 0 0 #3A2E2A' : 'none',
+              }} />
           ))}
         </div>
       </div>
 
       {/* Name */}
-      <div className="mb-5">
-        <label className="block text-xs text-[#94a3c4] font-bold uppercase tracking-wider mb-2">なまえ</label>
+      <div className="mb-4">
+        <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#6B5A52' }}>なまえ</label>
         <input type="text" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} maxLength={10}
-          className="w-full bg-white/8 border border-white/15 rounded-xl px-4 py-3 text-[#e8f0fe] text-lg font-bold outline-none focus:border-[#c4a8ff] transition-colors"
+          className="w-full rounded-2xl px-4 py-3 text-lg font-bold outline-none"
+          style={{
+            background: '#FFF6E5',
+            border: '2.5px solid #3A2E2A',
+            boxShadow: '2px 2px 0 0 #3A2E2A',
+            color: '#3A2E2A',
+          }}
           placeholder="なまえを入れてね" />
       </div>
 
       {/* Grade */}
       <div className="mb-8">
-        <label className="block text-xs text-[#94a3c4] font-bold uppercase tracking-wider mb-2">学年</label>
+        <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#6B5A52' }}>学年</label>
         <div className="grid grid-cols-3 gap-2">
           {GRADES.map((g) => (
             <button key={g} onClick={() => setDraft({ ...draft, grade: g })}
-              className="py-2.5 rounded-xl font-bold text-sm transition-all"
+              className="py-2.5 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5"
               style={draft.grade === g
-                ? { background: draft.color, color: '#050b14' }
-                : { background: 'rgba(255,255,255,0.06)', color: '#94a3c4', border: '1px solid rgba(255,255,255,0.1)' }}>
+                ? { background: draft.color, color: '#3A2E2A', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }
+                : { background: '#FFFFFF', color: '#6B5A52', border: '2px solid #3A2E2A' }}>
               {g}
             </button>
           ))}
@@ -621,20 +640,25 @@ function SettingsTab({ profile, onSave }: { profile: Profile; onSave: (p: Profil
 
       {/* Save */}
       <button onClick={handleSave}
-        className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02]"
-        style={{ background: saved ? '#4ade80' : draft.color, boxShadow: `0 0 25px ${draft.color}40` }}>
+        className="w-full py-4 rounded-full font-black text-lg transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
+        style={{
+          background: saved ? '#4ade80' : draft.color,
+          border: '3px solid #3A2E2A',
+          boxShadow: '6px 6px 0 0 #3A2E2A',
+          color: '#3A2E2A',
+        }}>
         {saved ? '✓ 保存しました！' : '保存する'}
       </button>
 
-      <div className="mt-6 pt-4 border-t border-white/10">
-        <Link href="/" className="block text-center text-[#94a3c4] text-sm hover:text-[#c4a8ff]">← コーポレートサイトへ</Link>
+      <div className="mt-6 pt-4 text-center" style={{ borderTop: '2px dashed rgba(58,46,42,0.2)' }}>
+        <Link href="/" className="text-sm font-bold hover:underline" style={{ color: '#6B5A52' }}>← コーポレートサイトへ</Link>
       </div>
     </div>
   )
 }
 
 // ─────────────────────────────────────────
-// BottomNav
+// BottomNav — sticker style
 // ─────────────────────────────────────────
 function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
   const items: { id: Tab; label: string; icon: string }[] = [
@@ -643,15 +667,18 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
     { id: 'settings', label: 'せってい', icon: '⚙️' },
   ]
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-[#0a1628]/95 backdrop-blur-md border-t border-white/10 z-50">
+    <div className="fixed bottom-0 left-0 right-0 z-50"
+      style={{ background: '#FFF6E5', borderTop: '3px solid #3A2E2A' }}>
       <div className="flex max-w-md mx-auto">
         {items.map(({ id, label, icon }) => (
           <button key={id} onClick={() => onChange(id)}
             className="flex-1 flex flex-col items-center py-3 gap-1 transition-all"
-            style={{ color: tab === id ? '#c4a8ff' : '#94a3c4' }}>
+            style={{ color: tab === id ? '#FF6F9C' : '#6B5A52' }}>
             <span className="text-xl leading-none">{icon}</span>
-            <span className="text-[10px] font-bold leading-none">{label}</span>
-            {tab === id && <div className="w-4 h-0.5 rounded-full bg-[#c4a8ff] mt-0.5" />}
+            <span className="text-[10px] font-black leading-none">{label}</span>
+            {tab === id && (
+              <div className="w-4 h-1 rounded-full mt-0.5" style={{ background: '#FF6F9C', border: '1.5px solid #3A2E2A' }} />
+            )}
           </button>
         ))}
       </div>
@@ -660,7 +687,7 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
 }
 
 // ─────────────────────────────────────────
-// AppHub (main dashboard)
+// AppHub (main dashboard) — sticker style
 // ─────────────────────────────────────────
 function AppHub({ userType }: { userType: UserType }) {
   const [tab, setTab] = useState<Tab>('home')
@@ -674,50 +701,45 @@ function AppHub({ userType }: { userType: UserType }) {
 
   const refreshStats = useCallback(() => setStats(computeStats()), [])
 
-  // Refresh stats when returning to records tab
   useEffect(() => {
     if (tab === 'records' || tab === 'home') refreshStats()
   }, [tab, refreshStats])
 
   return (
-    <div className="min-h-screen bg-[#0a1628] text-[#e8f0fe] font-sans">
-      <div className="min-h-screen max-w-md mx-auto pb-20 lg:border-x lg:border-white/8 relative">
-      {/* Top bar */}
-      <div className="sticky top-0 z-40 bg-[#0a1628]/95 backdrop-blur-md border-b border-white/8 px-4 py-3 flex items-center justify-between">
-        <span className="font-black text-[#e8f0fe] text-base">🔬 TANQ ラボ</span>
-        <div className="flex items-center gap-2">
-          {stats.streak > 0 && (
-            <span className="text-[#f0c040] text-sm font-bold">🔥{stats.streak}</span>
-          )}
-          <button onClick={() => setTab('settings')}>
-            <Avatar name={profile.name} color={profile.color} size={32} />
-          </button>
-        </div>
-      </div>
-
-      {userType === 'guest' && (
-        <div className="mx-4 mt-4 px-4 py-3 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-2xl flex items-center justify-between gap-3">
-          <div>
-            <p className="text-[#f0c040] text-xs font-bold">👋 体験中</p>
-            <p className="text-[#94a3c4] text-[10px] mt-0.5">計算・漢字のL1〜L2が使えます</p>
+    <div className="min-h-screen font-sans"
+      style={{
+        background: '#FFF6E5',
+        backgroundImage: 'radial-gradient(circle, rgba(58,46,42,0.06) 1px, transparent 1.5px)',
+        backgroundSize: '22px 22px',
+        color: '#3A2E2A',
+      }}>
+      <div className="min-h-screen max-w-md mx-auto pb-20 relative" style={{ borderLeft: '1px solid rgba(58,46,42,0.08)', borderRight: '1px solid rgba(58,46,42,0.08)' }}>
+        {/* Top bar */}
+        <div className="sticky top-0 z-40 px-4 py-3 flex items-center justify-between"
+          style={{
+            background: 'rgba(255,246,229,0.95)',
+            backdropFilter: 'blur(10px)',
+            borderBottom: '3px solid #3A2E2A',
+          }}>
+          <span className="font-black text-base" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>🔬 TANQ ラボ</span>
+          <div className="flex items-center gap-2">
+            {stats.streak > 0 && (
+              <span className="text-sm font-black px-2 py-1 rounded-full" style={{ background: '#FFF1B8', border: '2px solid #3A2E2A', color: '#C99700' }}>
+                🔥{stats.streak}
+              </span>
+            )}
+            <button onClick={() => setTab('settings')}>
+              <Avatar name={profile.name} color={profile.color} size={36} />
+            </button>
           </div>
-          <Link href="/register" className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-black text-[#050b14]" style={{ background: '#f0c040' }}>
-            全部使う →
-          </Link>
         </div>
-      )}
-      {userType === 'tester' && (
-        <div className="mx-4 mt-4 px-4 py-3 bg-[#00e5c3]/10 border border-[#00e5c3]/30 rounded-2xl">
-          <p className="text-[#00e5c3] text-xs font-bold">🔬 テスターモード — 全アプリ解放中</p>
-        </div>
-      )}
 
-      {/* Tab content */}
-      {tab === 'home' && <HomeTab profile={profile} stats={stats} userType={userType} />}
-      {tab === 'records' && <RecordsTab stats={stats} />}
-      {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} />}
+        {/* Tab content */}
+        {tab === 'home' && <HomeTab profile={profile} stats={stats} userType={userType} />}
+        {tab === 'records' && <RecordsTab stats={stats} />}
+        {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} />}
 
-      <BottomNav tab={tab} onChange={setTab} />
+        <BottomNav tab={tab} onChange={setTab} />
       </div>
     </div>
   )
@@ -741,8 +763,9 @@ export default function LabPage() {
 
   if (checking) {
     return (
-      <div className="min-h-screen bg-[#0a1628] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#c4a8ff] border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#FFF6E5' }}>
+        <div className="w-8 h-8 rounded-full animate-spin"
+          style={{ border: '3px solid #3A2E2A', borderTopColor: '#FFC83D' }} />
       </div>
     )
   }

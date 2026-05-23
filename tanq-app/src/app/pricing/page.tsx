@@ -1,160 +1,340 @@
+'use client'
+
+import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
-const PLANS = [
+/* ── Static data ── */
+
+const FREE_FEATURES = [
+  'とけいチャレンジ（ちょうど・30ぷん）',
+  'かんじクイズ 小1〜小2',
+  'がくしゅうりれき（7にちぶん）',
+]
+
+const FREE_DISABLED = [
+  'ぜんアプリかいほう',
+  'TANQストーリー（りか）',
+  'ほごしゃレポート',
+]
+
+const PREMIUM_FEATURES = [
+  'ぜんアプリかんぜんかいほう',
+  'TANQストーリー（りか）ぜんUnit',
+  'かんじクイズ 小1〜小6（944字）',
+  'さんすう・とけい・ずけい・えいご・コーディング',
+  'がくしゅうりれき（むせいげん）',
+  '保護者向け成績レポート',
+]
+
+const FAQ_ITEMS = [
   {
-    name: '無料',
-    price: '¥0',
-    period: '',
-    color: '#4ade80',
-    badge: null,
-    features: [
-      '時計チャレンジ（ちょうど・30分）',
-      '漢字クイズ 小1〜小2',
-      '学習履歴（7日分）',
-    ],
-    disabled: ['全アプリ解放', 'TANQ Story（理科）', '時計 全難易度・時間計算', '漢字クイズ 小3〜小6', '保護者レポート'],
-    cta: '無料で始める',
-    href: '/register',
-    highlight: false,
+    q: '14日間の無料トライアルって何ですか？',
+    a: '登録から14日間、Premiumの全機能を無料でお試しいただけます。期間中はいつでも解約でき、課金は発生しません。気に入っていただければそのまま継続、合わなければ解約 — どちらでもOKです。',
   },
   {
-    name: 'TANQ Premium',
-    price: '¥100',
-    period: '/月',
-    color: '#00e5c3',
-    badge: 'おすすめ',
-    features: [
-      '全アプリ完全解放',
-      'TANQ Story（理科）全Unit',
-      '漢字クイズ 小1〜小6（944字）',
-      '算数・時計・図形・英語・コーディング',
-      '学習履歴（無制限）',
-      '保護者向け成績レポート',
-    ],
-    disabled: [],
-    cta: '1ヶ月無料で試す',
-    href: '/register?plan=premium',
-    highlight: true,
+    q: '解約はかんたんにできますか？',
+    a: 'はい。マイページから1クリックで解約できます。電話やメール連絡は不要。お子さまが飽きてしまっても、安心して止められます。',
+  },
+  {
+    q: '兄弟で使う場合は別料金ですか？',
+    a: 'ひとつのアカウントで複数のプロフィールが作成できます。兄弟姉妹で使う場合も追加料金なしで、それぞれの進捗とレポートを管理できます。',
+  },
+  {
+    q: '支払い方法は？',
+    a: 'クレジットカード（Visa / Master / JCB / AMEX）に対応しています。請求書払いは法人プランのみ対応です。',
+  },
+  {
+    q: '子どもがアプリの中で課金してしまわない？',
+    a: 'ご安心ください。アプリ内に課金導線は一切ありません。広告もなく、お子さまが誤って課金することはありません。',
+  },
+  {
+    q: 'スマホでも使えますか？',
+    a: 'はい。スマホ・タブレット・PCのブラウザ全てに対応しています。アプリのインストールは不要です。',
   },
 ]
 
-export default function PricingPage() {
+function StarSVG({ fill, size = 16 }: { fill: string; size?: number }) {
   return (
-    <div className="bg-corp-navy text-corp-text font-sans overflow-x-hidden">
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true">
+      <path d="M12 1.5l2.4 7.4h7.8l-6.3 4.6 2.4 7.4-6.3-4.6-6.3 4.6 2.4-7.4-6.3-4.6h7.8z" fill={fill} stroke="#3A2E2A" strokeWidth="1.2"/>
+    </svg>
+  )
+}
+
+function CheckIcon() {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 20, height: 20, borderRadius: '50%',
+      background: '#4ECDC4', border: '2px solid #3A2E2A',
+      flexShrink: 0,
+    }}>
+      <svg viewBox="0 0 24 24" width={12} height={12}>
+        <path d="M5 12l5 5 9-11" stroke="#FFFFFF" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </span>
+  )
+}
+
+function CrossIcon() {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      width: 20, height: 20, borderRadius: '50%',
+      background: '#E0D8D0', border: '2px solid #3A2E2A',
+      flexShrink: 0,
+      opacity: 0.5,
+    }}>
+      <span style={{ fontSize: 10, fontWeight: 900, color: '#3A2E2A', lineHeight: 1 }}>✕</span>
+    </span>
+  )
+}
+
+export default function PricingPage() {
+  const [openIdx, setOpenIdx] = useState<number | null>(null)
+
+  const toggle = (i: number) => setOpenIdx(prev => prev === i ? null : i)
+
+  return (
+    <div style={{ background: 'var(--cream)', color: 'var(--ink)', overflowX: 'hidden' }}>
       <Navbar />
 
-      {/* Background */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-corp-forest opacity-30 blur-[120px]" />
-        <div className="absolute bottom-1/3 right-1/4 w-[400px] h-[400px] rounded-full bg-corp-lavender opacity-20 blur-[100px]" />
-        <div className="absolute inset-0 grid-overlay opacity-40" />
-      </div>
+      {/* ════════ SUBHERO ════════ */}
+      <section style={{ position: 'relative', zIndex: 1, padding: '6rem 1.5rem 3rem', textAlign: 'center', background: 'var(--lav-bg)', overflow: 'hidden' }}>
+        {/* decorative stars */}
+        <div aria-hidden="true" style={{ position: 'absolute', top: '10%', left: '5%', opacity: 0.5 }}><StarSVG fill="#FFC83D" size={32} /></div>
+        <div aria-hidden="true" style={{ position: 'absolute', top: '15%', right: '6%', opacity: 0.4 }}><StarSVG fill="#FF6F9C" size={24} /></div>
+        <div aria-hidden="true" style={{ position: 'absolute', bottom: '8%', left: '8%', opacity: 0.35 }}><StarSVG fill="#4ECDC4" size={28} /></div>
 
-      <main className="relative z-10 px-6 py-40">
-        <div className="max-w-5xl mx-auto">
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <Image src="/tanquu/happy.png" alt="タンキュー" width={120} height={120} unoptimized />
+        </div>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 13, letterSpacing: '0.2em', marginBottom: '1rem' }}>
+          <StarSVG fill="#FFC83D" size={16} />
+          PRICING
+        </div>
+        <h1 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(28px, 5vw, 52px)', color: 'var(--ink)', lineHeight: 1.2, marginBottom: '1rem' }}>
+          シンプルな <span style={{ color: 'var(--pink)' }}>りょうきん</span>
+        </h1>
+        <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.8, maxWidth: '28em', margin: '0 auto' }}>
+          まずは <strong>むりょう</strong> でたいけん。きにいったらいつでもアップグレード。<br/>
+          14にちかんの むりょうトライアルつき。
+        </p>
+      </section>
 
-          {/* Header */}
-          <div className="text-center mb-20">
-            <p className="text-corp-teal text-xs uppercase tracking-[0.3em] font-semibold mb-4">Pricing</p>
-            <h1 className="text-5xl lg:text-6xl font-black mb-6">
-              <span className="text-gradient">シンプルな料金体系</span>
-            </h1>
-            <p className="text-corp-muted text-lg max-w-xl mx-auto leading-relaxed">
-              まずは無料で体験。気に入ったらいつでもアップグレード。
-              14日間の無料トライアル付き。
-            </p>
+      {/* ════════ PLAN CARDS ════════ */}
+      <section style={{ background: 'var(--cream)', position: 'relative', zIndex: 1, padding: '4rem 1.5rem' }}>
+        <div className="max-w-4xl mx-auto" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+
+          {/* FREE plan */}
+          <div
+            className="card-sticker"
+            style={{
+              background: '#FFFFFF',
+              borderRadius: 'var(--radius-card)',
+              padding: '2rem',
+              transform: 'rotate(-0.8deg)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 24, color: 'var(--ink)', marginBottom: '0.25rem' }}>むりょう</h2>
+            <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>ためしてみたい人に</p>
+            <div style={{ marginBottom: '1.5rem' }}>
+              <span style={{ fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 52, color: 'var(--ink)', lineHeight: 1 }}>¥0</span>
+            </div>
+
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem', flex: 1 }}>
+              {FREE_FEATURES.map((f) => (
+                <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: 14, color: 'var(--ink)', fontFamily: 'var(--font-zen)' }}>
+                  <CheckIcon />
+                  {f}
+                </li>
+              ))}
+              {FREE_DISABLED.map((f) => (
+                <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: 14, color: 'var(--ink-soft)', opacity: 0.5, textDecoration: 'line-through', fontFamily: 'var(--font-zen)' }}>
+                  <CrossIcon />
+                  {f}
+                </li>
+              ))}
+            </ul>
+
+            <Link
+              href="/register"
+              className="btn-sticker btn-white"
+              style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, padding: '12px 20px', textDecoration: 'none' }}
+            >
+              むりょうで はじめる →
+            </Link>
           </div>
 
-          {/* Cards */}
-          <div className="grid md:grid-cols-2 gap-8 mb-20 max-w-3xl mx-auto">
-            {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative rounded-3xl overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-2 ${plan.highlight ? 'glass-card-bright ring-2 ring-corp-teal/40' : 'glass-card'}`}
-              >
-                {/* Top band */}
-                <div className="h-1.5 w-full" style={{ background: `linear-gradient(90deg, ${plan.color}, transparent)` }} />
+          {/* PREMIUM plan */}
+          <div
+            className="card-sticker"
+            style={{
+              background: 'var(--lav-bg)',
+              borderRadius: 'var(--radius-card)',
+              padding: '2rem',
+              transform: 'rotate(0.7deg)',
+              display: 'flex',
+              flexDirection: 'column',
+              position: 'relative',
+              border: '3.5px solid #3A2E2A',
+            }}
+          >
+            {/* Badge */}
+            <div style={{
+              position: 'absolute', top: -16, right: 24,
+              background: '#FFC83D',
+              border: '3px solid #3A2E2A',
+              borderRadius: 9999,
+              padding: '4px 16px',
+              fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 14,
+              color: 'var(--ink)',
+              boxShadow: '3px 3px 0 0 #3A2E2A',
+            }}>
+              おすすめ ⭐
+            </div>
 
-                <div className="p-8 flex flex-col flex-1">
-                  {/* Badge */}
-                  {plan.badge && (
-                    <span
-                      className="inline-block self-start text-xs px-3 py-1 rounded-full font-bold mb-4"
-                      style={{ background: `${plan.color}25`, color: plan.color, border: `1px solid ${plan.color}40` }}
-                    >
-                      {plan.badge}
-                    </span>
-                  )}
+            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 24, color: 'var(--ink)', marginBottom: '0.25rem' }}>TANQ Premium</h2>
+            <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>毎日たくさんあそびたい人に</p>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.25rem', marginBottom: '1.5rem' }}>
+              <span style={{ fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 52, color: 'var(--ink)', lineHeight: 1 }}>¥100</span>
+              <span style={{ fontSize: 15, color: 'var(--ink-soft)', marginBottom: '0.5rem' }}>/つき</span>
+            </div>
 
-                  <h2 className="text-2xl font-black mb-2" style={{ color: plan.color }}>{plan.name}</h2>
-                  <div className="flex items-end gap-1 mb-8">
-                    <span className="text-5xl font-black text-corp-text">{plan.price}</span>
-                    <span className="text-corp-muted text-lg mb-1">{plan.period}</span>
-                  </div>
+            <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem', flex: 1 }}>
+              {PREMIUM_FEATURES.map((f) => (
+                <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: 14, color: 'var(--ink)', fontFamily: 'var(--font-zen)', fontWeight: f.startsWith('ぜんアプリ') ? 700 : 400 }}>
+                  <CheckIcon />
+                  {f}
+                </li>
+              ))}
+            </ul>
 
-                  {/* Features */}
-                  <ul className="space-y-3 mb-6 flex-1">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-sm text-corp-text">
-                        <span style={{ color: plan.color }} className="mt-0.5 text-base leading-none">✓</span>
-                        {f}
-                      </li>
-                    ))}
-                    {plan.disabled.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-sm text-corp-muted line-through opacity-50">
-                        <span className="mt-0.5 text-base leading-none">✗</span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Link
-                    href={plan.href}
-                    className="mt-auto flex items-center justify-center w-full py-4 rounded-2xl font-black text-base transition-all hover:scale-[1.02]"
-                    style={
-                      plan.highlight
-                        ? { background: plan.color, color: '#050b14', boxShadow: `0 0 30px ${plan.color}40` }
-                        : { border: `2px solid ${plan.color}50`, color: plan.color }
-                    }
-                  >
-                    {plan.cta}
-                  </Link>
-                </div>
-              </div>
-            ))}
+            <Link
+              href="/register?plan=premium"
+              className="btn-sticker btn-yellow"
+              style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, padding: '12px 20px', textDecoration: 'none' }}
+            >
+              14日かん むりょうで ためす →
+            </Link>
           </div>
+        </div>
+      </section>
 
-          {/* B2B section */}
-          <div className="glass-card-bright rounded-3xl p-10 lg:p-14 text-center">
-            <div className="text-4xl mb-4">🏫</div>
-            <h2 className="text-3xl font-black mb-4">
-              <span className="text-gradient-gold">学校・塾・学童向け</span>
+      {/* ════════ B2B ════════ */}
+      <section style={{ background: 'var(--mint-bg)', position: 'relative', zIndex: 1, padding: '3rem 1.5rem' }}>
+        <div className="max-w-3xl mx-auto">
+          <div
+            className="card-sticker"
+            style={{
+              background: '#FFFFFF',
+              borderRadius: 'var(--radius-card)',
+              padding: '2.5rem 2rem',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 48, marginBottom: '0.75rem' }}>🏫</div>
+            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(20px, 3vw, 30px)', color: 'var(--ink)', marginBottom: '0.75rem' }}>
+              がっこう・じゅく・学童むけ
             </h2>
-            <p className="text-corp-muted text-lg mb-8 max-w-xl mx-auto leading-relaxed">
-              スクールライセンスなら、クラス全員で使えてさらにお得。
-              授業用投影モード・管理者ダッシュボード付き。
-              まずはお問い合わせください。
+            <p style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.8, maxWidth: '32em', margin: '0 auto 1.75rem' }}>
+              スクールライセンスなら、クラス全員で使えてさらにお得。<br/>
+              授業用投影モード・管理者ダッシュボードつき。まずはお問い合わせください。
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.75rem' }}>
               <Link
                 href="/contact"
-                className="px-10 py-4 rounded-full btn-glow-teal text-lg font-bold"
+                className="btn-sticker btn-yellow"
+                style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, padding: '12px 28px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
               >
-                スクールプランを問い合わせる →
+                <span>スクールプランを聞く</span>
+                <svg viewBox="0 0 24 24" width={16} height={16}><path d="M5 12h14M13 6l6 6-6 6" stroke="#3A2E2A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
               </Link>
               <Link
                 href="/contact"
-                className="px-10 py-4 rounded-full border border-corp-muted/30 text-corp-muted font-semibold text-lg hover:border-corp-teal/40 hover:text-corp-teal transition-all"
+                className="btn-sticker btn-white"
+                style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 15, padding: '12px 28px', textDecoration: 'none' }}
               >
                 資料を請求する
               </Link>
             </div>
           </div>
-
         </div>
-      </main>
+      </section>
+
+      {/* ════════ FAQ ════════ */}
+      <section style={{ background: 'var(--cream)', position: 'relative', zIndex: 1, padding: '4rem 1.5rem 5rem' }}>
+        <div className="max-w-3xl mx-auto">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 13, letterSpacing: '0.2em', marginBottom: '0.75rem' }}>
+              <StarSVG fill="#4ECDC4" size={16} />
+              FAQ
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(22px, 3.5vw, 36px)', color: 'var(--ink)' }}>
+              よくある しつもん
+            </h2>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {FAQ_ITEMS.map((item, i) => (
+              <div
+                key={i}
+                className="card-sticker"
+                style={{
+                  background: '#FFFFFF',
+                  borderRadius: 'var(--radius-card)',
+                  overflow: 'hidden',
+                  transform: i % 2 === 0 ? 'rotate(-0.4deg)' : 'rotate(0.3deg)',
+                }}
+              >
+                <button
+                  onClick={() => toggle(i)}
+                  aria-expanded={openIdx === i}
+                  style={{
+                    width: '100%', textAlign: 'left',
+                    background: 'transparent', border: 'none',
+                    padding: '1.25rem 1.5rem',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 15, color: 'var(--ink)', flex: 1, lineHeight: 1.5 }}>
+                    {item.q}
+                  </span>
+                  <span style={{
+                    flexShrink: 0,
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: 28, height: 28,
+                    border: '2.5px solid #3A2E2A',
+                    borderRadius: '50%',
+                    fontWeight: 900, fontSize: 18, color: 'var(--ink)',
+                    background: openIdx === i ? '#FFC83D' : 'transparent',
+                    transition: 'background 0.2s',
+                    lineHeight: 1,
+                  }}>
+                    {openIdx === i ? '−' : '+'}
+                  </span>
+                </button>
+                {openIdx === i && (
+                  <div style={{
+                    padding: '0 1.5rem 1.25rem',
+                    fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.8,
+                    borderTop: '2px solid var(--cream-deep)',
+                    paddingTop: '1rem',
+                  }}>
+                    {item.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>
