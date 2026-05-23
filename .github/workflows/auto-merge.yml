@@ -72,3 +72,28 @@ jobs:
       - name: Deploy to Vercel Production
         run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
         working-directory: tanq-app
+
+      - name: Verify production deployment
+        env:
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          echo "⏳ デプロイ反映待ち（30秒）..."
+          sleep 30
+          URL="https://tanq-app.vercel.app"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "x-vercel-protection-bypass: $BYPASS" "$URL/")
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "❌ 本番URL が $STATUS を返しました"
+            exit 1
+          fi
+          HTML=$(curl -sL -H "x-vercel-protection-bypass: $BYPASS" "$URL/")
+          if echo "$HTML" | grep -q "FFC83D"; then
+            echo "✅ 新デザイン（シール風）を確認 — 黄色カラー検出"
+          else
+            echo "⚠️  新デザインカラーが見つかりません。デプロイ内容を確認してください"
+          fi
+          if echo "$HTML" | grep -q "あそびながら"; then
+            echo "✅ TOPページ本文を確認"
+          fi
+          echo "🎉 本番確認完了: $URL"
