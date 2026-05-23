@@ -112,6 +112,7 @@ const APPS: {
   { id: 'youji-hiragana', name: 'にたもじ どっち？', emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/`,      badge: 'おう/づ/ぢ識別',  audience: 'shougakusei', targetAge: '小1〜小2' },
   { id: 'youji-clock',    name: 'なんじ かな？',        emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/`,    badge: '何時・何時半',     audience: 'youji', targetAge: '4〜6才' },
   { id: 'youji-animals',  name: 'どうぶつ さんすう',    emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/`,  badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才' },
+  { id: 'thinking-youji', name: 'ようちえん かんがえるジム', emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん / 10バッジ', audience: 'youji', targetAge: '3〜6才' },
 ]
 
 function getTodayRecommendations(
@@ -121,7 +122,7 @@ function getTodayRecommendations(
 ): { app: typeof APPS[number]; prog: number; desc: string }[] {
   if (profile.grade === '幼稚園') {
     return [
-      { app: APPS.find(a => a.id === 'youji-katakana')!, prog: 0, desc: 'あ→ア で れんしゅう' },
+      { app: APPS.find(a => a.id === 'thinking-youji')!, prog: 0, desc: 'Lv1・Lv2が むりょうで たいけんできるよ' },
       { app: APPS.find(a => a.id === 'youji-math')!, prog: 0, desc: 'たべものと かずあそび' },
     ]
   }
