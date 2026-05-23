@@ -1,6 +1,6 @@
 'use client'
 
-import { YOUJI_QUESTIONS, YOUJI_UNLOCK_THRESHOLD, YOUJI_QUESTIONS_PER_LEVEL, YOUJI_TOTAL_LEVELS } from '@/data/thinkingYoujiData'
+import { YOUJI_QUESTIONS, YOUJI_UNLOCK_THRESHOLD, YOUJI_QUESTIONS_PER_LEVEL } from '@/data/thinkingYoujiData'
 import { YOUJI_BADGES, YOUJI_TYPE_TO_BADGE } from '@/data/thinkingYoujiBadges'
 import { getDataKey } from '@/lib/storage'
 
@@ -64,9 +64,9 @@ export function getYoujiLevelProgress(level: number, progress: YoujiProgress): Y
 }
 
 export function getYoujiLevelStars(score: number): number {
-  if (score >= YOUJI_QUESTIONS_PER_LEVEL) return 3
-  if (score >= YOUJI_QUESTIONS_PER_LEVEL - 1) return 2
-  if (score >= YOUJI_UNLOCK_THRESHOLD) return 1
+  if (score >= YOUJI_QUESTIONS_PER_LEVEL) return 3    // 5/5 パーフェクト
+  if (score >= YOUJI_UNLOCK_THRESHOLD) return 2       // 4/5 クリア
+  if (score >= YOUJI_UNLOCK_THRESHOLD - 1) return 1   // 3/5 もうすこし
   return 0
 }
 

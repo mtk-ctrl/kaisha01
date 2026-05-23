@@ -24,7 +24,7 @@ function canAccessApp(appId: string, userType: UserType): boolean {
   if (userType === 'tester') return true
   if (userType === 'member') return appId !== 'tanq'
   // ゲスト: 内製基本アプリ + 幼稚園外部アプリ + 思考力（Lv1-2のみ・制限はアプリ側で制御）
-  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId.startsWith('youji-')
+  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId === 'thinking-youji' || appId.startsWith('youji-')
 }
 
 function lockLabel(appId: string, userType: UserType): string | null {
