@@ -44,8 +44,8 @@
 **フェーズ**: Phase 1 — プロダクト完成 + 初期ユーザー獲得
 
 **今すぐやること（優先順）**:
-1. **テスター招待フローの確認** — `/tester` ページのURLを招待する人にシェアする
-2. **かんがえる力ジム 本番確認** — Vercelデプロイ後：ゲスト体験（Lv1-2）、Q5カレー問題でふりがな表示、「わかった！つぎへ」ボタン位置を確認
+1. **ようちえん かんがえるジム 本番確認** — Vercelデプロイ後：`/apps/thinking-youji` でゲスト体験（Lv1-2）、問題文・選択肢・フィードバック表示確認
+2. **テスター招待フローの確認** — `/tester` ページのURLを招待する人にシェアする
 3. **図形SRS実装** — 英語と同様のSRSパターンを移植（次スプリント）
 
 ---
@@ -64,6 +64,7 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-23 | ようちえん かんがえるジム 新規実装（50問・10Lv・10バッジ・4択・ひらがなのみ） | `logs/sessions/2026-05-23_002_yuu_youji-thinking-gym.md` |
 | 2026-05-23 | かんがえる力ジム UX改善（つぎへボタン位置修正・ふりがな追加 Q5/Q14/Q22） | `logs/sessions/2026-05-23_001_yuu_thinking-button-furigana.md` |
 | 2026-05-22 | かんがえる力ジム QA第2弾（ドット修正・パーフェクト画面・バッジ文字・ゲストLv1-2解放・カード名変更） | `logs/sessions/2026-05-22_003_jobs_thinking-qa2-guest-access.md` |
 | 2026-05-22 | 思考力トレーニングアプリQAバグ修正（花火useMemo・BadgeToast useRef・ネコ削除・Q97型修正・バッジ説明追加・レビュールールCLAUDE.md追記） | `logs/sessions/2026-05-22_002_jobs_thinking-qa-bugfix.md` |
@@ -78,6 +79,6 @@
 
 ## ⑥ 現在の作業ブランチ
 
-`claude/thinking-training-app-2M1Vj` → GitHub Actions で main に自動マージ → Vercel自動デプロイ
+`claude/kindergarten-thinking-gym-Gpthq` → GitHub Actions で main に自動マージ → Vercel自動デプロイ
 
 **テスター入口URL**: `https://tanq-app.vercel.app/tester` | PIN: `2026`
