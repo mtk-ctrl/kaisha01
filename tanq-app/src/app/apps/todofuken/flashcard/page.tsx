@@ -84,6 +84,7 @@ export default function Flashcard() {
                     <span className="text-xs text-purple-400 font-normal ml-2">（県名とちがう）</span>
                   )}
                 </p>
+                <p className="text-sm text-purple-400 mt-0.5">{pref.capitalKana}</p>
               </div>
 
               {easyFamous.length > 0 && (
