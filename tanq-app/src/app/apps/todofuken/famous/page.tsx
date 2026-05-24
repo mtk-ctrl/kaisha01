@@ -58,6 +58,7 @@ export default function FamousQuiz() {
   const [qIndex, setQIndex]   = useState(0)
   const [score, setScore]     = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [correctHistory, setCorrectHistory] = useState<Record<string, number>>({})
 
   function startQuiz(diff: Difficulty) {
@@ -68,6 +69,7 @@ export default function FamousQuiz() {
     setQIndex(0)
     setScore(0)
     setSelected(null)
+    setIsCorrect(null)
     setCorrectHistory({})
     setPhase('quiz')
   }
@@ -76,8 +78,9 @@ export default function FamousQuiz() {
     if (selected !== null) return
     const q = questions[qIndex]
     setSelected(pref.id)
-    const isCorrect = pref.id === q.pref.id
-    if (isCorrect) {
+    const correct = pref.id === q.pref.id
+    setIsCorrect(correct)
+    if (correct) {
       playCorrect()
       setScore(s => s + 1)
       setCorrectHistory(prev => {
@@ -90,8 +93,8 @@ export default function FamousQuiz() {
     }
     setTimeout(() => {
       if (qIndex + 1 >= questions.length) setPhase('result')
-      else { setQIndex(i => i + 1); setSelected(null) }
-    }, 1400)
+      else { setQIndex(i => i + 1); setSelected(null); setIsCorrect(null) }
+    }, 1800)
   }
 
   if (phase === 'menu') {
@@ -167,21 +170,32 @@ export default function FamousQuiz() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-6">
-        <div className="bg-white rounded-3xl shadow-lg p-5 mb-6 text-center">
+        <div className="bg-white rounded-3xl shadow-lg p-5 mb-4 text-center">
           <p className="text-sm text-gray-500 mb-2">これは どこの 都道府県の 名物？</p>
           <div className="text-6xl mb-2">{q.item.emoji}</div>
           <p className="text-xl font-black text-gray-800">{q.item.name}</p>
           {q.item.note && <p className="text-xs text-gray-400 mt-2 leading-relaxed">{q.item.note}</p>}
         </div>
 
+        {/* 正解/不正解バナー */}
+        {isCorrect !== null && (
+          <div className={`mb-4 rounded-2xl py-3 px-4 text-center font-black text-lg ${
+            isCorrect
+              ? 'bg-green-500 text-white'
+              : 'bg-red-400 text-white'
+          }`}>
+            {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.name}」`}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           {q.choices.map(pref => {
             const isCorrectPref = pref.id === q.pref.id
-            const isSelected    = selected === pref.id
+            const isSelectedPref = selected === pref.id
             let cls = 'bg-white border-2 border-gray-200'
             if (selected !== null) {
-              if (isCorrectPref)   cls = 'bg-green-100 border-2 border-green-500'
-              else if (isSelected) cls = 'bg-red-100 border-2 border-red-400'
+              if (isCorrectPref)    cls = 'bg-green-100 border-2 border-green-500'
+              else if (isSelectedPref) cls = 'bg-red-100 border-2 border-red-400'
             }
             return (
               <button key={pref.id} onClick={() => handleSelect(pref)}
@@ -192,14 +206,6 @@ export default function FamousQuiz() {
             )
           })}
         </div>
-
-        {selected !== null && selected !== q.pref.id && (
-          <div className="mt-4 bg-amber-50 border border-amber-200 rounded-2xl p-3 text-center">
-            <p className="text-sm text-amber-700 font-medium">
-              正解は <span className="font-black">{q.pref.name}</span> の名物！
-            </p>
-          </div>
-        )}
       </div>
     </div>
   )
