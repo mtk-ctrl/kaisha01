@@ -15,8 +15,12 @@ function loadProgress(): ProgressStore {
 }
 
 function isUnlocked(unit: JukuUnit, progress: ProgressStore, userType: string): boolean {
+  // 無料単元は誰でも解放
   if (unit.isFree) return true
-  if (userType === 'tester' || userType === 'member') {
+  // テスターは全単元解放（前提条件なし）
+  if (userType === 'tester') return true
+  // メンバーは前提単元を60%クリアで順次解放
+  if (userType === 'member') {
     return unit.prerequisiteIds.every(pid => {
       const p = progress[pid]
       const prereqUnit = JUKU_UNITS.find(u => u.id === pid)
@@ -25,6 +29,7 @@ function isUnlocked(unit: JukuUnit, progress: ProgressStore, userType: string): 
       return p && p.cleared >= Math.ceil(total * 0.6)
     })
   }
+  // ゲストは無料単元のみ
   return false
 }
 
