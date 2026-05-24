@@ -91,10 +91,11 @@ export default function FamousQuiz() {
     } else {
       playWrong()
     }
-    setTimeout(() => {
-      if (qIndex + 1 >= questions.length) setPhase('result')
-      else { setQIndex(i => i + 1); setSelected(null); setIsCorrect(null) }
-    }, 1800)
+  }
+
+  function handleNext() {
+    if (qIndex + 1 >= questions.length) setPhase('result')
+    else { setQIndex(i => i + 1); setSelected(null); setIsCorrect(null) }
   }
 
   if (phase === 'menu') {
@@ -206,6 +207,14 @@ export default function FamousQuiz() {
             )
           })}
         </div>
+
+        {/* 次へボタン（回答後に表示） */}
+        {selected !== null && (
+          <button onClick={handleNext}
+            className="mt-5 w-full bg-amber-500 text-white font-bold py-4 rounded-2xl text-lg active:scale-95 transition-all">
+            {qIndex + 1 >= questions.length ? '結果を見る 🏆' : 'つぎへ →'}
+          </button>
+        )}
       </div>
     </div>
   )
