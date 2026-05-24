@@ -30,6 +30,7 @@ function saveFamousMastered(prefId: string) {
 function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
 
 interface Question { pref: Prefecture; item: FamousItem; choices: Prefecture[] }
+interface WrongItem { emoji: string; label: string; correct: string; given: string }
 
 function buildQuestions(difficulty: Difficulty): Question[] {
   const pairs: { pref: Prefecture; item: FamousItem }[] = []
@@ -60,6 +61,7 @@ export default function FamousQuiz() {
   const [selected, setSelected] = useState<string | null>(null)
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [correctHistory, setCorrectHistory] = useState<Record<string, number>>({})
+  const [wrongAnswers, setWrongAnswers] = useState<WrongItem[]>([])
 
   function startQuiz(diff: Difficulty) {
     const qs = buildQuestions(diff)
@@ -71,6 +73,7 @@ export default function FamousQuiz() {
     setSelected(null)
     setIsCorrect(null)
     setCorrectHistory({})
+    setWrongAnswers([])
     setPhase('quiz')
   }
 
@@ -90,6 +93,12 @@ export default function FamousQuiz() {
       })
     } else {
       playWrong()
+      setWrongAnswers(prev => [...prev, {
+        emoji: q.item.emoji,
+        label: q.item.name,
+        correct: q.pref.name,
+        given: pref.name,
+      }])
     }
   }
 
@@ -138,11 +147,39 @@ export default function FamousQuiz() {
   if (phase === 'result') {
     const total = questions.length
     return (
-      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 flex flex-col items-center justify-center px-4">
-        <div className="bg-white rounded-3xl shadow-lg p-8 max-w-sm w-full text-center">
-          <div className="text-5xl mb-3">{score >= total * 0.8 ? '🏆' : score >= total * 0.6 ? '⭐' : '🍱'}</div>
-          <h2 className="text-2xl font-black text-gray-800 mb-1">{score}/{total} せいかい！</h2>
-          <p className="text-sm text-gray-500 mb-6">{score >= total * 0.8 ? 'めいぶつはかせ！' : 'もう一度チャレンジ！'}</p>
+      <div className="min-h-screen bg-gradient-to-b from-amber-50 to-yellow-50 pb-20">
+        <div className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+            <Link href="/apps/todofuken" className="text-gray-400 hover:text-gray-600">←</Link>
+            <h1 className="font-bold text-gray-800">🍱 めいぶつクイズ — 結果</h1>
+          </div>
+        </div>
+        <div className="max-w-sm mx-auto px-4 pt-6">
+          <div className="bg-white rounded-3xl shadow-lg p-6 text-center mb-4">
+            <div className="text-5xl mb-3">{score >= total * 0.8 ? '🏆' : score >= total * 0.6 ? '⭐' : '🍱'}</div>
+            <h2 className="text-2xl font-black text-gray-800 mb-1">{score}/{total} せいかい！</h2>
+            <p className="text-sm text-gray-500">{score >= total * 0.8 ? 'めいぶつはかせ！' : 'もう一度チャレンジ！'}</p>
+          </div>
+
+          {wrongAnswers.length > 0 && (
+            <div className="bg-white rounded-2xl shadow p-4 mb-4">
+              <p className="text-sm font-bold text-red-500 mb-3">❌ まちがえた問題（{wrongAnswers.length}問）</p>
+              <div className="flex flex-col gap-2">
+                {wrongAnswers.map((w, i) => (
+                  <div key={i} className="bg-red-50 rounded-xl px-3 py-2 flex items-center gap-2">
+                    <span className="text-xl">{w.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="font-bold text-gray-800 text-sm">{w.label}</span>
+                      <span className="text-xs text-gray-500 mx-1">→</span>
+                      <span className="font-bold text-green-700 text-sm">{w.correct}</span>
+                      <span className="block text-xs text-red-400">（{w.given} と答えた）</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="flex flex-col gap-3">
             <button onClick={() => startQuiz(difficulty)} className="bg-amber-500 text-white font-bold py-3 rounded-2xl">もう一度</button>
             <button onClick={() => setPhase('menu')} className="bg-gray-100 text-gray-700 font-bold py-3 rounded-2xl">難易度を変える</button>
@@ -175,7 +212,7 @@ export default function FamousQuiz() {
           <p className="text-sm text-gray-500 mb-2">これは どこの 都道府県の 名物？</p>
           <div className="text-6xl mb-2">{q.item.emoji}</div>
           <p className="text-xl font-black text-gray-800">{q.item.name}</p>
-          {q.item.note && <p className="text-xs text-gray-400 mt-2 leading-relaxed">{q.item.note}</p>}
+          {q.item.note && <p className="text-xs text-gray-400 mt-2 leading-relaxed line-clamp-2">{q.item.note}</p>}
         </div>
 
         {/* 正解/不正解バナー */}
