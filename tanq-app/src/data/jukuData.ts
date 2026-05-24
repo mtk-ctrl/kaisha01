@@ -17,6 +17,7 @@ export interface Problem {
   diagramSpec: Record<string, unknown>
   hints: HintStep[]
   explanationText: string
+  choices?: string[] // 選択肢（指定時はこちらを優先）
 }
 
 export interface JukuUnit {
@@ -260,8 +261,9 @@ export const JUKU_UNITS: JukuUnit[] = [
       },
       {
         id: 'uc-12', title: '単位換算で大きさ比較', difficulty: 3,
-        problemText: '1.2km、1050m、12000cmのうち、いちばん長いのはどれですか？\n（1・2・3の数字で答えてね）',
-        answer: '1', answerUnit: '',
+        problemText: '1.2km、1050m、12000cmのうち、いちばん長いのはどれですか？',
+        answer: '①1.2km', answerUnit: '',
+        choices: ['①1.2km', '②1050m', '③12000cm'],
         diagramType: 'slide',
         diagramSpec: {
           units: ['km', 'm', 'cm'],
