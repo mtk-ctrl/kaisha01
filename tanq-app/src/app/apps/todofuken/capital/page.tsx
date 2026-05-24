@@ -29,13 +29,22 @@ function saveCapitalMastered(prefId: string) {
 
 function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
 
-interface Question { pref: Prefecture; choices: string[] }
+// Map capital name → capitalKana for choice display
+const capitalKanaMap = new Map<string, string>(
+  PREFECTURES.map(p => [p.capital, p.capitalKana])
+)
+
+interface ChoiceInfo { capital: string; kana: string }
+interface Question { pref: Prefecture; choices: ChoiceInfo[] }
 
 function buildQuestions(mode: QuizMode): Question[] {
   const pool = mode === 'differs' ? CAPITAL_DIFFERS_PREFS : PREFECTURES
   return shuffle(pool).slice(0, Q_PER_ROUND).map(pref => {
-    const wrong = shuffle(PREFECTURES.filter(p => p.id !== pref.id).map(p => p.capital)).slice(0, 3)
-    return { pref, choices: shuffle([pref.capital, ...wrong]) }
+    const wrong = shuffle(
+      PREFECTURES.filter(p => p.id !== pref.id).map(p => ({ capital: p.capital, kana: p.capitalKana }))
+    ).slice(0, 3)
+    const correct: ChoiceInfo = { capital: pref.capital, kana: pref.capitalKana }
+    return { pref, choices: shuffle([correct, ...wrong]) }
   })
 }
 
@@ -46,6 +55,7 @@ export default function CapitalQuiz() {
   const [qIndex, setQIndex]   = useState(0)
   const [score, setScore]     = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [correctHistory, setCorrectHistory] = useState<Record<string, number>>({})
 
   function startQuiz(qm: QuizMode) {
@@ -54,6 +64,7 @@ export default function CapitalQuiz() {
     setQIndex(0)
     setScore(0)
     setSelected(null)
+    setIsCorrect(null)
     setCorrectHistory({})
     setMode('quiz')
   }
@@ -61,9 +72,10 @@ export default function CapitalQuiz() {
   function handleSelect(capital: string) {
     if (selected !== null) return
     const q = questions[qIndex]
+    const correct = capital === q.pref.capital
     setSelected(capital)
-    const isCorrect = capital === q.pref.capital
-    if (isCorrect) {
+    setIsCorrect(correct)
+    if (correct) {
       playCorrect()
       setScore(s => s + 1)
       setCorrectHistory(prev => {
@@ -76,8 +88,8 @@ export default function CapitalQuiz() {
     }
     setTimeout(() => {
       if (qIndex + 1 >= questions.length) setMode('result')
-      else { setQIndex(i => i + 1); setSelected(null) }
-    }, 2000)
+      else { setQIndex(i => i + 1); setSelected(null); setIsCorrect(null) }
+    }, 2200)
   }
 
   if (mode === 'menu') {
@@ -114,7 +126,7 @@ export default function CapitalQuiz() {
           </div>
           <div className="mt-5 bg-purple-50 rounded-2xl p-3">
             <p className="text-xs text-purple-600 text-center leading-relaxed">
-              まずは「まぎらわしい18県」を完璧にしよう！<br />
+              まずは「まぎらわしい{CAPITAL_DIFFERS_PREFS.length}県」を完璧にしよう！<br />
               入試でよく出るポイントだよ 📝
             </p>
           </div>
@@ -159,43 +171,42 @@ export default function CapitalQuiz() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-6">
-        <div className="bg-white rounded-3xl shadow-lg p-5 mb-6 text-center">
+        <div className="bg-white rounded-3xl shadow-lg p-5 mb-4 text-center">
           <p className="text-sm text-gray-500 mb-3">県庁所在地は どこ？</p>
           <div className="text-5xl mb-2">{q.pref.emoji}</div>
           <p className="text-2xl font-black text-gray-800">{q.pref.name}</p>
           <p className="text-sm text-gray-400 mt-1">{q.pref.kana} · {q.pref.region}</p>
-          {q.pref.capitalDiffers && (
-            <span className="inline-block mt-2 text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full">
-              ⚠️ 県名とちがう
-            </span>
-          )}
         </div>
 
+        {/* 正解/不正解バナー */}
+        {isCorrect !== null && (
+          <div className={`mb-4 rounded-2xl py-3 px-4 text-center font-black text-lg ${
+            isCorrect
+              ? 'bg-green-500 text-white'
+              : 'bg-red-400 text-white'
+          }`}>
+            {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.capital}」`}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
-          {q.choices.map(capital => {
-            const isCorrect  = capital === q.pref.capital
-            const isSelected = selected === capital
+          {q.choices.map(({ capital, kana }) => {
+            const isCorrectChoice = capital === q.pref.capital
+            const isSelectedChoice = selected === capital
             let cls = 'bg-white border-2 border-gray-200'
             if (selected !== null) {
-              if (isCorrect)       cls = 'bg-green-100 border-2 border-green-500'
-              else if (isSelected) cls = 'bg-red-100 border-2 border-red-400'
+              if (isCorrectChoice)       cls = 'bg-green-100 border-2 border-green-500'
+              else if (isSelectedChoice) cls = 'bg-red-100 border-2 border-red-400'
             }
             return (
               <button key={capital} onClick={() => handleSelect(capital)}
-                className={`${cls} rounded-2xl py-4 px-3 font-bold text-gray-800 text-center transition-all active:scale-95 shadow-sm`}>
-                {capital}
+                className={`${cls} rounded-2xl py-4 px-3 text-center transition-all active:scale-95 shadow-sm`}>
+                <span className="block font-bold text-gray-800 text-base">{capital}</span>
+                <span className="block text-xs text-gray-500 mt-0.5">{kana}</span>
               </button>
             )
           })}
         </div>
-
-        {selected !== null && selected !== q.pref.capital && (
-          <div className="mt-4 bg-purple-50 border border-purple-200 rounded-2xl p-3 text-center">
-            <p className="text-sm text-purple-700 font-medium">
-              正解は <span className="font-black">{q.pref.capital}</span>！
-            </p>
-          </div>
-        )}
       </div>
     </div>
   )
