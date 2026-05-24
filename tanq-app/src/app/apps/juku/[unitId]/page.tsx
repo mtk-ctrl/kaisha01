@@ -158,52 +158,94 @@ function LineSegDiagram({ spec }: { spec: Record<string, unknown> }) {
 
   const large = (sum + diff) / 2
   const small = (sum - diff) / 2
-  const barStart = 54
-  const barEnd = 232
-  const totalW = barEnd - barStart
-  const smallEnd = barStart + totalW * (small / large)
 
-  const yLarge = 26
-  const ySmall = 54
-  const ySum = 80
+  // Layout constants
+  const labelX = 50       // right edge of label area
+  const barStart = labelX + 4
+  const barEnd = 238
+  const totalW = barEnd - barStart
+  const ratio = small / large            // 小さい方 / 大きい方
+  const largeW = totalW                  // Section A: 大きい方 = full width
+  const smallW = totalW * ratio          // Section A: 小さい方 = proportional
+  const diffW = largeW - smallW          // Section A: 差 gap
+
+  // Section B (和): 大きい方 + 小さい方 placed end-to-end, total = 和
+  // scale so combined width = totalW
+  const bLargeW = totalW * (large / sum)
+  const bSmallW = totalW * (small / sum)
+
+  // Y positions — Section A (top), Section B (bottom)
+  const sectionALabel = 12
+  const yA1 = 28   // 大きい方 bar centre
+  const yA2 = 52   // 小さい方 bar centre
+  const sectionBLabel = 74
+  const yB = 90    // combined bar centre
+  const bracketY = 108  // 和 bracket
+
+  const barH = 16
 
   return (
-    <svg viewBox="0 0 250 95" className="w-full max-w-sm mx-auto overflow-visible">
-      {/* 大きい方（黄色バー） */}
-      <text x={barStart - 5} y={yLarge + 4} textAnchor="end" fontSize="10"
+    <svg viewBox="0 0 250 122" className="w-full max-w-sm mx-auto overflow-visible">
+
+      {/* ── Section A: ①差を確認 ──────────────── */}
+      <text x={labelX / 2} y={sectionALabel} textAnchor="middle"
+        fontSize="9" fill="#6B5A52" fontWeight="bold">①差を確認</text>
+
+      {/* 大きい方バー */}
+      <text x={labelX - 2} y={yA1 + 4} textAnchor="end" fontSize="10"
         fill="#3A2E2A" fontWeight="bold">{largeLabel}</text>
-      <rect x={barStart} y={yLarge - 8} width={totalW} height={16} rx="3"
+      <rect x={barStart} y={yA1 - barH / 2} width={largeW} height={barH} rx="3"
         fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
       {showValues && (
-        <text x={(barStart + barEnd) / 2} y={yLarge + 5} textAnchor="middle"
+        <text x={barStart + largeW / 2} y={yA1 + 4} textAnchor="middle"
           fontSize="11" fill="#3A2E2A" fontWeight="bold">{large}</text>
       )}
 
-      {/* 小さい方（水色バー） */}
-      <text x={barStart - 5} y={ySmall + 4} textAnchor="end" fontSize="10"
+      {/* 小さい方バー */}
+      <text x={labelX - 2} y={yA2 + 4} textAnchor="end" fontSize="10"
         fill="#3A2E2A" fontWeight="bold">{smallLabel}</text>
-      <rect x={barStart} y={ySmall - 8} width={smallEnd - barStart} height={16} rx="3"
+      <rect x={barStart} y={yA2 - barH / 2} width={smallW} height={barH} rx="3"
         fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
       {showValues && (
-        <text x={(barStart + smallEnd) / 2} y={ySmall + 5} textAnchor="middle"
+        <text x={barStart + smallW / 2} y={yA2 + 4} textAnchor="middle"
           fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
       )}
 
       {/* 差（赤点線バー） */}
       {diff > 0 && (
         <>
-          <rect x={smallEnd} y={ySmall - 8} width={barEnd - smallEnd} height={16} rx="3"
+          <rect x={barStart + smallW} y={yA2 - barH / 2} width={diffW} height={barH} rx="3"
             fill="rgba(248,113,113,0.12)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" />
-          <text x={(smallEnd + barEnd) / 2} y={ySmall - 11} textAnchor="middle"
+          <text x={barStart + smallW + diffW / 2} y={yA2 - barH / 2 - 3} textAnchor="middle"
             fontSize="9" fill="#f87171" fontWeight="bold">差</text>
         </>
       )}
 
-      {/* 和（緑ブラケット） */}
-      <line x1={barStart} y1={ySum} x2={barEnd} y2={ySum} stroke="#16a34a" strokeWidth="1.5" />
-      <line x1={barStart} y1={ySum - 4} x2={barStart} y2={ySum + 4} stroke="#16a34a" strokeWidth="1.5" />
-      <line x1={barEnd} y1={ySum - 4} x2={barEnd} y2={ySum + 4} stroke="#16a34a" strokeWidth="1.5" />
-      <text x={(barStart + barEnd) / 2} y={ySum + 13} textAnchor="middle"
+      {/* ── Section B: ②和を確認 ──────────────── */}
+      <text x={labelX / 2} y={sectionBLabel} textAnchor="middle"
+        fontSize="9" fill="#6B5A52" fontWeight="bold">②和を確認</text>
+
+      {/* 大きい方（左） */}
+      <rect x={barStart} y={yB - barH / 2} width={bLargeW} height={barH} rx="3"
+        fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+      {showValues && (
+        <text x={barStart + bLargeW / 2} y={yB + 4} textAnchor="middle"
+          fontSize="11" fill="#3A2E2A" fontWeight="bold">{large}</text>
+      )}
+
+      {/* 小さい方（右） */}
+      <rect x={barStart + bLargeW} y={yB - barH / 2} width={bSmallW} height={barH} rx="3"
+        fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+      {showValues && (
+        <text x={barStart + bLargeW + bSmallW / 2} y={yB + 4} textAnchor="middle"
+          fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
+      )}
+
+      {/* 和ブラケット（全体幅） */}
+      <line x1={barStart} y1={bracketY} x2={barEnd} y2={bracketY} stroke="#16a34a" strokeWidth="1.5" />
+      <line x1={barStart} y1={bracketY - 4} x2={barStart} y2={bracketY + 4} stroke="#16a34a" strokeWidth="1.5" />
+      <line x1={barEnd} y1={bracketY - 4} x2={barEnd} y2={bracketY + 4} stroke="#16a34a" strokeWidth="1.5" />
+      <text x={(barStart + barEnd) / 2} y={bracketY + 13} textAnchor="middle"
         fontSize="10" fill="#16a34a" fontWeight="bold">和（合計）</text>
     </svg>
   )

@@ -776,10 +776,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         problemText: 'A・B・Cの3人の算数テストの合計は180点です。AはBより12点多く、BはCより6点多いです。Cは何点ですか？',
         answer: '52',
         answerUnit: '点',
-        diagramType: 'line-seg',
+        diagramType: 'none',
         diagramSpec: {
-          sum: 180, diff: null,
-          largeLabel: 'A', smallLabel: 'C',
           labels3: ['A', 'B', 'C'],
           diffs3: [18, 6, 0],
         },
