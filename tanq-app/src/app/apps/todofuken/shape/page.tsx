@@ -45,11 +45,13 @@ export default function ShapeQuiz() {
   const [score, setScore] = useState(0)
   const [question, setQuestion] = useState<Question | null>(null)
   const [selected, setSelected] = useState<string | null>(null)
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [correctHistory, setCorrectHistory] = useState<Record<string, number>>({})
 
   const nextQ = useCallback(() => {
     setQuestion(makeQuestion())
     setSelected(null)
+    setIsCorrect(null)
   }, [])
 
   useEffect(() => { nextQ() }, [nextQ])
@@ -57,8 +59,9 @@ export default function ShapeQuiz() {
   function handleSelect(pref: Prefecture) {
     if (selected !== null || !question) return
     setSelected(pref.id)
-    const isCorrect = pref.id === question.correct.id
-    if (isCorrect) {
+    const correct = pref.id === question.correct.id
+    setIsCorrect(correct)
+    if (correct) {
       playCorrect()
       setScore(s => s + 1)
       setCorrectHistory(prev => {
@@ -69,14 +72,15 @@ export default function ShapeQuiz() {
     } else {
       playWrong()
     }
-    setTimeout(() => {
-      if (qIndex + 1 >= Q_PER_ROUND) {
-        setPhase('result')
-      } else {
-        setQIndex(i => i + 1)
-        nextQ()
-      }
-    }, 2000)
+  }
+
+  function handleNext() {
+    if (qIndex + 1 >= Q_PER_ROUND) {
+      setPhase('result')
+    } else {
+      setQIndex(i => i + 1)
+      nextQ()
+    }
   }
 
   function restart() {
@@ -84,6 +88,7 @@ export default function ShapeQuiz() {
     setQIndex(0)
     setScore(0)
     setSelected(null)
+    setIsCorrect(null)
     setCorrectHistory({})
     nextQ()
   }
@@ -134,6 +139,15 @@ export default function ShapeQuiz() {
           </svg>
         </div>
 
+        {/* 正解/不正解バナー */}
+        {isCorrect !== null && (
+          <div className={`mb-4 rounded-2xl py-3 px-4 text-center font-black text-lg ${
+            isCorrect ? 'bg-green-500 text-white' : 'bg-red-400 text-white'
+          }`}>
+            {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${question.correct.name}」`}
+          </div>
+        )}
+
         {/* Choices */}
         <div className="grid grid-cols-2 gap-3">
           {question.choices.map(pref => {
@@ -154,12 +168,12 @@ export default function ShapeQuiz() {
           })}
         </div>
 
-        {selected !== null && selected !== question.correct.id && (
-          <div className="mt-4 bg-sky-50 border border-sky-200 rounded-2xl p-3 text-center">
-            <p className="text-sm text-sky-700 font-medium">
-              正解は <span className="font-black">{question.correct.name}（{question.correct.kana}）</span>！
-            </p>
-          </div>
+        {/* 次へボタン（回答後に表示） */}
+        {selected !== null && (
+          <button onClick={handleNext}
+            className="mt-5 w-full bg-sky-500 text-white font-bold py-4 rounded-2xl text-lg active:scale-95 transition-all">
+            {qIndex + 1 >= Q_PER_ROUND ? '結果を見る 🏆' : 'つぎへ →'}
+          </button>
         )}
       </div>
     </div>

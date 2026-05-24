@@ -9,6 +9,10 @@ import { playCorrect, playWrong } from '@/lib/audio'
 const PROGRESS_KEY = 'tanq_todofuken_progress_v1'
 const Q_PER_ROUND = 10
 
+// 東京は「東京市」にならないため除外
+const NON_TOKYO = PREFECTURES.filter(p => p.id !== 'tokyo')
+const DIFFERS_NON_TOKYO = CAPITAL_DIFFERS_PREFS.filter(p => p.id !== 'tokyo')
+
 type Mode = 'menu' | 'quiz' | 'result'
 type QuizMode = 'differs' | 'all'
 
@@ -29,19 +33,14 @@ function saveCapitalMastered(prefId: string) {
 
 function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
 
-// Map capital name → capitalKana for choice display
-const capitalKanaMap = new Map<string, string>(
-  PREFECTURES.map(p => [p.capital, p.capitalKana])
-)
-
 interface ChoiceInfo { capital: string; kana: string }
 interface Question { pref: Prefecture; choices: ChoiceInfo[] }
 
 function buildQuestions(mode: QuizMode): Question[] {
-  const pool = mode === 'differs' ? CAPITAL_DIFFERS_PREFS : PREFECTURES
+  const pool = mode === 'differs' ? DIFFERS_NON_TOKYO : NON_TOKYO
   return shuffle(pool).slice(0, Q_PER_ROUND).map(pref => {
     const wrong = shuffle(
-      PREFECTURES.filter(p => p.id !== pref.id).map(p => ({ capital: p.capital, kana: p.capitalKana }))
+      NON_TOKYO.filter(p => p.id !== pref.id).map(p => ({ capital: p.capital, kana: p.capitalKana }))
     ).slice(0, 3)
     const correct: ChoiceInfo = { capital: pref.capital, kana: pref.capitalKana }
     return { pref, choices: shuffle([correct, ...wrong]) }
@@ -86,10 +85,16 @@ export default function CapitalQuiz() {
     } else {
       playWrong()
     }
-    setTimeout(() => {
-      if (qIndex + 1 >= questions.length) setMode('result')
-      else { setQIndex(i => i + 1); setSelected(null); setIsCorrect(null) }
-    }, 2200)
+  }
+
+  function handleNext() {
+    if (qIndex + 1 >= questions.length) {
+      setMode('result')
+    } else {
+      setQIndex(i => i + 1)
+      setSelected(null)
+      setIsCorrect(null)
+    }
   }
 
   if (mode === 'menu') {
@@ -108,7 +113,7 @@ export default function CapitalQuiz() {
               className="bg-white rounded-2xl shadow p-5 flex items-center gap-4 active:scale-95 transition-all text-left">
               <div className="text-3xl">🔥</div>
               <div>
-                <div className="font-bold text-gray-800">まぎらわしい {CAPITAL_DIFFERS_PREFS.length} 県</div>
+                <div className="font-bold text-gray-800">まぎらわしい {DIFFERS_NON_TOKYO.length} 県</div>
                 <div className="text-xs text-gray-500 mt-0.5">県名と県庁所在地が ちがう県だけ</div>
                 <div className="text-xs text-gray-400 mt-1">例: 神奈川→横浜、愛知→名古屋</div>
               </div>
@@ -118,15 +123,15 @@ export default function CapitalQuiz() {
               className="bg-white rounded-2xl shadow p-5 flex items-center gap-4 active:scale-95 transition-all text-left">
               <div className="text-3xl">🗾</div>
               <div>
-                <div className="font-bold text-gray-800">全 47 都道府県</div>
-                <div className="text-xs text-gray-500 mt-0.5">すべての県庁所在地を確認</div>
+                <div className="font-bold text-gray-800">全 {NON_TOKYO.length} 道府県</div>
+                <div className="text-xs text-gray-500 mt-0.5">すべての県庁所在地を確認（東京を除く）</div>
               </div>
               <div className="ml-auto text-gray-400">→</div>
             </button>
           </div>
           <div className="mt-5 bg-purple-50 rounded-2xl p-3">
             <p className="text-xs text-purple-600 text-center leading-relaxed">
-              まずは「まぎらわしい{CAPITAL_DIFFERS_PREFS.length}県」を完璧にしよう！<br />
+              まずは「まぎらわしい{DIFFERS_NON_TOKYO.length}県」を完璧にしよう！<br />
               入試でよく出るポイントだよ 📝
             </p>
           </div>
@@ -181,17 +186,15 @@ export default function CapitalQuiz() {
         {/* 正解/不正解バナー */}
         {isCorrect !== null && (
           <div className={`mb-4 rounded-2xl py-3 px-4 text-center font-black text-lg ${
-            isCorrect
-              ? 'bg-green-500 text-white'
-              : 'bg-red-400 text-white'
+            isCorrect ? 'bg-green-500 text-white' : 'bg-red-400 text-white'
           }`}>
-            {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.capital}」`}
+            {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.capital}市」`}
           </div>
         )}
 
         <div className="grid grid-cols-2 gap-3">
           {q.choices.map(({ capital, kana }) => {
-            const isCorrectChoice = capital === q.pref.capital
+            const isCorrectChoice  = capital === q.pref.capital
             const isSelectedChoice = selected === capital
             let cls = 'bg-white border-2 border-gray-200'
             if (selected !== null) {
@@ -201,12 +204,20 @@ export default function CapitalQuiz() {
             return (
               <button key={capital} onClick={() => handleSelect(capital)}
                 className={`${cls} rounded-2xl py-4 px-3 text-center transition-all active:scale-95 shadow-sm`}>
-                <span className="block font-bold text-gray-800 text-base">{capital}</span>
+                <span className="block font-bold text-gray-800 text-base">{capital}市</span>
                 <span className="block text-xs text-gray-500 mt-0.5">{kana}</span>
               </button>
             )
           })}
         </div>
+
+        {/* 次へボタン（回答後に表示） */}
+        {selected !== null && (
+          <button onClick={handleNext}
+            className="mt-5 w-full bg-purple-500 text-white font-bold py-4 rounded-2xl text-lg active:scale-95 transition-all">
+            {qIndex + 1 >= questions.length ? '結果を見る 🏆' : 'つぎへ →'}
+          </button>
+        )}
       </div>
     </div>
   )
