@@ -119,7 +119,7 @@ function SlideRulerDiagram({ spec }: { spec: Record<string, unknown> }) {
 // ─────────────────────────────────────
 // SVG: 線分図（和差算）
 // ─────────────────────────────────────
-function LineSegDiagram({ spec }: { spec: Record<string, unknown> }) {
+function LineSegDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
   const sum = spec.sum as number
   const diff = spec.diff as number
   const largeLabel = (spec.largeLabel as string) ?? '大きい方'
@@ -158,96 +158,87 @@ function LineSegDiagram({ spec }: { spec: Record<string, unknown> }) {
 
   const large = (sum + diff) / 2
   const small = (sum - diff) / 2
-
-  // Layout constants
-  const labelX = 50       // right edge of label area
-  const barStart = labelX + 4
+  const barStart = 54
   const barEnd = 238
   const totalW = barEnd - barStart
-  const ratio = small / large            // 小さい方 / 大きい方
-  const largeW = totalW                  // Section A: 大きい方 = full width
-  const smallW = totalW * ratio          // Section A: 小さい方 = proportional
-  const diffW = largeW - smallW          // Section A: 差 gap
-
-  // Section B (和): 大きい方 + 小さい方 placed end-to-end, total = 和
-  // scale so combined width = totalW
-  const bLargeW = totalW * (large / sum)
-  const bSmallW = totalW * (small / sum)
-
-  // Y positions — Section A (top), Section B (bottom)
-  const sectionALabel = 12
-  const yA1 = 28   // 大きい方 bar centre
-  const yA2 = 52   // 小さい方 bar centre
-  const sectionBLabel = 74
-  const yB = 90    // combined bar centre
-  const bracketY = 108  // 和 bracket
-
+  const largeW = totalW
+  const smallW = Math.round(totalW * small / large)
+  const diffW = largeW - smallW
   const barH = 16
 
   return (
-    <svg viewBox="0 0 250 122" className="w-full max-w-sm mx-auto overflow-visible">
+    <div className="w-full space-y-2">
+      {/* ①差を確認（常時表示） */}
+      <svg viewBox="0 0 250 78" className="w-full max-w-sm mx-auto overflow-visible">
+        <text x="27" y="11" textAnchor="middle" fontSize="9" fill="#6B5A52" fontWeight="bold">①差を確認</text>
 
-      {/* ── Section A: ①差を確認 ──────────────── */}
-      <text x={labelX / 2} y={sectionALabel} textAnchor="middle"
-        fontSize="9" fill="#6B5A52" fontWeight="bold">①差を確認</text>
+        <text x={barStart - 3} y="34" textAnchor="end" fontSize="10" fill="#3A2E2A" fontWeight="bold">{largeLabel}</text>
+        <rect x={barStart} y="22" width={largeW} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+        {showValues && (
+          <text x={barStart + largeW / 2} y="34" textAnchor="middle" fontSize="11" fill="#3A2E2A" fontWeight="bold">{large}</text>
+        )}
 
-      {/* 大きい方バー */}
-      <text x={labelX - 2} y={yA1 + 4} textAnchor="end" fontSize="10"
-        fill="#3A2E2A" fontWeight="bold">{largeLabel}</text>
-      <rect x={barStart} y={yA1 - barH / 2} width={largeW} height={barH} rx="3"
-        fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
-      {showValues && (
-        <text x={barStart + largeW / 2} y={yA1 + 4} textAnchor="middle"
-          fontSize="11" fill="#3A2E2A" fontWeight="bold">{large}</text>
+        <text x={barStart - 3} y="58" textAnchor="end" fontSize="10" fill="#3A2E2A" fontWeight="bold">{smallLabel}</text>
+        <rect x={barStart} y="46" width={smallW} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+        {showValues && (
+          <text x={barStart + smallW / 2} y="58" textAnchor="middle" fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
+        )}
+
+        <line x1={barStart} y1="22" x2={barStart} y2="62" stroke="#3A2E2A" strokeWidth="1" strokeDasharray="2 2" opacity="0.2" />
+
+        {/* Stage 0: 差の位置を薄いグレー枠で示す */}
+        {wrongCount === 0 && diff > 0 && (
+          <rect x={barStart + smallW} y="46" width={diffW} height={barH} rx="3"
+            fill="transparent" stroke="#C4B8AE" strokeWidth="1" strokeDasharray="3 2" />
+        )}
+        {/* Stage 1+: 差を赤点線 + ラベルで強調 */}
+        {wrongCount >= 1 && diff > 0 && (
+          <>
+            <rect x={barStart + smallW} y="46" width={diffW} height={barH} rx="3"
+              fill="rgba(248,113,113,0.15)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" />
+            <text x={barStart + smallW + diffW / 2} y="43" textAnchor="middle"
+              fontSize="9" fill="#f87171" fontWeight="bold">差 = {diff}</text>
+          </>
+        )}
+      </svg>
+
+      {/* ②差を引くと…（wrongCount >= 2 で表示） */}
+      {wrongCount >= 2 && (
+        <svg viewBox={`0 0 250 ${wrongCount >= 3 ? 96 : 84}`} className="w-full max-w-sm mx-auto overflow-visible">
+          <text x="27" y="11" textAnchor="middle" fontSize="9" fill="#6B5A52" fontWeight="bold">②差を引くと…</text>
+
+          {/* 2本が等しくなった（どちらも smallW） */}
+          <text x={barStart - 3} y="34" textAnchor="end" fontSize="10" fill="#3A2E2A" fontWeight="bold">{largeLabel}</text>
+          <rect x={barStart} y="22" width={smallW} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+          {wrongCount >= 3 && (
+            <text x={barStart + smallW / 2} y="34" textAnchor="middle" fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
+          )}
+
+          <text x={barStart - 3} y="58" textAnchor="end" fontSize="10" fill="#3A2E2A" fontWeight="bold">{smallLabel}</text>
+          <rect x={barStart} y="46" width={smallW} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+          {wrongCount >= 3 && (
+            <text x={barStart + smallW / 2} y="58" textAnchor="middle" fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
+          )}
+
+          <line x1={barStart} y1="22" x2={barStart} y2="62" stroke="#3A2E2A" strokeWidth="1" strokeDasharray="2 2" opacity="0.2" />
+
+          {/* ブラケット: 2本合わせて = 和 − 差 */}
+          <line x1={barStart} y1="70" x2={barStart + smallW} y2="70" stroke="#16a34a" strokeWidth="1.5" />
+          <line x1={barStart} y1="66" x2={barStart} y2="74" stroke="#16a34a" strokeWidth="1.5" />
+          <line x1={barStart + smallW} y1="66" x2={barStart + smallW} y2="74" stroke="#16a34a" strokeWidth="1.5" />
+          <text x={barStart + smallW / 2} y="82" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">
+            2本で 和 − 差 = {sum - diff}
+          </text>
+
+          {/* Stage 3: ÷ 2 = answer */}
+          {wrongCount >= 3 && (
+            <text x={barStart + smallW / 2} y="95" textAnchor="middle" fontSize="10" fill="#f0c040" fontWeight="bold">
+              ÷ 2 = {small} ずつ！
+            </text>
+          )}
+        </svg>
       )}
-
-      {/* 小さい方バー */}
-      <text x={labelX - 2} y={yA2 + 4} textAnchor="end" fontSize="10"
-        fill="#3A2E2A" fontWeight="bold">{smallLabel}</text>
-      <rect x={barStart} y={yA2 - barH / 2} width={smallW} height={barH} rx="3"
-        fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
-      {showValues && (
-        <text x={barStart + smallW / 2} y={yA2 + 4} textAnchor="middle"
-          fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
-      )}
-
-      {/* 差（赤点線バー） */}
-      {diff > 0 && (
-        <>
-          <rect x={barStart + smallW} y={yA2 - barH / 2} width={diffW} height={barH} rx="3"
-            fill="rgba(248,113,113,0.12)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" />
-          <text x={barStart + smallW + diffW / 2} y={yA2 - barH / 2 - 3} textAnchor="middle"
-            fontSize="9" fill="#f87171" fontWeight="bold">差</text>
-        </>
-      )}
-
-      {/* ── Section B: ②和を確認 ──────────────── */}
-      <text x={labelX / 2} y={sectionBLabel} textAnchor="middle"
-        fontSize="9" fill="#6B5A52" fontWeight="bold">②和を確認</text>
-
-      {/* 大きい方（左） */}
-      <rect x={barStart} y={yB - barH / 2} width={bLargeW} height={barH} rx="3"
-        fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
-      {showValues && (
-        <text x={barStart + bLargeW / 2} y={yB + 4} textAnchor="middle"
-          fontSize="11" fill="#3A2E2A" fontWeight="bold">{large}</text>
-      )}
-
-      {/* 小さい方（右） */}
-      <rect x={barStart + bLargeW} y={yB - barH / 2} width={bSmallW} height={barH} rx="3"
-        fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
-      {showValues && (
-        <text x={barStart + bLargeW + bSmallW / 2} y={yB + 4} textAnchor="middle"
-          fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
-      )}
-
-      {/* 和ブラケット（全体幅） */}
-      <line x1={barStart} y1={bracketY} x2={barEnd} y2={bracketY} stroke="#16a34a" strokeWidth="1.5" />
-      <line x1={barStart} y1={bracketY - 4} x2={barStart} y2={bracketY + 4} stroke="#16a34a" strokeWidth="1.5" />
-      <line x1={barEnd} y1={bracketY - 4} x2={barEnd} y2={bracketY + 4} stroke="#16a34a" strokeWidth="1.5" />
-      <text x={(barStart + barEnd) / 2} y={bracketY + 13} textAnchor="middle"
-        fontSize="10" fill="#16a34a" fontWeight="bold">和（合計）</text>
-    </svg>
+    </div>
   )
 }
 
@@ -393,7 +384,7 @@ const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   arrow: '→ 矢印図',
 }
 
-function DiagramRenderer({ type, spec }: { type: DiagramType; spec: Record<string, unknown> }) {
+function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; spec: Record<string, unknown>; wrongCount?: number }) {
   if (type === 'none') return null
   return (
     <div className="rounded-2xl p-4 flex flex-col items-center"
@@ -403,7 +394,7 @@ function DiagramRenderer({ type, spec }: { type: DiagramType; spec: Record<strin
       </p>
       {type === 'slide' && <SlideRulerDiagram spec={spec} />}
       {type === 'dot-line' && <DotLineDiagram spec={spec} />}
-      {type === 'line-seg' && <LineSegDiagram spec={spec} />}
+      {type === 'line-seg' && <LineSegDiagram spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
@@ -522,9 +513,9 @@ function ProblemSolver({
         </p>
       </div>
 
-      {/* 図 */}
+      {/* 図（wrongCount に連動して段階的に変化） */}
       {problem.diagramType !== 'none' && (
-        <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} />
+        <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} wrongCount={wrongCount} />
       )}
 
       {/* 答え入力エリア */}
