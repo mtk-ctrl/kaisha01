@@ -561,7 +561,7 @@ function HomeTab({ profile, stats, userType }: {
             {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
           <SectionLabel emoji="📘" label="小学生（小1〜小6）" sub="6〜12才｜学年別カリキュラム" />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-2">
             {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
         </>
@@ -572,11 +572,37 @@ function HomeTab({ profile, stats, userType }: {
             {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
           <SectionLabel emoji="🌱" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 mb-2">
             {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
           </div>
         </>
       )}
+      {/* 中学受験セクション */}
+      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜小6｜文章題・特殊算" />
+      <Link href="/apps/juku"
+        className="block rounded-[22px] p-5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
+        style={{ background: '#FFF1B8', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }}>
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
+            style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A', transform: 'rotate(-3deg)' }}>
+            🏆
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>中学受験 算数①</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-black"
+                style={{ background: '#FFC83D', border: '1.5px solid #3A2E2A', color: '#3A2E2A' }}>
+                NEW
+              </span>
+            </div>
+            <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>文章題・特殊算 12単元 | 図で考える</p>
+            <p className="text-[10px] mt-1" style={{ color: '#6B5A52' }}>
+              第1層（2単元）は無料 · 残りは会員限定
+            </p>
+          </div>
+          <span style={{ color: '#6B5A52', fontSize: 18 }}>›</span>
+        </div>
+      </Link>
     </div>
   )
 }
