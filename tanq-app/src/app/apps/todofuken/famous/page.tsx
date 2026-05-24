@@ -211,18 +211,29 @@ export default function FamousQuiz() {
         <div className="bg-white rounded-3xl shadow-lg p-5 mb-4 text-center">
           <p className="text-sm text-gray-500 mb-2">これは どこの 都道府県の 名物？</p>
           <div className="text-6xl mb-2">{q.item.emoji}</div>
-          <p className="text-xl font-black text-gray-800">{q.item.name}</p>
-          {q.item.note && <p className="text-xs text-gray-400 mt-2 leading-relaxed line-clamp-2">{q.item.note}</p>}
+          <p className="text-base font-black text-gray-800 leading-snug break-words">{q.item.name}</p>
         </div>
 
-        {/* 正解/不正解バナー */}
+        {/* 正解/不正解 + 解説パネル */}
         {isCorrect !== null && (
-          <div className={`mb-4 rounded-2xl py-3 px-4 text-center font-black text-lg ${
-            isCorrect
-              ? 'bg-green-500 text-white'
-              : 'bg-red-400 text-white'
+          <div className={`mb-4 rounded-2xl overflow-hidden shadow-sm border-2 ${
+            isCorrect ? 'border-green-400' : 'border-red-400'
           }`}>
-            {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.name}」`}
+            <div className={`py-3 px-4 text-center font-black text-lg ${
+              isCorrect ? 'bg-green-500 text-white' : 'bg-red-400 text-white'
+            }`}>
+              {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.name}」`}
+            </div>
+            <div className="bg-amber-50 px-4 py-3">
+              <p className="text-xs font-bold text-amber-700 mb-1">💡 おぼえよう！</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                {q.item.note || `${q.pref.name}（${q.pref.kana}）は${q.pref.region}地方にある都道府県。${q.item.name}が有名な名物だよ！`}
+              </p>
+              <div className="flex items-center gap-1.5 mt-2">
+                <span className="text-base">{q.pref.emoji}</span>
+                <span className="text-xs text-gray-500 font-medium">{q.pref.name}（{q.pref.region}地方）</span>
+              </div>
+            </div>
           </div>
         )}
 
