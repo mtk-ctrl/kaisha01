@@ -8,6 +8,7 @@ import { WORDS } from '@/data/englishData'
 import { getDataKey } from '@/lib/storage'
 import { PROBLEMS as WORD_MATH_PROBLEMS } from '@/data/wordMathData'
 import { SCIENCE_QUESTIONS } from '@/data/scienceData'
+import { kokugoQuestions, KOKUGO_LEVEL_META } from '@/data/kokugoData'
 
 // アプリが提供する全体数（SRS済み数ではなく全データ数）
 const TOTAL_KANJI = Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0)
@@ -15,6 +16,7 @@ const TOTAL_ENGLISH = WORDS.length
 const TOTAL_WORDMATH = WORD_MATH_PROBLEMS.length  // 61
 const CODING_TOTAL = 9  // プログラミングの全ステージ数
 const TOTAL_SCIENCE = SCIENCE_QUESTIONS.length  // 260
+const TOTAL_KOKUGO_LEVELS = KOKUGO_LEVEL_META.length  // 20
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -29,7 +31,7 @@ function canAccessApp(appId: string, userType: UserType): boolean {
   if (userType === 'tester') return true
   if (userType === 'member') return appId !== 'tanq'
   // ゲスト: 内製基本アプリ + 幼稚園外部アプリ + 思考力（Lv1-2のみ・制限はアプリ側で制御）
-  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId === 'thinking-youji' || appId.startsWith('youji-') || appId === 'science'
+  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId === 'thinking-youji' || appId.startsWith('youji-') || appId === 'science' || appId === 'kokugo'
 }
 
 function lockLabel(appId: string, userType: UserType): string | null {
@@ -103,6 +105,14 @@ function computeStats() {
   })
   const scienceMastered = scienceByDomain.reduce((sum, d) => sum + d.mastered, 0)
 
+  let kokugoLevelStars: Record<number, 0 | 1 | 2 | 3> = {}
+  try {
+    const raw = localStorage.getItem('tanq_kokugo_v1')
+    if (raw) kokugoLevelStars = (JSON.parse(raw) as { levelStars: Record<number, 0 | 1 | 2 | 3> }).levelStars || {}
+  } catch {}
+  const kokugoCleared = Object.values(kokugoLevelStars).filter(s => s >= 1).length
+  const kokugoStars3 = Object.values(kokugoLevelStars).filter(s => s === 3).length
+
   const wmByGrade = (['小1', '小2', '小3'] as const).map(grade => {
     const pool = WORD_MATH_PROBLEMS.filter(p => p.grade === grade)
     const mastered = pool.filter(p => wmStore[p.id]?.b === 2).length
@@ -164,6 +174,7 @@ function computeStats() {
     engMastered, engLearning, engTotal: TOTAL_ENGLISH,
     wmByGrade,
     scienceByDomain, scienceMastered, scienceTotal: TOTAL_SCIENCE,
+    kokugoCleared, kokugoStars3, kokugoTotal: TOTAL_KOKUGO_LEVELS,
     thinkingMaxLevel, thinkingBadgeCount,
     youjiMaxLevel, youjiBadgeCount,
     codingCleared,
@@ -183,6 +194,7 @@ const APPS: {
   // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei', targetAge: '小4〜小6' },
   { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'shougakusei', targetAge: '小4〜小6' },
+  { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小3〜小6' },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: 'タイムアタック',   audience: 'shougakusei', targetAge: '小2〜小6' },
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '分・時間計算',     audience: 'shougakusei', targetAge: '小2〜小4' },
@@ -829,6 +841,35 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
           )}
           <div className="flex gap-2 flex-wrap mt-2">
             {scienceBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 国語クイズ */}
+        <RecordsAppCard bg="#EDE9FE">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">📖</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>国語クイズ</span>
+            {stats.kokugoCleared === 0 && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {stats.kokugoCleared > 0 && (
+            <div className="space-y-1 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black" style={{ color: '#3A2E2A' }}>クリア</span>
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${Math.round(stats.kokugoCleared / stats.kokugoTotal * 100)}%`, background: '#8b5cf6' }} />
+                </div>
+                <span className="text-[10px] font-bold" style={{ color: '#6B5A52' }}>{stats.kokugoCleared}/{stats.kokugoTotal}Lv</span>
+              </div>
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {[
+              { emoji: '🌸', label: 'はじめの\n一歩', color: '#ec4899', earned: stats.kokugoCleared >= 1 },
+              { emoji: '📗', label: '5Lv制覇', color: '#22c55e', earned: stats.kokugoCleared >= 5 },
+              { emoji: '📘', label: '10Lv制覇', color: '#3b82f6', earned: stats.kokugoCleared >= 10 },
+              { emoji: '📙', label: '15Lv制覇', color: '#f97316', earned: stats.kokugoCleared >= 15 },
+              { emoji: '🏆', label: '国語\nマスター', color: '#7c3aed', earned: stats.kokugoCleared >= 20 },
+            ].map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
 
