@@ -7,12 +7,14 @@ import { KANJI_DATA } from '@/data/kanjiData'
 import { WORDS } from '@/data/englishData'
 import { getDataKey } from '@/lib/storage'
 import { PROBLEMS as WORD_MATH_PROBLEMS } from '@/data/wordMathData'
+import { SCIENCE_QUESTIONS } from '@/data/scienceData'
 
 // アプリが提供する全体数（SRS済み数ではなく全データ数）
 const TOTAL_KANJI = Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0)
 const TOTAL_ENGLISH = WORDS.length
 const TOTAL_WORDMATH = WORD_MATH_PROBLEMS.length  // 61
 const CODING_TOTAL = 9  // プログラミングの全ステージ数
+const TOTAL_SCIENCE = SCIENCE_QUESTIONS.length  // 260
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -27,7 +29,7 @@ function canAccessApp(appId: string, userType: UserType): boolean {
   if (userType === 'tester') return true
   if (userType === 'member') return appId !== 'tanq'
   // ゲスト: 内製基本アプリ + 幼稚園外部アプリ + 思考力（Lv1-2のみ・制限はアプリ側で制御）
-  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId === 'thinking-youji' || appId.startsWith('youji-')
+  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId === 'thinking-youji' || appId.startsWith('youji-') || appId === 'science'
 }
 
 function lockLabel(appId: string, userType: UserType): string | null {
@@ -86,11 +88,20 @@ function computeStats() {
   const kanjiStore = readSRSStore('tanq_kanji_srs_v1')
   const englishStore = readSRSStore('tanq_english_srs_v1')
   const wmStore = readSRSStore('tanq_wordmath_srs_v1')
+  const scienceStore = readSRSStore('tanq_science_srs_v1')
 
   const kanjiMastered = countSRS(kanjiStore, 2)
   const kanjiLearning = countSRS(kanjiStore, 1)
   const engMastered = countSRS(englishStore, 2)
   const engLearning = countSRS(englishStore, 1)
+
+  const SCIENCE_DOMAINS = ['生物', '地学', '化学', '物理'] as const
+  const scienceByDomain = SCIENCE_DOMAINS.map(domain => {
+    const pool = SCIENCE_QUESTIONS.filter(q => q.domain === domain)
+    const mastered = pool.filter(q => scienceStore[q.id]?.b === 2).length
+    return { domain, total: pool.length, mastered }
+  })
+  const scienceMastered = scienceByDomain.reduce((sum, d) => sum + d.mastered, 0)
 
   const wmByGrade = (['小1', '小2', '小3'] as const).map(grade => {
     const pool = WORD_MATH_PROBLEMS.filter(p => p.grade === grade)
@@ -152,6 +163,7 @@ function computeStats() {
     kanjiMastered, kanjiLearning, kanjiTotal: TOTAL_KANJI,
     engMastered, engLearning, engTotal: TOTAL_ENGLISH,
     wmByGrade,
+    scienceByDomain, scienceMastered, scienceTotal: TOTAL_SCIENCE,
     thinkingMaxLevel, thinkingBadgeCount,
     youjiMaxLevel, youjiBadgeCount,
     codingCleared,
@@ -170,6 +182,7 @@ const APPS: {
 }[] = [
   // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei', targetAge: '小4〜小6' },
+  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'shougakusei', targetAge: '小4〜小6' },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: 'タイムアタック',   audience: 'shougakusei', targetAge: '小2〜小6' },
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '分・時間計算',     audience: 'shougakusei', targetAge: '小2〜小4' },
@@ -689,13 +702,21 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
     { emoji: '🔷', label: 'ずけい\nはかせ', color: '#60A5FA', earned: stats.shapesBest >= 10 },
     { emoji: '🏆', label: 'マスター', color: '#FF6F9C', earned: stats.shapesBest >= 14 },
   ]
+  const DOMAIN_COLORS_REC: Record<string, string> = { '生物': '#22c55e', '地学': '#0ea5e9', '化学': '#f59e0b', '物理': '#8b5cf6' }
+  const scienceBadges = [
+    { emoji: '🌱', label: 'さいしょの\n一歩', color: '#7BE8B0', earned: stats.scienceMastered >= 5 },
+    { emoji: '⚗️', label: 'かがくずき', color: '#f59e0b', earned: stats.scienceMastered >= 30 },
+    { emoji: '🔬', label: 'りかはかせ', color: '#0ea5e9', earned: stats.scienceMastered >= 80 },
+    { emoji: '🏆', label: 'ぜんぶ！', color: '#FF6F9C', earned: stats.scienceMastered >= stats.scienceTotal && stats.scienceTotal > 0 },
+  ]
 
-  const allBadges = [...kanjiBadges, ...engBadges, ...wmBadges, ...codingBadges, ...mathBadges, ...clockBadges, ...shapesBadges]
+  const allBadges = [...kanjiBadges, ...engBadges, ...wmBadges, ...scienceBadges, ...codingBadges, ...mathBadges, ...clockBadges, ...shapesBadges]
   const earnedCount = allBadges.filter(b => b.earned).length
 
   const hasKanji = stats.kanjiMastered > 0
   const hasEng = stats.engMastered > 0
   const hasWm = stats.wmByGrade.some(g => g.mastered > 0)
+  const hasScience = stats.scienceMastered > 0
   const hasThinking = stats.thinkingMaxLevel > 0
   const hasYouji = stats.youjiMaxLevel > 0
   const hasCoding = stats.codingCleared > 0
@@ -780,6 +801,34 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
           )}
           <div className="flex gap-2 flex-wrap mt-2">
             {wmBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 理科クイズ */}
+        <RecordsAppCard bg="#DFF6CF">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">⚗️</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>理科クイズ</span>
+            {!hasScience && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasScience && (
+            <div className="space-y-1 mb-3">
+              {stats.scienceByDomain.map(({ domain, mastered, total }) => {
+                const pct = total > 0 ? Math.round(mastered / total * 100) : 0
+                return (
+                  <div key={domain} className="flex items-center gap-2">
+                    <span className="text-[10px] font-black w-6" style={{ color: '#3A2E2A' }}>{domain}</span>
+                    <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: DOMAIN_COLORS_REC[domain] }} />
+                    </div>
+                    <span className="text-[10px] font-bold" style={{ color: '#6B5A52' }}>{mastered}/{total}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {scienceBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
 
