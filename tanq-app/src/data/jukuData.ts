@@ -20,6 +20,12 @@ export interface Problem {
   choices?: string[] // 選択肢（指定時はこちらを優先）
 }
 
+export interface IntroSlide {
+  title: string
+  explanation: string[]   // 図の読み方を箇条書きで
+  diagramSpec: Record<string, unknown>
+}
+
 export interface JukuUnit {
   id: string
   order: number
@@ -32,6 +38,7 @@ export interface JukuUnit {
   coreConcept: string
   approachText: string
   primaryDiagram: DiagramType
+  introSlide?: IntroSlide  // 図の読み方スライド
   problems: Problem[]
   isFree: boolean
 }
@@ -609,12 +616,218 @@ export const JUKU_UNITS: JukuUnit[] = [
   // ─────────────────────────────────────
   // Units 3〜12: プレースホルダー（Phase 2/3で実装）
   // ─────────────────────────────────────
+  // ─────────────────────────────────────
+  // Unit 3: 和差算
+  // ─────────────────────────────────────
   {
-    id: 'sum-diff', order: 3, title: '和差算・分配算・年齢算', titleKana: 'わさざん・ぶんぱいざん・ねんれいざん',
-    emoji: '⚖️', color: '#f0c040', layer: 2, prerequisiteIds: ['tree-planting'],
-    isFree: false, coreConcept: '線分図で数量の関係を整理する',
-    approachText: '「線分図」を自分で書く習慣をつけよう。',
-    primaryDiagram: 'line-seg', problems: [],
+    id: 'sum-diff',
+    order: 3,
+    title: '和差算',
+    titleKana: 'わさざん',
+    emoji: '⚖️',
+    color: '#f0c040',
+    layer: 2,
+    prerequisiteIds: ['tree-planting'],
+    isFree: false,
+    coreConcept: '「和（合計）」と「差（ちがい）」の2つが分かれば、それぞれの数が求まる',
+    approachText:
+      '2本の線分を並べて図にしよう。\n長い線が「大きい方」、短い線が「小さい方」。\n大きい方＝（和＋差）÷2　小さい方＝（和－差）÷2\n公式より、図を書いて「なぜそうなるか」を理解しよう。',
+    primaryDiagram: 'line-seg',
+    introSlide: {
+      title: '線分図（せんぶんず）の読み方',
+      explanation: [
+        '2本の線で2つの数量を表す（長い＝大きい方・短い＝小さい方）',
+        '赤い点線部分が「差（ちがい）」——2本の線の長さのちがい',
+        '黄色の全体が「和（合計）」——2本の線を足した長さ',
+        '小さい方を2つ並べると「和－差」になる→（和－差）÷2＝小さい方',
+      ],
+      diagramSpec: {
+        sum: 20, diff: 4,
+        largeLabel: '大きい方', smallLabel: '小さい方',
+        showValues: true,
+      },
+    },
+    problems: [
+      // ──────────────────────────────────
+      // ★ かんたん
+      // ──────────────────────────────────
+      {
+        id: 'sd-01',
+        title: '2つの数の和と差',
+        difficulty: 1,
+        problemText: '2つの数があります。和（合計）は20、差（ちがい）は4です。大きい方の数はいくつですか？',
+        answer: '12',
+        answerUnit: '',
+        diagramType: 'line-seg',
+        diagramSpec: { sum: 20, diff: 4, largeLabel: '大きい数', smallLabel: '小さい数' },
+        hints: [
+          { step: 1, text: '線分図を書いてみよう。長い線が「大きい数」、短い線が「小さい数」。長い線は短い線より4だけ長くなるよ。' },
+          { step: 2, text: '短い線を2本並べると：合計20－差4＝16。つまり短い線（小さい方）は16÷2＝8だよ。' },
+          { step: 3, text: '小さい方＝8。大きい方＝8＋4＝12。確かめ：8＋12＝20◎、12－8＝4◎' },
+        ],
+        explanationText: '（和＋差）÷2＝大きい方。(20＋4)÷2＝12。または小さい方＝(20－4)÷2＝8、大きい方＝8＋4＝12。',
+      },
+      {
+        id: 'sd-02',
+        title: 'おはじきの問題',
+        difficulty: 1,
+        problemText: '兄と弟のおはじきを合わせると28個あります。兄は弟より6個多く持っています。弟は何個ですか？',
+        answer: '11',
+        answerUnit: '個',
+        diagramType: 'line-seg',
+        diagramSpec: { sum: 28, diff: 6, largeLabel: '兄', smallLabel: '弟' },
+        hints: [
+          { step: 1, text: '兄が多いので線分図では兄が長い線。弟を短い線で書いて、兄は弟より6個分長くなるよ。' },
+          { step: 2, text: '弟を2本並べると：28－6＝22個分。弟は22÷2＝11個だよ。' },
+          { step: 3, text: '弟＝11個。確かめ：兄＝11＋6＝17個、17＋11＝28◎' },
+        ],
+        explanationText: '小さい方（弟）＝(和－差)÷2＝(28－6)÷2＝11個。',
+      },
+      {
+        id: 'sd-03',
+        title: 'リボンの長さ',
+        difficulty: 1,
+        problemText: '2本のリボンの合計は60cmです。長い方は短い方より20cm長いです。長い方のリボンは何cmですか？',
+        answer: '40',
+        answerUnit: 'cm',
+        diagramType: 'line-seg',
+        diagramSpec: { sum: 60, diff: 20, largeLabel: '長い方', smallLabel: '短い方' },
+        hints: [
+          { step: 1, text: '「短い方」を基準に線分図を書こう。長い方＝短い方＋20cm。' },
+          { step: 2, text: '短い方を2本並べると：60－20＝40cm分。短い方は40÷2＝20cmだよ。' },
+          { step: 3, text: '短い方＝20cm。長い方＝20＋20＝40cm。または(60＋20)÷2＝40cm！' },
+        ],
+        explanationText: '大きい方（長い方）＝(和＋差)÷2＝(60＋20)÷2＝40cm。',
+      },
+      // ──────────────────────────────────
+      // ★★ ふつう
+      // ──────────────────────────────────
+      {
+        id: 'sd-04',
+        title: 'くだものの個数',
+        difficulty: 2,
+        problemText: 'みかんとりんごを合わせると30個あります。みかんはりんごより4個多いです。りんごは何個ですか？',
+        answer: '13',
+        answerUnit: '個',
+        diagramType: 'line-seg',
+        diagramSpec: { sum: 30, diff: 4, largeLabel: 'みかん', smallLabel: 'りんご' },
+        hints: [
+          { step: 1, text: 'みかんが多いのでみかんが長い線。「和30・差4」を線分図に書き込もう。' },
+          { step: 2, text: 'りんごを2本並べると：30－4＝26個。りんごは26÷2＝13個だよ。' },
+          { step: 3, text: 'りんご＝13個。確かめ：みかん＝13＋4＝17個、17＋13＝30◎' },
+        ],
+        explanationText: '小さい方（りんご）＝(30－4)÷2＝13個。みかん＝13＋4＝17個。',
+      },
+      {
+        id: 'sd-05',
+        title: 'クラスの人数',
+        difficulty: 2,
+        problemText: '1組と2組の合計は69人です。1組は2組より5人多いです。2組は何人ですか？',
+        answer: '32',
+        answerUnit: '人',
+        diagramType: 'line-seg',
+        diagramSpec: { sum: 69, diff: 5, largeLabel: '1組', smallLabel: '2組' },
+        hints: [
+          { step: 1, text: '1組が多いので1組が長い線。和69・差5で線分図を書いてみよう。' },
+          { step: 2, text: '2組を2本並べると：69－5＝64人。2組は64÷2＝32人だよ。' },
+          { step: 3, text: '2組＝32人。確かめ：1組＝32＋5＝37人、37＋32＝69◎' },
+        ],
+        explanationText: '小さい方（2組）＝(69－5)÷2＝32人。',
+      },
+      {
+        id: 'sd-06',
+        title: '貯金の問題',
+        difficulty: 2,
+        problemText: 'たろうとはなこの貯金の合計は5000円です。たろうははなこより600円多く貯金しています。はなこの貯金は何円ですか？',
+        answer: '2200',
+        answerUnit: '円',
+        diagramType: 'line-seg',
+        diagramSpec: { sum: 5000, diff: 600, largeLabel: 'たろう', smallLabel: 'はなこ' },
+        hints: [
+          { step: 1, text: 'たろうが多いのでたろうが長い線。和5000・差600を線分図に書こう。' },
+          { step: 2, text: 'はなこを2本並べると：5000－600＝4400円。はなこは4400÷2＝2200円。' },
+          { step: 3, text: 'はなこ＝2200円。確かめ：たろう＝2200＋600＝2800円、2800＋2200＝5000◎' },
+        ],
+        explanationText: '小さい方（はなこ）＝(5000－600)÷2＝2200円。',
+      },
+      {
+        id: 'sd-07',
+        title: '長方形の面積',
+        difficulty: 2,
+        problemText: '縦と横を足すと24cmになる長方形があります。横は縦より8cm長いです。この長方形の面積は何cm²ですか？',
+        answer: '128',
+        answerUnit: 'cm²',
+        diagramType: 'line-seg',
+        diagramSpec: { sum: 24, diff: 8, largeLabel: '横', smallLabel: '縦' },
+        hints: [
+          { step: 1, text: 'まず縦と横の長さを和差算で求めよう。和24・差8で線分図を書いてみて。' },
+          { step: 2, text: '縦＝(24－8)÷2＝8cm、横＝8＋8＝16cm。次に面積を求めよう。' },
+          { step: 3, text: '面積＝縦×横＝8×16＝128cm²！和差算で辺の長さを求めてから掛け算するよ。' },
+        ],
+        explanationText: '縦＝(24－8)÷2＝8cm、横＝16cm。面積＝8×16＝128cm²。',
+      },
+      // ──────────────────────────────────
+      // ★★★ むずかしい
+      // ──────────────────────────────────
+      {
+        id: 'sd-08',
+        title: '3人の点数（差が連鎖）',
+        difficulty: 3,
+        problemText: 'A・B・Cの3人の算数テストの合計は180点です。AはBより12点多く、BはCより6点多いです。Cは何点ですか？',
+        answer: '52',
+        answerUnit: '点',
+        diagramType: 'line-seg',
+        diagramSpec: {
+          sum: 180, diff: null,
+          largeLabel: 'A', smallLabel: 'C',
+          labels3: ['A', 'B', 'C'],
+          diffs3: [18, 6, 0],
+        },
+        hints: [
+          { step: 1, text: 'CをいちばんCを基準（短い線）にしよう。B＝C＋6点、A＝C＋6＋12＝C＋18点。' },
+          { step: 2, text: '3人の合計：C＋(C＋6)＋(C＋18)＝3×C＋24＝180。3×C＝156。' },
+          { step: 3, text: 'C＝156÷3＝52点！確かめ：B＝58、A＝70、合計70＋58＋52＝180◎' },
+        ],
+        explanationText: 'Cを基準に置く。C＋(C＋6)＋(C＋18)＝180 → 3C＝156 → C＝52点。',
+      },
+      {
+        id: 'sd-09',
+        title: '3色のビー玉（2つずつの和から逆算）',
+        difficulty: 3,
+        problemText: '赤・青・黄色のビー玉があります。赤と青の合計は45個、青と黄の合計は38個、赤と黄の合計は41個です。青は何個ですか？',
+        answer: '21',
+        answerUnit: '個',
+        diagramType: 'none',
+        diagramSpec: {},
+        hints: [
+          { step: 1, text: '3つの式を全部足してみよう。(赤＋青)＋(青＋黄)＋(赤＋黄)＝45＋38＋41＝124。' },
+          { step: 2, text: '左辺は赤・青・黄が2回ずつあるから 2×(赤＋青＋黄)＝124 → 赤＋青＋黄＝62個。' },
+          { step: 3, text: '青＝62－(赤＋黄)＝62－41＝21個！「3つ全部の合計」から2つの合計を引くのがコツ。' },
+        ],
+        explanationText: '全体＝(45＋38＋41)÷2＝62個。青＝62－(赤＋黄)＝62－41＝21個。',
+      },
+      {
+        id: 'sd-10',
+        title: '年齢算（今と何年後）',
+        difficulty: 3,
+        problemText: '今、父は38歳、子は10歳です。父の年齢が子の年齢のちょうど3倍になるのは何年後ですか？',
+        answer: '4',
+        answerUnit: '年後',
+        diagramType: 'line-seg',
+        diagramSpec: {
+          sum: null, diff: null,
+          largeLabel: '父の年齢', smallLabel: '子の年齢×3',
+          isAgeType: true,
+          fatherNow: 38, childNow: 10, ratio: 3,
+        },
+        hints: [
+          { step: 1, text: '「□年後」として考えよう。□年後の父は(38＋□)歳、子は(10＋□)歳。「父＝子の3倍」という式を作るよ。' },
+          { step: 2, text: '38＋□＝3×(10＋□) を解こう。右辺を展開すると 38＋□＝30＋3×□。' },
+          { step: 3, text: '38－30＝3×□－□ → 8＝2×□ → □＝4年後！確かめ：父42歳＝子14歳×3◎' },
+        ],
+        explanationText: '38＋□＝3(10＋□) → 8＝2□ → 4年後。父42歳＝子14歳×3。',
+      },
+    ],
   },
   {
     id: 'crane-turtle', order: 4, title: '鶴亀算', titleKana: 'つるかめさん',

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { JUKU_UNITS, Problem, DiagramType } from '@/data/jukuData'
+import { JUKU_UNITS, Problem, DiagramType, IntroSlide } from '@/data/jukuData'
 import { getDataKey } from '@/lib/storage'
 
 const JUKU_PROGRESS_KEY = 'tanq_juku_progress_v1'
@@ -113,6 +113,99 @@ function SlideRulerDiagram({ spec }: { spec: Record<string, unknown> }) {
         </div>
       )}
     </div>
+  )
+}
+
+// ─────────────────────────────────────
+// SVG: 線分図（和差算）
+// ─────────────────────────────────────
+function LineSegDiagram({ spec }: { spec: Record<string, unknown> }) {
+  const sum = spec.sum as number
+  const diff = spec.diff as number
+  const largeLabel = (spec.largeLabel as string) ?? '大きい方'
+  const smallLabel = (spec.smallLabel as string) ?? '小さい方'
+  const showValues = (spec.showValues as boolean) ?? false
+  const isAgeType = (spec.isAgeType as boolean) ?? false
+
+  // 年齢算タイプは別レイアウトで表示
+  if (isAgeType) {
+    const fatherNow = spec.fatherNow as number
+    const childNow = spec.childNow as number
+    return (
+      <div className="rounded-xl p-3 space-y-2" style={{ background: '#FFF6E5', border: '2px solid #C4B8AE' }}>
+        <p className="text-[10px] font-black" style={{ color: '#6B5A52' }}>□年後の年齢を□で表す</p>
+        <div className="grid grid-cols-2 gap-2 text-xs font-bold text-center">
+          {[
+            { label: '父（今）', val: `${fatherNow}歳`, bg: '#FFF1B8' },
+            { label: '子（今）', val: `${childNow}歳`, bg: '#DBF6F0' },
+            { label: '父（□年後）', val: `${fatherNow}＋□歳`, bg: '#FFF1B8' },
+            { label: '子（□年後）', val: `${childNow}＋□歳`, bg: '#DBF6F0' },
+          ].map(({ label, val, bg }) => (
+            <div key={label} className="rounded-xl p-2" style={{ background: bg, border: '2px solid #3A2E2A' }}>
+              <div style={{ color: '#6B5A52', fontSize: 9 }}>{label}</div>
+              <div style={{ color: '#3A2E2A', fontSize: 12 }}>{val}</div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[10px] font-bold text-center" style={{ color: '#f87171' }}>
+          父＝子×3　になる □ を求める
+        </p>
+      </div>
+    )
+  }
+
+  if (!sum || diff === null || diff === undefined) return null
+
+  const large = (sum + diff) / 2
+  const small = (sum - diff) / 2
+  const barStart = 54
+  const barEnd = 232
+  const totalW = barEnd - barStart
+  const smallEnd = barStart + totalW * (small / large)
+
+  const yLarge = 26
+  const ySmall = 54
+  const ySum = 80
+
+  return (
+    <svg viewBox="0 0 250 95" className="w-full max-w-sm mx-auto overflow-visible">
+      {/* 大きい方（黄色バー） */}
+      <text x={barStart - 5} y={yLarge + 4} textAnchor="end" fontSize="10"
+        fill="#3A2E2A" fontWeight="bold">{largeLabel}</text>
+      <rect x={barStart} y={yLarge - 8} width={totalW} height={16} rx="3"
+        fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+      {showValues && (
+        <text x={(barStart + barEnd) / 2} y={yLarge + 5} textAnchor="middle"
+          fontSize="11" fill="#3A2E2A" fontWeight="bold">{large}</text>
+      )}
+
+      {/* 小さい方（水色バー） */}
+      <text x={barStart - 5} y={ySmall + 4} textAnchor="end" fontSize="10"
+        fill="#3A2E2A" fontWeight="bold">{smallLabel}</text>
+      <rect x={barStart} y={ySmall - 8} width={smallEnd - barStart} height={16} rx="3"
+        fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+      {showValues && (
+        <text x={(barStart + smallEnd) / 2} y={ySmall + 5} textAnchor="middle"
+          fontSize="11" fill="#3A2E2A" fontWeight="bold">{small}</text>
+      )}
+
+      {/* 差（赤点線バー） */}
+      {diff > 0 && (
+        <>
+          <rect x={smallEnd} y={ySmall - 8} width={barEnd - smallEnd} height={16} rx="3"
+            fill="rgba(248,113,113,0.12)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" />
+          <text x={(smallEnd + barEnd) / 2} y={ySmall - 11} textAnchor="middle"
+            fontSize="9" fill="#f87171" fontWeight="bold">差</text>
+        </>
+      )}
+
+      {/* 和（緑ブラケット） */}
+      <line x1={barStart} y1={ySum} x2={barEnd} y2={ySum} stroke="#16a34a" strokeWidth="1.5" />
+      <line x1={barStart} y1={ySum - 4} x2={barStart} y2={ySum + 4} stroke="#16a34a" strokeWidth="1.5" />
+      <line x1={barEnd} y1={ySum - 4} x2={barEnd} y2={ySum + 4} stroke="#16a34a" strokeWidth="1.5" />
+      <text x={(barStart + barEnd) / 2} y={ySum + 13} textAnchor="middle"
+        fontSize="10" fill="#16a34a" fontWeight="bold">和（合計）</text>
+    </svg>
   )
 }
 
@@ -250,16 +343,58 @@ function DotLineDiagram({ spec }: { spec: Record<string, unknown> }) {
 // ─────────────────────────────────────
 // 図レンダラー
 // ─────────────────────────────────────
+const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
+  slide: '📐 スライド図',
+  'dot-line': '🌳 植木のイメージ',
+  'line-seg': '📏 線分図',
+  area: '📊 面積図',
+  arrow: '→ 矢印図',
+}
+
 function DiagramRenderer({ type, spec }: { type: DiagramType; spec: Record<string, unknown> }) {
   if (type === 'none') return null
   return (
     <div className="rounded-2xl p-4 flex flex-col items-center"
       style={{ background: '#FFF6E5', border: '2.5px solid #3A2E2A', minHeight: 80 }}>
       <p className="text-[10px] font-black mb-2" style={{ color: '#6B5A52' }}>
-        {type === 'slide' ? '📐 スライド図' : type === 'dot-line' ? '🌳 植木のイメージ' : '📊 図'}
+        {DIAGRAM_LABELS[type] ?? '📊 図'}
       </p>
       {type === 'slide' && <SlideRulerDiagram spec={spec} />}
       {type === 'dot-line' && <DotLineDiagram spec={spec} />}
+      {type === 'line-seg' && <LineSegDiagram spec={spec} />}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
+// 図の読み方スライド
+// ─────────────────────────────────────
+function IntroSlideCard({ slide, primaryDiagram }: { slide: IntroSlide; primaryDiagram: DiagramType }) {
+  return (
+    <div className="rounded-[22px] overflow-hidden"
+      style={{ border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A' }}>
+      {/* ヘッダー */}
+      <div className="px-4 py-3" style={{ background: '#3A2E2A' }}>
+        <p className="font-black text-sm" style={{ color: '#FFF6E5' }}>
+          📊 {slide.title}
+        </p>
+      </div>
+      {/* 図 */}
+      <div className="px-4 pt-4 pb-2" style={{ background: '#FFFFFF' }}>
+        <DiagramRenderer type={primaryDiagram} spec={slide.diagramSpec} />
+      </div>
+      {/* 読み方ポイント */}
+      <div className="px-4 pb-4 space-y-1.5" style={{ background: '#FFFFFF' }}>
+        {slide.explanation.map((point, i) => (
+          <div key={i} className="flex items-start gap-2">
+            <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center font-black text-[10px]"
+              style={{ background: '#FFC83D', border: '1.5px solid #3A2E2A', color: '#3A2E2A', marginTop: 1 }}>
+              {i + 1}
+            </span>
+            <p className="text-xs font-bold leading-snug" style={{ color: '#3A2E2A' }}>{point}</p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -592,6 +727,10 @@ export default function JukuUnitPage() {
                 </p>
               </div>
             </div>
+            {/* 図の読み方スライド（introSlideがある単元のみ） */}
+            {unit.introSlide && (
+              <IntroSlideCard slide={unit.introSlide} primaryDiagram={unit.primaryDiagram} />
+            )}
             <button onClick={() => setPhase('problem-list')}
               className="w-full py-4 rounded-full font-black text-base transition-all hover:-translate-y-0.5"
               style={{ background: unit.color, border: '3px solid #3A2E2A', boxShadow: '5px 5px 0 0 #3A2E2A', color: '#3A2E2A' }}>
