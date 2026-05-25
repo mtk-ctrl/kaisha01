@@ -185,6 +185,8 @@ function LineSegDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown
         )}
 
         <line x1={barStart} y1="22" x2={barStart} y2="62" stroke="#3A2E2A" strokeWidth="1" strokeDasharray="2 2" opacity="0.2" />
+        {/* 小さい数の右端を縦点線でマーク（②との共通基準線） */}
+        <line x1={barStart + smallW} y1="22" x2={barStart + smallW} y2="62" stroke="#2BA39A" strokeWidth="1.5" strokeDasharray="3 2" />
 
         {/* Stage 0: 差の位置を薄いグレー枠で示す */}
         {wrongCount === 0 && diff > 0 && (
@@ -221,13 +223,15 @@ function LineSegDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown
           )}
 
           <line x1={barStart} y1="22" x2={barStart} y2="62" stroke="#3A2E2A" strokeWidth="1" strokeDasharray="2 2" opacity="0.2" />
+          {/* ①と共通の基準線（同じ長さであることを示す） */}
+          <line x1={barStart + smallW} y1="22" x2={barStart + smallW} y2="62" stroke="#2BA39A" strokeWidth="1.5" strokeDasharray="3 2" />
 
-          {/* ブラケット: 2本合わせて = 和 − 差 */}
+          {/* ブラケット: 合計 = 和 − 差 を具体的な数字で */}
           <line x1={barStart} y1="70" x2={barStart + smallW} y2="70" stroke="#16a34a" strokeWidth="1.5" />
           <line x1={barStart} y1="66" x2={barStart} y2="74" stroke="#16a34a" strokeWidth="1.5" />
           <line x1={barStart + smallW} y1="66" x2={barStart + smallW} y2="74" stroke="#16a34a" strokeWidth="1.5" />
           <text x={barStart + smallW / 2} y="82" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">
-            2本で 和 − 差 = {sum - diff}
+            合計 = {sum} − {diff} = {sum - diff}
           </text>
 
           {/* Stage 3: ÷ 2 = answer */}
