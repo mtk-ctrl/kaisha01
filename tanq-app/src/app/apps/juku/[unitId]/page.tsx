@@ -380,6 +380,112 @@ function DotLineDiagram({ spec }: { spec: Record<string, unknown> }) {
 // ─────────────────────────────────────
 // 図レンダラー
 // ─────────────────────────────────────
+// ─────────────────────────────────────
+// SVG: 仮定法図（鶴亀算）— 和差算の線分図と同じ視覚言語
+// ─────────────────────────────────────
+function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const totalCount = spec.totalCount as number
+  const totalValue = spec.totalValue as number
+  const smallUnit  = spec.smallUnit  as number
+  const largeUnit  = spec.largeUnit  as number
+  const smallName  = (spec.smallName as string) ?? '小'
+  const largeName  = (spec.largeName as string) ?? '大'
+  const unit       = (spec.unit      as string) ?? ''
+  const showValues = (spec.showValues as boolean) ?? false
+
+  const assumedValue = totalCount * smallUnit
+  const diff         = totalValue - assumedValue
+  const unitDiff     = largeUnit - smallUnit
+  const largeCount   = Math.round(diff / unitDiff)
+  const smallCount   = totalCount - largeCount
+
+  const barStart = 54, totalW = 184, barH = 16
+  const scale    = totalW / totalValue
+  const assumedW = Math.round(assumedValue * scale)
+  const diffW    = totalW - assumedW
+
+  // intro slide: showValues=true で全ステージ表示
+  const wc = showValues ? 3 : wrongCount
+
+  return (
+    <div className="w-full space-y-2">
+      {/* ①全部{smallName}と仮定すると… */}
+      <svg viewBox="0 0 250 78" className="w-full max-w-sm mx-auto overflow-visible">
+        <text x="27" y="11" textAnchor="middle" fontSize="9" fill="#6B5A52" fontWeight="bold">
+          ①全部{smallName}と仮定すると…
+        </text>
+
+        {/* 実際の合計バー（上・長い） */}
+        <text x={barStart - 3} y="34" textAnchor="end" fontSize="9" fill="#3A2E2A" fontWeight="bold">実際の{unit}</text>
+        <rect x={barStart} y="22" width={totalW} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+        {showValues && <text x={barStart + totalW / 2} y="34" textAnchor="middle" fontSize="10" fill="#3A2E2A" fontWeight="bold">{totalValue}{unit}</text>}
+
+        {/* 仮定バー（下・短い） */}
+        <text x={barStart - 3} y="58" textAnchor="end" fontSize="9" fill="#3A2E2A" fontWeight="bold">全{smallName}なら</text>
+        <rect x={barStart} y="46" width={assumedW} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+        {showValues && <text x={barStart + assumedW / 2} y="58" textAnchor="middle" fontSize="10" fill="#3A2E2A" fontWeight="bold">{assumedValue}{unit}</text>}
+
+        {/* 左端縦線 */}
+        <line x1={barStart} y1="22" x2={barStart} y2="62" stroke="#3A2E2A" strokeWidth="1" strokeDasharray="2 2" opacity="0.2" />
+        {/* 仮定バー右端（共通基準線 — 和差算と同じティール） */}
+        <line x1={barStart + assumedW} y1="22" x2={barStart + assumedW} y2="62" stroke="#2BA39A" strokeWidth="1.5" strokeDasharray="3 2" />
+
+        {/* Stage 0: 差の位置をグレー枠 */}
+        {wc === 0 && (
+          <rect x={barStart + assumedW} y="46" width={diffW} height={barH} rx="3"
+            fill="transparent" stroke="#C4B8AE" strokeWidth="1" strokeDasharray="3 2" />
+        )}
+        {/* Stage 1+: 差を赤点線 + ラベル */}
+        {wc >= 1 && (
+          <>
+            <rect x={barStart + assumedW} y="46" width={diffW} height={barH} rx="3"
+              fill="rgba(248,113,113,0.15)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" />
+            <text x={barStart + assumedW + diffW / 2} y="43" textAnchor="middle"
+              fontSize="9" fill="#f87171" fontWeight="bold">差 = {diff}{unit}</text>
+          </>
+        )}
+      </svg>
+
+      {/* ②差を割って求める（Stage 2+） */}
+      {wc >= 2 && (
+        <svg viewBox={`0 0 250 ${wc >= 3 ? 95 : 78}`} className="w-full max-w-sm mx-auto overflow-visible">
+          <text x="27" y="11" textAnchor="middle" fontSize="9" fill="#6B5A52" fontWeight="bold">
+            ②1つ替えると +{unitDiff}{unit}
+          </text>
+
+          {/* 差バー（全体） */}
+          <text x={barStart - 3} y="34" textAnchor="end" fontSize="9" fill="#f87171" fontWeight="bold">差</text>
+          <rect x={barStart} y="22" width={diffW} height={barH} rx="3"
+            fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.5" />
+
+          {/* 左端縦線 */}
+          <line x1={barStart} y1="22" x2={barStart} y2="38" stroke="#3A2E2A" strokeWidth="1" strokeDasharray="2 2" opacity="0.2" />
+
+          {/* ブラケット */}
+          <line x1={barStart} y1="46" x2={barStart + diffW} y2="46" stroke="#16a34a" strokeWidth="1.5" />
+          <line x1={barStart} y1="42" x2={barStart} y2="50" stroke="#16a34a" strokeWidth="1.5" />
+          <line x1={barStart + diffW} y1="42" x2={barStart + diffW} y2="50" stroke="#16a34a" strokeWidth="1.5" />
+          <text x={barStart + diffW / 2} y="60" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">
+            {diff} ÷ {unitDiff} = {largeName}の数
+          </text>
+
+          {/* Stage 3: 答えと確認 */}
+          {wc >= 3 && (
+            <>
+              <text x={barStart + diffW / 2} y="74" textAnchor="middle" fontSize="10" fill="#f0c040" fontWeight="bold">
+                {largeName} = {largeCount}、{smallName} = {smallCount}！
+              </text>
+              <text x={barStart + diffW / 2} y="90" textAnchor="middle" fontSize="8" fill="#6B5A52" fontWeight="bold">
+                確認: {largeUnit}×{largeCount}+{smallUnit}×{smallCount}={totalValue}{unit} ✓
+              </text>
+            </>
+          )}
+        </svg>
+      )}
+    </div>
+  )
+}
+
 const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   slide: '📐 スライド図',
   'dot-line': '🌳 植木のイメージ',
@@ -396,9 +502,10 @@ function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; sp
       <p className="text-[10px] font-black mb-2" style={{ color: '#6B5A52' }}>
         {DIAGRAM_LABELS[type] ?? '📊 図'}
       </p>
-      {type === 'slide' && <SlideRulerDiagram spec={spec} />}
+      {type === 'slide'    && <SlideRulerDiagram spec={spec} />}
       {type === 'dot-line' && <DotLineDiagram spec={spec} />}
       {type === 'line-seg' && <LineSegDiagram spec={spec} wrongCount={wrongCount} />}
+      {type === 'area'     && <AreaDiagram    spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
