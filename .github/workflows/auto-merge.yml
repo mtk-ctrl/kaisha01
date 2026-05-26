@@ -1,18 +1,20 @@
 name: Auto-merge AI branches → main + Vercel Deploy
 
-# Jobs (AI CEO) が claude/* ブランチにプッシュすると
-# 自動的に main へマージし、Vercel が即時デプロイする
+# claude/* push → merge to main → Vercel deploy
+# main push (PR merge by owner) → Vercel deploy only
 
 on:
   push:
     branches:
       - 'claude/**'
+      - 'main'
 
 permissions:
   contents: write
 
 jobs:
   merge-to-main:
+    if: startsWith(github.ref, 'refs/heads/claude/')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,7 +33,6 @@ jobs:
           git fetch origin main
           git checkout main
 
-          # マージ試行 - コンフリクト時は自動で feature ブランチの内容を採用
           git merge origin/${{ github.ref_name }} \
             --no-ff \
             -m "🚀 Auto-deploy: ${{ github.ref_name }}
@@ -39,11 +40,9 @@ jobs:
           Merged by Jobs (AI CEO) via GitHub Actions.
           Source commit: ${{ github.sha }}" || \
           {
-            # コンフリクト発生時、feature ブランチの版を使用
             echo "Merge conflict detected, resolving..."
             git merge --abort || true
 
-            # リベース戦略: feature ブランチの変更を優先
             git merge -X theirs origin/${{ github.ref_name }} \
               --no-ff \
               -m "🚀 Auto-deploy: ${{ github.ref_name }}
@@ -55,8 +54,11 @@ jobs:
           git push origin main
 
   deploy-to-vercel:
+    # claude/** → merge-to-main が成功した後にデプロイ
+    # main push  → merge-to-main はスキップされるが always() でデプロイを実行
+    if: always() && (needs.merge-to-main.result == 'success' || needs.merge-to-main.result == 'skipped')
+    needs: [merge-to-main]
     runs-on: ubuntu-latest
-    needs: merge-to-main
     env:
       VERCEL_ORG_ID: team_pHV8kt9g3wxGNxcX4zJ14aIP
       VERCEL_PROJECT_ID: prj_ZyQ7idSXjxL9sK5QtcdiYuoZZrCn
