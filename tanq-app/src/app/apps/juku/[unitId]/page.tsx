@@ -399,34 +399,37 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
   const largeCount   = Math.round(diff / unitDiff)
   const smallCount   = totalCount - largeCount
 
-  // barStart=52 で左にラベル列を確保（「実際」「仮定」）
-  const barStart = 52, totalW = 192, barH = 16
+  // barStart=56 で左ラベル列を確保（「実際」「全部XXなら」）
+  const barStart = 56, totalW = 188, barH = 16
   const scale    = totalW / totalValue
   const assumedW = Math.round(assumedValue * scale)
   const diffW    = totalW - assumedW
+  // ①赤ボックスと②赤バーの共通中心X（矢印・テキスト位置算出用）
+  const redCx    = barStart + assumedW + Math.round(diffW / 2)
 
   // intro slide: showValues=true で全ステージ表示
   const wc = showValues ? 3 : wrongCount
 
   return (
-    <div className="w-full space-y-1">
-      {/* ① タイトルは HTML（SVG 枠線との重なり防止） */}
-      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+    <div className="w-full space-y-0">
+      {/* ① タイトル */}
+      <p className="text-[11px] font-bold mb-0.5" style={{ color: '#6B5A52' }}>
         ①全部{smallName}と仮定すると…
       </p>
 
       <svg viewBox="0 0 250 54" className="w-full max-w-sm mx-auto overflow-visible">
         {/* 左ラベル：各バーが何を表すか */}
         <text x={barStart - 3} y="14" textAnchor="end" fontSize="9" fill="#0d9488" fontWeight="bold">実際</text>
-        <text x={barStart - 3} y="34" textAnchor="end" fontSize="9" fill="#b45309" fontWeight="bold">仮定</text>
+        <text x={barStart - 3} y="32" textAnchor="end" fontSize="8" fill="#b45309" fontWeight="bold">全部</text>
+        <text x={barStart - 3} y="41" textAnchor="end" fontSize="8" fill="#b45309" fontWeight="bold">{smallName}なら</text>
 
-        {/* 実際の合計バー（上・水色） */}
+        {/* 実際バー（上・水色） */}
         <rect x={barStart} y="2" width={totalW} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
         <text x={barStart + totalW / 2} y="14" textAnchor="middle" fontSize="10" fill="#3A2E2A" fontWeight="bold">
           {totalValue}{unit}
         </text>
 
-        {/* 仮定バー（下・黄色）*/}
+        {/* 仮定バー（下・黄色） */}
         <rect x={barStart} y="22" width={assumedW} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
         <text x={barStart + assumedW / 2} y="34" textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">
           {smallUnit}×{totalCount}＝{assumedValue}{unit}
@@ -434,59 +437,66 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
 
         {/* 左端縦線 */}
         <line x1={barStart} y1="2" x2={barStart} y2="38" stroke="#3A2E2A" strokeWidth="1" strokeDasharray="2 2" opacity="0.2" />
-        {/* 仮定バー右端縦線（共通基準） */}
+        {/* 仮定バー右端の共通基準線 */}
         <line x1={barStart + assumedW} y1="2" x2={barStart + assumedW} y2="38" stroke="#2BA39A" strokeWidth="1.5" strokeDasharray="3 2" />
 
-        {/* Stage 0: 差位置をグレー枠 */}
+        {/* Stage 0: 差位置グレー枠 */}
         {wc === 0 && (
           <rect x={barStart + assumedW} y="22" width={diffW} height={barH} rx="3"
             fill="transparent" stroke="#C4B8AE" strokeWidth="1" strokeDasharray="3 2" />
         )}
-        {/* Stage 1+: 差を赤点線 + 計算式 */}
+        {/* Stage 1+: 差を赤点線 + 計算式ラベル */}
         {wc >= 1 && (
           <>
             <rect x={barStart + assumedW} y="22" width={diffW} height={barH} rx="3"
               fill="rgba(248,113,113,0.15)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" />
-            <text x={barStart + assumedW + diffW / 2} y="19" textAnchor="middle"
-              fontSize="9" fill="#f87171" fontWeight="bold">
+            <text x={redCx} y="19" textAnchor="middle" fontSize="9" fill="#f87171" fontWeight="bold">
               差＝{totalValue}－{assumedValue}＝{diff}{unit}
             </text>
           </>
         )}
       </svg>
 
-      {/* ② タイトルと SVG（Stage 2+） */}
+      {/* ①→② 縦つなぎ矢印（赤い点線 + 矢じり）— Stage 2+ */}
+      {wc >= 2 && (
+        <svg viewBox="0 0 250 22" className="w-full max-w-sm mx-auto">
+          <line x1={redCx} y1="2" x2={redCx} y2="16" stroke="#f87171" strokeWidth="1.5" strokeDasharray="3 2" />
+          <polygon points={`${redCx - 5},13 ${redCx + 5},13 ${redCx},20`} fill="#f87171" />
+        </svg>
+      )}
+
+      {/* ② セクション（Stage 2+）— 赤バーは①の赤ボックスと同じx位置に揃える */}
       {wc >= 2 && (
         <>
-          <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
-            ②1つ替えると +{unitDiff}{unit}
+          <p className="text-[11px] font-bold mb-0.5" style={{ color: '#6B5A52' }}>
+            ②1匹替えると +{unitDiff}{unit}
           </p>
           <svg viewBox={`0 0 250 ${wc >= 3 ? 82 : 62}`} className="w-full max-w-sm mx-auto overflow-visible">
-            {/* 左ラベル */}
-            <text x={barStart - 3} y="14" textAnchor="end" fontSize="9" fill="#f87171" fontWeight="bold">差</text>
+            {/* 差ラベル（赤バーの左） */}
+            <text x={barStart + assumedW - 4} y="14" textAnchor="end" fontSize="9" fill="#f87171" fontWeight="bold">差</text>
 
-            {/* 差バー */}
-            <rect x={barStart} y="2" width={diffW} height={barH} rx="3"
+            {/* 差バー — ①の赤ボックスと同じ x=barStart+assumedW から始まる */}
+            <rect x={barStart + assumedW} y="2" width={diffW} height={barH} rx="3"
               fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.5" />
-            <text x={barStart + diffW / 2} y="14" textAnchor="middle" fontSize="9" fill="#f87171" fontWeight="bold">
+            <text x={redCx} y="14" textAnchor="middle" fontSize="9" fill="#f87171" fontWeight="bold">
               {diff}{unit}
             </text>
 
             {/* ブラケット */}
-            <line x1={barStart} y1="26" x2={barStart + diffW} y2="26" stroke="#16a34a" strokeWidth="1.5" />
-            <line x1={barStart} y1="22" x2={barStart} y2="30" stroke="#16a34a" strokeWidth="1.5" />
-            <line x1={barStart + diffW} y1="22" x2={barStart + diffW} y2="30" stroke="#16a34a" strokeWidth="1.5" />
-            <text x={barStart + diffW / 2} y="42" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">
+            <line x1={barStart + assumedW} y1="26" x2={barStart + assumedW + diffW} y2="26" stroke="#16a34a" strokeWidth="1.5" />
+            <line x1={barStart + assumedW} y1="22" x2={barStart + assumedW} y2="30" stroke="#16a34a" strokeWidth="1.5" />
+            <line x1={barStart + assumedW + diffW} y1="22" x2={barStart + assumedW + diffW} y2="30" stroke="#16a34a" strokeWidth="1.5" />
+            <text x={redCx} y="42" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">
               {diff} ÷ {unitDiff} ＝ {largeName}の数
             </text>
 
             {/* Stage 3: 答えと確認 */}
             {wc >= 3 && (
               <>
-                <text x={barStart + diffW / 2} y="56" textAnchor="middle" fontSize="10" fill="#f0c040" fontWeight="bold">
+                <text x={redCx} y="56" textAnchor="middle" fontSize="10" fill="#f0c040" fontWeight="bold">
                   {largeName} = {largeCount}、{smallName} = {smallCount}！
                 </text>
-                <text x={barStart + diffW / 2} y="76" textAnchor="middle" fontSize="8" fill="#6B5A52" fontWeight="bold">
+                <text x={redCx} y="76" textAnchor="middle" fontSize="8" fill="#6B5A52" fontWeight="bold">
                   確認: {largeUnit}×{largeCount}＋{smallUnit}×{smallCount}＝{totalValue}{unit} ✓
                 </text>
               </>
