@@ -55,9 +55,10 @@ jobs:
           git push origin main
 
   deploy-to-vercel:
-    # merge-to-main と独立して実行（マージ成否に関わらずデプロイ）
-    # claude/** push → merge と並行してデプロイ（main の最新状態を使用）
-    # main push → 即デプロイ
+    # merge-to-main の完了後に実行（concurrent checkout の 403 を防ぐ）
+    # if: always() で merge-to-main の失敗・スキップに関わらず実行
+    if: always()
+    needs: [merge-to-main]
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
