@@ -183,7 +183,7 @@ function computeStats() {
   }
 }
 
-type AppAudience = 'shougakusei' | 'youji'
+type AppAudience = 'shougakusei' | 'youji' | 'chuugakujuken'
 const _YB = '/youji/apps'  // public/youji/apps/ に内製コピー済み
 
 // targetAge: カードに表示する対象年齢チップ
@@ -193,7 +193,7 @@ const APPS: {
 }[] = [
   // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei', targetAge: '小4〜小6' },
-  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'shougakusei', targetAge: '小4〜小6' },
+  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6' },
   { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小3〜小6' },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: 'タイムアタック',   audience: 'shougakusei', targetAge: '小2〜小6' },
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
@@ -489,6 +489,7 @@ function HomeTab({ profile, stats, userType }: {
 
   const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
   const youjiApps = APPS.filter(a => a.audience === 'youji')
+  const chuugakujukenApps = APPS.filter(a => a.audience === 'chuugakujuken')
   const isYoujiProfile = profile.grade === '幼稚園'
 
   // Recommendation cards
@@ -603,7 +604,7 @@ function HomeTab({ profile, stats, userType }: {
         </>
       )}
       {/* 中学受験セクション */}
-      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜小6｜文章題・特殊算" />
+      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜小6｜算数・理科 入試対策" />
       <Link href="/apps/juku"
         className="block rounded-[22px] p-5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
         style={{ background: '#FFF1B8', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }}>
@@ -628,6 +629,11 @@ function HomeTab({ profile, stats, userType }: {
           <span style={{ color: '#6B5A52', fontSize: 18 }}>›</span>
         </div>
       </Link>
+      {chuugakujukenApps.length > 0 && (
+        <div className="grid grid-cols-2 gap-3 mt-3">
+          {chuugakujukenApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
+        </div>
+      )}
     </div>
   )
 }
