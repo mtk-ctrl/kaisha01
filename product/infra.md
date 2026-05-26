@@ -12,23 +12,20 @@
 git log origin/main -3 --oneline
 # → 最新に「🚀 Auto-deploy」があればOK
 
-# ② Vercel GitHub App接続確認（0件なら未接続）
-curl -s "https://api.github.com/repos/mtk-ctrl/kaisha01/commits/$(git rev-parse origin/main)/status" \
-  | python3 -c "import json,sys; d=json.load(sys.stdin); print('Vercel statuses:', len(d.get('statuses',[])))"
-# → 0件 = 連携なし（要修正） / 1件以上 = 連携OK
+# ② Vercel 本番疎通確認
+curl -s -o /dev/null -w "Vercel: %{http_code}\n" https://tanq-app.vercel.app/
+# → 200 = OK
 
 # ③ Supabase エンドポイント疎通
 curl -s -o /dev/null -w "Supabase: %{http_code}\n" \
   "https://jdrhnxqvmohzikmfqzbl.supabase.co/rest/v1/" -H "apikey: dummy"
 # → 401か403 = OK（エンドポイント生きている）
 
-# ④ GitHub Secrets 設定状況
+# ④ GitHub Secrets 設定状況（使用中のキー一覧）
 grep -h "secrets\." /home/user/kaisha01/.github/workflows/*.yml | grep -oP "secrets\.\w+" | sort -u
-# → VERCEL_TOKEN / RESEND_API_KEY / ANTHROPIC_API_KEY が出なければ未設定
 
 # ⑤ GA4 実装確認
 grep "NEXT_PUBLIC_GA_ID" /home/user/kaisha01/tanq-app/src/app/layout.tsx
-# → 1行でも出ればOK
 ```
 
 ---
@@ -40,14 +37,17 @@ Jobs が claude/* ブランチに push
     ↓
 GitHub Actions (.github/workflows/auto-merge.yml) が起動
     ↓
-main ブランチに自動マージ
+merge-to-main: main ブランチに自動マージ（失敗しても次に進む）
     ↓
-Vercel が自動デプロイ（※GitHub App接続後に有効）
+deploy-to-vercel（if: always()）:
+  1. Run DB migrations（SUPABASE_ACCESS_TOKEN があれば supabase db push）
+  2. vercel --prod --token=$VERCEL_TOKEN
+  3. 本番URLのHTTPステータスと画面要素を確認
     ↓
 本番反映（約2〜3分）
 ```
 
-**本番URL**: https://kaisha01-git-main-mtk-ctrls-projects.vercel.app/
+**本番URL**: https://tanq-app.vercel.app/
 
 ---
 
@@ -60,30 +60,29 @@ Vercel が自動デプロイ（※GitHub App接続後に有効）
 
 ---
 
-## Vercel 未接続問題（2026-05-16 根本原因判明）
+## GitHub Secrets（登録済み一覧）
 
-**原因**: Vercel GitHub AppがリポジトリにWebhook未登録。  
-→ GitHub commitのstatus件数を確認すると0件（上記②コマンドで確認可能）。
-
-**恒久解決（オーナー5分作業・未完了）**:
-1. Vercel → kaisha01プロジェクト → Settings → Git → GitHubリポジトリ連携
-2. GitHub Secrets に `VERCEL_TOKEN` を追加
-3. Jobs が GitHub Actions に `vercel --prod --token=$VERCEL_TOKEN` ステップを追加 → 完了
-
-**完了後は `NOW.md` のVercel行を ✅ に更新すること**
+| Secret名 | 用途 | 状態 |
+|---------|------|------|
+| `VERCEL_TOKEN` | Vercel CLI 認証 | ✅ 登録済み |
+| `VERCEL_ORG_ID` | Vercel 組織ID | ✅ 登録済み |
+| `VERCEL_PROJECT_ID` | Vercel プロジェクトID | ✅ 登録済み |
+| `VERCEL_AUTOMATION_BYPASS_SECRET` | 本番確認ステップ用 | ✅ 登録済み |
+| `SUPABASE_ACCESS_TOKEN` | migration 自動化（supabase db push） | ✅ 登録済み（2026-05-26） |
+| `RESEND_API_KEY` | Resend メール送信 | ⚠️ 登録済み・動作未確認 |
+| `ANTHROPIC_API_KEY` | Claude API（X投稿文案等） | ❌ 未登録 |
+| `GEMINI_API_KEY` | Gemini API（X投稿文案等） | ❌ 未登録 |
 
 ---
 
-## 環境変数
+## Vercel 環境変数（Vercel Dashboard で設定）
 
 | 変数名 | 用途 | 状態 |
 |--------|------|------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase プロジェクト URL | ✅ 設定済み |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key | ✅ 設定済み |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase サービスロール（admin操作用） | ✅ 設定済み |
 | `NEXT_PUBLIC_GA_ID` | GA4 測定ID | ✅ `G-TK27G02856` |
-| `VERCEL_TOKEN` | Vercel CLI認証（GitHub Actions用） | ❌ 未設定 |
-| `RESEND_API_KEY` | Resend メール送信 | ❌ 未設定 |
-| `ANTHROPIC_API_KEY` | Claude API（X投稿文案） | ❌ 未設定 |
 
 ---
 
@@ -93,8 +92,19 @@ Vercel が自動デプロイ（※GitHub App接続後に有効）
 |------|---|
 | プロジェクトID | `jdrhnxqvmohzikmfqzbl` |
 | エンドポイント | `https://jdrhnxqvmohzikmfqzbl.supabase.co` |
-| マイグレーション | `tanq-app/supabase/migrations/` |
-| SQL変更方法 | ファイルを書いて `supabase db push` を実行（Jobsが自動実行可能） |
+| マイグレーション置き場 | `tanq-app/supabase/migrations/` |
+| migration 適用方法 | `claude/*` push → GitHub Actions が `supabase db push` を自動実行 |
+| セッション管理 | `@supabase/ssr`（Cookie ベース）+ `src/middleware.ts` で自動リフレッシュ |
+
+### DB スキーマ（テーブル一覧）
+
+| テーブル | 主な用途 |
+|---------|---------|
+| `profiles` | ユーザープロフィール（id・email・child_name・grade・mode・role） |
+| `scores` | アプリスコア履歴（user_id・app_id・score・total・difficulty） |
+| `feedback` | フィードバック送信（user_id nullable・fav_app・quit_note・again・memo） |
+
+RLS有効：`profiles`・`scores` は本人のみ読み書き可。`feedback` は insert のみ全許可。
 
 ---
 
@@ -104,9 +114,10 @@ Vercel が自動デプロイ（※GitHub App接続後に有効）
 cd tanq-app
 npm install
 npm run dev   # http://localhost:3000
+npm run build # 本番ビルド確認（push前に必ず通す）
 npx tsc --noEmit  # 型チェック
 ```
 
 ---
 
-*最終更新: 2026-05-16 | 更新者: Jobs*
+*最終更新: 2026-05-26 | 更新者: Jobs*

@@ -2,7 +2,7 @@
 
 > **更新ルール**: インフラ変更時・タスク完了直後に即更新。セッション終了を待たない。  
 > **ログ**: コミットメッセージ ＋ 下記「直近の完了タスク」テーブル1行（`logs/sessions/` は使わない）  
-> **最終更新**: 2026-05-26 | 更新者: Jobs
+> **最終更新**: 2026-05-26（MD整合性更新） | 更新者: Jobs
 
 ---
 
@@ -10,7 +10,7 @@
 
 | サービス | 状態 | 備考 |
 |---------|------|------|
-| GitHub Actions | ✅ 稼働中 | `claude/*` push → Vercel デプロイ（main マージは失敗することがあるが deploy は独立して動く）詳細は下記⑦参照 |
+| GitHub Actions | ✅ 稼働中 | `claude/*` push → migration自動実行 → Vercel デプロイ（main マージは失敗することがあるが deploy は独立して動く）詳細は下記⑦参照 |
 | Vercel | ✅ 本番稼働 | tanq-app.vercel.app / `trailingSlash: true`・youji各HTMLに `<base href>` 済（2026-05-23） |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
@@ -64,7 +64,6 @@
 |------|------|
 | RESEND_API_KEY | resend.com → 無料登録 → API Keys → GitHub Secrets登録 |
 | ANTHROPIC_API_KEY | Claude Code使用中のキー → GitHub Secrets登録 |
-| SUPABASE_ACCESS_TOKEN | supabase.com → Account → Access Tokens → GitHub Secrets登録（migration自動化に必要）|
 | テスター招待 | /tester のURLと PIN「2026」を対象者にシェア |
 
 ---
@@ -73,6 +72,7 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-26 | SUPABASE_ACCESS_TOKEN 登録完了・各MD整合性更新（infra/routes/apps） | 本コミット |
 | 2026-05-26 | 高優先度3件修正：ログアウトボタン追加・セッション期限切れ対応・migration GitHub Actions自動化 | `ee25885` |
 | 2026-05-26 | Supabase migration 手動実行完了（profiles.role・feedback.user_id カラム追加）| オーナー実行済み |
 | 2026-05-26 | Supabase SSR抜本修正（@supabase/ssr・middleware・Cookie認証・scores API 401解消・登録後自動ログイン） | `258fa8c` |
