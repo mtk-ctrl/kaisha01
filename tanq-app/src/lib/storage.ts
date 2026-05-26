@@ -9,3 +9,14 @@ export function getDataKey(baseKey: string): string {
   }
   return baseKey
 }
+
+/** JSON.parse のボイラープレートを集約。失敗時は fallback を返す */
+export function parseStorage<T>(key: string, fallback: T): T {
+  if (typeof window === 'undefined') return fallback
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as T) : fallback
+  } catch {
+    return fallback
+  }
+}
