@@ -7,6 +7,7 @@ import {
   getKanyoQuestionsForLevel,
   type KanyoQuestion,
 } from '@/data/kanyoData'
+import { getDataKey } from '@/lib/storage'
 
 const STORAGE_KEY = 'tanq_kanyo_v1'
 
@@ -17,14 +18,14 @@ interface KanyoSave {
 function loadSave(): KanyoSave {
   if (typeof window === 'undefined') return { levelStars: {} }
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(getDataKey(STORAGE_KEY))
     if (raw) return JSON.parse(raw)
   } catch {}
   return { levelStars: {} }
 }
 
 function writeSave(save: KanyoSave) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(save))
+  localStorage.setItem(getDataKey(STORAGE_KEY), JSON.stringify(save))
 }
 
 function calcStars(wrong: number): 0 | 1 | 2 | 3 {
