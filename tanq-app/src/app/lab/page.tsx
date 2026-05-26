@@ -215,8 +215,8 @@ const APPS: {
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei', targetAge: '小4〜小6' },
   { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6' },
   { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小3〜小6' },
-  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小3〜小6' },
-  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小4〜中3' },
+  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`, audience: 'chuugakujuken', targetAge: '小3〜小6' },
+  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`, audience: 'chuugakujuken', targetAge: '小4〜中3' },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: 'タイムアタック',   audience: 'shougakusei', targetAge: '小2〜小6' },
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '分・時間計算',     audience: 'shougakusei', targetAge: '小2〜小4' },
@@ -626,7 +626,7 @@ function HomeTab({ profile, stats, userType }: {
         </>
       )}
       {/* 中学受験セクション */}
-      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜小6｜算数・理科 入試対策" />
+      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜中3｜算数・理科・国語 入試対策" />
       <Link href="/apps/juku"
         className="block rounded-[22px] p-5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
         style={{ background: '#FFF1B8', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }}>
