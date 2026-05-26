@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { createClient } from '@/lib/supabase/client'
 
 const GRADES = [
   '小学1年生', '小学2年生', '小学3年生', '小学4年生',
@@ -53,6 +54,9 @@ export default function RegisterPage() {
       })
       const data = await res.json()
       if (!res.ok) { setApiError(data.error ?? '登録に失敗しました'); return }
+      // 登録成功後すぐにブラウザ側でサインインしてセッション Cookie を発行する
+      const supabase = createClient()
+      await supabase.auth.signInWithPassword({ email: form.parentEmail, password: form.password })
       localStorage.setItem('tanq-lab-auth', 'member')
       setSubmitted(true)
     } catch {

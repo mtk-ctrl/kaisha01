@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getAnonClient, getServiceClient } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
+import { getServiceClient } from '@/lib/supabase'
 
-async function getUserFromToken(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  if (!authHeader) return null
-  const token = authHeader.replace('Bearer ', '')
-  const supabase = getAnonClient()
-  const { data: { user }, error } = await supabase.auth.getUser(token)
-  if (error || !user) return null
+async function getUserFromCookies() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
   return user
 }
 
-export async function GET(req: NextRequest) {
-  const user = await getUserFromToken(req)
+export async function GET() {
+  const user = await getUserFromCookies()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const svc = getServiceClient()
@@ -26,7 +23,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const user = await getUserFromToken(req)
+  const user = await getUserFromCookies()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { appId, score, total, difficulty } = await req.json()
