@@ -2,7 +2,7 @@
 
 > **更新ルール**: インフラ変更時・タスク完了直後に即更新。セッション終了を待たない。  
 > **ログ**: コミットメッセージ ＋ 下記「直近の完了タスク」テーブル1行（`logs/sessions/` は使わない）  
-> **最終更新**: 2026-05-23 | 更新者: Jobs
+> **最終更新**: 2026-05-26 | 更新者: Jobs
 
 ---
 
@@ -10,7 +10,7 @@
 
 | サービス | 状態 | 備考 |
 |---------|------|------|
-| GitHub Actions | ✅ 稼働中 | `claude/*` push → main マージ → Vercel デプロイ（`main` 直 push のみではデプロイジョブ未実行） |
+| GitHub Actions | ✅ 稼働中 | `claude/*` push → Vercel デプロイ（main マージは失敗することがあるが deploy は独立して動く）詳細は下記⑦参照 |
 | Vercel | ✅ 本番稼働 | tanq-app.vercel.app / `trailingSlash: true`・youji各HTMLに `<base href>` 済（2026-05-23） |
 | Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
@@ -47,9 +47,9 @@
 **フェーズ**: Phase 1 — プロダクト完成 + 初期ユーザー獲得（家族テスト中）
 
 **今すぐやること（優先順）**:
-1. **めいぶつデータ強化** — 全47都道府県×3段階 計465件完成。今後はオーナーが気づいた項目を都度追加していく運用
-2. **幼稚園アプリの家族テスト** — カタカナ・かずあそび等を `/tester` から実機確認
-3. **テスター招待** — `/tester` のURLと PIN「2026」をシェア
+1. **幼稚園アプリの家族テスト** — カタカナ・かずあそび等を `/tester` から実機確認
+2. **テスター招待** — `/tester` のURLと PIN「2026」をシェア
+3. **中学受験算数①の続き** — Unit5以降（旅人算・ニュートン算等）実装
 
 **📋 記録タブ 将来タスク（今回スコープ外）**:
 - 静的HTMLアプリ（九九・都道府県・カタカナ等）のlocalStorage連携 → records tab への統合
@@ -72,6 +72,8 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-26 | 中学受験セクション カード統一（算数①を他3枚と同じグリッドカードに。横長専用カード廃止）| `ce4332a` |
+| 2026-05-26 | GitHub Actions インフラ修正：deploy-to-vercel を needs+if:always() で逐次実行化・並列checkout 403解消 | `56c365d` |
 | 2026-05-26 | 慣用句・四字熟語クイズ新規実装（各140問・20レベル・⭐評価・バッジ5種）+ labページ統合 | `f6ed316` |
 | 2026-05-26 | 鶴亀算（Unit4）実装：AreaDiagram＋10問＋仮定法introSlide | `305de42` |
 | 2026-05-24 | 国語クイズ新規実装（140問・20レベル・慣用句＋四字熟語・⭐評価・バッジ5種）+ labページ統合 | `69a8d9d` |
@@ -106,3 +108,33 @@
 `main`（本番反映は `claude/*` ブランチ push → GitHub Actions 経由）
 
 **テスター入口URL**: `https://tanq-app.vercel.app/tester` | PIN: `2026`
+
+---
+
+## ⑦ デプロイパイプライン（現状と運用）
+
+### 現在の動作フロー
+
+```
+Jobs が claude/* ブランチに push
+  └→ GitHub Actions: merge-to-main ジョブ（main へ fast-forward merge を試みる）
+       ↓ 成功・失敗どちらでも（if: always()）
+  └→ GitHub Actions: deploy-to-vercel ジョブ（main の最新を Vercel へ本番デプロイ）
+       ↓ 約2〜3分
+  └→ tanq-app.vercel.app に反映 ✅
+```
+
+### merge-to-main について
+
+- **現状**: `GITHUB_TOKEN` の権限で main への push が失敗することがある
+- **影響なし**: `deploy-to-vercel` は `if: always()` で独立実行するためデプロイには影響しない
+- **根本解決策（未実施）**: リポジトリ Settings → Actions → General → Workflow permissions を「Read and write permissions」に変更するか、PAT（Personal Access Token）を `GH_PAT` Secretとして登録してワークフローのtokenを差し替える
+
+### 今後の開発ルール
+
+| やること | やらないこと |
+|---------|------------|
+| 必ず `claude/*` ブランチに push して Actions 経由でデプロイ | `main` に直接 push（deploy-to-vercel が動かない） |
+| 複数セッション同時作業は避ける（コンフリクト原因） | 複数 Claude Code セッションで同じファイルを並行編集 |
+| push 前に `npm run build` を通す | ビルドエラーのまま push |
+| PRは不要（Actions が自動マージ） | オーナーが手動でマージ（その場合 Actions が動かない） |
