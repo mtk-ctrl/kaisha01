@@ -82,9 +82,11 @@ export default function KokugoPage() {
   const [view, setView] = useState<View>('map')
   const [save, setSave] = useState<KokugoSave>({ levelStars: {} })
   const [quiz, setQuiz] = useState<QuizState | null>(null)
+  const [isTester, setIsTester] = useState(false)
 
   useEffect(() => {
     setSave(loadSave())
+    setIsTester(localStorage.getItem('tanq-lab-auth') === 'tester')
   }, [])
 
   const persistSave = useCallback((next: KokugoSave) => {
@@ -92,8 +94,9 @@ export default function KokugoPage() {
     writeSave(next)
   }, [])
 
-  // ── 最大解放レベル ──
+  // ── 最大解放レベル（テスターは全開放）──
   const maxUnlocked = (() => {
+    if (isTester) return 20
     let max = 1
     for (let lv = 1; lv <= 20; lv++) {
       if ((save.levelStars[lv] ?? 0) >= 1) max = lv + 1
