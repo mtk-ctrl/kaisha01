@@ -94,6 +94,7 @@ deploy-to-vercel（if: always()）:
 | エンドポイント | `https://jdrhnxqvmohzikmfqzbl.supabase.co` |
 | マイグレーション置き場 | `tanq-app/supabase/migrations/` |
 | migration 適用方法 | `claude/*` push → GitHub Actions が `supabase db push` を自動実行 |
+| migration 命名規則 | `YYYYMMDD000001_説明.sql`（同日複数は末尾 000002, 000003…）。**ファイル名順が実行順**になる |
 | セッション管理 | `@supabase/ssr`（Cookie ベース）+ `src/middleware.ts` で自動リフレッシュ |
 
 ### DB スキーマ（テーブル一覧）

@@ -8,6 +8,7 @@ import {
   type KanyoQuestion,
 } from '@/data/kanyoData'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 
 const STORAGE_KEY = 'tanq_kanyo_v1'
 
@@ -150,6 +151,7 @@ export default function KanyoPage() {
         const next = { ...save, levelStars: { ...save.levelStars, [quiz.level]: stars } }
         persistSave(next)
       }
+      saveScore('kanyo', quiz.questions.length - quiz.wrong, quiz.questions.length, `Lv${quiz.level}`)
       setView('result')
     }
   }, [quiz, save, persistSave])

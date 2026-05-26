@@ -6,6 +6,7 @@ import { SCIENCE_QUESTIONS } from '@/data/scienceData'
 import type { ScienceDomain, ScienceLevel } from '@/data/scienceData'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 
 // ── SRS ──────────────────────────────────────────────
 const SRS_KEY = 'tanq_science_srs_v1'
@@ -467,6 +468,7 @@ export default function SciencePage() {
     const newAnswers = [...quiz.answers, { correct, q }]
 
     if (quiz.current + 1 >= quiz.questions.length) {
+      saveScore('science', quiz.score, quiz.questions.length, selectedDomain)
       setQuiz(prev => prev ? { ...prev, answers: newAnswers } : prev)
       setView('result')
     } else {

@@ -8,6 +8,7 @@ import {
   type YojiQuestion,
 } from '@/data/yojiData'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 
 const STORAGE_KEY = 'tanq_yoji_v1'
 
@@ -150,6 +151,7 @@ export default function YojiPage() {
         const next = { ...save, levelStars: { ...save.levelStars, [quiz.level]: stars } }
         persistSave(next)
       }
+      saveScore('yoji', quiz.questions.length - quiz.wrong, quiz.questions.length, `Lv${quiz.level}`)
       setView('result')
     }
   }, [quiz, save, persistSave])

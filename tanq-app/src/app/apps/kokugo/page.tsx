@@ -7,6 +7,7 @@ import {
   getQuestionsForLevel,
   type KokugoQuestion,
 } from '@/data/kokugoData'
+import { saveScore } from '@/lib/scoreApi'
 
 // ─── localStorage ────────────────────────────────────────────────────────────
 
@@ -176,6 +177,7 @@ export default function KokugoPage() {
         const next = { ...save, levelStars: { ...save.levelStars, [quiz.level]: stars } }
         persistSave(next)
       }
+      saveScore('kokugo', quiz.questions.length - quiz.wrong, quiz.questions.length, `Lv${quiz.level}`)
       setView('result')
     }
   }, [quiz, save, persistSave])
