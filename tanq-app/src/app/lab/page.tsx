@@ -35,7 +35,7 @@ function canAccessApp(appId: string, userType: UserType): boolean {
   if (userType === 'tester') return true
   if (userType === 'member') return appId !== 'tanq'
   // ゲスト: 体験用アプリのみ（routes.md 定義に準拠）
-  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId === 'thinking-youji' || appId.startsWith('youji-')
+  return appId === 'math' || appId === 'kanji' || appId === 'word-math' || appId === 'kuku' || appId === 'todofuken' || appId === 'thinking' || appId === 'thinking-youji' || appId === 'juku' || appId.startsWith('youji-')
 }
 
 function lockLabel(appId: string, userType: UserType): string | null {
@@ -213,6 +213,7 @@ const APPS: {
 }[] = [
   // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei', targetAge: '小4〜小6' },
+  { id: 'juku',         name: '中学受験 算数①',  emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '12単元｜図で考える', audience: 'chuugakujuken', targetAge: '小4〜中3' },
   { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6' },
   { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小3〜小6' },
   { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`, audience: 'chuugakujuken', targetAge: '小3〜小6' },
@@ -627,32 +628,8 @@ function HomeTab({ profile, stats, userType }: {
       )}
       {/* 中学受験セクション */}
       <SectionLabel emoji="🏆" label="中学受験" sub="小4〜中3｜算数・理科・国語 入試対策" />
-      <Link href="/apps/juku"
-        className="block rounded-[22px] p-5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
-        style={{ background: '#FFF1B8', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }}>
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0"
-            style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A', transform: 'rotate(-3deg)' }}>
-            🏆
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>中学受験 算数①</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-black"
-                style={{ background: '#FFC83D', border: '1.5px solid #3A2E2A', color: '#3A2E2A' }}>
-                NEW
-              </span>
-            </div>
-            <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>文章題・特殊算 12単元 | 図で考える</p>
-            <p className="text-[10px] mt-1" style={{ color: '#6B5A52' }}>
-              第1層（2単元）は無料 · 残りは会員限定
-            </p>
-          </div>
-          <span style={{ color: '#6B5A52', fontSize: 18 }}>›</span>
-        </div>
-      </Link>
       {chuugakujukenApps.length > 0 && (
-        <div className="grid grid-cols-2 gap-3 mt-3">
+        <div className="grid grid-cols-2 gap-3">
           {chuugakujukenApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
         </div>
       )}
