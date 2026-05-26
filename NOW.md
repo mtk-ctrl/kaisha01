@@ -64,6 +64,7 @@
 |------|------|
 | RESEND_API_KEY | resend.com → 無料登録 → API Keys → GitHub Secrets登録 |
 | ANTHROPIC_API_KEY | Claude Code使用中のキー → GitHub Secrets登録 |
+| SUPABASE_ACCESS_TOKEN | supabase.com → Account → Access Tokens → GitHub Secrets登録（migration自動化に必要）|
 | テスター招待 | /tester のURLと PIN「2026」を対象者にシェア |
 
 ---
@@ -72,6 +73,7 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-26 | 高優先度3件修正：ログアウトボタン追加・セッション期限切れ対応・migration GitHub Actions自動化 | `ee25885` |
 | 2026-05-26 | Supabase migration 手動実行完了（profiles.role・feedback.user_id カラム追加）| オーナー実行済み |
 | 2026-05-26 | Supabase SSR抜本修正（@supabase/ssr・middleware・Cookie認証・scores API 401解消・登録後自動ログイン） | `258fa8c` |
 | 2026-05-26 | 優先度中リファクタ（storageKeys・stats分離・useStats hook・parseStorage・SRSItem型統一） | `6e4f1e8` |
