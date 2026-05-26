@@ -72,6 +72,7 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-26 | Supabase SSR抜本修正（@supabase/ssr・middleware・Cookie認証・scores API 401解消・登録後自動ログイン） | `258fa8c` |
 | 2026-05-26 | 優先度中リファクタ（storageKeys・stats分離・useStats hook・parseStorage・SRSItem型統一） | `6e4f1e8` |
 | 2026-05-26 | 高優先度バグ3件修正：kanyo/yoji getDataKey追加・canAccessApp APPS一元管理・auto-merge -X theirs廃止 | `8afb381` |
 | 2026-05-26 | 中学受験セクション カード統一（算数①を他3枚と同じグリッドカードに。横長専用カード廃止）| `ce4332a` |
