@@ -107,8 +107,6 @@ function TopView({
           🔬 理科クイズ
         </h1>
       </div>
-      <p className="text-xs font-bold mb-5" style={{ color: '#6B5A52' }}>中学受験対応 · 小4〜小6 · 全{totalQ}問</p>
-
       {/* 総合進捗 */}
       <div className="rounded-[22px] p-4 mb-6"
         style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
@@ -123,7 +121,7 @@ function TopView({
       </div>
 
       {/* 領域カード */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 mb-5">
         {DOMAINS.map(domain => {
           const allStats = LEVELS.map(lv => domainStats(domain, lv, store))
           const mastered = allStats.reduce((s, x) => s + x.mastered, 0)
@@ -146,6 +144,7 @@ function TopView({
           )
         })}
       </div>
+      <p className="text-xs font-bold text-center" style={{ color: '#B0A49C' }}>中学受験対応 · 小4〜小6 · 全{totalQ}問</p>
     </div>
   )
 }
@@ -299,8 +298,8 @@ function QuizView({
                 {label}
               </span>
               <span className="font-bold text-sm leading-snug" style={{ color: '#3A2E2A' }}>{q.choices[origIdx]}</span>
-              {state.confirmed && isCorrect && <span className="ml-auto text-base">✅</span>}
-              {state.confirmed && isSelected && !isCorrect && <span className="ml-auto text-base">❌</span>}
+              {state.confirmed && isCorrect && <span className="ml-auto text-lg font-black" style={{ color: '#22c55e' }}>○</span>}
+              {state.confirmed && isSelected && !isCorrect && <span className="ml-auto text-lg font-black" style={{ color: '#FF6F9C' }}>×</span>}
             </button>
           )
         })}
@@ -377,7 +376,7 @@ function ResultView({
         {state.answers.map(({ correct, q }, i) => (
           <div key={i} className="rounded-2xl px-4 py-3 flex items-start gap-3"
             style={{ background: correct ? '#DFF6CF' : '#FFE3EE', border: '2.5px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }}>
-            <span className="text-base shrink-0 mt-0.5">{correct ? '✅' : '❌'}</span>
+            <span className="text-lg font-black shrink-0 mt-0.5" style={{ color: correct ? '#22c55e' : '#FF6F9C' }}>{correct ? '○' : '×'}</span>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-black leading-snug" style={{ color: '#3A2E2A' }}>{q.q}</p>
               {!correct && (
@@ -499,6 +498,7 @@ export default function SciencePage() {
         {view === 'domain' && <DomainView domain={selectedDomain} store={store} onStart={handleStart} onBack={() => setView('top')} />}
         {view === 'quiz' && quiz && (
           <QuizView
+            key={quiz.current}
             state={quiz}
             domain={selectedDomain}
             onSelect={handleSelect}
