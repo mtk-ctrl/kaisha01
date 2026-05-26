@@ -9,6 +9,8 @@ import { getDataKey } from '@/lib/storage'
 import { PROBLEMS as WORD_MATH_PROBLEMS } from '@/data/wordMathData'
 import { SCIENCE_QUESTIONS } from '@/data/scienceData'
 import { kokugoQuestions, KOKUGO_LEVEL_META } from '@/data/kokugoData'
+import { KANYO_LEVEL_META } from '@/data/kanyoData'
+import { YOJI_LEVEL_META } from '@/data/yojiData'
 
 // アプリが提供する全体数（SRS済み数ではなく全データ数）
 const TOTAL_KANJI = Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0)
@@ -17,6 +19,8 @@ const TOTAL_WORDMATH = WORD_MATH_PROBLEMS.length  // 61
 const CODING_TOTAL = 9  // プログラミングの全ステージ数
 const TOTAL_SCIENCE = SCIENCE_QUESTIONS.length  // 260
 const TOTAL_KOKUGO_LEVELS = KOKUGO_LEVEL_META.length  // 20
+const TOTAL_KANYO_LEVELS = KANYO_LEVEL_META.length   // 20
+const TOTAL_YOJI_LEVELS = YOJI_LEVEL_META.length     // 20
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -113,6 +117,20 @@ function computeStats() {
   const kokugoCleared = Object.values(kokugoLevelStars).filter(s => s >= 1).length
   const kokugoStars3 = Object.values(kokugoLevelStars).filter(s => s === 3).length
 
+  let kanyoLevelStars: Record<number, 0 | 1 | 2 | 3> = {}
+  try {
+    const raw = localStorage.getItem('tanq_kanyo_v1')
+    if (raw) kanyoLevelStars = (JSON.parse(raw) as { levelStars: Record<number, 0 | 1 | 2 | 3> }).levelStars || {}
+  } catch {}
+  const kanyoCleared = Object.values(kanyoLevelStars).filter(s => s >= 1).length
+
+  let yojiLevelStars: Record<number, 0 | 1 | 2 | 3> = {}
+  try {
+    const raw = localStorage.getItem('tanq_yoji_v1')
+    if (raw) yojiLevelStars = (JSON.parse(raw) as { levelStars: Record<number, 0 | 1 | 2 | 3> }).levelStars || {}
+  } catch {}
+  const yojiCleared = Object.values(yojiLevelStars).filter(s => s >= 1).length
+
   const wmByGrade = (['小1', '小2', '小3'] as const).map(grade => {
     const pool = WORD_MATH_PROBLEMS.filter(p => p.grade === grade)
     const mastered = pool.filter(p => wmStore[p.id]?.b === 2).length
@@ -175,6 +193,8 @@ function computeStats() {
     wmByGrade,
     scienceByDomain, scienceMastered, scienceTotal: TOTAL_SCIENCE,
     kokugoCleared, kokugoStars3, kokugoTotal: TOTAL_KOKUGO_LEVELS,
+    kanyoCleared, kanyoTotal: TOTAL_KANYO_LEVELS,
+    yojiCleared, yojiTotal: TOTAL_YOJI_LEVELS,
     thinkingMaxLevel, thinkingBadgeCount,
     youjiMaxLevel, youjiBadgeCount,
     codingCleared,
@@ -195,6 +215,8 @@ const APPS: {
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',         audience: 'shougakusei', targetAge: '小4〜小6' },
   { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6' },
   { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小3〜小6' },
+  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小3〜小6' },
+  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`, audience: 'shougakusei', targetAge: '小4〜中3' },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',      badge: 'タイムアタック',   audience: 'shougakusei', targetAge: '小2〜小6' },
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',     badge: `${TOTAL_KANJI}字`, audience: 'shougakusei', targetAge: '小1〜小6' },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',     badge: '分・時間計算',     audience: 'shougakusei', targetAge: '小2〜小4' },
@@ -875,6 +897,64 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
               { emoji: '📘', label: '10Lv制覇', color: '#3b82f6', earned: stats.kokugoCleared >= 10 },
               { emoji: '📙', label: '15Lv制覇', color: '#f97316', earned: stats.kokugoCleared >= 15 },
               { emoji: '🏆', label: '国語\nマスター', color: '#7c3aed', earned: stats.kokugoCleared >= 20 },
+            ].map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 慣用句クイズ */}
+        <RecordsAppCard bg="#FFF1E6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">🗣️</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>慣用句クイズ</span>
+            {stats.kanyoCleared === 0 && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {stats.kanyoCleared > 0 && (
+            <div className="space-y-1 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black" style={{ color: '#3A2E2A' }}>クリア</span>
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${Math.round(stats.kanyoCleared / stats.kanyoTotal * 100)}%`, background: '#f97316' }} />
+                </div>
+                <span className="text-[10px] font-bold" style={{ color: '#6B5A52' }}>{stats.kanyoCleared}/{stats.kanyoTotal}Lv</span>
+              </div>
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {[
+              { emoji: '🌸', label: 'はじめの\n一歩', color: '#ec4899', earned: stats.kanyoCleared >= 1 },
+              { emoji: '🗣️', label: '5Lv制覇', color: '#f97316', earned: stats.kanyoCleared >= 5 },
+              { emoji: '📗', label: '10Lv制覇', color: '#22c55e', earned: stats.kanyoCleared >= 10 },
+              { emoji: '🔥', label: '15Lv制覇', color: '#ef4444', earned: stats.kanyoCleared >= 15 },
+              { emoji: '🏆', label: '慣用句\nマスター', color: '#ea580c', earned: stats.kanyoCleared >= 20 },
+            ].map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* 四字熟語クイズ */}
+        <RecordsAppCard bg="#EEF2FF">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">📝</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>四字熟語クイズ</span>
+            {stats.yojiCleared === 0 && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {stats.yojiCleared > 0 && (
+            <div className="space-y-1 mb-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black" style={{ color: '#3A2E2A' }}>クリア</span>
+                <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${Math.round(stats.yojiCleared / stats.yojiTotal * 100)}%`, background: '#6366f1' }} />
+                </div>
+                <span className="text-[10px] font-bold" style={{ color: '#6B5A52' }}>{stats.yojiCleared}/{stats.yojiTotal}Lv</span>
+              </div>
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {[
+              { emoji: '🌸', label: 'はじめの\n一歩', color: '#ec4899', earned: stats.yojiCleared >= 1 },
+              { emoji: '📝', label: '5Lv制覇', color: '#6366f1', earned: stats.yojiCleared >= 5 },
+              { emoji: '📚', label: '10Lv制覇', color: '#3b82f6', earned: stats.yojiCleared >= 10 },
+              { emoji: '💎', label: '15Lv制覇', color: '#7c3aed', earned: stats.yojiCleared >= 15 },
+              { emoji: '🏆', label: '四字熟語\nマスター', color: '#4f46e5', earned: stats.yojiCleared >= 20 },
             ].map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
