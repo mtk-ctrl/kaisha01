@@ -72,7 +72,8 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
-| 2026-05-26 | SUPABASE_ACCESS_TOKEN 登録完了・各MD整合性更新（infra/routes/apps） | 本コミット |
+| 2026-05-26 | 運用課題修正：scoreApi導入（5アプリ）・lab_unlocked修正・dead route削除・migration命名ルール | `baa6d7e` |
+| 2026-05-26 | SUPABASE_ACCESS_TOKEN 登録完了・各MD整合性更新（infra/routes/apps） | `9e1685b` |
 | 2026-05-26 | 高優先度3件修正：ログアウトボタン追加・セッション期限切れ対応・migration GitHub Actions自動化 | `ee25885` |
 | 2026-05-26 | Supabase migration 手動実行完了（profiles.role・feedback.user_id カラム追加）| オーナー実行済み |
 | 2026-05-26 | Supabase SSR抜本修正（@supabase/ssr・middleware・Cookie認証・scores API 401解消・登録後自動ログイン） | `258fa8c` |
