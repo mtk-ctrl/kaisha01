@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 
 const navLinks = [
   { href: '/lab',      label: 'アプリ' },
@@ -29,7 +30,25 @@ function LogoMark({ size = 32 }: { size?: number }) {
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [authType, setAuthType] = useState<string | null>(null)
   const pathname = usePathname()
+  const router = useRouter()
+
+  useEffect(() => {
+    setAuthType(localStorage.getItem('tanq-lab-auth'))
+  }, [])
+
+  async function handleLogout() {
+    if (authType === 'member') {
+      const supabase = createClient()
+      await supabase.auth.signOut()
+    }
+    localStorage.removeItem('tanq-lab-auth')
+    localStorage.removeItem('tanq-tester-name')
+    setAuthType(null)
+    setMenuOpen(false)
+    router.push('/')
+  }
 
   const isActive = (href: string) => pathname === href
 
@@ -118,72 +137,109 @@ export default function Navbar() {
             </Link>
           ))}
 
-          {/* ログイン */}
-          <Link
-            href="/login"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontFamily: 'var(--font-zen), sans-serif',
-              fontWeight: 700,
-              fontSize: '14px',
-              color: '#3A2E2A',
-              background: '#ffffff',
-              border: '2.5px solid #3A2E2A',
-              borderRadius: '9999px',
-              padding: '0.45em 1.2em',
-              boxShadow: '3px 3px 0 0 #3A2E2A',
-              textDecoration: 'none',
-              transition: 'transform 0.12s ease, box-shadow 0.12s ease',
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement
-              el.style.transform = 'translate(-2px,-2px)'
-              el.style.boxShadow = '5px 5px 0 0 #3A2E2A'
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement
-              el.style.transform = ''
-              el.style.boxShadow = '3px 3px 0 0 #3A2E2A'
-            }}
-          >
-            ログイン
-          </Link>
+          {authType ? (
+            /* ログアウト */
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'var(--font-zen), sans-serif',
+                fontWeight: 700,
+                fontSize: '14px',
+                color: '#3A2E2A',
+                background: '#ffffff',
+                border: '2.5px solid #3A2E2A',
+                borderRadius: '9999px',
+                padding: '0.45em 1.2em',
+                boxShadow: '3px 3px 0 0 #3A2E2A',
+                cursor: 'pointer',
+                transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLElement
+                el.style.transform = 'translate(-2px,-2px)'
+                el.style.boxShadow = '5px 5px 0 0 #3A2E2A'
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLElement
+                el.style.transform = ''
+                el.style.boxShadow = '3px 3px 0 0 #3A2E2A'
+              }}
+            >
+              ログアウト
+            </button>
+          ) : (
+            <>
+              {/* ログイン */}
+              <Link
+                href="/login"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'var(--font-zen), sans-serif',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  color: '#3A2E2A',
+                  background: '#ffffff',
+                  border: '2.5px solid #3A2E2A',
+                  borderRadius: '9999px',
+                  padding: '0.45em 1.2em',
+                  boxShadow: '3px 3px 0 0 #3A2E2A',
+                  textDecoration: 'none',
+                  transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.transform = 'translate(-2px,-2px)'
+                  el.style.boxShadow = '5px 5px 0 0 #3A2E2A'
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.transform = ''
+                  el.style.boxShadow = '3px 3px 0 0 #3A2E2A'
+                }}
+              >
+                ログイン
+              </Link>
 
-          {/* はじめる */}
-          <Link
-            href="/register"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '4px',
-              fontFamily: 'var(--font-zen), sans-serif',
-              fontWeight: 700,
-              fontSize: '14px',
-              color: '#3A2E2A',
-              background: '#FFC83D',
-              border: '2.5px solid #3A2E2A',
-              borderRadius: '9999px',
-              padding: '0.45em 1.2em',
-              boxShadow: '3px 3px 0 0 #3A2E2A',
-              textDecoration: 'none',
-              transition: 'transform 0.12s ease, box-shadow 0.12s ease',
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement
-              el.style.transform = 'translate(-2px,-2px)'
-              el.style.boxShadow = '5px 5px 0 0 #3A2E2A'
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement
-              el.style.transform = ''
-              el.style.boxShadow = '3px 3px 0 0 #3A2E2A'
-            }}
-          >
-            はじめる →
-          </Link>
+              {/* はじめる */}
+              <Link
+                href="/register"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  fontFamily: 'var(--font-zen), sans-serif',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  color: '#3A2E2A',
+                  background: '#FFC83D',
+                  border: '2.5px solid #3A2E2A',
+                  borderRadius: '9999px',
+                  padding: '0.45em 1.2em',
+                  boxShadow: '3px 3px 0 0 #3A2E2A',
+                  textDecoration: 'none',
+                  transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.transform = 'translate(-2px,-2px)'
+                  el.style.boxShadow = '5px 5px 0 0 #3A2E2A'
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLElement
+                  el.style.transform = ''
+                  el.style.boxShadow = '3px 3px 0 0 #3A2E2A'
+                }}
+              >
+                はじめる →
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -278,44 +334,68 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <Link
-            href="/login"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: 'block',
-              padding: '12px 16px',
-              fontWeight: 700,
-              fontSize: '16px',
-              color: '#3A2E2A',
-              textDecoration: 'none',
-              background: '#ffffff',
-              border: '2.5px solid #3A2E2A',
-              borderRadius: '14px',
-              boxShadow: '3px 3px 0 0 #3A2E2A',
-              textAlign: 'center',
-            }}
-          >
-            ログイン
-          </Link>
-          <Link
-            href="/register"
-            onClick={() => setMenuOpen(false)}
-            style={{
-              display: 'block',
-              padding: '12px 16px',
-              fontWeight: 700,
-              fontSize: '16px',
-              color: '#3A2E2A',
-              textDecoration: 'none',
-              background: '#FFC83D',
-              border: '2.5px solid #3A2E2A',
-              borderRadius: '14px',
-              boxShadow: '3px 3px 0 0 #3A2E2A',
-              textAlign: 'center',
-            }}
-          >
-            はじめる →
-          </Link>
+          {authType ? (
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '12px 16px',
+                fontWeight: 700,
+                fontSize: '16px',
+                color: '#3A2E2A',
+                background: '#ffffff',
+                border: '2.5px solid #3A2E2A',
+                borderRadius: '14px',
+                boxShadow: '3px 3px 0 0 #3A2E2A',
+                textAlign: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              ログアウト
+            </button>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '12px 16px',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  color: '#3A2E2A',
+                  textDecoration: 'none',
+                  background: '#ffffff',
+                  border: '2.5px solid #3A2E2A',
+                  borderRadius: '14px',
+                  boxShadow: '3px 3px 0 0 #3A2E2A',
+                  textAlign: 'center',
+                }}
+              >
+                ログイン
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setMenuOpen(false)}
+                style={{
+                  display: 'block',
+                  padding: '12px 16px',
+                  fontWeight: 700,
+                  fontSize: '16px',
+                  color: '#3A2E2A',
+                  textDecoration: 'none',
+                  background: '#FFC83D',
+                  border: '2.5px solid #3A2E2A',
+                  borderRadius: '14px',
+                  boxShadow: '3px 3px 0 0 #3A2E2A',
+                  textAlign: 'center',
+                }}
+              >
+                はじめる →
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>

@@ -5,6 +5,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { TOTALS, computeStats } from '@/lib/stats'
 import { useStats } from '@/hooks/useStats'
+import { createClient } from '@/lib/supabase/client'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -1091,11 +1092,29 @@ export default function LabPage() {
   const [userType, setUserType] = useState<UserType>('guest')
 
   useEffect(() => {
-    const saved = localStorage.getItem(SESSION_KEY)
-    if (saved === MEMBER_VALUE) { setUserType('member'); setUnlocked(true) }
-    else if (saved === TESTER_VALUE) { setUserType('tester'); setUnlocked(true) }
-    else if (saved === GUEST_VALUE) { setUserType('guest'); setUnlocked(true) }
-    setChecking(false)
+    async function init() {
+      const saved = localStorage.getItem(SESSION_KEY)
+      if (saved === MEMBER_VALUE) {
+        // Supabaseセッションを検証してトークン期限切れを検出する
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session) {
+          localStorage.removeItem(SESSION_KEY)
+          setChecking(false)
+          return
+        }
+        setUserType('member')
+        setUnlocked(true)
+      } else if (saved === TESTER_VALUE) {
+        setUserType('tester')
+        setUnlocked(true)
+      } else if (saved === GUEST_VALUE) {
+        setUserType('guest')
+        setUnlocked(true)
+      }
+      setChecking(false)
+    }
+    init()
   }, [])
 
   if (checking) {
