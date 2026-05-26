@@ -399,7 +399,8 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
   const largeCount   = Math.round(diff / unitDiff)
   const smallCount   = totalCount - largeCount
 
-  const barStart = 8, totalW = 230, barH = 16
+  // barStart=52 で左にラベル列を確保（「実際」「仮定」）
+  const barStart = 52, totalW = 192, barH = 16
   const scale    = totalW / totalValue
   const assumedW = Math.round(assumedValue * scale)
   const diffW    = totalW - assumedW
@@ -415,13 +416,17 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
       </p>
 
       <svg viewBox="0 0 250 54" className="w-full max-w-sm mx-auto overflow-visible">
-        {/* 実際の合計バー（上・水色）— 数字を常に表示 */}
+        {/* 左ラベル：各バーが何を表すか */}
+        <text x={barStart - 3} y="14" textAnchor="end" fontSize="9" fill="#0d9488" fontWeight="bold">実際</text>
+        <text x={barStart - 3} y="34" textAnchor="end" fontSize="9" fill="#b45309" fontWeight="bold">仮定</text>
+
+        {/* 実際の合計バー（上・水色） */}
         <rect x={barStart} y="2" width={totalW} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
         <text x={barStart + totalW / 2} y="14" textAnchor="middle" fontSize="10" fill="#3A2E2A" fontWeight="bold">
-          実際 {totalValue}{unit}
+          {totalValue}{unit}
         </text>
 
-        {/* 仮定バー（下・黄色）— 計算式を常に表示 */}
+        {/* 仮定バー（下・黄色）*/}
         <rect x={barStart} y="22" width={assumedW} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
         <text x={barStart + assumedW / 2} y="34" textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">
           {smallUnit}×{totalCount}＝{assumedValue}{unit}
@@ -437,7 +442,7 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
           <rect x={barStart + assumedW} y="22" width={diffW} height={barH} rx="3"
             fill="transparent" stroke="#C4B8AE" strokeWidth="1" strokeDasharray="3 2" />
         )}
-        {/* Stage 1+: 差を赤点線 + 「どこから来たか」の計算式 */}
+        {/* Stage 1+: 差を赤点線 + 計算式 */}
         {wc >= 1 && (
           <>
             <rect x={barStart + assumedW} y="22" width={diffW} height={barH} rx="3"
@@ -457,11 +462,14 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
             ②1つ替えると +{unitDiff}{unit}
           </p>
           <svg viewBox={`0 0 250 ${wc >= 3 ? 82 : 62}`} className="w-full max-w-sm mx-auto overflow-visible">
+            {/* 左ラベル */}
+            <text x={barStart - 3} y="14" textAnchor="end" fontSize="9" fill="#f87171" fontWeight="bold">差</text>
+
             {/* 差バー */}
             <rect x={barStart} y="2" width={diffW} height={barH} rx="3"
               fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.5" />
             <text x={barStart + diffW / 2} y="14" textAnchor="middle" fontSize="9" fill="#f87171" fontWeight="bold">
-              差 {diff}{unit}
+              {diff}{unit}
             </text>
 
             {/* ブラケット */}
@@ -469,7 +477,7 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
             <line x1={barStart} y1="22" x2={barStart} y2="30" stroke="#16a34a" strokeWidth="1.5" />
             <line x1={barStart + diffW} y1="22" x2={barStart + diffW} y2="30" stroke="#16a34a" strokeWidth="1.5" />
             <text x={barStart + diffW / 2} y="42" textAnchor="middle" fontSize="9" fill="#16a34a" fontWeight="bold">
-              {diff} ÷ {unitDiff} = {largeName}の数
+              {diff} ÷ {unitDiff} ＝ {largeName}の数
             </text>
 
             {/* Stage 3: 答えと確認 */}
