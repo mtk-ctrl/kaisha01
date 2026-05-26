@@ -399,7 +399,7 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
   const largeCount   = Math.round(diff / unitDiff)
   const smallCount   = totalCount - largeCount
 
-  const barStart = 54, totalW = 184, barH = 16
+  const barStart = 8, totalW = 230, barH = 16
   const scale    = totalW / totalValue
   const assumedW = Math.round(assumedValue * scale)
   const diffW    = totalW - assumedW
@@ -410,7 +410,7 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
   return (
     <div className="w-full space-y-1">
       {/* ① タイトルは HTML（SVG 枠線との重なり防止） */}
-      <p className="text-[9px] font-bold text-center" style={{ color: '#6B5A52' }}>
+      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
         ①全部{smallName}と仮定すると…
       </p>
 
@@ -453,7 +453,7 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
       {/* ② タイトルと SVG（Stage 2+） */}
       {wc >= 2 && (
         <>
-          <p className="text-[9px] font-bold text-center" style={{ color: '#6B5A52' }}>
+          <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
             ②1つ替えると +{unitDiff}{unit}
           </p>
           <svg viewBox={`0 0 250 ${wc >= 3 ? 82 : 62}`} className="w-full max-w-sm mx-auto overflow-visible">
@@ -494,18 +494,20 @@ const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   slide: '📐 スライド図',
   'dot-line': '🌳 植木のイメージ',
   'line-seg': '📏 線分図',
-  area: '📊 面積図',
   arrow: '→ 矢印図',
 }
 
 function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; spec: Record<string, unknown>; wrongCount?: number }) {
   if (type === 'none') return null
+  const label = DIAGRAM_LABELS[type]
   return (
     <div className="rounded-2xl p-4 flex flex-col items-center"
       style={{ background: '#FFF6E5', border: '2.5px solid #3A2E2A', minHeight: 80 }}>
-      <p className="text-[10px] font-black mb-2" style={{ color: '#6B5A52' }}>
-        {DIAGRAM_LABELS[type] ?? '📊 図'}
-      </p>
+      {label && (
+        <p className="text-[10px] font-black mb-2" style={{ color: '#6B5A52' }}>
+          {label}
+        </p>
+      )}
       {type === 'slide'    && <SlideRulerDiagram spec={spec} />}
       {type === 'dot-line' && <DotLineDiagram spec={spec} />}
       {type === 'line-seg' && <LineSegDiagram spec={spec} wrongCount={wrongCount} />}
@@ -628,8 +630,9 @@ function ProblemSolver({
         </p>
       </div>
 
-      {/* 図（wrongCount に連動して段階的に変化） */}
-      {problem.diagramType !== 'none' && (
+      {/* 図（wrongCount に連動して段階的に変化）— line-seg/area は1回間違えてから表示 */}
+      {problem.diagramType !== 'none' &&
+        (problem.diagramType === 'slide' || problem.diagramType === 'dot-line' || wrongCount > 0) && (
         <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} wrongCount={wrongCount} />
       )}
 
