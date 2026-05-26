@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -23,14 +24,13 @@ export default function LoginPage() {
     setLoading(true)
     setApiError(null)
     try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, password: form.password }),
+      const supabase = createClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.email,
+        password: form.password,
       })
-      const data = await res.json()
-      if (!res.ok) {
-        setApiError(data.error ?? 'ログインに失敗しました')
+      if (error) {
+        setApiError('メールアドレスまたはパスワードが違います')
         return
       }
       localStorage.setItem('tanq-lab-auth', 'member')
