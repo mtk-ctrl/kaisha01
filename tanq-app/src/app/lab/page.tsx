@@ -1,26 +1,10 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { KANJI_DATA } from '@/data/kanjiData'
-import { WORDS } from '@/data/englishData'
-import { getDataKey } from '@/lib/storage'
-import { PROBLEMS as WORD_MATH_PROBLEMS } from '@/data/wordMathData'
-import { SCIENCE_QUESTIONS } from '@/data/scienceData'
-import { kokugoQuestions, KOKUGO_LEVEL_META } from '@/data/kokugoData'
-import { KANYO_LEVEL_META } from '@/data/kanyoData'
-import { YOJI_LEVEL_META } from '@/data/yojiData'
-
-// アプリが提供する全体数（SRS済み数ではなく全データ数）
-const TOTAL_KANJI = Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0)
-const TOTAL_ENGLISH = WORDS.length
-const TOTAL_WORDMATH = WORD_MATH_PROBLEMS.length  // 61
-const CODING_TOTAL = 9  // プログラミングの全ステージ数
-const TOTAL_SCIENCE = SCIENCE_QUESTIONS.length  // 260
-const TOTAL_KOKUGO_LEVELS = KOKUGO_LEVEL_META.length  // 20
-const TOTAL_KANYO_LEVELS = KANYO_LEVEL_META.length   // 20
-const TOTAL_YOJI_LEVELS = YOJI_LEVEL_META.length     // 20
+import { TOTALS, computeStats } from '@/lib/stats'
+import { useStats } from '@/hooks/useStats'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -70,138 +54,6 @@ function saveProfile(p: Profile) {
   localStorage.setItem(PROFILE_KEY, JSON.stringify(p))
 }
 
-interface SRSItem { b: 0 | 1 | 2 }
-
-function readSRS(key: string): SRSItem[] {
-  if (typeof window === 'undefined') return []
-  try { return Object.values(JSON.parse(localStorage.getItem(getDataKey(key)) || '{}')) as SRSItem[] } catch { return [] }
-}
-
-function getStreak(key: string): number {
-  if (typeof window === 'undefined') return 0
-  try { return JSON.parse(localStorage.getItem(getDataKey(key)) || '{"n":0}').n } catch { return 0 }
-}
-
-function computeStats() {
-  if (typeof window === 'undefined') return null
-
-  const readSRSStore = (key: string): Record<string, { b: number }> => {
-    try { return JSON.parse(localStorage.getItem(getDataKey(key)) || '{}') } catch { return {} }
-  }
-  const countSRS = (store: Record<string, { b: number }>, b: number) =>
-    Object.values(store).filter(x => x.b === b).length
-
-  const kanjiStore = readSRSStore('tanq_kanji_srs_v1')
-  const englishStore = readSRSStore('tanq_english_srs_v1')
-  const wmStore = readSRSStore('tanq_wordmath_srs_v1')
-  const scienceStore = readSRSStore('tanq_science_srs_v1')
-
-  const kanjiMastered = countSRS(kanjiStore, 2)
-  const kanjiLearning = countSRS(kanjiStore, 1)
-  const engMastered = countSRS(englishStore, 2)
-  const engLearning = countSRS(englishStore, 1)
-
-  const SCIENCE_DOMAINS = ['生物', '地学', '化学', '物理'] as const
-  const scienceByDomain = SCIENCE_DOMAINS.map(domain => {
-    const pool = SCIENCE_QUESTIONS.filter(q => q.domain === domain)
-    const mastered = pool.filter(q => scienceStore[q.id]?.b === 2).length
-    return { domain, total: pool.length, mastered }
-  })
-  const scienceMastered = scienceByDomain.reduce((sum, d) => sum + d.mastered, 0)
-
-  let kokugoLevelStars: Record<number, 0 | 1 | 2 | 3> = {}
-  try {
-    const raw = localStorage.getItem('tanq_kokugo_v1')
-    if (raw) kokugoLevelStars = (JSON.parse(raw) as { levelStars: Record<number, 0 | 1 | 2 | 3> }).levelStars || {}
-  } catch {}
-  const kokugoCleared = Object.values(kokugoLevelStars).filter(s => s >= 1).length
-  const kokugoStars3 = Object.values(kokugoLevelStars).filter(s => s === 3).length
-
-  let kanyoLevelStars: Record<number, 0 | 1 | 2 | 3> = {}
-  try {
-    const raw = localStorage.getItem('tanq_kanyo_v1')
-    if (raw) kanyoLevelStars = (JSON.parse(raw) as { levelStars: Record<number, 0 | 1 | 2 | 3> }).levelStars || {}
-  } catch {}
-  const kanyoCleared = Object.values(kanyoLevelStars).filter(s => s >= 1).length
-
-  let yojiLevelStars: Record<number, 0 | 1 | 2 | 3> = {}
-  try {
-    const raw = localStorage.getItem('tanq_yoji_v1')
-    if (raw) yojiLevelStars = (JSON.parse(raw) as { levelStars: Record<number, 0 | 1 | 2 | 3> }).levelStars || {}
-  } catch {}
-  const yojiCleared = Object.values(yojiLevelStars).filter(s => s >= 1).length
-
-  const wmByGrade = (['小1', '小2', '小3'] as const).map(grade => {
-    const pool = WORD_MATH_PROBLEMS.filter(p => p.grade === grade)
-    const mastered = pool.filter(p => wmStore[p.id]?.b === 2).length
-    return { grade, total: pool.length, mastered, done: mastered === pool.length && pool.length > 0 }
-  })
-
-  let thinkingMaxLevel = 0, thinkingBadgeCount = 0
-  try {
-    const p = JSON.parse(localStorage.getItem(getDataKey('tanq_thinking_progress_v1')) || '{}')
-    for (const [lvl, lp] of Object.entries(p.levels || {})) {
-      if ((lp as { bestScore: number }).bestScore >= 3) thinkingMaxLevel = Math.max(thinkingMaxLevel, Number(lvl))
-    }
-    thinkingBadgeCount = Object.values(p.badges || {}).filter((b) => (b as { silver?: boolean; gold?: boolean }).silver || (b as { silver?: boolean; gold?: boolean }).gold).length
-  } catch {}
-
-  let youjiMaxLevel = 0, youjiBadgeCount = 0
-  try {
-    const p = JSON.parse(localStorage.getItem(getDataKey('tanq_thinking_youji_progress_v1')) || '{}')
-    for (const [lvl, lp] of Object.entries(p.levels || {})) {
-      if ((lp as { bestScore: number }).bestScore >= 4) youjiMaxLevel = Math.max(youjiMaxLevel, Number(lvl))
-    }
-    youjiBadgeCount = Object.values(p.badges || {}).filter((b) => (b as { silver?: boolean; gold?: boolean }).silver || (b as { silver?: boolean; gold?: boolean }).gold).length
-  } catch {}
-
-  let codingCleared = 0
-  try {
-    const raw = localStorage.getItem(getDataKey('tanq_coding_cleared_v1'))
-    if (raw) codingCleared = (JSON.parse(raw) as number[]).length
-  } catch {}
-
-  type MathBest = { easy: number; normal: number; hard: number }
-  let mathBest: MathBest = { easy: 0, normal: 0, hard: 0 }
-  try {
-    const raw = localStorage.getItem(getDataKey('tanq_math_best_v1'))
-    if (raw) mathBest = { ...mathBest, ...JSON.parse(raw) }
-  } catch {}
-
-  type ClockBest = { jidou: number; sanjuppun: number; all: number }
-  let clockBest: ClockBest = { jidou: 0, sanjuppun: 0, all: 0 }
-  try {
-    const raw = localStorage.getItem(getDataKey('tanq_clock_best_v1'))
-    if (raw) clockBest = { ...clockBest, ...JSON.parse(raw) }
-  } catch {}
-
-  let shapesBest = 0
-  try {
-    const raw = localStorage.getItem(getDataKey('tanq_shapes_best_v1'))
-    if (raw) shapesBest = (JSON.parse(raw) as { best: number }).best || 0
-  } catch {}
-
-  const streak = Math.max(
-    getStreak('tanq_kanji_streak_v1'),
-    getStreak('tanq_english_streak_v1'),
-    getStreak('tanq_wordmath_streak_v1'),
-  )
-
-  return {
-    kanjiMastered, kanjiLearning, kanjiTotal: TOTAL_KANJI,
-    engMastered, engLearning, engTotal: TOTAL_ENGLISH,
-    wmByGrade,
-    scienceByDomain, scienceMastered, scienceTotal: TOTAL_SCIENCE,
-    kokugoCleared, kokugoStars3, kokugoTotal: TOTAL_KOKUGO_LEVELS,
-    kanyoCleared, kanyoTotal: TOTAL_KANYO_LEVELS,
-    yojiCleared, yojiTotal: TOTAL_YOJI_LEVELS,
-    thinkingMaxLevel, thinkingBadgeCount,
-    youjiMaxLevel, youjiBadgeCount,
-    codingCleared,
-    mathBest, clockBest, shapesBest,
-    streak,
-  }
-}
 
 type AppAudience = 'shougakusei' | 'youji' | 'chuugakujuken'
 const _YB = '/youji/apps'  // public/youji/apps/ に内製コピー済み
@@ -215,14 +67,14 @@ const APPS: {
   // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'Season 1',          audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
   { id: 'juku',         name: '中学受験 算数①',  emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '12単元｜図で考える', audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
-  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTAL_SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
+  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`,   audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
   { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',     badge: 'タイムアタック',     audience: 'shougakusei',   targetAge: '小2〜小6', guestAccess: true  },
-  { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',    badge: `${TOTAL_KANJI}字`,  audience: 'shougakusei',   targetAge: '小1〜小6', guestAccess: true  },
+  { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',    badge: `${TOTALS.KANJI}字`,  audience: 'shougakusei',   targetAge: '小1〜小6', guestAccess: true  },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',    badge: '分・時間計算',       audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: false },
-  { id: 'english',      name: '英語ボキャブラリー', emoji: '🌍', color: '#f87171', url: '/apps/english',  badge: `${TOTAL_ENGLISH}語`, audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
+  { id: 'english',      name: '英語ボキャブラリー', emoji: '🌍', color: '#f87171', url: '/apps/english',  badge: `${TOTALS.ENGLISH}語`, audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
   { id: 'thinking',     name: 'かんがえる力ジム',   emoji: '🧩', color: '#6366f1', url: '/apps/thinking', badge: '100問 / 25バッジ',  audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
   { id: 'word-math',    name: '算数文章題',        emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '文章から立式',      audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
   { id: 'shapes',       name: '図形トレーニング',  emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',   badge: '8図形',              audience: 'shougakusei',   targetAge: '小3〜小5', guestAccess: false },
@@ -704,7 +556,7 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
   const codingBadges = [
     { emoji: '🖥️', label: 'はじめて', color: '#4ADE80', earned: stats.codingCleared >= 3 },
     { emoji: '💡', label: 'プログラマー', color: '#60A5FA', earned: stats.codingCleared >= 6 },
-    { emoji: '🏆', label: 'ぜんぶクリア', color: '#FF6F9C', earned: stats.codingCleared >= CODING_TOTAL },
+    { emoji: '🏆', label: 'ぜんぶクリア', color: '#FF6F9C', earned: stats.codingCleared >= TOTALS.CODING },
   ]
   const mathBadges = [
     { emoji: '🥉', label: 'かんたん\nクリア', color: '#7BE8B0', earned: stats.mathBest.easy >= 10 },
@@ -978,10 +830,10 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             <div className="mb-2">
               <div className="flex justify-between text-[10px] font-bold mb-1" style={{ color: '#6B5A52' }}>
                 <span>クリア: {stats.codingCleared}ステージ</span>
-                <span>/ {CODING_TOTAL}</span>
+                <span>/ {TOTALS.CODING}</span>
               </div>
               <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
-                <div className="h-full rounded-full" style={{ width: `${Math.round(stats.codingCleared / CODING_TOTAL * 100)}%`, background: '#4ADE80' }} />
+                <div className="h-full rounded-full" style={{ width: `${Math.round(stats.codingCleared / TOTALS.CODING * 100)}%`, background: '#4ADE80' }} />
               </div>
             </div>
           )}
@@ -1179,14 +1031,12 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
 function AppHub({ userType }: { userType: UserType }) {
   const [tab, setTab] = useState<Tab>('home')
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
-  const [stats, setStats] = useState(computeStats())
+  const { stats, refresh: refreshStats } = useStats()
 
   useEffect(() => {
     setProfile(loadProfile(userType))
-    setStats(computeStats())
-  }, [userType])
-
-  const refreshStats = useCallback(() => setStats(computeStats()), [])
+    refreshStats()
+  }, [userType, refreshStats])
 
   useEffect(() => {
     if (tab === 'records' || tab === 'home') refreshStats()
