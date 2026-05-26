@@ -2,6 +2,7 @@ name: Auto-merge AI branches → main + Vercel Deploy
 
 # claude/* push → merge to main → Vercel deploy
 # main push (PR merge by owner) → Vercel deploy only
+# deploy-to-vercel は merge-to-main と独立して実行（マージ失敗でもデプロイ可能）
 
 on:
   push:
@@ -54,10 +55,9 @@ jobs:
           git push origin main
 
   deploy-to-vercel:
-    # claude/** → merge-to-main が成功した後にデプロイ
-    # main push  → merge-to-main はスキップされるが always() でデプロイを実行
-    if: always() && (needs.merge-to-main.result == 'success' || needs.merge-to-main.result == 'skipped')
-    needs: [merge-to-main]
+    # merge-to-main と独立して実行（マージ成否に関わらずデプロイ）
+    # claude/** push → merge と並行してデプロイ（main の最新状態を使用）
+    # main push → 即デプロイ
     runs-on: ubuntu-latest
     env:
       VERCEL_ORG_ID: team_pHV8kt9g3wxGNxcX4zJ14aIP
