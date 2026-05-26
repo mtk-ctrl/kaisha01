@@ -36,6 +36,16 @@ function calcStars(wrong: number): 0 | 1 | 2 | 3 {
   return 0
 }
 
+function shuffleChoices(q: KokugoQuestion): KokugoQuestion {
+  const indexed = q.choices.map((c, i) => ({ c, isAnswer: i === q.answer }))
+  const shuffled = [...indexed].sort(() => Math.random() - 0.5)
+  return {
+    ...q,
+    choices: shuffled.map(({ c }) => c) as [string, string, string, string],
+    answer: shuffled.findIndex(({ isAnswer }) => isAnswer) as 0 | 1 | 2 | 3,
+  }
+}
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type View = 'map' | 'quiz' | 'result'
@@ -108,7 +118,7 @@ export default function KokugoPage() {
   // ── レベル開始 ──
   const startLevel = useCallback((level: number) => {
     const questions = getQuestionsForLevel(level)
-    const shuffled = [...questions].sort(() => Math.random() - 0.5)
+    const shuffled = [...questions].sort(() => Math.random() - 0.5).map(shuffleChoices)
     setQuiz({
       level,
       questions: shuffled,
@@ -319,8 +329,8 @@ export default function KokugoPage() {
                 >
                   <span style={{ fontSize: '13px', color: '#9ca3af', minWidth: '20px' }}>{'①②③④'[i]}</span>
                   {choice}
-                  {quiz.confirmed && i === q.answer && <span style={{ marginLeft: 'auto', fontSize: '16px' }}>✓</span>}
-                  {quiz.confirmed && i === quiz.selected && i !== q.answer && <span style={{ marginLeft: 'auto', fontSize: '16px' }}>✗</span>}
+                  {quiz.confirmed && i === q.answer && <span style={{ marginLeft: 'auto', fontSize: '18px', fontWeight: 'bold' }}>○</span>}
+                  {quiz.confirmed && i === quiz.selected && i !== q.answer && <span style={{ marginLeft: 'auto', fontSize: '18px', fontWeight: 'bold' }}>×</span>}
                 </button>
               )
             })}
@@ -390,7 +400,7 @@ export default function KokugoPage() {
             <div style={{ fontSize: '13px', fontWeight: '600', color: '#374151', marginBottom: '10px' }}>問題の振り返り</div>
             {quiz.answers.map((a, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '8px 0', borderBottom: i < quiz.answers.length - 1 ? '1px solid #f3f4f6' : 'none' }}>
-                <span style={{ fontSize: '16px', flexShrink: 0 }}>{a.correct ? '✅' : '❌'}</span>
+                <span style={{ fontSize: '18px', fontWeight: 'bold', flexShrink: 0, color: a.correct ? '#22c55e' : '#ef4444' }}>{a.correct ? '○' : '×'}</span>
                 <div>
                   <div style={{ fontSize: '13px', color: '#374151' }}>{a.q.q}</div>
                   {!a.correct && (
