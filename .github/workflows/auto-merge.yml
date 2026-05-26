@@ -60,8 +60,8 @@ jobs:
     # main push → 即デプロイ
     runs-on: ubuntu-latest
     env:
-      VERCEL_ORG_ID: team_pHV8kt9g3wxGNxcX4zJ14aIP
-      VERCEL_PROJECT_ID: prj_ZyQ7idSXjxL9sK5QtcdiYuoZZrCn
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
