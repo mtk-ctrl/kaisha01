@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 
 type Op = '+' | '-' | '×' | '÷'
 type Difficulty = 'かんたん' | 'ふつう' | 'むずかしい'
@@ -193,7 +194,10 @@ export default function MathChallenge() {
   }
 
   useEffect(() => {
-    if (phase === 'result') saveMathBest(difficulty, score)
+    if (phase === 'result') {
+      saveMathBest(difficulty, score)
+      saveScore('math', score, targetCount, difficulty)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 

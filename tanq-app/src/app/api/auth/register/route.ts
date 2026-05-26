@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   // profiles テーブルへ保存（失敗しても auth 作成は成功とする）
   const { error: profileError } = await supabase
     .from('profiles')
-    .insert({ id: userId, email, child_name: childName, grade, mode, lab_unlocked: false })
+    .insert({ id: userId, email, child_name: childName, grade, mode, lab_unlocked: true })
 
   if (profileError) {
     // orphan 防止: profiles 失敗したら auth ユーザーも削除してやり直せるようにする
