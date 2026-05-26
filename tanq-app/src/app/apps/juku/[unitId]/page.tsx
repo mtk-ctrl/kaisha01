@@ -475,9 +475,9 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
             {/* 差ラベル（赤バーの左） */}
             <text x={barStart + assumedW - 4} y="14" textAnchor="end" fontSize="9" fill="#f87171" fontWeight="bold">差</text>
 
-            {/* 差バー — ①の赤ボックスと同じ x=barStart+assumedW から始まる */}
+            {/* 差バー — ①の赤ボックスと同じ x=barStart+assumedW・同じ点線スタイル */}
             <rect x={barStart + assumedW} y="2" width={diffW} height={barH} rx="3"
-              fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.5" />
+              fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="4 2" />
             <text x={redCx} y="14" textAnchor="middle" fontSize="9" fill="#f87171" fontWeight="bold">
               {diff}{unit}
             </text>
