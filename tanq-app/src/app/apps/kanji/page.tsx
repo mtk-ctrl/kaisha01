@@ -238,7 +238,7 @@ export default function KanjiQuiz() {
 
         <div className="text-5xl mb-2 mt-4">📖</div>
         <h1 className="text-3xl font-black mb-1 text-[#c4a8ff]">漢字クイズ</h1>
-        <p className="text-[#8892b0] text-xs mb-8 text-center">漢字→読み方 ＆ 読み方→漢字の2方向で練習。間隔反復で効率的に習得！</p>
+        <p className="text-[#8892b0] text-xs mb-8 text-center">漢字→読み方 ＆ 読み方→漢字の2方向で練習。くり返しで、どんどん覚えられる！</p>
 
         {/* Grade selector */}
         {isGuest && (
@@ -275,6 +275,13 @@ export default function KanjiQuiz() {
           })}
         </div>
 
+        {/* 初回ユーザー向け背中押し */}
+        {stats.mastered === 0 && stats.learning === 0 && (
+          <div className="w-full max-w-sm mb-3 px-3 py-2 bg-[#c4a8ff]/10 border border-[#c4a8ff]/30 rounded-xl">
+            <p className="text-[#c4a8ff] text-xs font-bold text-center">✨ まずは12問チャレンジしてみよう！</p>
+          </div>
+        )}
+
         {/* Grade progress */}
         <div className="w-full max-w-sm bg-white/5 rounded-2xl p-4 mb-5 border border-white/10">
           <div className="flex justify-between text-xs text-[#8892b0] mb-2">
@@ -301,7 +308,7 @@ export default function KanjiQuiz() {
         </div>
 
         {/* Mode */}
-        <div className="flex w-full max-w-sm gap-3 mb-5">
+        <div className="flex w-full max-w-sm gap-3 mb-1">
           {(['normal', 'weak'] as const).map((m) => (
             <button key={m} onClick={() => setMode(m)}
               className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${mode === m ? 'text-[#050b14]' : 'text-[#8892b0] bg-white/5 border border-white/10 hover:border-white/20'}`}
@@ -310,6 +317,9 @@ export default function KanjiQuiz() {
             </button>
           ))}
         </div>
+        <p className="text-[#8892b0] text-[10px] w-full max-w-sm text-center mb-4">
+          {mode === 'normal' ? 'バランスよく新しい漢字と復習を混ぜて出題' : '間違えた漢字・学習中の漢字を集中して出題'}
+        </p>
 
         <button onClick={() => startGame(grade, mode)}
           className="w-full max-w-sm py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.02] active:scale-[0.99]"
