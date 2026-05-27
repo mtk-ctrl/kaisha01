@@ -9,6 +9,13 @@ on:
       - 'claude/**'
       - 'main'
 
+# 同じブランチへの連続 push で複数のワークフローが同時に
+# git push origin main しようとする Race Condition を防ぐ。
+# cancel-in-progress: false = 実行中のものを止めず、次を待機させる。
+concurrency:
+  group: deploy-to-main
+  cancel-in-progress: false
+
 permissions:
   contents: write
 
