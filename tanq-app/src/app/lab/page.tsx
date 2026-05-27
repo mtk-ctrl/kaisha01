@@ -1280,7 +1280,7 @@ function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => vo
             backdropFilter: 'blur(10px)',
             borderBottom: '3px solid #3A2E2A',
           }}>
-          <span className="font-black text-base" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>🔬 TANQ ラボ</span>
+          <Link href="/" className="font-black text-base hover:opacity-70 transition-opacity" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>🔬 TANQ ラボ</Link>
           <div className="flex items-center gap-2">
             {stats && stats.streak > 0 && (
               <span className="text-sm font-black px-2 py-1 rounded-full" style={{ background: '#FFF1B8', border: '2px solid #3A2E2A', color: '#C99700' }}>
