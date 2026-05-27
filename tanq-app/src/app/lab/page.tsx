@@ -78,7 +78,7 @@ const APPS: {
   { id: 'thinking',     name: 'かんがえる力ジム',   emoji: '🧩', color: '#6366f1', url: '/apps/thinking', badge: '100問 / 25バッジ',  audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
   { id: 'word-math',    name: '算数文章題',        emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '文章から立式',      audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
   { id: 'shapes',       name: '図形トレーニング',  emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',   badge: '8図形',              audience: 'shougakusei',   targetAge: '小3〜小5', guestAccess: false },
-  { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',   badge: '5ステージ',          audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
+  { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',   badge: '5チャプター',         audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
   { id: 'youji-zokusei', name: 'ぞくせい仕分け工場', emoji: '🏭', color: '#94a3b4', url: '/apps/youji-zokusei', badge: 'ベン図・分類',   audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
   { id: 'kuku',          name: '九九マスター',      emoji: '✖️', color: '#f59e0b', url: '/apps/kuku',         badge: '2〜9の段',          audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: true  },
   { id: 'todofuken',     name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: '/apps/todofuken', badge: '47都道府県',        audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
