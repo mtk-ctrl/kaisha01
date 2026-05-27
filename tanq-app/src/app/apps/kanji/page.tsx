@@ -87,6 +87,10 @@ function buildSession(grade: Grade, store: SRSStore, mode: 'normal' | 'weak'): K
 
 interface Question { fmt: QuestionFormat; item: KanjiEntry; correct: string; choices: string[] }
 
+function getFullReading(item: KanjiEntry): string {
+  return item.reading + (item.okurigana || '')
+}
+
 /** 重複なし・必ず4択を保証するヘルパー */
 function pick4Unique(correct: string, candidates: string[]): string[] {
   const seen = new Set([correct])
@@ -101,8 +105,8 @@ function pick4Unique(correct: string, candidates: string[]): string[] {
 function makeQuestion(item: KanjiEntry, pool: KanjiEntry[]): Question {
   const fmt: QuestionFormat = Math.random() < 0.65 ? 'k2r' : 'r2k'
   if (fmt === 'k2r') {
-    const correct = item.reading
-    const candidates = shuffle(pool.filter(k => k.reading !== item.reading)).map(k => k.reading)
+    const correct = getFullReading(item)
+    const candidates = shuffle(pool.filter(k => getFullReading(k) !== getFullReading(item))).map(getFullReading)
     return { fmt, item, correct, choices: pick4Unique(correct, candidates) }
   }
   const correct = item.kanji
@@ -117,13 +121,11 @@ function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
   const fast = ms < 2500
   let b = old.b as number, c = old.c
 
-  if (correct && fast) {
+  if (correct) {
     c = old.c + 1
-    if (b === 0) b = 1
-    else if (b === 1 && c >= 3) b = 2
-  } else if (correct && !fast) {
-    c = Math.min(old.c + 1, 2)
-    if (b === 2) b = 1  // 習得済みでも遅ければ学習中に戻す
+    if (b === 0) { b = 1 } // any correct answer: new → learning
+    else if (b === 1 && fast && c >= 3) { b = 2 } // mastery requires fast+consecutive
+    else if (b === 2 && !fast) { b = 1 } // demote mastered if slow
   } else {
     c = 0
     if (b === 2) b = 1
@@ -156,6 +158,7 @@ export default function KanjiQuiz() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [qIdx, setQIdx] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [flashResult, setFlashResult] = useState<'correct' | 'wrong' | null>(null)
   const [lastMs, setLastMs] = useState(0)
   const [lastChange, setLastChange] = useState<'mastered' | 'advance' | 'same' | 'regress'>('same')
   const [sessionCorrect, setSessionCorrect] = useState(0)
@@ -197,6 +200,8 @@ export default function KanjiQuiz() {
     const q = questions[qIdx]
     const correct = c === q.correct
     correct ? playCorrect() : playWrong()
+    setFlashResult(correct ? 'correct' : 'wrong')
+    setTimeout(() => setFlashResult(null), 700)
     if (correct) setSessionCorrect(n => n + 1)
     else setSessionWeak(n => n + 1)
     const { store: newStore, change } = applySRS(store, q.item.kanji, correct, ms)
@@ -207,6 +212,7 @@ export default function KanjiQuiz() {
   }
 
   function goNext() {
+    setFlashResult(null)
     if (qIdx + 1 >= questions.length) {
       const ns = recordStudy()
       setFinalStreak(ns)
@@ -411,12 +417,23 @@ export default function KanjiQuiz() {
 
   return (
     <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-4 py-20">
+      {flashResult && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+          <span className="text-[12rem] font-black leading-none"
+            style={{
+              color: flashResult === 'correct' ? '#4ade80' : '#f87171',
+              textShadow: flashResult === 'correct' ? '0 0 60px #4ade8080' : '0 0 60px #f8717180',
+            }}>
+            {flashResult === 'correct' ? '○' : '×'}
+          </span>
+        </div>
+      )}
       <div className="fixed top-0 left-0 right-0 px-6 py-4 flex items-center justify-between bg-[#071628]/90 backdrop-blur-sm z-10">
         <button onClick={() => setPhase('home')} className="text-[#8892b0] hover:text-white text-sm transition-colors">← やめる</button>
         <span className="text-sm text-[#8892b0]">{qIdx + 1} / {questions.length}</span>
         <div className="flex gap-3 text-sm font-bold">
           <span className="text-[#4ade80]">○ {sessionCorrect}</span>
-          <span className="text-[#f87171]">✗ {sessionWeak}</span>
+          <span className="text-[#f87171]">× {sessionWeak}</span>
         </div>
       </div>
       <div className="fixed top-14 left-0 right-0 h-1.5 bg-white/10 z-10">
@@ -446,9 +463,17 @@ export default function KanjiQuiz() {
         ) : (
           <>
             <p className="text-[#8892b0] text-xs mb-2 uppercase tracking-widest">この読み方の漢字は？</p>
-            <div className="text-5xl font-black mb-4 select-none"
-              style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : color }}>
-              {q.item.reading}
+            <div className="flex items-baseline justify-center mb-4 select-none">
+              <span className="text-5xl font-black"
+                style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : color }}>
+                {q.item.reading}
+              </span>
+              {q.item.okurigana && (
+                <span className="text-3xl font-bold"
+                  style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : '#8892b0' }}>
+                  {q.item.okurigana}
+                </span>
+              )}
             </div>
             {/* r2k: 選択前はヒント非表示（意味・例に答えの漢字が含まれるため） */}
             {selected !== null ? (
@@ -510,7 +535,7 @@ export default function KanjiQuiz() {
               }}>
               <p className="font-black text-sm mb-1.5" style={{ color: isCorrect ? color : '#f87171' }}>
                 {isCorrect
-                  ? `✓ 正解！${q.fmt === 'k2r' ? `「${q.item.kanji}」＝「${q.item.reading}」` : `「${q.item.reading}」＝「${q.item.kanji}」`}`
+                  ? `✓ 正解！${q.fmt === 'k2r' ? `「${q.item.kanji}」＝「${getFullReading(q.item)}」` : `「${getFullReading(q.item)}」＝「${q.item.kanji}」`}`
                   : `✗ 正解は「${q.correct}」`
                 }
               </p>
