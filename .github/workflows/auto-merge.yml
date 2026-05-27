@@ -91,6 +91,41 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel@latest
 
+      - name: Sync env vars to Vercel
+        # GitHub Secrets → Vercel Dashboard を自動同期
+        # Vercel Dashboard を手動で触る必要をなくす
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          sync_var() {
+            local name="$1" value="$2" envs="${3:-production preview development}"
+            for e in $envs; do
+              vercel env rm "$name" "$e" --yes --token="$VERCEL_TOKEN" 2>/dev/null || true
+              printf '%s' "$value" | vercel env add "$name" "$e" --token="$VERCEL_TOKEN"
+            done
+            echo "✅ $name synced"
+          }
+
+          # 静的な設定値（シークレットではない・直接記述）
+          sync_var "NEXT_PUBLIC_SUPABASE_URL"   "https://jdrhnxqvmohzikmfqzbl.supabase.co"
+          sync_var "NEXT_PUBLIC_GA_ID"          "G-TK27G02856"
+          sync_var "NEXT_PUBLIC_LAB_PASSWORD"   "tanq2026"
+
+          # シークレット（GitHub Secrets から注入）
+          if [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::warning::NEXT_PUBLIC_SUPABASE_ANON_KEY not in GitHub Secrets — Supabase auth will not work"
+          else
+            sync_var "NEXT_PUBLIC_SUPABASE_ANON_KEY" "$SUPABASE_ANON_KEY"
+          fi
+
+          if [ -z "$SUPABASE_SERVICE_KEY" ]; then
+            echo "::warning::SUPABASE_SERVICE_ROLE_KEY not in GitHub Secrets — user registration API will not work"
+          else
+            sync_var "SUPABASE_SERVICE_ROLE_KEY" "$SUPABASE_SERVICE_KEY"
+          fi
+
       - name: Deploy to Vercel Production
         run: vercel --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
         working-directory: tanq-app
@@ -108,14 +143,5 @@ jobs:
           if [ "$STATUS" != "200" ]; then
             echo "❌ 本番URL が $STATUS を返しました"
             exit 1
-          fi
-          HTML=$(curl -sL -H "x-vercel-protection-bypass: $BYPASS" "$URL/")
-          if echo "$HTML" | grep -q "FFC83D"; then
-            echo "✅ 新デザイン（シール風）を確認 — 黄色カラー検出"
-          else
-            echo "⚠️  新デザインカラーが見つかりません。デプロイ内容を確認してください"
-          fi
-          if echo "$HTML" | grep -q "あそびながら"; then
-            echo "✅ TOPページ本文を確認"
           fi
           echo "🎉 本番確認完了: $URL"
