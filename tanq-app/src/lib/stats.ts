@@ -16,7 +16,7 @@ export const TOTALS = {
   KANJI:        Object.values(KANJI_DATA).reduce((sum, arr) => sum + arr.length, 0),
   ENGLISH:      WORDS.length,
   WORDMATH:     WORD_MATH_PROBLEMS.length,
-  CODING:       9,
+  CODING:       38,
   SCIENCE:      SCIENCE_QUESTIONS.length,
   KOKUGO_LEVELS: KOKUGO_LEVEL_META.length,
   KANYO_LEVELS:  KANYO_LEVEL_META.length,
@@ -110,8 +110,16 @@ export function computeStats() {
 
   let codingCleared = 0
   try {
-    const raw = localStorage.getItem(getDataKey(STORAGE_KEYS.CODING_CLEARED))
-    if (raw) codingCleared = (JSON.parse(raw) as number[]).length
+    // v2: chapter scores array — count chapters where score > 0
+    const rawV2 = localStorage.getItem(getDataKey('tanq_coding_v2_chapter_scores'))
+    if (rawV2) {
+      const scores = JSON.parse(rawV2) as (number | null)[]
+      codingCleared = scores.reduce((sum: number, s) => sum + (s ?? 0), 0)
+    } else {
+      // legacy v1 fallback
+      const raw = localStorage.getItem(getDataKey(STORAGE_KEYS.CODING_CLEARED))
+      if (raw) codingCleared = (JSON.parse(raw) as number[]).length
+    }
   } catch {}
 
   type MathBest = { easy: number; normal: number; hard: number }
