@@ -137,7 +137,8 @@ node scripts/screenshot-app.js
 
 ## ⑥ クイックリファレンス
 
-**デプロイ:** `claude/*` ブランチ push → GitHub Actions → main 自動マージ → Vercel デプロイ（`main` への直接 push だけでは本番反映されない）
+**デプロイ:** `claude/*` ブランチ push → GitHub Actions → main 自動マージ → Vercel デプロイ（`main` への直接 push だけでは本番反映されない）  
+**デプロイの詳細手順・Secret 管理・DB migration フロー → `product/infra.md` を必ず参照**
 
 **オーナー確認が必要なこと:** 事業ドメインの根本変更 / 資金・法務・ブランドの重大決定
 
@@ -150,4 +151,4 @@ node scripts/screenshot-app.js
 
 ---
 
-*最終更新: 2026-05-23 | 更新者: Jobs (AI CEO)*
+*最終更新: 2026-05-27 | 更新者: Jobs (AI CEO)*

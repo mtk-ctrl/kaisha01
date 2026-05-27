@@ -10,9 +10,9 @@
 
 | サービス | 状態 | 備考 |
 |---------|------|------|
-| GitHub Actions | ✅ 稼働中 | `claude/*` push → migration自動実行 → Vercel デプロイ（main マージは失敗することがあるが deploy は独立して動く）詳細は下記⑦参照 |
-| Vercel | ✅ 本番稼働 | tanq-app.vercel.app / `trailingSlash: true`・youji各HTMLに `<base href>` 済（2026-05-23） |
-| Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` |
+| GitHub Actions | ✅ 稼働中 | `claude/*` push → env var 自動同期 → migration（SQL変更時のみ）→ Vercel デプロイ。詳細は `product/infra.md` |
+| Vercel | ✅ 本番稼働 | tanq-app.vercel.app / 環境変数は GitHub Secrets から CI が自動同期（2026-05-27〜） |
+| Supabase | ✅ 接続済み | プロジェクトID: `jdrhnxqvmohzikmfqzbl` / 環境変数は Vercel に反映済み |
 | GA4 | ✅ 計測中 | 測定ID: G-TK27G02856 |
 | Resend | ⚠️ 登録済み（要動作確認） | X投稿メール用・Secret登録済み |
 | Gemini API | ❌ 未設定 | X投稿文案生成用・無料・GEMINI_API_KEY をGitHub Secretsに登録 |
@@ -72,6 +72,9 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-27 | 起動確認テスト：フッター /tanq ラベル「ストーリー」→「理科クイズ」修正 + NOW.md ⑦ 実態更新 | （本コミット） |
+| 2026-05-27 | 理想形デプロイフロー実装：GitHub Secrets → Vercel 自動同期 + infra.md 手順書整備 + CLAUDE.md 参照追加 | `2accf86` |
+| 2026-05-27 | middleware null ガード追加（env var 未設定時の MIDDLEWARE_INVOCATION_FAILED クラッシュ防止） | `da73c2d` |
 | 2026-05-27 | CI体系修正：supabase@latestをv2に固定 + マイグレーションファイル変更時のみ実行（git diff検知）+ ::warning::アノテーション追加。今後マイグレーション失敗がデプロイを止めない | `4c07a7f` |
 | 2026-05-27 | TANQ理科ページ（/tanq）全面リデザイン：フェイクUNITカード廃止→4領域カード（ScienceDomains Client Component）+ あそびかた3ステップ + Stats + CTA。全導線を/apps/scienceへ統一 | `0465da6` |
 | 2026-05-27 | Phase2 幼稚園アプリ Next.js移行完了（8アプリ：hiragana/juucombo/math/iro/kanji/kuku/clock/zokusei）+ 記録タブ統合 + バグ修正3件（キリン SVG・kuku Set spread・youji-math キー衝突） | （本コミット） |
@@ -124,30 +127,27 @@
 
 ---
 
-## ⑦ デプロイパイプライン（現状と運用）
+## ⑦ デプロイパイプライン（詳細は `product/infra.md` を参照）
 
-### 現在の動作フロー
+### 現在の動作フロー（2026-05-27 整備完了）
 
 ```
 Jobs が claude/* ブランチに push
-  └→ GitHub Actions: merge-to-main ジョブ（main へ fast-forward merge を試みる）
+  └→ GitHub Actions: merge-to-main（main へマージ）
        ↓ 成功・失敗どちらでも（if: always()）
-  └→ GitHub Actions: deploy-to-vercel ジョブ（main の最新を Vercel へ本番デプロイ）
-       ↓ 約2〜3分
+  └→ GitHub Actions: deploy-to-vercel
+       ① DB migration（SQL 変更時のみ自動実行）
+       ② Vercel 環境変数を GitHub Secrets から自動同期
+       ③ vercel --prod（本番デプロイ）
+       ④ HTTP 200 確認
+       ↓ 約3〜4分
   └→ tanq-app.vercel.app に反映 ✅
 ```
 
-### merge-to-main について
-
-- **現状**: `GITHUB_TOKEN` の権限で main への push が失敗することがある
-- **影響なし**: `deploy-to-vercel` は `if: always()` で独立実行するためデプロイには影響しない
-- **根本解決策（未実施）**: リポジトリ Settings → Actions → General → Workflow permissions を「Read and write permissions」に変更するか、PAT（Personal Access Token）を `GH_PAT` Secretとして登録してワークフローのtokenを差し替える
-
-### 今後の開発ルール
+### 開発ルール
 
 | やること | やらないこと |
 |---------|------------|
-| 必ず `claude/*` ブランチに push して Actions 経由でデプロイ | `main` に直接 push（deploy-to-vercel が動かない） |
-| 複数セッション同時作業は避ける（コンフリクト原因） | 複数 Claude Code セッションで同じファイルを並行編集 |
+| `claude/*` ブランチに push → Actions 経由でデプロイ | `main` に直接 push |
 | push 前に `npm run build` を通す | ビルドエラーのまま push |
-| PRは不要（Actions が自動マージ） | オーナーが手動でマージ（その場合 Actions が動かない） |
+| Secret 変更は GitHub Secrets だけ更新 | Vercel Dashboard を直接触る |

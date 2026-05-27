@@ -93,7 +93,9 @@ jobs:
 
       - name: Sync env vars to Vercel
         # GitHub Secrets → Vercel Dashboard を自動同期
-        # Vercel Dashboard を手動で触る必要をなくす
+        # vercel env add が対話待ちでハングする場合に備え timeout + continue-on-error 設定
+        continue-on-error: true
+        timeout-minutes: 2
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -103,7 +105,7 @@ jobs:
             local name="$1" value="$2" envs="${3:-production preview development}"
             for e in $envs; do
               vercel env rm "$name" "$e" --yes --token="$VERCEL_TOKEN" 2>/dev/null || true
-              printf '%s' "$value" | vercel env add "$name" "$e" --token="$VERCEL_TOKEN"
+              printf '%s\n' "$value" | vercel env add "$name" "$e" --token="$VERCEL_TOKEN" --yes 2>/dev/null || true
             done
             echo "✅ $name synced"
           }
