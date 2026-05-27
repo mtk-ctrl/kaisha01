@@ -5,6 +5,80 @@
 
 ---
 
+## 作業フロー手順書（コード変更 → 本番反映）
+
+### 通常の開発（コード変更）
+
+```
+1. claude/* ブランチで作業・編集
+
+2. ビルド確認（push 前に必ず）
+   cd tanq-app && npm run build
+   → エラーがあれば直す。通ったら次へ。
+
+3. コミット & push
+   git add <変更ファイル>
+   git commit -m "変更内容の説明"
+   git push -u origin claude/<ブランチ名>
+
+4. GitHub Actions が自動で実行（約3〜4分）
+   ① main へ自動マージ
+   ② Vercel 環境変数を GitHub Secrets から自動同期
+   ③ Vercel に本番デプロイ
+   ④ 本番 URL (tanq-app.vercel.app) の HTTP 200 を確認
+
+5. Actions の結果を確認
+   GitHub → Actions タブ → 最新のワークフロー
+   → ✅ 全ステップ緑 = 本番反映完了
+   → ❌ 赤 = ログを見て原因特定
+```
+
+**オーナーもJobsも「push するだけ」で本番に反映される。**
+
+---
+
+### DB スキーマを変更する場合（追加作業あり）
+
+```
+1〜3. 上記と同じ
+
++α. tanq-app/supabase/migrations/ に SQL ファイルを追加
+    命名規則: YYYYMMDD000001_説明.sql
+
+push すると Actions が自動検知して supabase db push を実行。
+ファイルが変わっていない場合はスキップされる（無駄な実行なし）。
+```
+
+---
+
+### シークレット・環境変数を変更する場合
+
+```
+Supabase のキーをローテーションした場合など:
+
+1. GitHub Secrets を更新
+   GitHub → Settings → Secrets and variables → Actions
+   → 対象の Secret を編集
+
+2. claude/* に何か push する（内容は何でもよい）
+   → Actions の "Sync env vars to Vercel" ステップが
+     GitHub Secrets の新しい値を Vercel に自動同期
+   → Vercel Dashboard は触らなくてよい
+```
+
+---
+
+### 現在の設定状態（2026-05-27 完了）
+
+| 場所 | 状態 |
+|------|------|
+| GitHub Secrets | ✅ 全件登録済み（Vercel × 4 + Supabase × 3 + Resend） |
+| Vercel 環境変数 | ✅ CI が自動管理（手動設定不要） |
+| DB マイグレーション | ✅ SQL 変更時のみ自動実行 |
+| 本番デプロイ | ✅ push → 3〜4 分で反映 |
+
+---
+
 ## デプロイフロー全体図（理想形・現在の実装）
 
 ```
