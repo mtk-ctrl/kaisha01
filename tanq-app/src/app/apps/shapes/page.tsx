@@ -46,7 +46,7 @@ const SHAPES: Shape[] = [
   {
     name: 'pentagon', japanese: 'ごかくけい（五角形）', corners: 5, sides: 5,
     svgPath: 'M50,8 L92,38 L75,85 L25,85 L8,38 Z', color: '#f0c040',
-    description: '5つの角がある形',
+    description: 'ペンタゴン（米国防省）の形',
     explanation: '五角形は辺が5本、角が5つ。アメリカの国防総省（ペンタゴン）の建物もこの形！',
   },
   {
@@ -76,14 +76,8 @@ const SHAPES: Shape[] = [
   {
     name: 'octagon', japanese: 'はっかくけい（八角形）', corners: 8, sides: 8,
     svgPath: 'M50,5 L75,15 L95,40 L95,60 L75,85 L50,95 L25,85 L5,60 L5,40 L25,15 Z', color: '#ff7043',
-    description: '8つの角がある形',
+    description: 'STOPサインの形',
     explanation: '八角形は辺が8本、角が8つ。道路の一時停止サイン（STOP標識）はこの形だよ！',
-  },
-  {
-    name: 'diamond', japanese: 'ひし形（菱形）', corners: 4, sides: 4,
-    svgPath: 'M50,5 L90,50 L50,95 L10,50 Z', color: '#ab47bc',
-    description: 'たて長のひし形',
-    explanation: '菱形（ひし形）は4本の辺がすべて同じ長さ。トランプのダイヤ♦もこの形だよ！',
   },
   {
     name: 'trapezoid', japanese: 'だいけい（台形）', corners: 4, sides: 4,
@@ -110,15 +104,9 @@ const SHAPES: Shape[] = [
     explanation: '直角三角形は1つの角がちょうど90°。定規やスロープの形がこれ。ピタゴラスの定理で有名！',
   },
   {
-    name: 'star10', japanese: 'ほし形（星形）', corners: 10, sides: 10,
-    svgPath: 'M50,5 L61,35 L95,35 L68,57 L79,91 L50,70 L21,91 L32,57 L5,35 L39,35 Z', color: '#ffee58',
-    description: '10のとんがりと角がある星',
-    explanation: '星形は10本の辺と10個の角を持つ多角形。先のとがった点が5つあって、とっても目立つ形だよ！',
-  },
-  {
     name: 'heptagon', japanese: 'ななかくけい（七角形）', corners: 7, sides: 7,
     svgPath: 'M50,5 L82,20 L95,55 L80,88 L50,95 L20,88 L5,55 L18,20 Z', color: '#29b6f6',
-    description: '7つの角がある形',
+    description: 'コインに使われる形',
     explanation: '七角形は辺が7本、角が7つ。正七角形はすべての辺と角が等しく、硬貨（コイン）にも使われるよ！',
   },
   {
@@ -129,7 +117,7 @@ const SHAPES: Shape[] = [
   },
 ]
 
-const TOTAL = SHAPES.length  // 8問（図形の数に合わせる）
+const TOTAL = SHAPES.length
 
 const SHAPES_BEST_KEY = 'tanq_shapes_best_v1'
 
@@ -294,7 +282,7 @@ export default function ShapesQuiz() {
       <div className="w-full max-w-sm text-center">
         <p className="text-[#94a3c4] text-sm mb-4 tracking-widest uppercase">{q.question}</p>
         <div className="flex justify-center mb-3"><ShapeSVG shape={q.shape} size={110} /></div>
-        <p className="text-[#94a3c4] text-xs mb-5">{q.shape.description}</p>
+        {q.type === 'name' && <p className="text-[#94a3c4] text-xs mb-5">{q.shape.description}</p>}
 
         {/* 選択肢 */}
         <div className="grid grid-cols-2 gap-3 mb-5">
