@@ -218,12 +218,14 @@ function QuizView({
   onSelect,
   onConfirm,
   onNext,
+  onQuit,
 }: {
   state: QuizState
   domain: ScienceDomain
   onSelect: (i: number) => void
   onConfirm: () => void
   onNext: () => void
+  onQuit: () => void
 }) {
   const q = state.questions[state.current]
   const isLast = state.current === state.questions.length - 1
@@ -237,7 +239,8 @@ function QuizView({
   return (
     <div className="px-4 pt-4 pb-8">
       {/* 進捗バー */}
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-2 mb-4">
+        <button onClick={onQuit} className="text-sm font-bold shrink-0" style={{ color: '#6B5A52' }}>← やめる</button>
         <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.12)' }}>
           <div className="h-full rounded-full transition-all"
             style={{ width: `${Math.round((state.current) / state.questions.length * 100)}%`, background: color }} />
@@ -281,7 +284,7 @@ function QuizView({
           let border = '2.5px solid #3A2E2A'
           let shadow = '3px 3px 0 0 #3A2E2A'
           if (state.confirmed) {
-            if (isCorrect) { bg = '#DFF6CF'; border = `2.5px solid ${DOMAIN_COLORS['生物']}`; shadow = '3px 3px 0 0 #22c55e' }
+            if (isCorrect) { bg = DOMAIN_BG[domain]; border = `2.5px solid ${color}`; shadow = `3px 3px 0 0 ${color}` }
             else if (isSelected) { bg = '#FFE3EE'; border = '2.5px solid #FF6F9C'; shadow = '3px 3px 0 0 #FF6F9C' }
           } else if (isSelected) {
             bg = DOMAIN_BG[domain]; border = `2.5px solid ${color}`; shadow = `3px 3px 0 0 ${color}`
@@ -299,7 +302,7 @@ function QuizView({
                 {label}
               </span>
               <span className="font-bold text-sm leading-snug" style={{ color: '#3A2E2A' }}>{q.choices[origIdx]}</span>
-              {state.confirmed && isCorrect && <span className="ml-auto text-lg font-black" style={{ color: '#22c55e' }}>○</span>}
+              {state.confirmed && isCorrect && <span className="ml-auto text-lg font-black" style={{ color }}>○</span>}
               {state.confirmed && isSelected && !isCorrect && <span className="ml-auto text-lg font-black" style={{ color: '#FF6F9C' }}>×</span>}
             </button>
           )
@@ -309,7 +312,7 @@ function QuizView({
       {/* 解説パネル（回答確認後） */}
       {state.confirmed && (
         <div className="rounded-[22px] p-4 mb-4 animate-[fadeIn_0.3s_ease]"
-          style={{ background: state.selected === q.answer ? '#DFF6CF' : '#FFE3EE', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+          style={{ background: state.selected === q.answer ? DOMAIN_BG[domain] : '#FFE3EE', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
           <p className="font-black text-sm mb-1" style={{ color: '#3A2E2A' }}>
             {state.selected === q.answer ? '🎉 せいかい！' : `💡 正解は「${q.choices[q.answer]}」`}
           </p>
@@ -506,6 +509,7 @@ export default function SciencePage() {
             onSelect={handleSelect}
             onConfirm={handleConfirm}
             onNext={handleNext}
+            onQuit={() => setView('domain')}
           />
         )}
         {view === 'result' && quiz && (
