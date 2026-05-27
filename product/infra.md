@@ -31,6 +31,11 @@
    GitHub → Actions タブ → 最新のワークフロー
    → ✅ 全ステップ緑 = 本番反映完了
    → ❌ 赤 = ログを見て原因特定
+
+⚠️  次の push は「5」で緑を確認してから行う。
+   複数の push が同時に走ると git push origin main が衝突し
+   remote: fatal error in commit_refs で後続が全部失敗する（Race Condition）。
+   concurrency 設定で直列化済みだが、確認してから push が鉄則。
 ```
 
 **オーナーもJobsも「push するだけ」で本番に反映される。**
