@@ -33,4 +33,8 @@ export const STORAGE_KEYS = {
   KANJI_STREAK:   'tanq_kanji_streak_v1',
   ENGLISH_STREAK: 'tanq_english_streak_v1',
   WORDMATH_STREAK:'tanq_wordmath_streak_v1',
+
+  // youji アプリ記録 — getDataKey 必須
+  KATAKANA_RECORDS: 'tanq_katakana_records_v1',
+  ANIMALS_BEST:     'tanq_animals_best_v1',
 } as const

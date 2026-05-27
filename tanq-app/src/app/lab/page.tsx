@@ -84,14 +84,14 @@ const APPS: {
   { id: 'kuku',          name: '九九マスター',      emoji: '✖️', color: '#f59e0b', url: `${_YB}/kuku/`,   badge: '2〜9の段',          audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: true  },
   { id: 'todofuken',     name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: '/apps/todofuken', badge: '47都道府県',        audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
   // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ）──────
-  { id: 'youji-katakana',  name: 'カタカナ れんしゅう',       emoji: '🔡', color: '#d946ef', url: `${_YB}/katakana/`,    badge: 'ア〜ン 46字',      audience: 'youji', targetAge: '5〜6才', guestAccess: true },
+  { id: 'youji-katakana',  name: 'カタカナ れんしゅう',       emoji: '🔡', color: '#d946ef', url: '/apps/youji-katakana', badge: 'ア〜ン 46字',      audience: 'youji', targetAge: '5〜6才', guestAccess: true },
   { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: `${_YB}/iro-katachi/`, badge: '10色・8かたち',    audience: 'youji', targetAge: '3〜5才', guestAccess: true },
   { id: 'youji-kanji',     name: 'はじめての かんじ',          emoji: '📚', color: '#f87171', url: `${_YB}/kanji/`,       badge: 'にちじょうご80字', audience: 'youji', targetAge: '4〜6才', guestAccess: true },
   { id: 'youji-math',      name: 'たべものと かずあそび',       emoji: '🍎', color: '#f0a050', url: `${_YB}/math/`,        badge: '20まで',           audience: 'youji', targetAge: '3〜6才', guestAccess: true },
   { id: 'youji-juucombo',  name: '10に なる かずを さがせ！',  emoji: '🔟', color: '#60a5fa', url: `${_YB}/juucombo/`,    badge: 'たして10',         audience: 'youji', targetAge: '5〜6才', guestAccess: true },
   { id: 'youji-hiragana',  name: 'にたもじ どっち？',          emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/`,         badge: 'おう/づ/ぢ識別',   audience: 'shougakusei', targetAge: '小1〜小2', guestAccess: true },
   { id: 'youji-clock',     name: 'なんじ かな？',              emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/`,       badge: '何時・何時半',     audience: 'youji', targetAge: '4〜6才', guestAccess: true },
-  { id: 'youji-animals',   name: 'どうぶつ さんすう',           emoji: '🐾', color: '#fb923c', url: `${_YB}/animals/`,     badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才', guestAccess: true },
+  { id: 'youji-animals',   name: 'どうぶつ さんすう',           emoji: '🐾', color: '#fb923c', url: '/apps/youji-animals',  badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才', guestAccess: true },
   { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん / 10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },
 ]
 
@@ -594,6 +594,8 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
   const hasMath = stats.mathBest.easy > 0 || stats.mathBest.normal > 0 || stats.mathBest.hard > 0
   const hasClock = stats.clockBest.jidou > 0 || stats.clockBest.sanjuppun > 0 || stats.clockBest.all > 0
   const hasShapes = stats.shapesBest > 0
+  const hasKatakana = stats.katakanaCount > 0
+  const hasAnimals = stats.animalsBest > 0
 
   return (
     <div className="px-4 pt-5 pb-6">
@@ -818,6 +820,35 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
                 <span>🏅 バッジ {stats.youjiBadgeCount}こ</span>
               </div>
           }
+        </RecordsAppCard>
+
+        {/* カタカナれんしゅう */}
+        <RecordsAppCard bg="#F0E8FF">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🔡</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>カタカナ れんしゅう</span>
+            {!hasKatakana && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasKatakana && (
+            <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
+              <span>🎮 {stats.katakanaCount}かい あそんだ</span>
+              <span>{'⭐'.repeat(stats.katakanaMaxStars)}{'☆'.repeat(3 - stats.katakanaMaxStars)}</span>
+            </div>
+          )}
+        </RecordsAppCard>
+
+        {/* どうぶつさんすう */}
+        <RecordsAppCard bg="#FFF0D6">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🐾</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>どうぶつ さんすう</span>
+            {!hasAnimals && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasAnimals && (
+            <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
+              <span>⭐ さいこうスコア {stats.animalsBest}%</span>
+            </div>
+          )}
         </RecordsAppCard>
 
         {/* プログラミング */}

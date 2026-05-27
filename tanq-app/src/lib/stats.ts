@@ -134,6 +134,20 @@ export function computeStats() {
     if (raw) shapesBest = (JSON.parse(raw) as { best: number }).best || 0
   } catch {}
 
+  let katakanaCount = 0
+  let katakanaMaxStars = 0
+  try {
+    const recs = JSON.parse(localStorage.getItem(getDataKey(STORAGE_KEYS.KATAKANA_RECORDS)) || '[]') as { stars: number }[]
+    katakanaCount = recs.length
+    katakanaMaxStars = recs.reduce((m, r) => Math.max(m, r.stars || 0), 0)
+  } catch {}
+
+  let animalsBest = 0
+  try {
+    const raw = localStorage.getItem(getDataKey(STORAGE_KEYS.ANIMALS_BEST))
+    if (raw) animalsBest = (JSON.parse(raw) as { best: number }).best || 0
+  } catch {}
+
   const streak = Math.max(
     getStreak(STORAGE_KEYS.KANJI_STREAK),
     getStreak(STORAGE_KEYS.ENGLISH_STREAK),
@@ -152,6 +166,8 @@ export function computeStats() {
     youjiMaxLevel,    youjiBadgeCount,
     codingCleared,
     mathBest, clockBest, shapesBest,
+    katakanaCount, katakanaMaxStars,
+    animalsBest,
     streak,
   }
 }
