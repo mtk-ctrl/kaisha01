@@ -148,6 +148,62 @@ export function computeStats() {
     if (raw) animalsBest = (JSON.parse(raw) as { best: number }).best || 0
   } catch {}
 
+  let hiraganaBest = 0, hiraganaStickers = 0
+  try {
+    const raw = localStorage.getItem(getDataKey(STORAGE_KEYS.HIRAGANA_BEST))
+    if (raw) { const d = JSON.parse(raw) as { best: number; stickers: number }; hiraganaBest = d.best || 0; hiraganaStickers = d.stickers || 0 }
+  } catch {}
+
+  let juucombosBest = 0
+  try {
+    const raw = localStorage.getItem(getDataKey(STORAGE_KEYS.JUUCOMBO_BEST))
+    if (raw) juucombosBest = (JSON.parse(raw) as { best: number }).best || 0
+  } catch {}
+
+  let mathYoujiBest = 0
+  try {
+    const raw = localStorage.getItem(getDataKey(STORAGE_KEYS.MATH_YOUJI_BEST))
+    if (raw) mathYoujiBest = (JSON.parse(raw) as { best: number }).best || 0
+  } catch {}
+
+  let iroCount = 0, iroMaxStars = 0
+  try {
+    const recs = JSON.parse(localStorage.getItem(getDataKey(STORAGE_KEYS.IRO_RECORDS)) || '[]') as { stars: number }[]
+    iroCount = recs.length
+    iroMaxStars = recs.reduce((m, r) => Math.max(m, r.stars || 0), 0)
+  } catch {}
+
+  let youjiKanjiCount = 0, youjiKanjiMaxStars = 0
+  try {
+    const recs = JSON.parse(localStorage.getItem(getDataKey(STORAGE_KEYS.YOUJI_KANJI_BEST)) || '[]') as { stars: number }[]
+    youjiKanjiCount = recs.length
+    youjiKanjiMaxStars = recs.reduce((m, r) => Math.max(m, r.stars || 0), 0)
+  } catch {}
+
+  let kukuCount = 0, kukuBestAttack = 0, kukuMaxStars = 0
+  try {
+    const recs = JSON.parse(localStorage.getItem(getDataKey(STORAGE_KEYS.KUKU_RECORDS)) || '[]') as { type: string; elapsed: number; stars: number }[]
+    kukuCount = recs.length
+    kukuBestAttack = recs.filter(r => r.type === 'attack').reduce((m, r) => (m === 0 || r.elapsed < m) ? r.elapsed : m, 0)
+    kukuMaxStars = recs.reduce((m, r) => Math.max(m, r.stars || 0), 0)
+  } catch {}
+
+  let clockYoujiLevels = 0, clockYoujiMaxStars = 0
+  try {
+    const recs = JSON.parse(localStorage.getItem(getDataKey(STORAGE_KEYS.CLOCK_RECORDS)) || '{}') as Record<number, { bestStars: number; bestScore: number }>
+    const entries = Object.values(recs)
+    clockYoujiLevels = entries.filter(e => e.bestScore > 0).length
+    clockYoujiMaxStars = entries.reduce((m, e) => Math.max(m, e.bestStars || 0), 0)
+  } catch {}
+
+  let zokuseiStages = 0, zokuseiMaxStars = 0
+  try {
+    const recs = JSON.parse(localStorage.getItem(getDataKey(STORAGE_KEYS.ZOKUSEI_RECORDS)) || '{}') as Record<number, { stars: number; score: number }>
+    const entries = Object.values(recs)
+    zokuseiStages = entries.filter(e => e.score > 0).length
+    zokuseiMaxStars = entries.reduce((m, e) => Math.max(m, e.stars || 0), 0)
+  } catch {}
+
   const streak = Math.max(
     getStreak(STORAGE_KEYS.KANJI_STREAK),
     getStreak(STORAGE_KEYS.ENGLISH_STREAK),
@@ -168,6 +224,14 @@ export function computeStats() {
     mathBest, clockBest, shapesBest,
     katakanaCount, katakanaMaxStars,
     animalsBest,
+    hiraganaBest, hiraganaStickers,
+    juucombosBest,
+    mathYoujiBest,
+    iroCount, iroMaxStars,
+    youjiKanjiCount, youjiKanjiMaxStars,
+    kukuCount, kukuBestAttack, kukuMaxStars,
+    clockYoujiLevels, clockYoujiMaxStars,
+    zokuseiStages, zokuseiMaxStars,
     streak,
   }
 }

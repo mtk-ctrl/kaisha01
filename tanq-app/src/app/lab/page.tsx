@@ -80,17 +80,17 @@ const APPS: {
   { id: 'word-math',    name: '算数文章題',        emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '文章から立式',      audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
   { id: 'shapes',       name: '図形トレーニング',  emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',   badge: '8図形',              audience: 'shougakusei',   targetAge: '小3〜小5', guestAccess: false },
   { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',   badge: '5ステージ',          audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
-  { id: 'youji-zokusei', name: 'ぞくせい仕分け工場', emoji: '🏭', color: '#94a3b4', url: `${_YB}/zokusei/`, badge: 'ベン図・分類',   audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
-  { id: 'kuku',          name: '九九マスター',      emoji: '✖️', color: '#f59e0b', url: `${_YB}/kuku/`,   badge: '2〜9の段',          audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: true  },
+  { id: 'youji-zokusei', name: 'ぞくせい仕分け工場', emoji: '🏭', color: '#94a3b4', url: '/apps/youji-zokusei', badge: 'ベン図・分類',   audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
+  { id: 'kuku',          name: '九九マスター',      emoji: '✖️', color: '#f59e0b', url: '/apps/kuku',         badge: '2〜9の段',          audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: true  },
   { id: 'todofuken',     name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: '/apps/todofuken', badge: '47都道府県',        audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
   // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ）──────
   { id: 'youji-katakana',  name: 'カタカナ れんしゅう',       emoji: '🔡', color: '#d946ef', url: '/apps/youji-katakana', badge: 'ア〜ン 46字',      audience: 'youji', targetAge: '5〜6才', guestAccess: true },
-  { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: `${_YB}/iro-katachi/`, badge: '10色・8かたち',    audience: 'youji', targetAge: '3〜5才', guestAccess: true },
-  { id: 'youji-kanji',     name: 'はじめての かんじ',          emoji: '📚', color: '#f87171', url: `${_YB}/kanji/`,       badge: 'にちじょうご80字', audience: 'youji', targetAge: '4〜6才', guestAccess: true },
-  { id: 'youji-math',      name: 'たべものと かずあそび',       emoji: '🍎', color: '#f0a050', url: `${_YB}/math/`,        badge: '20まで',           audience: 'youji', targetAge: '3〜6才', guestAccess: true },
-  { id: 'youji-juucombo',  name: '10に なる かずを さがせ！',  emoji: '🔟', color: '#60a5fa', url: `${_YB}/juucombo/`,    badge: 'たして10',         audience: 'youji', targetAge: '5〜6才', guestAccess: true },
-  { id: 'youji-hiragana',  name: 'にたもじ どっち？',          emoji: '🔤', color: '#c4a8ff', url: `${_YB}/no5/`,         badge: 'おう/づ/ぢ識別',   audience: 'shougakusei', targetAge: '小1〜小2', guestAccess: true },
-  { id: 'youji-clock',     name: 'なんじ かな？',              emoji: '🕑', color: '#4ade80', url: `${_YB}/clock/`,       badge: '何時・何時半',     audience: 'youji', targetAge: '4〜6才', guestAccess: true },
+  { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: '/apps/youji-iro',       badge: '10色・8かたち',    audience: 'youji', targetAge: '3〜5才', guestAccess: true },
+  { id: 'youji-kanji',     name: 'はじめての かんじ',          emoji: '📚', color: '#f87171', url: '/apps/youji-kanji',     badge: 'にちじょうご80字', audience: 'youji', targetAge: '4〜6才', guestAccess: true },
+  { id: 'youji-math',      name: 'たべものと かずあそび',       emoji: '🍎', color: '#f0a050', url: '/apps/youji-math',      badge: '20まで',           audience: 'youji', targetAge: '3〜6才', guestAccess: true },
+  { id: 'youji-juucombo',  name: '10に なる かずを さがせ！',  emoji: '🔟', color: '#60a5fa', url: '/apps/youji-juucombo',  badge: 'たして10',         audience: 'youji', targetAge: '5〜6才', guestAccess: true },
+  { id: 'youji-hiragana',  name: 'にたもじ どっち？',          emoji: '🔤', color: '#c4a8ff', url: '/apps/youji-hiragana',  badge: 'おう/づ/ぢ識別',   audience: 'shougakusei', targetAge: '小1〜小2', guestAccess: true },
+  { id: 'youji-clock',     name: 'なんじ かな？',              emoji: '🕑', color: '#4ade80', url: '/apps/youji-clock',     badge: '何時・何時半',     audience: 'youji', targetAge: '4〜6才', guestAccess: true },
   { id: 'youji-animals',   name: 'どうぶつ さんすう',           emoji: '🐾', color: '#fb923c', url: '/apps/youji-animals',  badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才', guestAccess: true },
   { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん / 10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },
 ]
@@ -581,7 +581,44 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
     { emoji: '🏆', label: 'ぜんぶ！', color: '#FF6F9C', earned: stats.scienceMastered >= stats.scienceTotal && stats.scienceTotal > 0 },
   ]
 
-  const allBadges = [...kanjiBadges, ...engBadges, ...wmBadges, ...scienceBadges, ...codingBadges, ...mathBadges, ...clockBadges, ...shapesBadges]
+  const hiraganaBadges = [
+    { emoji: '🌸', label: 'はじめての\n一歩', color: '#ec4899', earned: stats.hiraganaBest >= 3 },
+    { emoji: '🔤', label: 'かんぺき', color: '#6366f1', earned: stats.hiraganaBest >= 7 },
+    { emoji: '⭐', label: 'ひらがな\nはかせ', color: '#f59e0b', earned: stats.hiraganaStickers >= 5 },
+  ]
+  const juucombosBadges = [
+    { emoji: '🔢', label: 'はじめて', color: '#22c55e', earned: stats.juucombosBest >= 5 },
+    { emoji: '⭐', label: 'じゅう\nはかせ', color: '#f59e0b', earned: stats.juucombosBest >= 10 },
+  ]
+  const mathYoujiBadges = [
+    { emoji: '🍎', label: 'はじめての\n一歩', color: '#f97316', earned: stats.mathYoujiBest >= 50 },
+    { emoji: '⭐', label: 'さんすう\nはかせ', color: '#f59e0b', earned: stats.mathYoujiBest >= 90 },
+  ]
+  const iroBadges = [
+    { emoji: '🌈', label: 'いろはかせ', color: '#8b5cf6', earned: stats.iroCount >= 1 },
+    { emoji: '⭐⭐⭐', label: 'さいこう\n3つ星', color: '#f59e0b', earned: stats.iroMaxStars >= 3 },
+  ]
+  const youjiKanjiBadges = [
+    { emoji: '🈳', label: 'はじめての\n一歩', color: '#ef4444', earned: stats.youjiKanjiCount >= 1 },
+    { emoji: '⭐⭐⭐', label: 'さいこう\n3つ星', color: '#f59e0b', earned: stats.youjiKanjiMaxStars >= 3 },
+  ]
+  const kukuBadges = [
+    { emoji: '✕', label: 'はじめて', color: '#f59e0b', earned: stats.kukuCount >= 1 },
+    { emoji: '🏃', label: 'アタック\nせいこう', color: '#3b82f6', earned: stats.kukuBestAttack > 0 },
+    { emoji: '⭐', label: 'くくはかせ', color: '#f59e0b', earned: stats.kukuMaxStars >= 3 },
+  ]
+  const clockYoujiBadges = [
+    { emoji: '🕐', label: 'はじめての\n一歩', color: '#4ade80', earned: stats.clockYoujiLevels >= 1 },
+    { emoji: '⭐', label: '4ステージ', color: '#f59e0b', earned: stats.clockYoujiLevels >= 4 },
+    { emoji: '🏆', label: 'ぜんぶ\nクリア', color: '#FF6F9C', earned: stats.clockYoujiLevels >= 8 },
+  ]
+  const zokuseiiBadges = [
+    { emoji: '🃏', label: 'はじめての\n一歩', color: '#a855f7', earned: stats.zokuseiStages >= 1 },
+    { emoji: '⭐', label: '2ステージ', color: '#f59e0b', earned: stats.zokuseiStages >= 2 },
+    { emoji: '🏆', label: 'ぜんぶ\nクリア', color: '#7c3aed', earned: stats.zokuseiStages >= 3 },
+  ]
+
+  const allBadges = [...kanjiBadges, ...engBadges, ...wmBadges, ...scienceBadges, ...codingBadges, ...mathBadges, ...clockBadges, ...shapesBadges, ...hiraganaBadges, ...juucombosBadges, ...mathYoujiBadges, ...iroBadges, ...youjiKanjiBadges, ...kukuBadges, ...clockYoujiBadges, ...zokuseiiBadges]
   const earnedCount = allBadges.filter(b => b.earned).length
 
   const hasKanji = stats.kanjiMastered > 0
@@ -596,6 +633,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
   const hasShapes = stats.shapesBest > 0
   const hasKatakana = stats.katakanaCount > 0
   const hasAnimals = stats.animalsBest > 0
+  const hasHiragana = stats.hiraganaBest > 0
+  const hasJuucombo = stats.juucombosBest > 0
+  const hasMathYouji = stats.mathYoujiBest > 0
+  const hasIro = stats.iroCount > 0
+  const hasYoujiKanji = stats.youjiKanjiCount > 0
+  const hasKuku = stats.kukuCount > 0
+  const hasClockYouji = stats.clockYoujiLevels > 0
+  const hasZokusei = stats.zokuseiStages > 0
 
   return (
     <div className="px-4 pt-5 pb-6">
@@ -924,6 +969,144 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
           )}
           <div className="flex gap-2 flex-wrap mt-2">
             {shapesBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* ひらがなスペル */}
+        <RecordsAppCard bg="#FFF0F8">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🔤</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ひらがな スペル</span>
+            {!hasHiragana && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasHiragana && (
+            <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
+              <span>⭐ さいこう {stats.hiraganaBest}もん</span>
+              {stats.hiraganaStickers > 0 && <span>🌸 シール {stats.hiraganaStickers}まい</span>}
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {hiraganaBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* じゅうコンボ */}
+        <RecordsAppCard bg="#F0FFF4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🔟</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>じゅうコンボ</span>
+            {!hasJuucombo && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasJuucombo && (
+            <p className="text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>⭐ さいこう {stats.juucombosBest}もん せいかい</p>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {juucombosBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* ようじさんすう */}
+        <RecordsAppCard bg="#FFF7ED">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🍎</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようじ さんすう</span>
+            {!hasMathYouji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasMathYouji && (
+            <p className="text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>⭐ さいこう {stats.mathYoujiBest}%</p>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {mathYoujiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* いろとかたち */}
+        <RecordsAppCard bg="#F5F3FF">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🌈</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>いろと かたち</span>
+            {!hasIro && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasIro && (
+            <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
+              <span>🎮 {stats.iroCount}かい あそんだ</span>
+              <span>{'⭐'.repeat(stats.iroMaxStars)}{'☆'.repeat(3 - stats.iroMaxStars)}</span>
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {iroBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* ようじかんじ */}
+        <RecordsAppCard bg="#FFF1F1">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🈳</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようじ かんじ</span>
+            {!hasYoujiKanji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasYoujiKanji && (
+            <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
+              <span>🎮 {stats.youjiKanjiCount}かい あそんだ</span>
+              <span>{'⭐'.repeat(stats.youjiKanjiMaxStars)}{'☆'.repeat(3 - stats.youjiKanjiMaxStars)}</span>
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {youjiKanjiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* くくれんしゅう */}
+        <RecordsAppCard bg="#FFFBEB">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">✕</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>くく れんしゅう</span>
+            {!hasKuku && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasKuku && (
+            <div className="flex flex-wrap gap-3 text-[11px] font-bold mb-2" style={{ color: '#6B5A52' }}>
+              <span>🎮 {stats.kukuCount}かい あそんだ</span>
+              {stats.kukuBestAttack > 0 && <span>🏃 タイムアタック さいこう {stats.kukuBestAttack}秒</span>}
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {kukuBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* ようじとけい */}
+        <RecordsAppCard bg="#F0FFF8">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🕐</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようじ とけい</span>
+            {!hasClockYouji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasClockYouji && (
+            <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
+              <span>🏁 {stats.clockYoujiLevels}/8ステージ クリア</span>
+              <span>{'⭐'.repeat(Math.min(stats.clockYoujiMaxStars, 3))}{'☆'.repeat(Math.max(0, 3 - stats.clockYoujiMaxStars))}</span>
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {clockYoujiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
+          </div>
+        </RecordsAppCard>
+
+        {/* ぞくせいかるた */}
+        <RecordsAppCard bg="#FAF0FF">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xl">🃏</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ぞくせい かるた</span>
+            {!hasZokusei && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
+          </div>
+          {hasZokusei && (
+            <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
+              <span>🏁 {stats.zokuseiStages}/3ステージ クリア</span>
+              <span>{'⭐'.repeat(Math.min(stats.zokuseiMaxStars, 3))}{'☆'.repeat(Math.max(0, 3 - stats.zokuseiMaxStars))}</span>
+            </div>
+          )}
+          <div className="flex gap-2 flex-wrap mt-2">
+            {zokuseiiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
       </div>

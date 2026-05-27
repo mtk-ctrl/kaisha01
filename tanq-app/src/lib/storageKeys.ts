@@ -37,4 +37,12 @@ export const STORAGE_KEYS = {
   // youji アプリ記録 — getDataKey 必須
   KATAKANA_RECORDS: 'tanq_katakana_records_v1',
   ANIMALS_BEST:     'tanq_animals_best_v1',
+  HIRAGANA_BEST:    'tanq_hiragana_best_v1',
+  JUUCOMBO_BEST:    'tanq_juucombo_best_v1',
+  MATH_YOUJI_BEST:  'tanq_math_youji_best_v1',
+  IRO_RECORDS:      'tanq_iro_records_v1',
+  YOUJI_KANJI_BEST: 'tanq_youji_kanji_best_v1',
+  KUKU_RECORDS:     'tanq_kuku_records_v1',
+  CLOCK_RECORDS:    'tanq_clock_records_v1',
+  ZOKUSEI_RECORDS:  'tanq_zokusei_records_v1',
 } as const
