@@ -18,7 +18,7 @@ function LogoMark({ size = 28 }: { size?: number }) {
 
 const footerLinks = [
   { href: '/lab',      label: 'アプリ' },
-  { href: '/tanq',     label: 'ストーリー' },
+  { href: '/tanq',     label: '理科クイズ' },
   { href: '/pricing',  label: '料金' },
   { href: '/register', label: '登録' },
   { href: '/login',    label: 'ログイン' },

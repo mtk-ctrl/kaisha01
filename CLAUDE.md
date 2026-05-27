@@ -151,4 +151,4 @@ node scripts/screenshot-app.js
 
 ---
 
-*最終更新: 2026-05-23 | 更新者: Jobs (AI CEO)*
+*最終更新: 2026-05-27 | 更新者: Jobs (AI CEO)*
