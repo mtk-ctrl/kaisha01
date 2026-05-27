@@ -1118,7 +1118,7 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
 // ─────────────────────────────────────────
 // SettingsTab — sticker style
 // ─────────────────────────────────────────
-function SettingsTab({ profile, onSave }: { profile: Profile; onSave: (p: Profile) => void }) {
+function SettingsTab({ profile, onSave, userType, onLogout }: { profile: Profile; onSave: (p: Profile) => void; userType: UserType; onLogout: () => void }) {
   const [draft, setDraft] = useState(profile)
   const [saved, setSaved] = useState(false)
 
@@ -1197,8 +1197,22 @@ function SettingsTab({ profile, onSave }: { profile: Profile; onSave: (p: Profil
         {saved ? '✓ 保存しました！' : '保存する'}
       </button>
 
-      <div className="mt-6 pt-4 text-center" style={{ borderTop: '2px dashed rgba(58,46,42,0.2)' }}>
-        <Link href="/" className="text-sm font-bold hover:underline" style={{ color: '#6B5A52' }}>← コーポレートサイトへ</Link>
+      {/* Logout / account switch */}
+      <div className="mt-6 pt-4 flex flex-col gap-3" style={{ borderTop: '2px dashed rgba(58,46,42,0.2)' }}>
+        <button
+          onClick={onLogout}
+          className="w-full py-3 rounded-2xl font-black text-sm transition-all hover:-translate-y-0.5"
+          style={{ background: '#FFE3EE', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', color: '#3A2E2A' }}
+        >
+          {userType === 'tester' ? '← テスター入口に戻る' : 'ログアウト'}
+        </button>
+        <Link
+          href="/"
+          className="w-full py-3 rounded-2xl font-bold text-sm text-center transition-all hover:-translate-y-0.5"
+          style={{ background: '#FFFFFF', border: '2px solid #3A2E2A', color: '#6B5A52' }}
+        >
+          トップページへ
+        </Link>
       </div>
     </div>
   )
@@ -1236,7 +1250,7 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
 // ─────────────────────────────────────────
 // AppHub (main dashboard) — sticker style
 // ─────────────────────────────────────────
-function AppHub({ userType }: { userType: UserType }) {
+function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>('home')
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
   const { stats, refresh: refreshStats } = useStats()
@@ -1282,7 +1296,7 @@ function AppHub({ userType }: { userType: UserType }) {
         {/* Tab content */}
         {tab === 'home' && stats && <HomeTab profile={profile} stats={stats} userType={userType} />}
         {tab === 'records' && stats && <RecordsTab stats={stats} />}
-        {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} />}
+        {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} userType={userType} onLogout={onLogout} />}
 
         <BottomNav tab={tab} onChange={setTab} />
       </div>
@@ -1338,7 +1352,18 @@ export default function LabPage() {
     setUnlocked(true)
   }
 
+  function handleLogout() {
+    localStorage.removeItem(SESSION_KEY)
+    localStorage.removeItem('tanq-tester-name')
+    setUnlocked(false)
+    setUserType('guest')
+    // テスターは /tester へ、それ以外は同ページ（PasswordGate を表示）
+    if (userType === 'tester') {
+      window.location.href = '/tester'
+    }
+  }
+
   return unlocked
-    ? <AppHub userType={userType} />
+    ? <AppHub userType={userType} onLogout={handleLogout} />
     : <PasswordGate onUnlock={handleUnlock} />
 }
