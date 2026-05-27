@@ -7,11 +7,17 @@ const ARGS = ['--no-sandbox','--disable-setuid-sandbox'];
 async function makePage(browser) {
   const p = await browser.newPage();
   await p.setViewportSize({ width: 390, height: 844 });
-  await p.addInitScript(() => {
+  return p;
+}
+
+async function gotoWithAuth(page, path) {
+  await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+  await page.evaluate(() => {
     localStorage.setItem('tanq-lab-auth', 'tester');
     localStorage.setItem('tanq-tester-name', 'リン');
   });
-  return p;
+  await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle', timeout: 15000 });
+  await page.waitForTimeout(1000);
 }
 
 async function shot(page, name, opts = {}) {
@@ -19,43 +25,34 @@ async function shot(page, name, opts = {}) {
   console.log(`  ✓ ${name}.png`);
 }
 
-async function wait(page, ms = 1200) { await page.waitForTimeout(ms); }
+async function wait(page, ms = 1000) { await page.waitForTimeout(ms); }
 
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ARGS });
 
-// ── kanji ─────────────────────────────────────────────────
-console.log('\n漢字マスター review...');
+// ── 国語クイズ（kokugo） ─────────────────────────────────
+console.log('\n国語クイズ review...');
 const k = await makePage(b);
-await k.goto(`${BASE}/apps/kanji`, { waitUntil: 'networkidle', timeout: 15000 });
+await gotoWithAuth(k, '/apps/kokugo');
+await shot(k, 'kokugo_01_top');
+
+// Lv1カードクリック（JS evaluate経由）
+await k.evaluate(() => { document.querySelectorAll('button')[0].click(); });
 await wait(k, 800);
-await shot(k, 'kanji_01_top');
+await shot(k, 'kokugo_02_quiz');
 
-// 学年を選ぶ（小4）
-const gradeBtn = k.locator('button').filter({ hasText: '小4' }).first();
-await gradeBtn.click().catch(() => {});
+// 1番目の選択肢をクリック
+await k.evaluate(() => { document.querySelectorAll('button')[1].click(); });
+await wait(k, 500);
+await shot(k, 'kokugo_03_selected');
+
+// こたえる
+const kotaeru = k.locator('button').filter({ hasText: 'こたえる' }).first();
+await kotaeru.click().catch(() => {});
 await wait(k, 600);
-await shot(k, 'kanji_02_grade_selected');
-
-// 問題スタート
-const startBtn = k.locator('button').filter({ hasText: /スタート/ }).first();
-await startBtn.click().catch(() => {});
-await wait(k, 1000);
-await shot(k, 'kanji_03_quiz');
-
-// 1問目の選択肢を選ぶ（最初の選択肢ボタン）
-const choices = k.locator('.grid.grid-cols-2 button');
-await choices.first().click().catch(() => {});
-await wait(k, 800);
-await shot(k, 'kanji_04_answered');
-
-// 次の問題へ
-const nextBtn = k.locator('button').filter({ hasText: /次の問題|結果/ }).first();
-await nextBtn.click().catch(() => {});
-await wait(k, 600);
-await shot(k, 'kanji_05_next_q');
+await shot(k, 'kokugo_04_answered');
 
 await k.close();
-console.log('漢字マスター done');
+console.log('国語クイズ done');
 
 await b.close();
 console.log('\nAll done.');
