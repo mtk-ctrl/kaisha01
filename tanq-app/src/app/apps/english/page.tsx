@@ -109,13 +109,15 @@ function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
   const old = store[key] || { b: 0, c: 0, s: 0, ok: 0, t: 0 }
   const fast = ms < 2500
   let b = old.b as number, c = old.c
-  if (correct && fast) {
+  if (correct) {
     c = old.c + 1
-    if (b === 0) b = 1
-    else if (b === 1 && c >= 3) b = 2
-  } else if (correct && !fast) {
-    c = Math.min(old.c + 1, 2)
-    if (b === 2) b = 1
+    if (b === 0) {
+      b = 1  // any correct answer: new → learning
+    } else if (b === 1 && fast && c >= 3) {
+      b = 2  // mastery still requires fast answers
+    } else if (b === 2 && !fast) {
+      b = 1  // mastered demoted if slow
+    }
   } else {
     c = 0
     if (b === 2) b = 1
@@ -152,6 +154,7 @@ export default function EnglishQuiz() {
   const [sessionMastered, setSessionMastered] = useState(0)
   const [sessionWeak, setSessionWeak] = useState(0)
   const [finalStreak, setFinalStreak] = useState(0)
+  const [flashResult, setFlashResult] = useState<'correct' | 'wrong' | null>(null)
   const qStartRef = useRef<number>(Date.now())
 
   useEffect(() => {
@@ -180,11 +183,15 @@ export default function EnglishQuiz() {
 
   function choose(c: string) {
     if (selected !== null) return
+    // Speak the tapped English word immediately in jp2en mode
+    if (questions[qIdx].fmt === 'jp2en') speak(c)
     const ms = Date.now() - qStartRef.current
     setLastMs(ms)
     setSelected(c)
     const q = questions[qIdx]
     const correct = c === q.correct
+    setFlashResult(correct ? 'correct' : 'wrong')
+    setTimeout(() => setFlashResult(null), 700)
     if (correct) setSessionCorrect(n => n + 1)
     else setSessionWeak(n => n + 1)
     const { store: newStore, change } = applySRS(store, q.word.english, correct, ms)
@@ -348,12 +355,32 @@ export default function EnglishQuiz() {
 
   return (
     <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-4 py-20">
+      {flashResult && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+          style={{ background: flashResult === 'correct' ? 'rgba(74,222,128,0.15)' : 'rgba(248,113,113,0.15)' }}
+        >
+          <span
+            className="font-black select-none"
+            style={{
+              fontSize: '180px',
+              lineHeight: 1,
+              color: flashResult === 'correct' ? '#4ade80' : '#f87171',
+              textShadow: flashResult === 'correct'
+                ? '0 0 60px rgba(74,222,128,0.8)'
+                : '0 0 60px rgba(248,113,113,0.8)',
+            }}
+          >
+            {flashResult === 'correct' ? '○' : '×'}
+          </span>
+        </div>
+      )}
       <div className="fixed top-0 left-0 right-0 px-6 py-4 flex items-center justify-between bg-[#0d2248]/90 backdrop-blur-sm z-10">
         <button onClick={() => setPhase('home')} className="text-[#94a3c4] hover:text-white text-sm transition-colors">← やめる</button>
         <span className="text-sm text-[#94a3c4]">{qIdx + 1} / {questions.length}</span>
         <div className="flex gap-3 text-sm font-bold">
           <span className="text-[#4ade80]">○ {sessionCorrect}</span>
-          <span className="text-[#f87171]">✗ {sessionWeak}</span>
+          <span className="text-[#f87171]">× {sessionWeak}</span>
         </div>
       </div>
       <div className="fixed top-14 left-0 right-0 h-1.5 bg-white/10 z-10">
@@ -369,10 +396,12 @@ export default function EnglishQuiz() {
         {/* Question */}
         {q.fmt === 'jp2en' ? (
           <>
-            <div className="text-[7rem] leading-none mb-2 select-none">{q.word.emoji}</div>
+            {/* Emoji only shown after answering in jp2en mode to avoid giving away the answer */}
+            {selected !== null && (
+              <div className="text-[7rem] leading-none mb-2 select-none">{q.word.emoji}</div>
+            )}
             <p className="text-2xl font-black mb-1">{q.word.japanese}</p>
-            <p className="text-[#94a3c4] text-xs mb-2">{q.word.category}</p>
-            <p className="text-[#94a3c4] text-xs mb-5 italic">"{q.word.sentence}"</p>
+            <p className="text-[#94a3c4] text-xs mb-5">{q.word.category}</p>
           </>
         ) : (
           <>
@@ -381,8 +410,7 @@ export default function EnglishQuiz() {
               <p className="text-3xl font-black text-[#f87171]">{q.word.english}</p>
               <SpeakButton text={q.word.english} size="md" />
             </div>
-            <p className="text-[#94a3c4] text-xs mb-2">{q.word.category}</p>
-            <p className="text-[#94a3c4] text-xs mb-5 italic">"{q.word.sentence}"</p>
+            <p className="text-[#94a3c4] text-xs mb-5">{q.word.category}</p>
           </>
         )}
 
