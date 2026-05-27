@@ -72,6 +72,8 @@
 
 | 日付 | 内容 | ログ |
 |------|------|------|
+| 2026-05-27 | CI体系修正：supabase@latestをv2に固定 + マイグレーションファイル変更時のみ実行（git diff検知）+ ::warning::アノテーション追加。今後マイグレーション失敗がデプロイを止めない | `4c07a7f` |
+| 2026-05-27 | TANQ理科ページ（/tanq）全面リデザイン：フェイクUNITカード廃止→4領域カード（ScienceDomains Client Component）+ あそびかた3ステップ + Stats + CTA。全導線を/apps/scienceへ統一 | `0465da6` |
 | 2026-05-27 | Phase2 幼稚園アプリ Next.js移行完了（8アプリ：hiragana/juucombo/math/iro/kanji/kuku/clock/zokusei）+ 記録タブ統合 + バグ修正3件（キリン SVG・kuku Set spread・youji-math キー衝突） | （本コミット） |
 | 2026-05-27 | 図形クイズ チームレビュー：重複shape削除（star10/diamond）・答えバレdescription非表示修正・説明文4件改善 | （前コミット） |
 | 2026-05-27 | アプリレビュー：計算/国語 → 変更なし。理科 → バグ修正2件（色ハードコード + 中断ボタン）。漢字 → テキスト改善3件 | `48ca3ce` |
