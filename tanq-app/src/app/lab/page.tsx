@@ -57,7 +57,6 @@ function saveProfile(p: Profile) {
 
 
 type AppAudience = 'shougakusei' | 'youji' | 'chuugakujuken'
-const _YB = '/youji/apps'  // public/youji/apps/ に内製コピー済み
 
 // targetAge: カードに表示する対象年齢チップ
 // guestAccess: true = ゲストユーザーがアクセス可能（ここを見れば全アクセス制御が分かる）
@@ -302,7 +301,6 @@ function HomeTab({ profile, stats, userType }: {
     const lock = lockLabel(app.id, userType)
     const s = appStats[app.id]
     const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
-    const isStatic = app.url.startsWith('/youji/')
     const bgColor = getCardColor(index)
 
     if (lock) {
@@ -359,9 +357,7 @@ function HomeTab({ profile, stats, userType }: {
     const cardClass = `block rounded-[22px] p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 ${bgColor}`
     const cardStyle = { border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }
 
-    return isStatic
-      ? <a href={app.url} className={cardClass} style={cardStyle}>{cardContent}</a>
-      : <Link href={app.url} className={cardClass} style={cardStyle}>{cardContent}</Link>
+    return <Link href={app.url} className={cardClass} style={cardStyle}>{cardContent}</Link>
   }
 
   const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
@@ -448,10 +444,7 @@ function HomeTab({ profile, stats, userType }: {
             )
             const cls = `block rounded-[22px] p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 ${bgColor}`
             const sty = { border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }
-            const isStatic = app.url.startsWith('/youji/')
-            return isStatic
-              ? <a key={app.id} href={app.url} className={cls} style={sty}>{cardContent}</a>
-              : <Link key={app.id} href={app.url} className={cls} style={sty}>{cardContent}</Link>
+            return <Link key={app.id} href={app.url} className={cls} style={sty}>{cardContent}</Link>
           })}
         </div>
       </div>
