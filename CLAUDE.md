@@ -103,6 +103,11 @@ cd tanq-app && npm run build   # ビルドエラーがないこと
 ```
 ビルドが通らない限り push しない。
 
+> ⚠️ **push は1回ずつ、Actions の完了を待ってから次を push する**  
+> 短時間に連続して push すると複数の Actions が同時に `git push origin main` を試み、  
+> `remote: fatal error in commit_refs` で後続が全滅する（Race Condition）。  
+> concurrency 設定で待機するようにしたが、**根本は「1 push ずつ、完了確認してから次」を守ること**。
+
 画面レビューの手順（優先順）:
 
 1. **本番URL**（`tanq-app.vercel.app`）— `claude/*` デプロイ後。HTML・主要CSS/JSが200か、期待する要素（例: `<base href>`）があるかを確認
