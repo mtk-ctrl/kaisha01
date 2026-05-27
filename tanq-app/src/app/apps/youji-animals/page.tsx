@@ -213,7 +213,7 @@ function AnimalDisplay({ q }: { q: QuestionData }) {
           {Array.from({ length: count }).map((_, i) => (
             <div
               key={i}
-              className={`inline-block ${small ? 'w-6 h-6' : 'w-8 h-8'} ${leaving !== undefined && i >= staying ? 'opacity-25' : ''}`}
+              className={`inline-block ${small ? 'w-8 h-8' : 'w-10 h-10'} ${leaving !== undefined && i >= staying ? 'opacity-25' : ''}`}
               dangerouslySetInnerHTML={{ __html: animal.svg }}
             />
           ))}
