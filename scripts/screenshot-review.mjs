@@ -17,7 +17,7 @@ async function gotoWithAuth(page, path) {
     localStorage.setItem('tanq-tester-name', 'リン');
   });
   await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle', timeout: 15000 });
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(800);
 }
 
 async function shot(page, name, opts = {}) {
@@ -25,34 +25,34 @@ async function shot(page, name, opts = {}) {
   console.log(`  ✓ ${name}.png`);
 }
 
-async function wait(page, ms = 1000) { await page.waitForTimeout(ms); }
-
 const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args: ARGS });
 
-// ── 国語クイズ（kokugo） ─────────────────────────────────
-console.log('\n国語クイズ review...');
-const k = await makePage(b);
-await gotoWithAuth(k, '/apps/kokugo');
-await shot(k, 'kokugo_01_top');
+// Batch of apps: top screen only for quick review
+const apps = [
+  { path: '/apps/clock', name: 'clock' },
+  { path: '/apps/juku', name: 'juku' },
+  { path: '/apps/shapes', name: 'shapes' },
+  { path: '/apps/thinking', name: 'thinking' },
+  { path: '/apps/todofuken', name: 'todofuken' },
+  { path: '/apps/word-math', name: 'word_math' },
+  { path: '/apps/coding', name: 'coding' },
+];
 
-// Lv1カードクリック（JS evaluate経由）
-await k.evaluate(() => { document.querySelectorAll('button')[0].click(); });
-await wait(k, 800);
-await shot(k, 'kokugo_02_quiz');
-
-// 1番目の選択肢をクリック
-await k.evaluate(() => { document.querySelectorAll('button')[1].click(); });
-await wait(k, 500);
-await shot(k, 'kokugo_03_selected');
-
-// こたえる
-const kotaeru = k.locator('button').filter({ hasText: 'こたえる' }).first();
-await kotaeru.click().catch(() => {});
-await wait(k, 600);
-await shot(k, 'kokugo_04_answered');
-
-await k.close();
-console.log('国語クイズ done');
+for (const app of apps) {
+  console.log(`\n${app.name} review...`);
+  const p = await makePage(b);
+  await gotoWithAuth(p, app.path);
+  await shot(p, `${app.name}_01_top`);
+  // クリックしてクイズ/ゲーム画面へ
+  await p.evaluate(() => { const btns = document.querySelectorAll('button'); if (btns[0]) btns[0].click(); });
+  await p.waitForTimeout(800);
+  const btnCnt = await p.locator('button').count();
+  if (btnCnt < 15) { // おそらく別画面へ遷移した
+    await shot(p, `${app.name}_02_game`);
+  }
+  await p.close();
+  console.log(`${app.name} done`);
+}
 
 await b.close();
 console.log('\nAll done.');
