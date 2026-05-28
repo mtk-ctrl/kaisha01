@@ -58,6 +58,51 @@ const STAGES: Stage[] = [
       { emoji: '🌳',  name: 'き',           left: false, right: false, hint: 'きは のりものでも そらをとぶものでも ないよ。うごかないよ' },
     ],
   },
+  {
+    id: 4, name: 'ステージ 4', difficulty: 'ちょいむず ⭐⭐', icon: '🍋',
+    leftAttr:  { label: 'くだもの', color: '#e64980', bg: 'rgba(230,73,128,0.35)' },
+    rightAttr: { label: 'きいろい', color: '#f59f00', bg: 'rgba(245,159,0,0.35)' },
+    items: [
+      { emoji: '🍋', name: 'レモン',         left: true,  right: true,  hint: 'レモンは くだもので、きいろいね。すっぱい！' },
+      { emoji: '🍌', name: 'バナナ',          left: true,  right: true,  hint: 'バナナは くだもので、きいろいね。あまいよ！' },
+      { emoji: '🍇', name: 'ぶどう',          left: true,  right: false, hint: 'ぶどうは くだもの だけど、むらさきや みどりで きいろくないよ' },
+      { emoji: '🍑', name: 'もも',            left: true,  right: false, hint: 'ももは くだもの だけど、ピンクや みどりで きいろくないよ' },
+      { emoji: '🌻', name: 'ひまわり',        left: false, right: true,  hint: 'ひまわりの はなびらは きいろい けど、くだものでは ないよ。おはなだよ' },
+      { emoji: '☀️', name: 'たいよう',        left: false, right: true,  hint: 'たいようは まぶしく きいろい けど、くだものでは ないよ' },
+      { emoji: '🐘', name: 'ぞう',            left: false, right: false, hint: 'ぞうは はいいろで くだものじゃ ないね。おおきいね！' },
+      { emoji: '⚽', name: 'サッカーボール',   left: false, right: false, hint: 'サッカーボールは しろくろで、くだものでも きいろくも ないよ' },
+    ],
+  },
+  {
+    id: 5, name: 'サイエンス！', difficulty: 'みつけよう 🔬', icon: '🔬',
+    leftAttr:  { label: 'みずにうく', color: '#1c7ed6', bg: 'rgba(28,126,214,0.35)' },
+    rightAttr: { label: 'たべられる', color: '#2f9e44', bg: 'rgba(47,158,68,0.35)' },
+    items: [
+      { emoji: '🍉', name: 'すいか',       left: true,  right: true,  hint: 'すいかは 水にうくよ！なかに 空気がいっぱいだから。食べられるよ🎉' },
+      { emoji: '🥒', name: 'きゅうり',     left: true,  right: true,  hint: 'きゅうりも 水にうくよ。95%が 水でできてるから！食べられるよ🎉' },
+      { emoji: '🎈', name: 'ふうせん',     left: true,  right: false, hint: 'ふうせんは 空気がはいっていて 水にうくよ。食べられないよ' },
+      { emoji: '🏐', name: 'バレーボール', left: true,  right: false, hint: 'バレーボールは 空気で 水にうくよ。食べられないよ' },
+      { emoji: '🥕', name: 'にんじん',     left: false, right: true,  hint: 'にんじんは おいしく食べられるけど、重くて 水に 沈むよ' },
+      { emoji: '🍙', name: 'おにぎり',     left: false, right: true,  hint: 'おにぎりは おいしい けど、ごはんが 重いから 水に 沈むよ' },
+      { emoji: '🔑', name: 'かぎ',         left: false, right: false, hint: 'かぎは 金属で 重いから 水に 沈むよ。食べられないよ' },
+      { emoji: '🪙', name: 'コイン',       left: false, right: false, hint: 'コインは 金属で 重いから 水に 沈むよ。食べられないよ' },
+    ],
+  },
+  {
+    id: 6, name: 'いきものの ひみつ', difficulty: 'スペシャル 🌊', icon: '🥚',
+    leftAttr:  { label: 'たまごうまれ', color: '#e67700', bg: 'rgba(230,119,0,0.35)' },
+    rightAttr: { label: 'うみにすむ',   color: '#0c8599', bg: 'rgba(12,133,153,0.35)' },
+    items: [
+      { emoji: '🦑', name: 'イカ',       left: true,  right: true,  hint: 'イカは たまごからうまれて、うみに すんでいるよ。おいしいね！' },
+      { emoji: '🦀', name: 'カニ',       left: true,  right: true,  hint: 'カニは たまごからうまれて、うみに すんでいるよ。ハサミに 気をつけて！' },
+      { emoji: '🦆', name: 'アヒル',     left: true,  right: false, hint: 'アヒルは たまごからうまれるよ。でも いけや かわにいて、うみではないよ' },
+      { emoji: '🐊', name: 'ワニ',       left: true,  right: false, hint: 'ワニは たまごからうまれるよ。かわや ぬまにいて、うみではないよ' },
+      { emoji: '🐬', name: 'イルカ',     left: false, right: true,  hint: 'イルカは うみにすむよ。でも たまごでなく、かあさんから 赤ちゃんが うまれるよ！びっくり！' },
+      { emoji: '🐳', name: 'クジラ',     left: false, right: true,  hint: 'クジラも うみにすむよ。たまごでなく、人みたいに 赤ちゃんを うむんだよ！' },
+      { emoji: '🐕', name: 'いぬ',       left: false, right: false, hint: 'いぬは たまごでなく、かあさんから うまれるよ。うみには すまないよ' },
+      { emoji: '🎒', name: 'ランドセル', left: false, right: false, hint: 'ランドセルは いきものではないから うまれないし、うみにも すまないよ' },
+    ],
+  },
 ]
 
 type Zone = 'left' | 'both' | 'right' | 'neither'
@@ -278,6 +323,15 @@ export default function YoujiZokuseiPage() {
               「りょうほうに あてはまる」「どちらか だけ」「どちらでも ない」の4つのゾーンに アイテムを 仕分けしよう！
             </p>
           </div>
+
+          {/* 全ステージ制覇バナー */}
+          {STAGES.every((_, i) => !!records[i]) && (
+            <div className="bg-yellow-400 rounded-2xl p-4 mb-4 text-center shadow-md border-4 border-yellow-300">
+              <div className="text-3xl mb-1">🏆🎉🏆</div>
+              <p className="font-black text-yellow-900 text-lg">全ステージ 制覇！！</p>
+              <p className="text-yellow-800 text-xs font-bold mt-1">すべてのステージをクリアしたよ！すごい！</p>
+            </div>
+          )}
 
           <div className="space-y-3">
             {STAGES.map((stage, i) => {
