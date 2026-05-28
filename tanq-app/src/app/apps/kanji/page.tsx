@@ -9,9 +9,10 @@ import { getDataKey } from '@/lib/storage'
 
 type QuestionFormat = 'k2r' | 'r2k'
 
+// Light-theme grade colors (contrast-adjusted for cream background)
 const GRADE_COLORS: Record<Grade, string> = {
-  '小1': '#4ade80', '小2': '#34d399', '小3': '#60a5fa',
-  '小4': '#c4a8ff', '小5': '#f0c040', '小6': '#f87171',
+  '小1': '#16a34a', '小2': '#0d9488', '小3': '#2563eb',
+  '小4': '#7c3aed', '小5': '#ca8a04', '小6': '#dc2626',
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -91,7 +92,6 @@ function getFullReading(item: KanjiEntry): string {
   return item.reading + (item.okurigana || '')
 }
 
-/** 重複なし・必ず4択を保証するヘルパー */
 function pick4Unique(correct: string, candidates: string[]): string[] {
   const seen = new Set([correct])
   const others: string[] = []
@@ -123,9 +123,9 @@ function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
 
   if (correct) {
     c = old.c + 1
-    if (b === 0) { b = 1 } // any correct answer: new → learning
-    else if (b === 1 && fast && c >= 3) { b = 2 } // mastery requires fast+consecutive
-    else if (b === 2 && !fast) { b = 1 } // demote mastered if slow
+    if (b === 0) { b = 1 }
+    else if (b === 1 && fast && c >= 3) { b = 2 }
+    else if (b === 2 && !fast) { b = 1 }
   } else {
     c = 0
     if (b === 2) b = 1
@@ -233,38 +233,41 @@ export default function KanjiQuiz() {
   // ── HOME ──
   if (phase === 'home') {
     const masteredPct = stats.total > 0 ? Math.round((stats.mastered / stats.total) * 100) : 0
+    const studiedPct  = stats.total > 0 ? Math.round(((stats.mastered + stats.learning) / stats.total) * 100) : 0
     const isGuest = isGuestUser()
     return (
-      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center px-6 py-16 pt-20">
-        <Link href="/lab" className="absolute top-6 left-6 text-[#8892b0] hover:text-[#c4a8ff] text-sm transition-colors">← ラボに戻る</Link>
+      <div className="min-h-screen bg-[#FFFEF7] text-[#3A2E2A] font-sans flex flex-col items-center px-6 py-16 pt-20">
+        <Link href="/lab" className="absolute top-6 left-6 text-[#6B5A52] hover:text-[#3A2E2A] text-sm transition-colors">← ラボに戻る</Link>
 
         {streak > 0 && (
-          <div className="absolute top-6 right-6 flex items-center gap-1.5 bg-[#f0c040]/15 border border-[#f0c040]/30 px-3 py-1.5 rounded-full">
+          <div className="absolute top-6 right-6 flex items-center gap-1.5 bg-[#FFC83D]/25 border-2 border-[#ca8a04] px-3 py-1.5 rounded-full shadow-[2px_2px_0_#3A2E2A]">
             <span>🔥</span>
-            <span className="font-black text-[#f0c040] text-sm">{streak}日連続</span>
+            <span className="font-black text-[#ca8a04] text-sm">{streak}日連続</span>
           </div>
         )}
 
         <div className="text-5xl mb-2 mt-4">📖</div>
-        <h1 className="text-3xl font-black mb-1 text-[#c4a8ff]">漢字クイズ</h1>
-        <p className="text-[#8892b0] text-xs mb-8 text-center">漢字→読み方 ＆ 読み方→漢字の2方向で練習。くり返しで、どんどん覚えられる！</p>
+        <h1 className="text-3xl font-black mb-1 text-[#3A2E2A]">漢字クイズ</h1>
+        <p className="text-[#6B5A52] text-xs mb-8 text-center">漢字→読み方 ＆ 読み方→漢字の2方向で練習。くり返しで、どんどん覚えられる！</p>
 
-        {/* Grade selector */}
         {isGuest && (
-          <div className="w-full max-w-sm mb-3 px-3 py-2 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl">
-            <p className="text-[#f0c040] text-xs font-bold">体験中: 小1・小2のみ使えます</p>
-            <Link href="/register" className="text-[#c4a8ff] text-[10px] hover:underline">登録すると全学年解放 →</Link>
+          <div className="w-full max-w-sm mb-3 px-3 py-2 bg-[#FFC83D]/15 border-2 border-[#ca8a04] rounded-xl">
+            <p className="text-[#ca8a04] text-xs font-bold">体験中: 小1・小2のみ使えます</p>
+            <Link href="/register" className="text-[#7c3aed] text-[10px] hover:underline">無料登録すると全学年解放 →</Link>
           </div>
         )}
+
+        {/* Grade selector */}
         <div className="grid grid-cols-3 gap-2.5 w-full max-w-sm mb-5">
           {(Object.keys(KANJI_DATA) as Grade[]).map((g) => {
             const gs = gradeStats(g, store)
-            const pct = gs.total > 0 ? Math.round((gs.mastered / gs.total) * 100) : 0
+            const pct  = gs.total > 0 ? Math.round((gs.mastered / gs.total) * 100) : 0
+            const spct = gs.total > 0 ? Math.round(((gs.mastered + gs.learning) / gs.total) * 100) : 0
             const sel = g === grade
             const locked = isGuest && !GUEST_GRADES.includes(g)
             if (locked) {
               return (
-                <div key={g} className="py-3 px-2 rounded-xl text-sm text-center opacity-40 bg-white/4 border border-white/8 cursor-not-allowed">
+                <div key={g} className="py-3 px-2 rounded-xl text-sm text-center opacity-40 bg-[#3A2E2A]/5 border border-[#3A2E2A]/15 cursor-not-allowed">
                   🔒 {g}
                   <div className="text-[10px] mt-0.5">登録で解放</div>
                 </div>
@@ -272,46 +275,52 @@ export default function KanjiQuiz() {
             }
             return (
               <button key={g} onClick={() => setGrade(g)}
-                className={`py-3 px-2 rounded-xl font-bold text-sm transition-all ${sel ? 'scale-105 text-[#050b14]' : 'text-[#8892b0] hover:text-white'}`}
-                style={sel
-                  ? { background: GRADE_COLORS[g], boxShadow: `0 0 20px ${GRADE_COLORS[g]}50` }
-                  : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }
-                }>
+                className={`py-3 px-2 rounded-xl font-bold text-sm transition-all ${sel ? 'scale-105 text-white' : 'text-[#6B5A52] hover:text-[#3A2E2A] bg-white border border-[#3A2E2A]/15 hover:border-[#3A2E2A]/30'}`}
+                style={sel ? { background: GRADE_COLORS[g], border: '2px solid #3A2E2A', boxShadow: '3px 3px 0 #3A2E2A' } : {}}>
                 {g}
-                <div className="text-[10px] font-normal mt-0.5 opacity-75">{pct}% 習得</div>
+                <div className="text-[10px] font-normal mt-0.5 flex justify-center gap-1">
+                  <span style={{ color: sel ? 'rgba(255,255,255,0.95)' : GRADE_COLORS[g] }}>⭐{pct}%</span>
+                  <span style={{ color: sel ? 'rgba(255,255,255,0.7)' : '#6B5A52' }}>📚{spct}%</span>
+                </div>
               </button>
             )
           })}
         </div>
 
-        {/* 初回ユーザー向け背中押し */}
         {stats.mastered === 0 && stats.learning === 0 && (
-          <div className="w-full max-w-sm mb-3 px-3 py-2 bg-[#c4a8ff]/10 border border-[#c4a8ff]/30 rounded-xl">
-            <p className="text-[#c4a8ff] text-xs font-bold text-center">✨ まずは12問チャレンジしてみよう！</p>
+          <div className="w-full max-w-sm mb-3 px-3 py-2 bg-[#EFE8FF] border-2 border-[#7c3aed] rounded-xl shadow-[2px_2px_0_#3A2E2A]">
+            <p className="text-[#7c3aed] text-xs font-bold text-center">✨ まずは12問チャレンジしてみよう！</p>
           </div>
         )}
 
         {/* Grade progress */}
-        <div className="w-full max-w-sm bg-white/5 rounded-2xl p-4 mb-5 border border-white/10">
-          <div className="flex justify-between text-xs text-[#8892b0] mb-2">
+        <div className="w-full max-w-sm bg-white rounded-2xl p-4 mb-5 border-2 border-[#3A2E2A]/15 shadow-[2px_2px_0_rgba(58,46,42,0.12)]">
+          <div className="flex justify-between text-xs text-[#6B5A52] mb-2">
             <span>{grade}の漢字 {stats.total}字</span>
-            <span style={{ color }}>{masteredPct}% 習得済み</span>
+            <div className="flex gap-2">
+              <span style={{ color }}>⭐ {masteredPct}% 習得</span>
+              <span className="text-[#6B5A52]">📚 {studiedPct}% 学習中</span>
+            </div>
           </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
-            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${masteredPct}%`, background: color }} />
+          {/* Dual progress bar: faint = studied, solid = mastered */}
+          <div className="h-2.5 bg-[#3A2E2A]/8 rounded-full overflow-hidden mb-3 relative">
+            <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 opacity-30"
+              style={{ width: `${studiedPct}%`, background: color }} />
+            <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
+              style={{ width: `${masteredPct}%`, background: color }} />
           </div>
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div>
               <div className="font-black text-xl" style={{ color }}>{stats.mastered}</div>
-              <div className="text-[#8892b0] text-[10px]">⭐ 習得済み</div>
+              <div className="text-[#6B5A52] text-[10px]">⭐ 習得済み</div>
             </div>
             <div>
-              <div className="font-black text-xl text-[#60a5fa]">{stats.learning}</div>
-              <div className="text-[#8892b0] text-[10px]">📚 学習中</div>
+              <div className="font-black text-xl text-[#2563eb]">{stats.learning}</div>
+              <div className="text-[#6B5A52] text-[10px]">📚 学習中</div>
             </div>
             <div>
-              <div className="font-black text-xl text-[#e8f0fe]">{stats.newCount}</div>
-              <div className="text-[#8892b0] text-[10px]">🆕 未学習</div>
+              <div className="font-black text-xl text-[#3A2E2A]">{stats.newCount}</div>
+              <div className="text-[#6B5A52] text-[10px]">🆕 未学習</div>
             </div>
           </div>
         </div>
@@ -320,24 +329,24 @@ export default function KanjiQuiz() {
         <div className="flex w-full max-w-sm gap-3 mb-1">
           {(['normal', 'weak'] as const).map((m) => (
             <button key={m} onClick={() => setMode(m)}
-              className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${mode === m ? 'text-[#050b14]' : 'text-[#8892b0] bg-white/5 border border-white/10 hover:border-white/20'}`}
-              style={mode === m ? { background: color } : {}}>
+              className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${mode === m ? 'text-white' : 'text-[#6B5A52] bg-white border border-[#3A2E2A]/15 hover:border-[#3A2E2A]/30'}`}
+              style={mode === m ? { background: color, border: '2px solid #3A2E2A', boxShadow: '2px 2px 0 #3A2E2A' } : {}}>
               {m === 'normal' ? '📚 通常モード' : '💪 苦手集中'}
             </button>
           ))}
         </div>
-        <p className="text-[#8892b0] text-[10px] w-full max-w-sm text-center mb-4">
+        <p className="text-[#6B5A52] text-[10px] w-full max-w-sm text-center mb-4">
           {mode === 'normal' ? 'バランスよく新しい漢字と復習を混ぜて出題' : '間違えた漢字・学習中の漢字を集中して出題'}
         </p>
 
         <button onClick={() => setPhase('overview')}
-          className="w-full max-w-sm py-3 rounded-xl font-bold text-sm border border-white/15 text-[#8892b0] hover:text-[#c4a8ff] hover:border-[#c4a8ff]/30 transition-all mb-3">
+          className="w-full max-w-sm py-3 rounded-xl font-bold text-sm bg-white border-2 border-[#3A2E2A]/20 text-[#6B5A52] hover:text-[#3A2E2A] hover:border-[#3A2E2A]/40 transition-all mb-3 shadow-[2px_2px_0_rgba(58,46,42,0.10)]">
           🗾 全漢字マップを見る
         </button>
 
         <button onClick={() => startGame(grade, mode)}
-          className="w-full max-w-sm py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.02] active:scale-[0.99]"
-          style={{ background: color, boxShadow: `0 0 30px ${color}50` }}>
+          className="w-full max-w-sm py-5 rounded-2xl font-black text-xl text-white transition-all hover:scale-[1.02] active:scale-[0.99]"
+          style={{ background: color, border: '2px solid #3A2E2A', boxShadow: '4px 4px 0 #3A2E2A' }}>
           スタート！（{SESSION_SIZE}問）
         </button>
       </div>
@@ -352,61 +361,61 @@ export default function KanjiQuiz() {
     const newStats = gradeStats(grade, store)
     const newPct = newStats.total > 0 ? Math.round((newStats.mastered / newStats.total) * 100) : 0
     return (
-      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center py-16">
+      <div className="min-h-screen bg-[#FFFEF7] text-[#3A2E2A] font-sans flex flex-col items-center justify-center px-6 text-center py-16">
         <div className="text-5xl mb-2">{rank.split(' ')[0]}</div>
         <h2 className="text-2xl font-black mb-3" style={{ color }}>{rank.split(' ').slice(1).join(' ')}</h2>
 
         {finalStreak > 0 && (
-          <div className="flex items-center gap-2 bg-[#f0c040]/15 border border-[#f0c040]/30 px-4 py-2 rounded-full mb-4">
+          <div className="flex items-center gap-2 bg-[#FFC83D]/25 border-2 border-[#ca8a04] px-4 py-2 rounded-full mb-4 shadow-[2px_2px_0_#3A2E2A]">
             <span>🔥</span>
-            <span className="font-black text-[#f0c040]">{finalStreak}日連続達成！</span>
+            <span className="font-black text-[#ca8a04]">{finalStreak}日連続達成！</span>
           </div>
         )}
 
         <div className="text-7xl font-black mb-1" style={{ color }}>{acc}%</div>
-        <p className="text-[#8892b0] text-sm mb-6">{total}問中 {sessionCorrect}問正解</p>
+        <p className="text-[#6B5A52] text-sm mb-6">{total}問中 {sessionCorrect}問正解</p>
 
         <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-5">
-          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+          <div className="bg-white rounded-2xl p-3 border-2 border-[#3A2E2A]/15 text-center shadow-[2px_2px_0_rgba(58,46,42,0.12)]">
             <div className="text-2xl font-black mb-1" style={{ color }}>⭐ {sessionMastered}</div>
-            <div className="text-[#8892b0] text-xs">新規習得</div>
+            <div className="text-[#6B5A52] text-xs">新規習得</div>
           </div>
-          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
-            <div className="text-2xl font-black text-[#4ade80] mb-1">{sessionCorrect}</div>
-            <div className="text-[#8892b0] text-xs">正解数</div>
+          <div className="bg-white rounded-2xl p-3 border-2 border-[#3A2E2A]/15 text-center shadow-[2px_2px_0_rgba(58,46,42,0.12)]">
+            <div className="text-2xl font-black text-[#16a34a] mb-1">{sessionCorrect}</div>
+            <div className="text-[#6B5A52] text-xs">正解数</div>
           </div>
-          <div className="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
-            <div className="text-2xl font-black text-[#f87171] mb-1">{sessionWeak}</div>
-            <div className="text-[#8892b0] text-xs">要復習</div>
+          <div className="bg-white rounded-2xl p-3 border-2 border-[#3A2E2A]/15 text-center shadow-[2px_2px_0_rgba(58,46,42,0.12)]">
+            <div className="text-2xl font-black text-[#dc2626] mb-1">{sessionWeak}</div>
+            <div className="text-[#6B5A52] text-xs">要復習</div>
           </div>
         </div>
 
-        <div className="w-full max-w-sm bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
-          <div className="flex justify-between text-xs text-[#8892b0] mb-2">
+        <div className="w-full max-w-sm bg-white rounded-2xl p-4 mb-6 border-2 border-[#3A2E2A]/15 shadow-[2px_2px_0_rgba(58,46,42,0.12)]">
+          <div className="flex justify-between text-xs text-[#6B5A52] mb-2">
             <span>{grade}の累計習得状況</span>
             <span style={{ color }}>{newPct}%</span>
           </div>
-          <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${newPct}%`, background: color }} />
+          <div className="h-2 bg-[#3A2E2A]/8 rounded-full overflow-hidden">
+            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${newPct}%`, background: color }} />
           </div>
-          <p className="text-xs text-[#8892b0] mt-2">習得済み {newStats.mastered}/{newStats.total}字</p>
+          <p className="text-xs text-[#6B5A52] mt-2">習得済み {newStats.mastered}/{newStats.total}字</p>
         </div>
 
         <div className="flex flex-col gap-3 w-full max-w-sm">
           <button onClick={() => startGame(grade, mode)}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02]"
-            style={{ background: color }}>もう一回！</button>
+            className="w-full py-4 rounded-2xl font-black text-lg text-white transition-all hover:scale-[1.02]"
+            style={{ background: color, border: '2px solid #3A2E2A', boxShadow: '3px 3px 0 #3A2E2A' }}>もう一回！</button>
           {sessionWeak > 0 && (
             <button onClick={() => startGame(grade, 'weak')}
-              className="w-full py-4 rounded-2xl font-bold text-base border border-[#f87171]/50 text-[#f87171] hover:bg-[#f87171]/10 transition-all">
+              className="w-full py-4 rounded-2xl font-bold text-base bg-[#FFE3EE] border-2 border-[#dc2626] text-[#dc2626] hover:bg-[#FFD0DC] transition-all shadow-[2px_2px_0_#3A2E2A]">
               💪 苦手 {sessionWeak}問を集中練習
             </button>
           )}
           <button onClick={() => setPhase('home')}
-            className="w-full py-4 rounded-2xl font-bold text-base border border-white/20 text-[#8892b0] hover:text-white transition-all">
+            className="w-full py-4 rounded-2xl font-bold text-base bg-white border-2 border-[#3A2E2A]/20 text-[#6B5A52] hover:text-[#3A2E2A] transition-all">
             学年・モードを変える
           </button>
-          <Link href="/lab" className="w-full py-4 rounded-2xl font-bold text-base border border-white/10 text-[#8892b0] hover:text-[#c4a8ff] transition-all text-center">ラボに戻る</Link>
+          <Link href="/lab" className="w-full py-4 rounded-2xl font-bold text-base bg-white border-2 border-[#3A2E2A]/15 text-[#6B5A52] hover:text-[#3A2E2A] transition-all text-center">ラボに戻る</Link>
         </div>
       </div>
     )
@@ -417,30 +426,31 @@ export default function KanjiQuiz() {
     const totalMastered = GRADES_ORDER.reduce((sum, g) => sum + gradeStats(g, store).mastered, 0)
     const totalKanji = GRADES_ORDER.reduce((sum, g) => sum + KANJI_DATA[g].length, 0)
     return (
-      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans">
-        {/* Header */}
-        <div className="sticky top-0 bg-[#071628]/95 backdrop-blur-sm z-20 px-5 py-4 border-b border-white/10">
-          <button onClick={() => setPhase('home')} className="text-[#8892b0] hover:text-white text-sm transition-colors">← ホームに戻る</button>
+      <div className="min-h-screen bg-[#FFFEF7] text-[#3A2E2A] font-sans">
+        <div className="sticky top-0 bg-[#FFFEF7]/95 backdrop-blur-sm z-20 px-5 py-4 border-b-2 border-[#3A2E2A]/10">
+          <button onClick={() => setPhase('home')} className="text-[#6B5A52] hover:text-[#3A2E2A] text-sm transition-colors">← ホームに戻る</button>
           <div className="mt-1 flex items-baseline gap-2">
-            <h1 className="text-lg font-black text-[#c4a8ff]">🗾 全漢字マップ</h1>
-            <span className="text-xs text-[#8892b0]">{totalMastered}/{totalKanji}字 習得済み</span>
+            <h1 className="text-lg font-black text-[#3A2E2A]">🗾 全漢字マップ</h1>
+            <span className="text-xs text-[#6B5A52]">{totalMastered}/{totalKanji}字 習得済み</span>
           </div>
         </div>
 
-        {/* Scrollable grade sections */}
         <div className="px-4 py-5 pb-24 space-y-7">
           {GRADES_ORDER.map(g => {
             const gs = gradeStats(g, store)
-            const pct = gs.total > 0 ? Math.round((gs.mastered / gs.total) * 100) : 0
+            const pct  = gs.total > 0 ? Math.round((gs.mastered / gs.total) * 100) : 0
+            const spct = gs.total > 0 ? Math.round(((gs.mastered + gs.learning) / gs.total) * 100) : 0
             const gColor = GRADE_COLORS[g]
             return (
               <div key={g}>
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="font-black text-sm" style={{ color: gColor }}>{g}</span>
-                  <span className="text-[10px] text-[#8892b0]">⭐ {gs.mastered}/{gs.total}字</span>
+                  <span className="text-[10px] text-[#6B5A52]">⭐{gs.mastered}/{gs.total}字 &nbsp;📚{spct}%学習中</span>
                 </div>
-                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-2.5">
-                  <div className="h-full rounded-full transition-all duration-700"
+                <div className="h-1.5 bg-[#3A2E2A]/8 rounded-full overflow-hidden mb-2.5 relative">
+                  <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700 opacity-30"
+                    style={{ width: `${spct}%`, background: gColor }} />
+                  <div className="absolute inset-y-0 left-0 rounded-full transition-all duration-700"
                     style={{ width: `${pct}%`, background: gColor }} />
                 </div>
                 <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(8, 1fr)' }}>
@@ -449,11 +459,11 @@ export default function KanjiQuiz() {
                     const b = s?.b ?? 0
                     let cellStyle: React.CSSProperties
                     if (b === 2) {
-                      cellStyle = { background: `${gColor}30`, border: `1.5px solid ${gColor}`, color: gColor }
+                      cellStyle = { background: `${gColor}20`, border: `2px solid ${gColor}`, color: gColor }
                     } else if (b === 1) {
-                      cellStyle = { background: `${gColor}12`, border: `1.5px solid ${gColor}50`, color: '#a0b0cc' }
+                      cellStyle = { background: `${gColor}12`, border: `1.5px solid ${gColor}60`, color: '#6B5A52' }
                     } else {
-                      cellStyle = { background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)', color: '#3a4a5c' }
+                      cellStyle = { background: 'rgba(58,46,42,0.04)', border: '1.5px solid rgba(58,46,42,0.10)', color: '#C0B4AC' }
                     }
                     return (
                       <button key={item.kanji} onClick={() => setDetailItem({ item, grade: g })}
@@ -477,11 +487,11 @@ export default function KanjiQuiz() {
           const s = store[item.kanji]
           const b = s?.b ?? 0
           const statusLabel = b === 2 ? '⭐ 習得済み' : b === 1 ? '📚 学習中' : '🆕 未学習'
-          const statusColor = b === 2 ? '#f0c040' : b === 1 ? '#60a5fa' : '#8892b0'
+          const statusColor = b === 2 ? '#ca8a04' : b === 1 ? '#2563eb' : '#6B5A52'
           return (
-            <div className="fixed inset-0 bg-black/75 z-50 flex items-end sm:items-center justify-center"
+            <div className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center"
               onClick={() => setDetailItem(null)}>
-              <div className="bg-[#0d1e38] rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-sm border border-white/15 shadow-2xl"
+              <div className="bg-white rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-sm border-2 border-[#3A2E2A]/20 shadow-[4px_4px_0_rgba(58,46,42,0.15)]"
                 onClick={e => e.stopPropagation()}>
                 <div className="text-center mb-5">
                   <div className="text-[6rem] font-black leading-none mb-2" style={{ color: dColor }}>
@@ -490,36 +500,36 @@ export default function KanjiQuiz() {
                   <div className="flex items-baseline justify-center mb-3">
                     <span className="text-2xl font-black" style={{ color: dColor }}>{item.reading}</span>
                     {item.okurigana && (
-                      <span className="text-lg font-bold text-[#8892b0]">{item.okurigana}</span>
+                      <span className="text-lg font-bold text-[#6B5A52]">{item.okurigana}</span>
                     )}
                   </div>
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold"
-                    style={{ background: `${statusColor}20`, color: statusColor, border: `1px solid ${statusColor}40` }}>
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold border-2"
+                    style={{ background: `${statusColor}12`, color: statusColor, borderColor: statusColor }}>
                     {statusLabel}
                   </span>
                 </div>
-                <div className="bg-white/5 rounded-2xl p-4 mb-4 space-y-3 text-sm">
+                <div className="bg-[#FFFEF7] rounded-2xl p-4 mb-4 space-y-3 text-sm border border-[#3A2E2A]/10">
                   <div>
-                    <p className="text-[#8892b0] text-[10px] uppercase tracking-wide mb-0.5">意味</p>
-                    <p className="text-[#e8f0fe] font-bold">{item.meaning}</p>
+                    <p className="text-[#6B5A52] text-[10px] font-bold mb-0.5">意味</p>
+                    <p className="text-[#3A2E2A] font-bold">{item.meaning}</p>
                   </div>
                   <div>
-                    <p className="text-[#8892b0] text-[10px] uppercase tracking-wide mb-0.5">例文</p>
-                    <p style={{ color: `${dColor}cc` }}>{item.example}</p>
+                    <p className="text-[#6B5A52] text-[10px] font-bold mb-0.5">例文</p>
+                    <p style={{ color: dColor }}>{item.example}</p>
                   </div>
                   <div>
-                    <p className="text-[#8892b0] text-[10px] uppercase tracking-wide mb-0.5">覚え方のヒント</p>
-                    <p className="text-[#e8f0fe] leading-relaxed">{item.tip}</p>
+                    <p className="text-[#6B5A52] text-[10px] font-bold mb-0.5">覚え方のヒント</p>
+                    <p className="text-[#3A2E2A] leading-relaxed">{item.tip}</p>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <button onClick={() => setDetailItem(null)}
-                    className="flex-1 py-3 rounded-xl font-bold text-sm border border-white/20 text-[#8892b0] hover:text-white transition-all">
+                    className="flex-1 py-3 rounded-xl font-bold text-sm bg-white border-2 border-[#3A2E2A]/20 text-[#6B5A52] hover:text-[#3A2E2A] transition-all">
                     閉じる
                   </button>
                   <button onClick={() => { setDetailItem(null); startGame(dGrade, 'normal') }}
-                    className="flex-1 py-3 rounded-xl font-black text-sm text-[#050b14] transition-all hover:scale-[1.02]"
-                    style={{ background: dColor }}>
+                    className="flex-1 py-3 rounded-xl font-black text-sm text-white transition-all hover:scale-[1.02]"
+                    style={{ background: dColor, border: '2px solid #3A2E2A', boxShadow: '2px 2px 0 #3A2E2A' }}>
                     この学年を練習 →
                   </button>
                 </div>
@@ -539,40 +549,40 @@ export default function KanjiQuiz() {
   const isSlow = lastMs > 2500
   const isKanjiChoices = q.fmt === 'r2k'
 
-  const changeColor = lastChange === 'mastered' ? '#f0c040' : lastChange === 'advance' ? '#4ade80' : lastChange === 'regress' ? '#f87171' : '#8892b0'
+  const changeColor = lastChange === 'mastered' ? '#ca8a04' : lastChange === 'advance' ? '#16a34a' : lastChange === 'regress' ? '#dc2626' : '#6B5A52'
   const changeMsg = lastChange === 'mastered' ? '⭐ 習得！' : lastChange === 'advance' ? '📈 いい調子！' : lastChange === 'regress' ? '📉 要復習' : null
 
   return (
-    <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-4 py-20">
+    <div className="min-h-screen bg-[#FFFEF7] text-[#3A2E2A] font-sans flex flex-col items-center justify-center px-4 py-20">
       {flashResult && (
         <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
           <span className="text-[12rem] font-black leading-none"
             style={{
-              color: flashResult === 'correct' ? '#4ade80' : '#f87171',
-              textShadow: flashResult === 'correct' ? '0 0 60px #4ade8080' : '0 0 60px #f8717180',
+              color: flashResult === 'correct' ? '#16a34a' : '#dc2626',
+              textShadow: flashResult === 'correct' ? '0 0 80px #16a34a50' : '0 0 80px #dc262650',
             }}>
             {flashResult === 'correct' ? '○' : '×'}
           </span>
         </div>
       )}
-      <div className="fixed top-0 left-0 right-0 px-6 py-4 flex items-center justify-between bg-[#071628]/90 backdrop-blur-sm z-10">
-        <button onClick={() => setPhase('home')} className="text-[#8892b0] hover:text-white text-sm transition-colors">← やめる</button>
-        <span className="text-sm text-[#8892b0]">{qIdx + 1} / {questions.length}</span>
+      <div className="fixed top-0 left-0 right-0 px-6 py-4 flex items-center justify-between bg-[#FFFEF7]/95 backdrop-blur-sm z-10 border-b border-[#3A2E2A]/10">
+        <button onClick={() => setPhase('home')} className="text-[#6B5A52] hover:text-[#3A2E2A] text-sm transition-colors">← やめる</button>
+        <span className="text-sm font-bold text-[#6B5A52]">{qIdx + 1} / {questions.length}</span>
         <div className="flex gap-3 text-sm font-bold">
-          <span className="text-[#4ade80]">○ {sessionCorrect}</span>
-          <span className="text-[#f87171]">× {sessionWeak}</span>
+          <span className="text-[#16a34a]">○ {sessionCorrect}</span>
+          <span className="text-[#dc2626]">× {sessionWeak}</span>
         </div>
       </div>
-      <div className="fixed top-14 left-0 right-0 h-1.5 bg-white/10 z-10">
+      <div className="fixed top-14 left-0 right-0 h-1.5 bg-[#3A2E2A]/8 z-10">
         <div className="h-full transition-all duration-500" style={{ width: `${(qIdx / questions.length) * 100}%`, background: color }} />
       </div>
 
       <div className="w-full max-w-sm text-center">
         {/* Format badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4"
-          style={{ background: `${color}20`, color, border: `1px solid ${color}40` }}>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-4 border-2"
+          style={{ background: `${color}12`, color, borderColor: color }}>
           {q.fmt === 'k2r' ? '漢字 → 読み方' : '読み方 → 漢字'}
-          <span className="opacity-50">|</span>
+          <span className="opacity-40">|</span>
           <span className="opacity-75">{grade}</span>
         </div>
 
@@ -580,33 +590,31 @@ export default function KanjiQuiz() {
         {q.fmt === 'k2r' ? (
           <>
             <div className="text-[9rem] font-black leading-none mb-2 select-none"
-              style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : '#e8f0fe' }}>
+              style={{ color: selected ? (isCorrect ? '#16a34a' : '#dc2626') : '#3A2E2A' }}>
               {q.item.kanji}
             </div>
-            {/* k2r: 漢字が問題なのでヒントは常に表示OK */}
-            <p className="text-[#8892b0] text-sm mb-1">{q.item.meaning}</p>
-            <p className="text-xs mb-5" style={{ color: `${color}90` }}>例）{q.item.example}</p>
+            <p className="text-[#6B5A52] text-sm mb-1">{q.item.meaning}</p>
+            <p className="text-xs mb-5" style={{ color: `${color}bb` }}>例）{q.item.example}</p>
           </>
         ) : (
           <>
-            <p className="text-[#8892b0] text-xs mb-2 uppercase tracking-widest">この読み方の漢字は？</p>
+            <p className="text-[#6B5A52] text-xs mb-2 font-bold tracking-widest">この読み方の漢字は？</p>
             <div className="flex items-baseline justify-center mb-4 select-none">
               <span className="text-5xl font-black"
-                style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : color }}>
+                style={{ color: selected ? (isCorrect ? '#16a34a' : '#dc2626') : color }}>
                 {q.item.reading}
               </span>
               {q.item.okurigana && (
                 <span className="text-3xl font-bold"
-                  style={{ color: selected ? (isCorrect ? '#4ade80' : '#f87171') : '#8892b0' }}>
+                  style={{ color: selected ? (isCorrect ? '#16a34a' : '#dc2626') : '#6B5A52' }}>
                   {q.item.okurigana}
                 </span>
               )}
             </div>
-            {/* r2k: 選択前はヒント非表示（意味・例に答えの漢字が含まれるため） */}
             {selected !== null ? (
               <>
-                <p className="text-[#8892b0] text-sm mb-1">{q.item.meaning}</p>
-                <p className="text-xs mb-4" style={{ color: `${color}90` }}>例）{q.item.example}</p>
+                <p className="text-[#6B5A52] text-sm mb-1">{q.item.meaning}</p>
+                <p className="text-xs mb-4" style={{ color: `${color}bb` }}>例）{q.item.example}</p>
               </>
             ) : (
               <div className="mb-5" />
@@ -619,12 +627,12 @@ export default function KanjiQuiz() {
           {q.choices.map((c) => {
             const isCor = c === q.correct
             const isSel = c === selected
-            let bg = 'rgba(255,255,255,0.06)'
-            let border = 'rgba(255,255,255,0.12)'
-            let textColor = '#e8f0fe'
+            let bg = '#FFFFFF'
+            let border = 'rgba(58,46,42,0.15)'
+            let textColor = '#3A2E2A'
             if (selected !== null) {
-              if (isCor) { bg = `${color}28`; border = color; textColor = color }
-              else if (isSel) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; textColor = '#f87171' }
+              if (isCor) { bg = `${color}15`; border = color; textColor = color }
+              else if (isSel) { bg = 'rgba(220,38,38,0.08)'; border = '#dc2626'; textColor = '#dc2626' }
             }
             return (
               <button key={c} onClick={() => choose(c)} disabled={selected !== null}
@@ -636,6 +644,7 @@ export default function KanjiQuiz() {
                   fontSize: isKanjiChoices ? '2.2rem' : '1.1rem',
                   lineHeight: isKanjiChoices ? '1' : '1.5',
                   minHeight: '64px',
+                  boxShadow: selected === null ? '2px 2px 0 rgba(58,46,42,0.10)' : 'none',
                 }}>
                 {c}
               </button>
@@ -647,7 +656,7 @@ export default function KanjiQuiz() {
         {selected !== null && (
           <>
             <div className="flex items-center justify-between mb-3 px-1">
-              <span className="text-sm font-bold" style={{ color: isFast && isCorrect ? '#f0c040' : isSlow ? '#94a3b8' : 'transparent' }}>
+              <span className="text-sm font-bold" style={{ color: isFast && isCorrect ? '#ca8a04' : isSlow ? '#6B5A52' : 'transparent' }}>
                 {isCorrect && isFast ? '⚡ 速い！' : isCorrect && isSlow ? '🤔 ゆっくり' : ''}
               </span>
               {changeMsg && (
@@ -655,23 +664,23 @@ export default function KanjiQuiz() {
               )}
             </div>
 
-            <div className="rounded-2xl p-4 mb-4 text-left border"
+            <div className="rounded-2xl p-4 mb-4 text-left border-2"
               style={{
-                background: isCorrect ? `${color}12` : 'rgba(248,113,113,0.1)',
-                borderColor: isCorrect ? `${color}40` : 'rgba(248,113,113,0.4)',
+                background: isCorrect ? `${color}10` : 'rgba(220,38,38,0.06)',
+                borderColor: isCorrect ? color : '#dc2626',
               }}>
-              <p className="font-black text-sm mb-1.5" style={{ color: isCorrect ? color : '#f87171' }}>
+              <p className="font-black text-sm mb-1.5" style={{ color: isCorrect ? color : '#dc2626' }}>
                 {isCorrect
                   ? `✓ 正解！${q.fmt === 'k2r' ? `「${q.item.kanji}」＝「${getFullReading(q.item)}」` : `「${getFullReading(q.item)}」＝「${q.item.kanji}」`}`
                   : `✗ 正解は「${q.correct}」`
                 }
               </p>
-              <p className="text-[#e8f0fe] text-sm leading-relaxed">{q.item.tip}</p>
+              <p className="text-[#3A2E2A] text-sm leading-relaxed">{q.item.tip}</p>
             </div>
 
             <button onClick={goNext}
-              className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02]"
-              style={{ background: color, boxShadow: `0 0 25px ${color}50` }}>
+              className="w-full py-4 rounded-2xl font-black text-lg text-white transition-all hover:scale-[1.02]"
+              style={{ background: color, border: '2px solid #3A2E2A', boxShadow: '3px 3px 0 #3A2E2A' }}>
               {qIdx + 1 < questions.length ? '次の問題 →' : '結果を見る！'}
             </button>
           </>
