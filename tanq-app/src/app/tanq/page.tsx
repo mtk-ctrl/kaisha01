@@ -71,6 +71,88 @@ export default function TanqPage() {
         </Link>
       </section>
 
+      {/* ════════ TANQ びっくり はっけん！ ════════ */}
+      <section style={{ background: 'var(--cream)', position: 'relative', zIndex: 1, padding: '4rem 1.5rem 3rem' }}>
+        <div className="max-w-5xl mx-auto">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'inline-block', background: '#FF6F9C', color: '#fff', fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 12, letterSpacing: '0.15em', padding: '4px 14px', borderRadius: 99, border: '2px solid #3A2E2A', marginBottom: '0.75rem' }}>
+              タンキューの びっくり はっけん！
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(20px, 3.5vw, 32px)', color: 'var(--ink)', lineHeight: 1.25 }}>
+              「えっ、そうなの！？」な<br/><span style={{ color: 'var(--pink)' }}>科学のびっくり</span>
+            </h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1.25rem' }}>
+            {[
+              {
+                q: 'うんこは水に浮く？',
+                emoji: '💩',
+                a: '浮く！ うんこには脂肪分が多くて、水よりも軽いからプカプカするよ。お腹の調子がいいとき・悪いときで浮き方が変わるんだって！',
+                color: '#FFF1B8',
+                accent: '#C99700',
+              },
+              {
+                q: '氷はなぜ水に浮くの？',
+                emoji: '🧊',
+                a: '水は凍ると体積が約9%も増えて軽くなるから！だから北極の氷も海に浮いてるんだよ。ほとんどの物は固体の方が重いのに、水は特別なんだ。',
+                color: '#E0F0FF',
+                accent: '#0ea5e9',
+              },
+              {
+                q: 'なぜ空は青いの？',
+                emoji: '🌤️',
+                a: '太陽の光はいろんな色が混ざってる。青い光は一番散らばりやすいから、空全体が青く見える！夕方に赤くなるのも同じ理由だよ。',
+                color: '#DBF6F0',
+                accent: '#0d9488',
+              },
+              {
+                q: '電子レンジで卵を温めたら？',
+                emoji: '🥚',
+                a: '爆発する！ 中で水蒸気がふくらんで、殻が割れるほどの圧力になるよ。絶対やらないでね！（ゆでたまごもNG）',
+                color: '#FFE3EE',
+                accent: '#FF6F9C',
+              },
+              {
+                q: 'くしゃみのスピードは？',
+                emoji: '🤧',
+                a: '時速約160km！ 新幹線の半分くらいのスピードだよ。しかも1回で10万個以上のウイルスが飛び出すから、必ず口をふさごうね。',
+                color: '#EFE8FF',
+                accent: '#8b5cf6',
+              },
+              {
+                q: 'バナナは木になる？',
+                emoji: '🍌',
+                a: '木じゃなくて草！ バナナは世界最大の「草」の仲間なんだ。幹のように見える部分は葉っぱが重なったもの。抜こうと思えば引き抜けるよ。',
+                color: '#DFF6CF',
+                accent: '#22c55e',
+              },
+            ].map(({ q, emoji, a, color, accent }) => (
+              <div
+                key={q}
+                className="card-sticker"
+                style={{ background: color, borderRadius: 'var(--radius-card)', padding: '1.5rem' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: 32 }}>{emoji}</span>
+                  <p style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, color: 'var(--ink)', lineHeight: 1.3, margin: 0 }}>
+                    {q}
+                  </p>
+                </div>
+                <div style={{ height: 2, background: accent, borderRadius: 1, marginBottom: '0.75rem', opacity: 0.5 }} />
+                <p style={{ fontSize: 13, color: 'var(--ink-soft)', lineHeight: 1.75, margin: 0 }}>
+                  {a}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: 13, color: 'var(--ink-soft)' }}>
+            もっとびっくりしたい人は、下のクイズでためしてみよう！👇
+          </p>
+        </div>
+      </section>
+
       {/* ════════ 4 DOMAINS ════════ */}
       <section style={{ background: 'var(--mint-bg)', position: 'relative', zIndex: 1, padding: '4rem 1.5rem 5rem' }}>
         <div className="max-w-5xl mx-auto">
