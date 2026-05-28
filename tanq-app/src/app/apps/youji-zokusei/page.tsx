@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useRef, useEffect } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { saveScore } from '@/lib/scoreApi'
 import { getDataKey } from '@/lib/storage'
@@ -15,14 +15,14 @@ interface Stage {
 const STAGES: Stage[] = [
   {
     id: 1, name: 'ステージ 1', difficulty: 'やさしい ⭐', icon: '🌸',
-    leftAttr:  { label: 'あかい',    color: '#FF6464', bg: 'rgba(255,100,100,0.22)' },
-    rightAttr: { label: 'まるい',    color: '#6496FF', bg: 'rgba(100,150,255,0.22)' },
+    leftAttr:  { label: 'あかい',    color: '#FF6464', bg: 'rgba(255,100,100,0.35)' },
+    rightAttr: { label: 'まるい',    color: '#6496FF', bg: 'rgba(100,150,255,0.35)' },
     items: [
       { emoji: '🍎', name: 'りんご',          left: true,  right: true  },
       { emoji: '🍊', name: 'みかん',           left: false, right: true  },
       { emoji: '🚒', name: 'しょうぼうしゃ',   left: true,  right: false },
       { emoji: '📦', name: 'はこ',             left: false, right: false },
-      { emoji: '🍓', name: 'いちご',           left: true,  right: true  },
+      { emoji: '🍓', name: 'いちご',           left: true,  right: false }, // ハート形で丸くない
       { emoji: '🏀', name: 'バスケットボール',  left: false, right: true  },
       { emoji: '🌹', name: 'バラ',             left: true,  right: false },
       { emoji: '📚', name: 'ほん',             left: false, right: false },
@@ -30,8 +30,8 @@ const STAGES: Stage[] = [
   },
   {
     id: 2, name: 'ステージ 2', difficulty: 'ふつう ⭐⭐', icon: '⚡',
-    leftAttr:  { label: 'いきもの',   color: '#51CF66', bg: 'rgba(81,207,102,0.22)' },
-    rightAttr: { label: 'みずにいる', color: '#339AF0', bg: 'rgba(51,154,240,0.22)' },
+    leftAttr:  { label: 'いきもの',   color: '#51CF66', bg: 'rgba(81,207,102,0.35)' },
+    rightAttr: { label: 'みずにいる', color: '#339AF0', bg: 'rgba(51,154,240,0.35)' },
     items: [
       { emoji: '🐟', name: 'さかな',    left: true,  right: true  },
       { emoji: '🐱', name: 'ねこ',      left: true,  right: false },
@@ -45,8 +45,8 @@ const STAGES: Stage[] = [
   },
   {
     id: 3, name: 'ステージ 3', difficulty: 'むずかしい ⭐⭐⭐', icon: '🏆',
-    leftAttr:  { label: 'のりもの',   color: '#FF922B', bg: 'rgba(255,146,43,0.22)' },
-    rightAttr: { label: 'そらをとぶ', color: '#CC5DE8', bg: 'rgba(204,93,232,0.22)' },
+    leftAttr:  { label: 'のりもの',   color: '#FF922B', bg: 'rgba(255,146,43,0.35)' },
+    rightAttr: { label: 'そらをとぶ', color: '#CC5DE8', bg: 'rgba(204,93,232,0.35)' },
     items: [
       { emoji: '✈️',  name: 'ひこうき',    left: true,  right: true  },
       { emoji: '🚗',  name: 'くるま',       left: true,  right: false },
@@ -110,84 +110,61 @@ function saveRecordEntry(stageIdx: number, score: number, stars: number, maxComb
   }
 }
 
-// ─── Venn diagram SVG ───────────────────────────────────────────
-function VennDiagram({
-  stage,
-  highlightZone,
-}: {
-  stage: Stage
-  highlightZone: Zone | null
-}) {
-  const W = 300, H = 160
-  // Circle centers & radius
-  const r = 62
+// ─── ベン図 SVG ───────────────────────────────────────────────────
+// SVGマスクで4ゾーンを正確にハイライト
+function VennDiagram({ stage, highlightZone }: { stage: Stage; highlightZone: Zone | null }) {
+  const W = 300, H = 164
+  const r = 63
   const lx = 110, rx = 190, cy = 82
 
-  const zones: Zone[] = ['left', 'both', 'right', 'neither']
-  const isHL = (z: Zone) => highlightZone === z
-
-  // Clip paths for left-only and right-only fill
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ overflow: 'visible' }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ maxWidth: W, display: 'block' }}>
       <defs>
-        {/* left circle clip */}
-        <clipPath id="venn-left-clip">
-          <circle cx={lx} cy={cy} r={r} />
-        </clipPath>
-        {/* right circle clip */}
-        <clipPath id="venn-right-clip">
+        {/* 左だけ = 左円 から 右円 を引いた領域 */}
+        <mask id="vd-left-only">
+          <rect width={W} height={H} fill="white" />
+          <circle cx={rx} cy={cy} r={r} fill="black" />
+        </mask>
+        {/* 右だけ = 右円 から 左円 を引いた領域 */}
+        <mask id="vd-right-only">
+          <rect width={W} height={H} fill="white" />
+          <circle cx={lx} cy={cy} r={r} fill="black" />
+        </mask>
+        {/* りょうほう = 左円 ∩ 右円 */}
+        <clipPath id="vd-both-clip">
           <circle cx={rx} cy={cy} r={r} />
         </clipPath>
+        {/* どちらでもない = 両円の外 */}
+        <mask id="vd-neither">
+          <rect width={W} height={H} fill="white" />
+          <circle cx={lx} cy={cy} r={r} fill="black" />
+          <circle cx={rx} cy={cy} r={r} fill="black" />
+        </mask>
       </defs>
 
-      {/* "neither" background zone — outside both circles */}
-      <rect
-        x={0} y={0} width={W} height={H} rx={14}
-        fill={isHL('neither') ? 'rgba(100,100,100,0.18)' : 'rgba(200,200,200,0.10)'}
-        stroke={isHL('neither') ? '#555' : 'transparent'}
-        strokeWidth={isHL('neither') ? 2 : 0}
-      />
-
-      {/* left circle fill */}
-      <circle cx={lx} cy={cy} r={r}
-        fill={isHL('left') ? stage.leftAttr.bg : 'rgba(200,200,200,0.06)'}
-        stroke={stage.leftAttr.color} strokeWidth={isHL('left') ? 3 : 2.5} strokeDasharray={isHL('left') ? undefined : undefined}
-      />
-
-      {/* right circle fill */}
-      <circle cx={rx} cy={cy} r={r}
-        fill={isHL('right') ? stage.rightAttr.bg : 'rgba(200,200,200,0.06)'}
-        stroke={stage.rightAttr.color} strokeWidth={isHL('right') ? 3 : 2.5}
-      />
-
-      {/* "both" intersection highlight — drawn as lens shape using two arcs */}
-      {isHL('both') && (
-        <path
-          d={`M ${lx + r * Math.cos(Math.acos((rx - lx) / (2 * r)))} ${cy - r * Math.sin(Math.acos((rx - lx) / (2 * r)))}
-              A ${r} ${r} 0 0 1 ${lx + r * Math.cos(Math.acos((rx - lx) / (2 * r)))} ${cy + r * Math.sin(Math.acos((rx - lx) / (2 * r)))}
-              A ${r} ${r} 0 0 1 ${lx + r * Math.cos(Math.acos((rx - lx) / (2 * r)))} ${cy - r * Math.sin(Math.acos((rx - lx) / (2 * r)))}`}
-          fill="rgba(120,180,80,0.35)"
-          stroke="#22c55e" strokeWidth={2}
-        />
+      {/* ゾーン塗り（正解時のみ） */}
+      {highlightZone === 'neither' && (
+        <rect width={W} height={H} rx={12} fill="rgba(80,80,80,0.22)" mask="url(#vd-neither)" />
+      )}
+      {highlightZone === 'left' && (
+        <circle cx={lx} cy={cy} r={r} fill={stage.leftAttr.bg} mask="url(#vd-left-only)" />
+      )}
+      {highlightZone === 'right' && (
+        <circle cx={rx} cy={cy} r={r} fill={stage.rightAttr.bg} mask="url(#vd-right-only)" />
+      )}
+      {highlightZone === 'both' && (
+        <circle cx={lx} cy={cy} r={r} fill="rgba(60,200,100,0.45)" clipPath="url(#vd-both-clip)" />
       )}
 
-      {/* Labels inside circles */}
-      <text x={lx - 18} y={cy + 5} textAnchor="middle" fontSize={12} fontWeight={700} fill={stage.leftAttr.color} style={{ userSelect: 'none' }}>
-        {stage.leftAttr.label}
-      </text>
-      <text x={rx + 18} y={cy + 5} textAnchor="middle" fontSize={12} fontWeight={700} fill={stage.rightAttr.color} style={{ userSelect: 'none' }}>
-        {stage.rightAttr.label}
-      </text>
+      {/* 円の輪郭（常に表示） */}
+      <circle cx={lx} cy={cy} r={r} fill="none" stroke={stage.leftAttr.color} strokeWidth={2.5} />
+      <circle cx={rx} cy={cy} r={r} fill="none" stroke={stage.rightAttr.color} strokeWidth={2.5} />
 
-      {/* "りょうほう" label in center */}
-      <text x={(lx + rx) / 2} y={cy + 5} textAnchor="middle" fontSize={10} fontWeight={700} fill="#555" style={{ userSelect: 'none' }}>
-        りょうほう
-      </text>
-
-      {/* "どちらでもない" label outside */}
-      <text x={W - 28} y={H - 10} textAnchor="end" fontSize={9} fontWeight={600} fill="#888" style={{ userSelect: 'none' }}>
-        どちらでもない
-      </text>
+      {/* ゾーンラベル */}
+      <text x={78}  y={cy + 5} textAnchor="middle" fontSize={11} fontWeight="700" fill={stage.leftAttr.color}  style={{ userSelect: 'none' }}>{stage.leftAttr.label}</text>
+      <text x={150} y={cy + 5} textAnchor="middle" fontSize={10} fontWeight="700" fill="#555"                  style={{ userSelect: 'none' }}>りょうほう</text>
+      <text x={222} y={cy + 5} textAnchor="middle" fontSize={11} fontWeight="700" fill={stage.rightAttr.color} style={{ userSelect: 'none' }}>{stage.rightAttr.label}</text>
+      <text x={W - 6} y={H - 5} textAnchor="end"  fontSize={9}  fontWeight="600" fill="#888"                  style={{ userSelect: 'none' }}>どちらでもない</text>
     </svg>
   )
 }
@@ -204,8 +181,9 @@ export default function YoujiZokuseiPage() {
   const [correctCount, setCorrectCount] = useState(0)
   const [answered, setAnswered] = useState(false)
   const [chosenZone, setChosenZone] = useState<Zone | null>(null)
+  // 次へボタン用：回答時のスコアを保持
+  const [pendingNext, setPendingNext] = useState<{ score: number; combo: number; max: number; correct: number } | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => { setRecords(loadRecords()) }, [])
 
@@ -226,10 +204,9 @@ export default function YoujiZokuseiPage() {
   }
 
   function startStage(si: number) {
-    const stage = STAGES[si]
-    const shuffled = shuffle([...stage.items])
+    const shuffled = shuffle([...STAGES[si].items])
     setStageIdx(si); setItems(shuffled); setQIdx(0); setScore(0); setCombo(0); setMaxCombo(0)
-    setCorrectCount(0); setAnswered(false); setChosenZone(null)
+    setCorrectCount(0); setAnswered(false); setChosenZone(null); setPendingNext(null)
     setView('game')
     setTimeout(() => { speak(shuffled[0].name) }, 300)
   }
@@ -255,22 +232,24 @@ export default function YoujiZokuseiPage() {
       speak('ざんねん')
     }
     setScore(newScore); setCombo(newCombo); setMaxCombo(newMax); setCorrectCount(newCorrect)
-    timerRef.current = setTimeout(() => advanceQuestion(newScore, newCombo, newMax, newCorrect), 2200)
+    // 自動遷移ではなく次へボタンで進む
+    setPendingNext({ score: newScore, combo: newCombo, max: newMax, correct: newCorrect })
   }
 
-  function advanceQuestion(s?: number, c?: number, mx?: number, cor?: number) {
+  function handleNext() {
+    if (!pendingNext) return
+    const { score: s, combo: c, max: mx, correct: cor } = pendingNext
     const total = items.length
     const nextIdx = qIdx + 1
-    const finalScore = s ?? score, finalCombo = c ?? combo, finalMax = mx ?? maxCombo, finalCorrect = cor ?? correctCount
     if (nextIdx >= total) {
-      const pct = finalCorrect / total
+      const pct = cor / total
       const stars = pct >= 0.8 ? 3 : pct >= 0.6 ? 2 : pct >= 0.4 ? 1 : 0
-      saveRecordEntry(stageIdx, finalScore, stars, finalMax)
-      saveScore('youji-zokusei', finalCorrect, total, `stage${stageIdx + 1}`)
+      saveRecordEntry(stageIdx, s, stars, mx)
+      saveScore('youji-zokusei', cor, total, `stage${stageIdx + 1}`)
       if (pct >= 0.8) fireConfetti(true)
       setRecords(loadRecords()); setView('result')
     } else {
-      setQIdx(nextIdx); setAnswered(false); setChosenZone(null)
+      setQIdx(nextIdx); setAnswered(false); setChosenZone(null); setPendingNext(null)
       setTimeout(() => { speak(items[nextIdx].name) }, 200)
     }
   }
@@ -287,12 +266,10 @@ export default function YoujiZokuseiPage() {
             <Link href="/lab" className="text-2xl font-bold text-white">←</Link>
             <h1 className="text-xl font-black text-white">🏭 ぞくせい 仕分け工場</h1>
           </div>
-
           <div className="bg-white/20 rounded-2xl p-4 mb-4 text-white text-sm font-bold">
             アイテムを4つのゾーンに仕分けよう！<br/>
             <span className="text-white/80 text-xs">どのなかまに はいるか かんがえてね</span>
           </div>
-
           <div className="space-y-3">
             {STAGES.map((stage, i) => {
               const rec = savedRec[i]
@@ -359,14 +336,12 @@ export default function YoujiZokuseiPage() {
     )
   }
 
-  // ─── Game view ────────────────────────────────────────────────
+  // ─── ゲーム画面 ───────────────────────────────────────────────
   const stage = STAGES[stageIdx]
   const item = items[qIdx]
   if (!item) return null
   const correctZone = getCorrectZone(item)
-
-  // Which zone to highlight in the Venn diagram
-  const vennHighlight: Zone | null = answered ? correctZone : null
+  const isCorrect = answered && chosenZone === correctZone
 
   return (
     <div className="min-h-screen" style={{ background: PURPLE }}>
@@ -374,30 +349,30 @@ export default function YoujiZokuseiPage() {
       <div className="max-w-md mx-auto px-4 pb-8">
         <div className="sticky top-0 z-10 py-3" style={{ background: PURPLE }}>
           <div className="flex items-center justify-between">
-            <button onClick={() => { if (timerRef.current) clearTimeout(timerRef.current); setView('menu') }} className="text-white font-bold text-sm">← やめる</button>
+            <button onClick={() => setView('menu')} className="text-white font-bold text-sm">← やめる</button>
             <span className="text-white font-black text-sm">{qIdx + 1}/{items.length}もん</span>
             <span className="text-white font-black text-sm">⭐ {score}</span>
           </div>
           {combo >= 2 && <div className="text-center mt-1"><span className="bg-yellow-400 text-yellow-900 text-xs font-black px-3 py-0.5 rounded-full">🔥 {combo}コンボ！</span></div>}
         </div>
 
-        {/* Item card */}
+        {/* アイテムカード */}
         <div className="bg-white rounded-3xl p-5 mb-3 text-center shadow-xl">
           <div className="text-7xl mb-2">{item.emoji}</div>
           <div className="font-black text-2xl text-gray-800">{item.name}</div>
           <p className="text-xs text-gray-400 mt-1">どのなかまに はいるかな？</p>
         </div>
 
-        {/* Venn diagram */}
+        {/* ベン図 */}
         <div className="bg-white/90 rounded-2xl p-3 mb-3 flex flex-col items-center shadow">
           <p className="text-xs font-black text-gray-500 mb-1">ベン図でかくにんしよう</p>
-          <VennDiagram stage={stage} highlightZone={vennHighlight} />
+          <VennDiagram stage={stage} highlightZone={answered ? correctZone : null} />
         </div>
 
-        {/* Zone buttons — 2×2 grid matching Venn zones */}
+        {/* 選択ボタン（回答後は押せない） */}
         <div className="grid grid-cols-2 gap-3 mb-3">
           {(['left', 'both', 'right', 'neither'] as Zone[]).map(zone => {
-            const isCor = answered && zone === correctZone
+            const isCor   = answered && zone === correctZone
             const isWrong = answered && zone === chosenZone && zone !== correctZone
             let label = ''
             if (zone === 'left')    label = `${stage.leftAttr.label}だけ`
@@ -408,11 +383,9 @@ export default function YoujiZokuseiPage() {
               <button key={zone} onClick={() => handleAnswer(zone)} disabled={answered}
                 className={`py-4 px-2 rounded-2xl font-black text-sm shadow-md transition-all hover:-translate-y-0.5 disabled:cursor-default leading-tight
                   ${isCor ? 'bg-green-200 border-2 border-green-500' : isWrong ? 'bg-red-200 border-2 border-red-400' : 'bg-white'}`}>
-                {zone === 'both' && <div className="text-xs font-bold mb-1">
-                  <span style={{ color: stage.leftAttr.color }}>●</span>{' & '}<span style={{ color: stage.rightAttr.color }}>●</span>
-                </div>}
-                {zone === 'left' && <div className="text-xs font-bold mb-1"><span style={{ color: stage.leftAttr.color }}>●</span> のみ</div>}
-                {zone === 'right' && <div className="text-xs font-bold mb-1"><span style={{ color: stage.rightAttr.color }}>●</span> のみ</div>}
+                {zone === 'both'    && <div className="text-xs font-bold mb-1"><span style={{ color: stage.leftAttr.color }}>●</span>{' & '}<span style={{ color: stage.rightAttr.color }}>●</span></div>}
+                {zone === 'left'    && <div className="text-xs font-bold mb-1"><span style={{ color: stage.leftAttr.color }}>●</span> のみ</div>}
+                {zone === 'right'   && <div className="text-xs font-bold mb-1"><span style={{ color: stage.rightAttr.color }}>●</span> のみ</div>}
                 {zone === 'neither' && <div className="text-xs mb-1">–</div>}
                 {label}
                 {isCor ? ' ✓' : ''}{isWrong ? ' ✗' : ''}
@@ -421,12 +394,22 @@ export default function YoujiZokuseiPage() {
           })}
         </div>
 
+        {/* フィードバック + 次へボタン */}
         {answered && (
-          <div className={`rounded-2xl p-3 text-center font-black ${chosenZone === correctZone ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {chosenZone === correctZone
-              ? `⭕ せいかい！ 「${zoneDesc(correctZone, stage)}」だね！`
-              : `❌ ちがうよ！ こたえは「${zoneDesc(correctZone, stage)}」だよ！ ベン図をみてね 👆`}
-          </div>
+          <>
+            <div className={`rounded-2xl p-3 text-center font-black mb-3 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              {isCorrect
+                ? `⭕ せいかい！ 「${zoneDesc(correctZone, stage)}」だね！`
+                : `❌ ちがうよ！ こたえは「${zoneDesc(correctZone, stage)}」だよ！ ベン図をみてね 👆`}
+            </div>
+            <button
+              onClick={handleNext}
+              className="w-full py-4 rounded-2xl font-black text-lg bg-yellow-400 text-yellow-900 shadow-lg hover:-translate-y-0.5 active:translate-y-0 transition-all"
+              style={{ border: '3px solid rgba(0,0,0,0.15)' }}
+            >
+              {qIdx + 1 >= items.length ? 'けっかをみる 🎊' : 'つぎへ →'}
+            </button>
+          </>
         )}
       </div>
     </div>
