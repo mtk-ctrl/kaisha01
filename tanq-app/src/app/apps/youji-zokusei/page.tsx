@@ -6,7 +6,7 @@ import { saveScore } from '@/lib/scoreApi'
 import { getDataKey } from '@/lib/storage'
 
 interface StageAttr { label: string; color: string; bg: string }
-interface StageItem { emoji: string; name: string; left: boolean; right: boolean }
+interface StageItem { emoji: string; name: string; left: boolean; right: boolean; hint: string }
 interface Stage {
   id: number; name: string; difficulty: string; icon: string
   leftAttr: StageAttr; rightAttr: StageAttr; items: StageItem[]
@@ -18,29 +18,29 @@ const STAGES: Stage[] = [
     leftAttr:  { label: 'あかい',    color: '#FF6464', bg: 'rgba(255,100,100,0.35)' },
     rightAttr: { label: 'まるい',    color: '#6496FF', bg: 'rgba(100,150,255,0.35)' },
     items: [
-      { emoji: '🍎', name: 'りんご',          left: true,  right: true  },
-      { emoji: '🍊', name: 'みかん',           left: false, right: true  },
-      { emoji: '🚒', name: 'しょうぼうしゃ',   left: true,  right: false },
-      { emoji: '📦', name: 'はこ',             left: false, right: false },
-      { emoji: '🍓', name: 'いちご',           left: true,  right: false }, // ハート形で丸くない
-      { emoji: '🏀', name: 'バスケットボール',  left: false, right: true  },
-      { emoji: '🌹', name: 'バラ',             left: true,  right: false },
-      { emoji: '📚', name: 'ほん',             left: false, right: false },
+      { emoji: '🍎', name: 'りんご',          left: true,  right: true,  hint: 'りんごは あかくて、ぼーるみたいに まるいね' },
+      { emoji: '🍊', name: 'みかん',           left: false, right: true,  hint: 'みかんは きいろ〜オレンジで まるい。あかくはないよ' },
+      { emoji: '🚒', name: 'しょうぼうしゃ',   left: true,  right: false, hint: 'しょうぼうしゃは あかいけど、まるくはないね' },
+      { emoji: '📦', name: 'はこ',             left: false, right: false, hint: 'はこは あかくも まるくも ないね。しかくいよ' },
+      { emoji: '🍓', name: 'いちご',           left: true,  right: false, hint: 'いちごは あかいけど、ハートのかたちで まるくないよ' },
+      { emoji: '🏀', name: 'バスケットボール',  left: false, right: true,  hint: 'バスケットボールは まるいけど、オレンジいろで あかくはないよ' },
+      { emoji: '🌹', name: 'バラ',             left: true,  right: false, hint: 'バラは あかいけど、はなびらが まるくかさなった かたちだよ' },
+      { emoji: '📚', name: 'ほん',             left: false, right: false, hint: 'ほんは あかくも まるくも ないね。しかくいよ' },
     ],
   },
   {
     id: 2, name: 'ステージ 2', difficulty: 'ふつう ⭐⭐', icon: '⚡',
     leftAttr:  { label: 'いきもの',   color: '#51CF66', bg: 'rgba(81,207,102,0.35)' },
-    rightAttr: { label: 'みずにいる', color: '#339AF0', bg: 'rgba(51,154,240,0.35)' },
+    rightAttr: { label: 'みずにすむ', color: '#339AF0', bg: 'rgba(51,154,240,0.35)' },
     items: [
-      { emoji: '🐟', name: 'さかな',    left: true,  right: true  },
-      { emoji: '🐱', name: 'ねこ',      left: true,  right: false },
-      { emoji: '⛵', name: 'ヨット',    left: false, right: true  },
-      { emoji: '🪨', name: 'いし',      left: false, right: false },
-      { emoji: '🐙', name: 'たこ',      left: true,  right: true  },
-      { emoji: '🦁', name: 'ライオン',  left: true,  right: false },
-      { emoji: '🚤', name: 'ボート',    left: false, right: true  },
-      { emoji: '🏠', name: 'いえ',      left: false, right: false },
+      { emoji: '🐟', name: 'さかな',    left: true,  right: true,  hint: 'さかなは いきもので、みずの中に すんでいるよ' },
+      { emoji: '🐱', name: 'ねこ',      left: true,  right: false, hint: 'ねこは いきものだけど、みずに すんでいないよ' },
+      { emoji: '⛵', name: 'ヨット',    left: false, right: false, hint: 'ヨットは きかいで いきものではないよ。みずの上を はしるけど すんでいない' },
+      { emoji: '🪨', name: 'いし',      left: false, right: false, hint: 'いしは いきものでも ないし、みずに すんでもいないよ' },
+      { emoji: '🐙', name: 'たこ',      left: true,  right: true,  hint: 'たこは いきもので、うみの中に すんでいるよ' },
+      { emoji: '🦁', name: 'ライオン',  left: true,  right: false, hint: 'ライオンは いきものだけど、みずに すんでいないよ。さばんなに いるよ' },
+      { emoji: '🚤', name: 'ボート',    left: false, right: false, hint: 'ボートは きかいで いきものではないよ。みずの上を うごくけど すんでいない' },
+      { emoji: '🏠', name: 'いえ',      left: false, right: false, hint: 'いえは いきものでも ないし、みずに すんでもいないよ' },
     ],
   },
   {
@@ -48,14 +48,14 @@ const STAGES: Stage[] = [
     leftAttr:  { label: 'のりもの',   color: '#FF922B', bg: 'rgba(255,146,43,0.35)' },
     rightAttr: { label: 'そらをとぶ', color: '#CC5DE8', bg: 'rgba(204,93,232,0.35)' },
     items: [
-      { emoji: '✈️',  name: 'ひこうき',    left: true,  right: true  },
-      { emoji: '🚗',  name: 'くるま',       left: true,  right: false },
-      { emoji: '🦅',  name: 'わし',         left: false, right: true  },
-      { emoji: '🏔️', name: 'やま',         left: false, right: false },
-      { emoji: '🚁',  name: 'ヘリコプター', left: true,  right: true  },
-      { emoji: '🚢',  name: 'ふね',         left: true,  right: false },
-      { emoji: '🦋',  name: 'ちょうちょ',   left: false, right: true  },
-      { emoji: '🌳',  name: 'き',           left: false, right: false },
+      { emoji: '✈️',  name: 'ひこうき',    left: true,  right: true,  hint: 'ひこうきは のりもので、そらを とぶよ' },
+      { emoji: '🚗',  name: 'くるま',       left: true,  right: false, hint: 'くるまは のりものだけど、そらは とばないよ。じめんを はしるよ' },
+      { emoji: '🦅',  name: 'わし',         left: false, right: true,  hint: 'わしは そらを とぶけど、のりものではないよ。とりだよ' },
+      { emoji: '🏔️', name: 'やま',         left: false, right: false, hint: 'やまは のりものでも そらをとぶものでも ないよ。うごかないよ' },
+      { emoji: '🚁',  name: 'ヘリコプター', left: true,  right: true,  hint: 'ヘリコプターは のりもので、そらを とぶよ' },
+      { emoji: '🚢',  name: 'ふね',         left: true,  right: false, hint: 'ふねは のりものだけど、そらは とばないよ。うみを すすむよ' },
+      { emoji: '🦋',  name: 'ちょうちょ',   left: false, right: true,  hint: 'ちょうちょは そらを とぶけど、のりものではないよ。むしだよ' },
+      { emoji: '🌳',  name: 'き',           left: false, right: false, hint: 'きは のりものでも そらをとぶものでも ないよ。うごかないよ' },
     ],
   },
 ]
@@ -65,8 +65,11 @@ type View = 'menu' | 'game' | 'result'
 
 interface RecordEntry { stars: number; score: number; maxCombo: number }
 type Records = Record<number, RecordEntry>
+// 間違えた問題を記録するための型
+interface MissEntry { item: StageItem; chosen: Zone; correct: Zone }
 
-const RECORD_KEY = 'tanq_zokusei_records_v1'
+const RECORD_KEY    = 'tanq_zokusei_records_v1'
+const PLAYED_KEY    = 'tanq_zokusei_played_v1'
 
 function getCorrectZone(item: StageItem): Zone {
   if (item.left && item.right) return 'both'
@@ -100,6 +103,14 @@ function loadRecords(): Records {
   if (typeof window === 'undefined') return {}
   try { return JSON.parse(localStorage.getItem(getDataKey(RECORD_KEY)) || '{}') } catch { return {} }
 }
+function loadPlayed(): Set<number> {
+  if (typeof window === 'undefined') return new Set()
+  try { return new Set<number>(JSON.parse(localStorage.getItem(getDataKey(PLAYED_KEY)) || '[]') as number[]) } catch { return new Set<number>() }
+}
+function markPlayed(si: number) {
+  const s = loadPlayed(); s.add(si)
+  localStorage.setItem(getDataKey(PLAYED_KEY), JSON.stringify(Array.from(s)))
+}
 
 function saveRecordEntry(stageIdx: number, score: number, stars: number, maxCombo: number) {
   const rec = loadRecords()
@@ -111,7 +122,6 @@ function saveRecordEntry(stageIdx: number, score: number, stars: number, maxComb
 }
 
 // ─── ベン図 SVG ───────────────────────────────────────────────────
-// SVGマスクで4ゾーンを正確にハイライト
 function VennDiagram({ stage, highlightZone }: { stage: Stage; highlightZone: Zone | null }) {
   const W = 300, H = 164
   const r = 63
@@ -120,21 +130,17 @@ function VennDiagram({ stage, highlightZone }: { stage: Stage; highlightZone: Zo
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ maxWidth: W, display: 'block' }}>
       <defs>
-        {/* 左だけ = 左円 から 右円 を引いた領域 */}
         <mask id="vd-left-only">
           <rect width={W} height={H} fill="white" />
           <circle cx={rx} cy={cy} r={r} fill="black" />
         </mask>
-        {/* 右だけ = 右円 から 左円 を引いた領域 */}
         <mask id="vd-right-only">
           <rect width={W} height={H} fill="white" />
           <circle cx={lx} cy={cy} r={r} fill="black" />
         </mask>
-        {/* りょうほう = 左円 ∩ 右円 */}
         <clipPath id="vd-both-clip">
           <circle cx={rx} cy={cy} r={r} />
         </clipPath>
-        {/* どちらでもない = 両円の外 */}
         <mask id="vd-neither">
           <rect width={W} height={H} fill="white" />
           <circle cx={lx} cy={cy} r={r} fill="black" />
@@ -142,50 +148,43 @@ function VennDiagram({ stage, highlightZone }: { stage: Stage; highlightZone: Zo
         </mask>
       </defs>
 
-      {/* ゾーン塗り（正解時のみ） */}
-      {highlightZone === 'neither' && (
-        <rect width={W} height={H} rx={12} fill="rgba(80,80,80,0.22)" mask="url(#vd-neither)" />
-      )}
-      {highlightZone === 'left' && (
-        <circle cx={lx} cy={cy} r={r} fill={stage.leftAttr.bg} mask="url(#vd-left-only)" />
-      )}
-      {highlightZone === 'right' && (
-        <circle cx={rx} cy={cy} r={r} fill={stage.rightAttr.bg} mask="url(#vd-right-only)" />
-      )}
-      {highlightZone === 'both' && (
-        <circle cx={lx} cy={cy} r={r} fill="rgba(60,200,100,0.45)" clipPath="url(#vd-both-clip)" />
-      )}
+      {highlightZone === 'neither' && <rect width={W} height={H} rx={12} fill="rgba(80,80,80,0.22)" mask="url(#vd-neither)" />}
+      {highlightZone === 'left'    && <circle cx={lx} cy={cy} r={r} fill={stage.leftAttr.bg} mask="url(#vd-left-only)" />}
+      {highlightZone === 'right'   && <circle cx={rx} cy={cy} r={r} fill={stage.rightAttr.bg} mask="url(#vd-right-only)" />}
+      {highlightZone === 'both'    && <circle cx={lx} cy={cy} r={r} fill="rgba(60,200,100,0.45)" clipPath="url(#vd-both-clip)" />}
 
-      {/* 円の輪郭（常に表示） */}
-      <circle cx={lx} cy={cy} r={r} fill="none" stroke={stage.leftAttr.color} strokeWidth={2.5} />
+      <circle cx={lx} cy={cy} r={r} fill="none" stroke={stage.leftAttr.color}  strokeWidth={2.5} />
       <circle cx={rx} cy={cy} r={r} fill="none" stroke={stage.rightAttr.color} strokeWidth={2.5} />
 
-      {/* ゾーンラベル */}
-      <text x={78}  y={cy + 5} textAnchor="middle" fontSize={11} fontWeight="700" fill={stage.leftAttr.color}  style={{ userSelect: 'none' }}>{stage.leftAttr.label}</text>
-      <text x={150} y={cy + 5} textAnchor="middle" fontSize={10} fontWeight="700" fill="#555"                  style={{ userSelect: 'none' }}>りょうほう</text>
-      <text x={222} y={cy + 5} textAnchor="middle" fontSize={11} fontWeight="700" fill={stage.rightAttr.color} style={{ userSelect: 'none' }}>{stage.rightAttr.label}</text>
-      <text x={W - 6} y={H - 5} textAnchor="end"  fontSize={9}  fontWeight="600" fill="#888"                  style={{ userSelect: 'none' }}>どちらでもない</text>
+      <text x={78}    y={cy + 5} textAnchor="middle" fontSize={11} fontWeight="700" fill={stage.leftAttr.color}  style={{ userSelect: 'none' }}>{stage.leftAttr.label}</text>
+      <text x={150}   y={cy + 5} textAnchor="middle" fontSize={10} fontWeight="700" fill="#555"                  style={{ userSelect: 'none' }}>りょうほう</text>
+      <text x={222}   y={cy + 5} textAnchor="middle" fontSize={11} fontWeight="700" fill={stage.rightAttr.color} style={{ userSelect: 'none' }}>{stage.rightAttr.label}</text>
+      <text x={W - 6} y={H - 5}  textAnchor="end"    fontSize={9}  fontWeight="600" fill="#888"                  style={{ userSelect: 'none' }}>どちらでもない</text>
     </svg>
   )
 }
 
 export default function YoujiZokuseiPage() {
-  const [view, setView] = useState<View>('menu')
-  const [records, setRecords] = useState<Records>({})
-  const [stageIdx, setStageIdx] = useState(0)
-  const [items, setItems] = useState<StageItem[]>([])
-  const [qIdx, setQIdx] = useState(0)
-  const [score, setScore] = useState(0)
-  const [combo, setCombo] = useState(0)
-  const [maxCombo, setMaxCombo] = useState(0)
+  const [view, setView]               = useState<View>('menu')
+  const [records, setRecords]         = useState<Records>({})
+  const [played, setPlayed]           = useState<Set<number>>(new Set())
+  const [stageIdx, setStageIdx]       = useState(0)
+  const [items, setItems]             = useState<StageItem[]>([])
+  const [qIdx, setQIdx]               = useState(0)
+  const [score, setScore]             = useState(0)
+  const [combo, setCombo]             = useState(0)
+  const [maxCombo, setMaxCombo]       = useState(0)
   const [correctCount, setCorrectCount] = useState(0)
-  const [answered, setAnswered] = useState(false)
-  const [chosenZone, setChosenZone] = useState<Zone | null>(null)
-  // 次へボタン用：回答時のスコアを保持
-  const [pendingNext, setPendingNext] = useState<{ score: number; combo: number; max: number; correct: number } | null>(null)
+  const [misses, setMisses]           = useState<MissEntry[]>([])
+  const [answered, setAnswered]       = useState(false)
+  const [chosenZone, setChosenZone]   = useState<Zone | null>(null)
+  const [pendingNext, setPendingNext] = useState<{ score: number; combo: number; max: number; correct: number; misses: MissEntry[] } | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  useEffect(() => { setRecords(loadRecords()) }, [])
+  useEffect(() => {
+    setRecords(loadRecords())
+    setPlayed(loadPlayed())
+  }, [])
 
   function fireConfetti(big: boolean) {
     const canvas = canvasRef.current; if (!canvas) return
@@ -204,9 +203,11 @@ export default function YoujiZokuseiPage() {
   }
 
   function startStage(si: number) {
+    markPlayed(si)
+    setPlayed(loadPlayed())
     const shuffled = shuffle([...STAGES[si].items])
     setStageIdx(si); setItems(shuffled); setQIdx(0); setScore(0); setCombo(0); setMaxCombo(0)
-    setCorrectCount(0); setAnswered(false); setChosenZone(null); setPendingNext(null)
+    setCorrectCount(0); setMisses([]); setAnswered(false); setChosenZone(null); setPendingNext(null)
     setView('game')
     setTimeout(() => { speak(shuffled[0].name) }, 300)
   }
@@ -220,6 +221,7 @@ export default function YoujiZokuseiPage() {
     setChosenZone(zone)
 
     let newScore = score, newCombo = combo, newMax = maxCombo, newCorrect = correctCount
+    const newMisses = [...misses]
     if (ok) {
       newCombo = combo + 1; newMax = Math.max(maxCombo, newCombo); newCorrect = correctCount + 1
       const zoneBonus = zone === 'both' ? 1.5 : zone === 'neither' ? 1.2 : 1.0
@@ -229,16 +231,16 @@ export default function YoujiZokuseiPage() {
       fireConfetti(false)
     } else {
       newCombo = 0
+      newMisses.push({ item, chosen: zone, correct })
       speak('ざんねん')
     }
-    setScore(newScore); setCombo(newCombo); setMaxCombo(newMax); setCorrectCount(newCorrect)
-    // 自動遷移ではなく次へボタンで進む
-    setPendingNext({ score: newScore, combo: newCombo, max: newMax, correct: newCorrect })
+    setScore(newScore); setCombo(newCombo); setMaxCombo(newMax); setCorrectCount(newCorrect); setMisses(newMisses)
+    setPendingNext({ score: newScore, combo: newCombo, max: newMax, correct: newCorrect, misses: newMisses })
   }
 
   function handleNext() {
     if (!pendingNext) return
-    const { score: s, combo: c, max: mx, correct: cor } = pendingNext
+    const { score: s, combo: c, max: mx, correct: cor, misses: ms } = pendingNext
     const total = items.length
     const nextIdx = qIdx + 1
     if (nextIdx >= total) {
@@ -247,6 +249,7 @@ export default function YoujiZokuseiPage() {
       saveRecordEntry(stageIdx, s, stars, mx)
       saveScore('youji-zokusei', cor, total, `stage${stageIdx + 1}`)
       if (pct >= 0.8) fireConfetti(true)
+      setMisses(ms)
       setRecords(loadRecords()); setView('result')
     } else {
       setQIdx(nextIdx); setAnswered(false); setChosenZone(null); setPendingNext(null)
@@ -256,8 +259,8 @@ export default function YoujiZokuseiPage() {
 
   const PURPLE = 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)'
 
+  // ─── メニュー ─────────────────────────────────────────────────
   if (view === 'menu') {
-    const savedRec = loadRecords()
     return (
       <div className="min-h-screen" style={{ background: PURPLE }}>
         <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-50"/>
@@ -266,14 +269,21 @@ export default function YoujiZokuseiPage() {
             <Link href="/lab" className="text-2xl font-bold text-white">←</Link>
             <h1 className="text-xl font-black text-white">🏭 ぞくせい 仕分け工場</h1>
           </div>
-          <div className="bg-white/20 rounded-2xl p-4 mb-4 text-white text-sm font-bold">
-            アイテムを4つのゾーンに仕分けよう！<br/>
-            <span className="text-white/80 text-xs">どのなかまに はいるか かんがえてね</span>
+
+          {/* 何を学ぶか説明 */}
+          <div className="bg-white/20 rounded-2xl p-4 mb-4 text-white">
+            <p className="font-black text-sm mb-1">ベン図（べんず）ってなに？</p>
+            <p className="text-xs text-white/85 leading-relaxed">
+              2つの円でなかまわけする図だよ。<br/>
+              「りょうほうに あてはまる」「どちらか だけ」「どちらでも ない」の4つのゾーンに アイテムを 仕分けしよう！
+            </p>
           </div>
+
           <div className="space-y-3">
             {STAGES.map((stage, i) => {
-              const rec = savedRec[i]
-              const unlocked = i === 0 || !!savedRec[i - 1]
+              const rec = records[i]
+              // アンロック：ステージ0は常に開放、それ以降は1つ前をプレイ済みなら開放
+              const unlocked = i === 0 || played.has(i - 1)
               return (
                 <button key={stage.id}
                   onClick={() => unlocked && startStage(i)}
@@ -294,7 +304,7 @@ export default function YoujiZokuseiPage() {
                   <div className="text-right">
                     {!unlocked ? <span className="text-2xl">🔒</span> :
                      rec ? <><div className="text-sm">{'⭐'.repeat(rec.stars)}{'☆'.repeat(3 - rec.stars)}</div><div className="text-xs text-gray-400">{rec.score}てん</div></> :
-                     <span className="text-xs text-gray-400">まだ</span>}
+                     <span className="text-xs font-bold text-purple-500">あそぶ →</span>}
                   </div>
                 </button>
               )
@@ -305,6 +315,7 @@ export default function YoujiZokuseiPage() {
     )
   }
 
+  // ─── 結果画面 ─────────────────────────────────────────────────
   if (view === 'result') {
     const total = items.length
     const pct = correctCount / total
@@ -319,14 +330,47 @@ export default function YoujiZokuseiPage() {
             <Link href="/lab" className="text-2xl font-bold text-white">←</Link>
             <h1 className="text-xl font-black text-white">けっか</h1>
           </div>
+
+          {/* スコアカード */}
           <div className="bg-white rounded-2xl p-6 mb-4 text-center shadow-md">
             <div className="text-5xl mb-2">{pct >= 0.8 ? '🎊' : pct >= 0.6 ? '🌟' : '💪'}</div>
             <div className="font-black text-xl mb-1">{msg}</div>
             <div className="font-black text-4xl text-purple-500 my-2">{correctCount}<span className="text-2xl">/{total}</span></div>
             <div className="text-2xl mb-1">{'⭐'.repeat(stars)}{'☆'.repeat(3 - stars)}</div>
             <div className="text-sm text-gray-400">{score}てん ／ さいこう{maxCombo}コンボ</div>
-            <div className="text-xs text-gray-400 mt-1">{stage.name}</div>
           </div>
+
+          {/* 間違えた問題の振り返り */}
+          {misses.length > 0 && (
+            <div className="bg-white/95 rounded-2xl p-4 mb-4 shadow">
+              <p className="font-black text-sm text-red-600 mb-3">❌ まちがえた もんだい（{misses.length}もん）</p>
+              <div className="space-y-3">
+                {misses.map((m, idx) => (
+                  <div key={idx} className="bg-red-50 rounded-xl p-3 border border-red-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-2xl">{m.item.emoji}</span>
+                      <span className="font-black text-gray-800">{m.item.name}</span>
+                    </div>
+                    <div className="text-xs text-gray-500 mb-1">
+                      あなたの こたえ：
+                      <span className="text-red-500 font-bold ml-1">{zoneDesc(m.chosen, stage)}</span>
+                      　→　正解：
+                      <span className="text-green-600 font-bold ml-1">{zoneDesc(m.correct, stage)}</span>
+                    </div>
+                    <p className="text-xs text-gray-600 leading-relaxed">{m.item.hint}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 全問正解の場合 */}
+          {misses.length === 0 && (
+            <div className="bg-white/95 rounded-2xl p-4 mb-4 text-center shadow">
+              <p className="font-black text-green-600">🌟 まちがいゼロ！ かんぺきだよ！</p>
+            </div>
+          )}
+
           <div className="flex gap-3">
             <button onClick={() => startStage(stageIdx)} className="flex-1 py-3 rounded-2xl font-black bg-white text-purple-600 shadow-md hover:-translate-y-0.5 transition-all">もう一回</button>
             <button onClick={() => setView('menu')} className="flex-1 py-3 rounded-2xl font-black bg-purple-800 text-white shadow-md hover:-translate-y-0.5 transition-all">ステージへ</button>
@@ -365,11 +409,13 @@ export default function YoujiZokuseiPage() {
 
         {/* ベン図 */}
         <div className="bg-white/90 rounded-2xl p-3 mb-3 flex flex-col items-center shadow">
-          <p className="text-xs font-black text-gray-500 mb-1">ベン図でかくにんしよう</p>
+          <p className="text-xs font-black text-gray-500 mb-1">
+            {answered ? '✅ せいかいゾーンを ひからせたよ！' : 'ベン図を みながら かんがえよう'}
+          </p>
           <VennDiagram stage={stage} highlightZone={answered ? correctZone : null} />
         </div>
 
-        {/* 選択ボタン（回答後は押せない） */}
+        {/* 選択ボタン */}
         <div className="grid grid-cols-2 gap-3 mb-3">
           {(['left', 'both', 'right', 'neither'] as Zone[]).map(zone => {
             const isCor   = answered && zone === correctZone
@@ -394,13 +440,14 @@ export default function YoujiZokuseiPage() {
           })}
         </div>
 
-        {/* フィードバック + 次へボタン */}
+        {/* フィードバック：正誤 + hint + 次へ */}
         {answered && (
           <>
-            <div className={`rounded-2xl p-3 text-center font-black mb-3 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-              {isCorrect
-                ? `⭕ せいかい！ 「${zoneDesc(correctZone, stage)}」だね！`
-                : `❌ ちがうよ！ こたえは「${zoneDesc(correctZone, stage)}」だよ！ ベン図をみてね 👆`}
+            <div className={`rounded-2xl p-4 mb-3 ${isCorrect ? 'bg-green-100' : 'bg-red-50'}`}>
+              <p className={`font-black text-sm mb-1 ${isCorrect ? 'text-green-700' : 'text-red-600'}`}>
+                {isCorrect ? `⭕ せいかい！ 「${zoneDesc(correctZone, stage)}」だね！` : `❌ 「${zoneDesc(correctZone, stage)}」だよ！`}
+              </p>
+              <p className="text-xs text-gray-600 leading-relaxed">{item.hint}</p>
             </div>
             <button
               onClick={handleNext}
