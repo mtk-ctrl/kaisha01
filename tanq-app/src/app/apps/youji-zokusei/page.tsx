@@ -110,6 +110,88 @@ function saveRecordEntry(stageIdx: number, score: number, stars: number, maxComb
   }
 }
 
+// ─── Venn diagram SVG ───────────────────────────────────────────
+function VennDiagram({
+  stage,
+  highlightZone,
+}: {
+  stage: Stage
+  highlightZone: Zone | null
+}) {
+  const W = 300, H = 160
+  // Circle centers & radius
+  const r = 62
+  const lx = 110, rx = 190, cy = 82
+
+  const zones: Zone[] = ['left', 'both', 'right', 'neither']
+  const isHL = (z: Zone) => highlightZone === z
+
+  // Clip paths for left-only and right-only fill
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} style={{ overflow: 'visible' }}>
+      <defs>
+        {/* left circle clip */}
+        <clipPath id="venn-left-clip">
+          <circle cx={lx} cy={cy} r={r} />
+        </clipPath>
+        {/* right circle clip */}
+        <clipPath id="venn-right-clip">
+          <circle cx={rx} cy={cy} r={r} />
+        </clipPath>
+      </defs>
+
+      {/* "neither" background zone — outside both circles */}
+      <rect
+        x={0} y={0} width={W} height={H} rx={14}
+        fill={isHL('neither') ? 'rgba(100,100,100,0.18)' : 'rgba(200,200,200,0.10)'}
+        stroke={isHL('neither') ? '#555' : 'transparent'}
+        strokeWidth={isHL('neither') ? 2 : 0}
+      />
+
+      {/* left circle fill */}
+      <circle cx={lx} cy={cy} r={r}
+        fill={isHL('left') ? stage.leftAttr.bg : 'rgba(200,200,200,0.06)'}
+        stroke={stage.leftAttr.color} strokeWidth={isHL('left') ? 3 : 2.5} strokeDasharray={isHL('left') ? undefined : undefined}
+      />
+
+      {/* right circle fill */}
+      <circle cx={rx} cy={cy} r={r}
+        fill={isHL('right') ? stage.rightAttr.bg : 'rgba(200,200,200,0.06)'}
+        stroke={stage.rightAttr.color} strokeWidth={isHL('right') ? 3 : 2.5}
+      />
+
+      {/* "both" intersection highlight — drawn as lens shape using two arcs */}
+      {isHL('both') && (
+        <path
+          d={`M ${lx + r * Math.cos(Math.acos((rx - lx) / (2 * r)))} ${cy - r * Math.sin(Math.acos((rx - lx) / (2 * r)))}
+              A ${r} ${r} 0 0 1 ${lx + r * Math.cos(Math.acos((rx - lx) / (2 * r)))} ${cy + r * Math.sin(Math.acos((rx - lx) / (2 * r)))}
+              A ${r} ${r} 0 0 1 ${lx + r * Math.cos(Math.acos((rx - lx) / (2 * r)))} ${cy - r * Math.sin(Math.acos((rx - lx) / (2 * r)))}`}
+          fill="rgba(120,180,80,0.35)"
+          stroke="#22c55e" strokeWidth={2}
+        />
+      )}
+
+      {/* Labels inside circles */}
+      <text x={lx - 18} y={cy + 5} textAnchor="middle" fontSize={12} fontWeight={700} fill={stage.leftAttr.color} style={{ userSelect: 'none' }}>
+        {stage.leftAttr.label}
+      </text>
+      <text x={rx + 18} y={cy + 5} textAnchor="middle" fontSize={12} fontWeight={700} fill={stage.rightAttr.color} style={{ userSelect: 'none' }}>
+        {stage.rightAttr.label}
+      </text>
+
+      {/* "りょうほう" label in center */}
+      <text x={(lx + rx) / 2} y={cy + 5} textAnchor="middle" fontSize={10} fontWeight={700} fill="#555" style={{ userSelect: 'none' }}>
+        りょうほう
+      </text>
+
+      {/* "どちらでもない" label outside */}
+      <text x={W - 28} y={H - 10} textAnchor="end" fontSize={9} fontWeight={600} fill="#888" style={{ userSelect: 'none' }}>
+        どちらでもない
+      </text>
+    </svg>
+  )
+}
+
 export default function YoujiZokuseiPage() {
   const [view, setView] = useState<View>('menu')
   const [records, setRecords] = useState<Records>({})
@@ -122,12 +204,8 @@ export default function YoujiZokuseiPage() {
   const [correctCount, setCorrectCount] = useState(0)
   const [answered, setAnswered] = useState(false)
   const [chosenZone, setChosenZone] = useState<Zone | null>(null)
-  const [timeoutMode, setTimeoutMode] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const timeBarRef = useRef<number>(0)
-  const rafRef = useRef<number>(0)
-  const [timeBarPct, setTimeBarPct] = useState(100)
 
   useEffect(() => { setRecords(loadRecords()) }, [])
 
@@ -147,46 +225,18 @@ export default function YoujiZokuseiPage() {
     draw()
   }
 
-  function stopTimer() {
-    if (timerRef.current) clearTimeout(timerRef.current)
-    if (rafRef.current) cancelAnimationFrame(rafRef.current)
-  }
-
-  function startTimer(stage: Stage) {
-    stopTimer()
-    const limitMs = stage.items.length > 0 ? (stage.id === 1 ? 8000 : stage.id === 2 ? 6000 : 5000) : 8000
-    const start = performance.now()
-    const tick = (now: number) => {
-      const elapsed = now - start
-      const pct = Math.max(0, 1 - elapsed / limitMs)
-      setTimeBarPct(pct * 100)
-      if (pct > 0) rafRef.current = requestAnimationFrame(tick)
-      else handleTimeout()
-    }
-    rafRef.current = requestAnimationFrame(tick)
-  }
-
-  function handleTimeout() {
-    setAnswered(true); setChosenZone(null); setTimeoutMode(true)
-    setCombo(0)
-    speak('おちちゃった')
-    timerRef.current = setTimeout(() => advanceQuestion(), 1800)
-  }
-
   function startStage(si: number) {
     const stage = STAGES[si]
     const shuffled = shuffle([...stage.items])
     setStageIdx(si); setItems(shuffled); setQIdx(0); setScore(0); setCombo(0); setMaxCombo(0)
-    setCorrectCount(0); setAnswered(false); setChosenZone(null); setTimeoutMode(false); setTimeBarPct(100)
+    setCorrectCount(0); setAnswered(false); setChosenZone(null)
     setView('game')
-    setTimeout(() => { speak(shuffled[0].name); startTimer(stage) }, 300)
+    setTimeout(() => { speak(shuffled[0].name) }, 300)
   }
 
   function handleAnswer(zone: Zone) {
     if (answered) return
-    stopTimer()
-    setAnswered(true); setTimeoutMode(false)
-    const stage = STAGES[stageIdx]
+    setAnswered(true)
     const item = items[qIdx]
     const correct = getCorrectZone(item)
     const ok = zone === correct
@@ -205,7 +255,7 @@ export default function YoujiZokuseiPage() {
       speak('ざんねん')
     }
     setScore(newScore); setCombo(newCombo); setMaxCombo(newMax); setCorrectCount(newCorrect)
-    timerRef.current = setTimeout(() => advanceQuestion(newScore, newCombo, newMax, newCorrect), 1800)
+    timerRef.current = setTimeout(() => advanceQuestion(newScore, newCombo, newMax, newCorrect), 2200)
   }
 
   function advanceQuestion(s?: number, c?: number, mx?: number, cor?: number) {
@@ -220,9 +270,8 @@ export default function YoujiZokuseiPage() {
       if (pct >= 0.8) fireConfetti(true)
       setRecords(loadRecords()); setView('result')
     } else {
-      setQIdx(nextIdx); setAnswered(false); setChosenZone(null); setTimeoutMode(false); setTimeBarPct(100)
-      const stage = STAGES[stageIdx]
-      setTimeout(() => { speak(items[nextIdx].name); startTimer(stage) }, 200)
+      setQIdx(nextIdx); setAnswered(false); setChosenZone(null)
+      setTimeout(() => { speak(items[nextIdx].name) }, 200)
     }
   }
 
@@ -310,48 +359,46 @@ export default function YoujiZokuseiPage() {
     )
   }
 
-  // Game view
+  // ─── Game view ────────────────────────────────────────────────
   const stage = STAGES[stageIdx]
   const item = items[qIdx]
   if (!item) return null
   const correctZone = getCorrectZone(item)
 
-  const timeBarColor = timeBarPct > 50 ? '#51CF66' : timeBarPct > 25 ? '#FFD43B' : '#FF6464'
+  // Which zone to highlight in the Venn diagram
+  const vennHighlight: Zone | null = answered ? correctZone : null
 
   return (
     <div className="min-h-screen" style={{ background: PURPLE }}>
       <canvas ref={canvasRef} className="fixed inset-0 pointer-events-none z-50"/>
       <div className="max-w-md mx-auto px-4 pb-8">
         <div className="sticky top-0 z-10 py-3" style={{ background: PURPLE }}>
-          <div className="flex items-center justify-between mb-2">
-            <button onClick={() => { stopTimer(); setView('menu') }} className="text-white font-bold text-sm">← やめる</button>
-            <span className="text-white font-black text-sm">{qIdx + 1}/{items.length}</span>
+          <div className="flex items-center justify-between">
+            <button onClick={() => { if (timerRef.current) clearTimeout(timerRef.current); setView('menu') }} className="text-white font-bold text-sm">← やめる</button>
+            <span className="text-white font-black text-sm">{qIdx + 1}/{items.length}もん</span>
             <span className="text-white font-black text-sm">⭐ {score}</span>
-          </div>
-          <div className="h-2.5 bg-white/30 rounded-full overflow-hidden">
-            <div className="h-full rounded-full transition-none" style={{ width: `${timeBarPct}%`, background: timeBarColor }}/>
           </div>
           {combo >= 2 && <div className="text-center mt-1"><span className="bg-yellow-400 text-yellow-900 text-xs font-black px-3 py-0.5 rounded-full">🔥 {combo}コンボ！</span></div>}
         </div>
 
         {/* Item card */}
-        <div className="bg-white rounded-3xl p-6 mb-4 text-center shadow-xl">
+        <div className="bg-white rounded-3xl p-5 mb-3 text-center shadow-xl">
           <div className="text-7xl mb-2">{item.emoji}</div>
           <div className="font-black text-2xl text-gray-800">{item.name}</div>
+          <p className="text-xs text-gray-400 mt-1">どのなかまに はいるかな？</p>
         </div>
 
-        {/* Venn diagram legend */}
-        <div className="flex justify-center gap-4 mb-3 text-sm font-black">
-          <span style={{ color: stage.leftAttr.color }}>● {stage.leftAttr.label}</span>
-          <span style={{ color: stage.rightAttr.color }}>● {stage.rightAttr.label}</span>
+        {/* Venn diagram */}
+        <div className="bg-white/90 rounded-2xl p-3 mb-3 flex flex-col items-center shadow">
+          <p className="text-xs font-black text-gray-500 mb-1">ベン図でかくにんしよう</p>
+          <VennDiagram stage={stage} highlightZone={vennHighlight} />
         </div>
 
-        {/* Zone buttons */}
+        {/* Zone buttons — 2×2 grid matching Venn zones */}
         <div className="grid grid-cols-2 gap-3 mb-3">
           {(['left', 'both', 'right', 'neither'] as Zone[]).map(zone => {
             const isCor = answered && zone === correctZone
             const isWrong = answered && zone === chosenZone && zone !== correctZone
-            const isTimeout = answered && timeoutMode && zone === correctZone
             let label = ''
             if (zone === 'left')    label = `${stage.leftAttr.label}だけ`
             if (zone === 'both')    label = `りょうほう`
@@ -360,7 +407,7 @@ export default function YoujiZokuseiPage() {
             return (
               <button key={zone} onClick={() => handleAnswer(zone)} disabled={answered}
                 className={`py-4 px-2 rounded-2xl font-black text-sm shadow-md transition-all hover:-translate-y-0.5 disabled:cursor-default leading-tight
-                  ${isCor || isTimeout ? 'bg-green-200 border-2 border-green-500' : isWrong ? 'bg-red-200 border-2 border-red-400' : 'bg-white'}`}>
+                  ${isCor ? 'bg-green-200 border-2 border-green-500' : isWrong ? 'bg-red-200 border-2 border-red-400' : 'bg-white'}`}>
                 {zone === 'both' && <div className="text-xs font-bold mb-1">
                   <span style={{ color: stage.leftAttr.color }}>●</span>{' & '}<span style={{ color: stage.rightAttr.color }}>●</span>
                 </div>}
@@ -368,19 +415,17 @@ export default function YoujiZokuseiPage() {
                 {zone === 'right' && <div className="text-xs font-bold mb-1"><span style={{ color: stage.rightAttr.color }}>●</span> のみ</div>}
                 {zone === 'neither' && <div className="text-xs mb-1">–</div>}
                 {label}
-                {isCor || isTimeout ? ' ✓' : ''}{isWrong ? ' ✗' : ''}
+                {isCor ? ' ✓' : ''}{isWrong ? ' ✗' : ''}
               </button>
             )
           })}
         </div>
 
         {answered && (
-          <div className={`rounded-2xl p-3 text-center font-black ${timeoutMode ? 'bg-gray-100 text-gray-600' : chosenZone === correctZone ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-            {timeoutMode
-              ? `💨 おちちゃった！ こたえは「${zoneDesc(correctZone, stage)}」だよ！`
-              : chosenZone === correctZone
-                ? '⭕ せいかい！'
-                : `❌ ちがうよ！ こたえは「${zoneDesc(correctZone, stage)}」だよ！`}
+          <div className={`rounded-2xl p-3 text-center font-black ${chosenZone === correctZone ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {chosenZone === correctZone
+              ? `⭕ せいかい！ 「${zoneDesc(correctZone, stage)}」だね！`
+              : `❌ ちがうよ！ こたえは「${zoneDesc(correctZone, stage)}」だよ！ ベン図をみてね 👆`}
           </div>
         )}
       </div>

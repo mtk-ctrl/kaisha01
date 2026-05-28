@@ -64,10 +64,11 @@ const APPS: {
   badge: string; audience: AppAudience; targetAge: string; guestAccess: boolean
 }[] = [
   // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
+  { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'ふしぎ探検',         audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
   { id: 'juku',         name: '中学受験 算数①',  emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '12単元｜図で考える', audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
   { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
-  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
-  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'shougakusei',   targetAge: '小4〜中3', guestAccess: false },
+  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',     badge: 'タイムアタック',     audience: 'shougakusei',   targetAge: '小2〜小6', guestAccess: true  },
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',    badge: `${TOTALS.KANJI}字`,  audience: 'shougakusei',   targetAge: '小1〜小6', guestAccess: true  },
   { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',    badge: '分・時間計算',       audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: false },
@@ -471,7 +472,7 @@ function HomeTab({ profile, stats, userType }: {
         </>
       )}
       {/* 中学受験セクション */}
-      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜中3｜図・絵・表で考える算数" />
+      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜中3｜算数・国語 入試対策" />
       {chuugakujukenApps.length > 0 && (
         <div className="grid grid-cols-2 gap-3">
           {chuugakujukenApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
