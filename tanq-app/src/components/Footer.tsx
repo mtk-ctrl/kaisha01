@@ -18,7 +18,6 @@ function LogoMark({ size = 28 }: { size?: number }) {
 
 const footerLinks = [
   { href: '/lab',      label: 'アプリ' },
-  { href: '/tanq',     label: 'TANQ理科' },
   { href: '/pricing',  label: '料金' },
   { href: '/register', label: '登録' },
   { href: '/login',    label: 'ログイン' },
