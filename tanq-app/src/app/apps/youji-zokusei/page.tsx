@@ -209,6 +209,11 @@ function VennDiagram({ stage, highlightZone }: { stage: Stage; highlightZone: Zo
   )
 }
 
+function isTester(): boolean {
+  if (typeof window === 'undefined') return false
+  return localStorage.getItem('tanq-lab-auth') === 'tester'
+}
+
 export default function YoujiZokuseiPage() {
   const [view, setView]               = useState<View>('menu')
   const [records, setRecords]         = useState<Records>({})
@@ -336,8 +341,8 @@ export default function YoujiZokuseiPage() {
           <div className="space-y-3">
             {STAGES.map((stage, i) => {
               const rec = records[i]
-              // アンロック：ステージ0は常に開放、それ以降は1つ前をプレイ済みなら開放
-              const unlocked = i === 0 || played.has(i - 1)
+              // アンロック：ステージ0は常に開放、テスターは全解放、それ以外は1つ前をプレイ済みなら開放
+              const unlocked = i === 0 || isTester() || played.has(i - 1)
               return (
                 <button key={stage.id}
                   onClick={() => unlocked && startStage(i)}

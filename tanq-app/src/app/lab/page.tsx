@@ -270,12 +270,13 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
 // ─────────────────────────────────────────
 // HomeTab — sticker style
 // ─────────────────────────────────────────
-function HomeTab({ profile, stats, userType }: {
+function HomeTab({ profile, stats, userType, onTabChange }: {
   profile: Profile
   stats: NonNullable<ReturnType<typeof computeStats>>
   userType: UserType
+  onTabChange: (t: Tab) => void
 }) {
-  const totalMastered = stats.kanjiMastered + stats.engMastered
+  const totalCleared = stats.kanjiMastered + stats.engMastered + stats.zokuseiStages + stats.codingCleared
   const totalLearning = stats.kanjiLearning + stats.engLearning
   const appStats: Record<string, { mastered: number; total: number }> = {
     kanji: { mastered: stats.kanjiMastered, total: stats.kanjiTotal },
@@ -382,14 +383,16 @@ function HomeTab({ profile, stats, userType }: {
         <div className="flex gap-3">
           {[
             { num: stats.streak, label: 'れんぞく日', bg: '#FFE3EE', numColor: '#FF6F9C' },
-            { num: totalMastered, label: 'マスター', bg: '#DBF6F0', numColor: '#2BA39A' },
+            { num: totalCleared, label: 'クリア', bg: '#DBF6F0', numColor: '#2BA39A' },
             { num: totalLearning, label: '学習中', bg: '#FFF1B8', numColor: '#C99700' },
           ].map(({ num, label, bg, numColor }) => (
-            <div key={label} className="rounded-2xl px-3 py-2 text-center min-w-[72px]"
+            <button key={label}
+              onClick={() => onTabChange('records')}
+              className="rounded-2xl px-3 py-2 text-center min-w-[72px] transition-all hover:-translate-y-0.5 active:translate-y-0"
               style={{ background: bg, border: '2.5px solid #3A2E2A' }}>
               <div className="font-black text-xl leading-none" style={{ color: numColor, fontFamily: 'var(--font-zen)' }}>{num}</div>
               <div className="text-[10px] font-bold mt-1" style={{ color: '#6B5A52' }}>{label}</div>
-            </div>
+            </button>
           ))}
         </div>
       </div>
@@ -605,8 +608,9 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
   ]
   const zokuseiiBadges = [
     { emoji: '🃏', label: 'はじめての\n一歩', color: '#a855f7', earned: stats.zokuseiStages >= 1 },
-    { emoji: '⭐', label: '2ステージ', color: '#f59e0b', earned: stats.zokuseiStages >= 2 },
-    { emoji: '🏆', label: 'ぜんぶ\nクリア', color: '#7c3aed', earned: stats.zokuseiStages >= 3 },
+    { emoji: '⭐', label: '3ステージ', color: '#f59e0b', earned: stats.zokuseiStages >= 3 },
+    { emoji: '🔬', label: 'サイエンス\nクリア', color: '#1c7ed6', earned: stats.zokuseiStages >= 5 },
+    { emoji: '🏆', label: 'ぜんぶ\nクリア', color: '#7c3aed', earned: stats.zokuseiStages >= 6 },
   ]
 
   const allBadges = [...kanjiBadges, ...engBadges, ...wmBadges, ...scienceBadges, ...codingBadges, ...mathBadges, ...clockBadges, ...shapesBadges, ...hiraganaBadges, ...juucombosBadges, ...mathYoujiBadges, ...iroBadges, ...youjiKanjiBadges, ...kukuBadges, ...clockYoujiBadges, ...zokuseiiBadges]
@@ -1092,7 +1096,7 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
           </div>
           {hasZokusei && (
             <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
-              <span>🏁 {stats.zokuseiStages}/3ステージ クリア</span>
+              <span>🏁 {stats.zokuseiStages}/6ステージ クリア</span>
               <span>{'⭐'.repeat(Math.min(stats.zokuseiMaxStars, 3))}{'☆'.repeat(Math.max(0, 3 - stats.zokuseiMaxStars))}</span>
             </div>
           )}
@@ -1292,7 +1296,7 @@ function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => vo
         </div>
 
         {/* Tab content */}
-        {tab === 'home' && stats && <HomeTab profile={profile} stats={stats} userType={userType} />}
+        {tab === 'home' && stats && <HomeTab profile={profile} stats={stats} userType={userType} onTabChange={setTab} />}
         {tab === 'records' && stats && <RecordsTab stats={stats} />}
         {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} userType={userType} onLogout={onLogout} />}
 
