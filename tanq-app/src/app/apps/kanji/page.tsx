@@ -139,7 +139,9 @@ function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
   return { store: newStore, change }
 }
 
-type Phase = 'home' | 'playing' | 'result'
+type Phase = 'home' | 'playing' | 'result' | 'overview'
+
+const GRADES_ORDER: Grade[] = ['小1', '小2', '小3', '小4', '小5', '小6']
 
 function isGuestUser(): boolean {
   if (typeof window === 'undefined') return false
@@ -154,6 +156,7 @@ export default function KanjiQuiz() {
   const [mode, setMode] = useState<'normal' | 'weak'>('normal')
   const [store, setStore] = useState<SRSStore>({})
   const [streak, setStreak] = useState(0)
+  const [detailItem, setDetailItem] = useState<{ item: KanjiEntry; grade: Grade } | null>(null)
 
   const [questions, setQuestions] = useState<Question[]>([])
   const [qIdx, setQIdx] = useState(0)
@@ -327,6 +330,11 @@ export default function KanjiQuiz() {
           {mode === 'normal' ? 'バランスよく新しい漢字と復習を混ぜて出題' : '間違えた漢字・学習中の漢字を集中して出題'}
         </p>
 
+        <button onClick={() => setPhase('overview')}
+          className="w-full max-w-sm py-3 rounded-xl font-bold text-sm border border-white/15 text-[#8892b0] hover:text-[#c4a8ff] hover:border-[#c4a8ff]/30 transition-all mb-3">
+          🗾 全漢字マップを見る
+        </button>
+
         <button onClick={() => startGame(grade, mode)}
           className="w-full max-w-sm py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.02] active:scale-[0.99]"
           style={{ background: color, boxShadow: `0 0 30px ${color}50` }}>
@@ -400,6 +408,125 @@ export default function KanjiQuiz() {
           </button>
           <Link href="/lab" className="w-full py-4 rounded-2xl font-bold text-base border border-white/10 text-[#8892b0] hover:text-[#c4a8ff] transition-all text-center">ラボに戻る</Link>
         </div>
+      </div>
+    )
+  }
+
+  // ── OVERVIEW ──
+  if (phase === 'overview') {
+    const totalMastered = GRADES_ORDER.reduce((sum, g) => sum + gradeStats(g, store).mastered, 0)
+    const totalKanji = GRADES_ORDER.reduce((sum, g) => sum + KANJI_DATA[g].length, 0)
+    return (
+      <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans">
+        {/* Header */}
+        <div className="sticky top-0 bg-[#071628]/95 backdrop-blur-sm z-20 px-5 py-4 border-b border-white/10">
+          <button onClick={() => setPhase('home')} className="text-[#8892b0] hover:text-white text-sm transition-colors">← ホームに戻る</button>
+          <div className="mt-1 flex items-baseline gap-2">
+            <h1 className="text-lg font-black text-[#c4a8ff]">🗾 全漢字マップ</h1>
+            <span className="text-xs text-[#8892b0]">{totalMastered}/{totalKanji}字 習得済み</span>
+          </div>
+        </div>
+
+        {/* Scrollable grade sections */}
+        <div className="px-4 py-5 pb-24 space-y-7">
+          {GRADES_ORDER.map(g => {
+            const gs = gradeStats(g, store)
+            const pct = gs.total > 0 ? Math.round((gs.mastered / gs.total) * 100) : 0
+            const gColor = GRADE_COLORS[g]
+            return (
+              <div key={g}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="font-black text-sm" style={{ color: gColor }}>{g}</span>
+                  <span className="text-[10px] text-[#8892b0]">⭐ {gs.mastered}/{gs.total}字</span>
+                </div>
+                <div className="h-1.5 bg-white/10 rounded-full overflow-hidden mb-2.5">
+                  <div className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%`, background: gColor }} />
+                </div>
+                <div className="grid gap-1.5" style={{ gridTemplateColumns: 'repeat(8, 1fr)' }}>
+                  {KANJI_DATA[g].map(item => {
+                    const s = store[item.kanji]
+                    const b = s?.b ?? 0
+                    let cellStyle: React.CSSProperties
+                    if (b === 2) {
+                      cellStyle = { background: `${gColor}30`, border: `1.5px solid ${gColor}`, color: gColor }
+                    } else if (b === 1) {
+                      cellStyle = { background: `${gColor}12`, border: `1.5px solid ${gColor}50`, color: '#a0b0cc' }
+                    } else {
+                      cellStyle = { background: 'rgba(255,255,255,0.04)', border: '1.5px solid rgba(255,255,255,0.08)', color: '#3a4a5c' }
+                    }
+                    return (
+                      <button key={item.kanji} onClick={() => setDetailItem({ item, grade: g })}
+                        className="relative aspect-square rounded-lg flex items-center justify-center text-sm font-bold transition-all active:scale-90"
+                        style={cellStyle}>
+                        {item.kanji}
+                        {b === 2 && <span className="absolute -top-1 -right-1 text-[9px] leading-none">⭐</span>}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Detail modal */}
+        {detailItem && (() => {
+          const { item, grade: dGrade } = detailItem
+          const dColor = GRADE_COLORS[dGrade]
+          const s = store[item.kanji]
+          const b = s?.b ?? 0
+          const statusLabel = b === 2 ? '⭐ 習得済み' : b === 1 ? '📚 学習中' : '🆕 未学習'
+          const statusColor = b === 2 ? '#f0c040' : b === 1 ? '#60a5fa' : '#8892b0'
+          return (
+            <div className="fixed inset-0 bg-black/75 z-50 flex items-end sm:items-center justify-center"
+              onClick={() => setDetailItem(null)}>
+              <div className="bg-[#0d1e38] rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-sm border border-white/15 shadow-2xl"
+                onClick={e => e.stopPropagation()}>
+                <div className="text-center mb-5">
+                  <div className="text-[6rem] font-black leading-none mb-2" style={{ color: dColor }}>
+                    {item.kanji}
+                  </div>
+                  <div className="flex items-baseline justify-center mb-3">
+                    <span className="text-2xl font-black" style={{ color: dColor }}>{item.reading}</span>
+                    {item.okurigana && (
+                      <span className="text-lg font-bold text-[#8892b0]">{item.okurigana}</span>
+                    )}
+                  </div>
+                  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold"
+                    style={{ background: `${statusColor}20`, color: statusColor, border: `1px solid ${statusColor}40` }}>
+                    {statusLabel}
+                  </span>
+                </div>
+                <div className="bg-white/5 rounded-2xl p-4 mb-4 space-y-3 text-sm">
+                  <div>
+                    <p className="text-[#8892b0] text-[10px] uppercase tracking-wide mb-0.5">意味</p>
+                    <p className="text-[#e8f0fe] font-bold">{item.meaning}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#8892b0] text-[10px] uppercase tracking-wide mb-0.5">例文</p>
+                    <p style={{ color: `${dColor}cc` }}>{item.example}</p>
+                  </div>
+                  <div>
+                    <p className="text-[#8892b0] text-[10px] uppercase tracking-wide mb-0.5">覚え方のヒント</p>
+                    <p className="text-[#e8f0fe] leading-relaxed">{item.tip}</p>
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setDetailItem(null)}
+                    className="flex-1 py-3 rounded-xl font-bold text-sm border border-white/20 text-[#8892b0] hover:text-white transition-all">
+                    閉じる
+                  </button>
+                  <button onClick={() => { setDetailItem(null); startGame(dGrade, 'normal') }}
+                    className="flex-1 py-3 rounded-xl font-black text-sm text-[#050b14] transition-all hover:scale-[1.02]"
+                    style={{ background: dColor }}>
+                    この学年を練習 →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
       </div>
     )
   }
