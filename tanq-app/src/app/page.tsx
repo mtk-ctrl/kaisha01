@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 const APPS = [
   { emoji: '🧩', name: 'かんがえるちからジム', target: '小4〜小6', badge: '100問', bg: '#FFE3EE', rot: '-1deg' },
-  { emoji: '📖', name: 'かんじマスター',        target: '小1〜小6', badge: '944字', bg: '#DBF6F0', rot: '1.5deg' },
+  { emoji: '📖', name: 'かんじマスター',        target: '小1〜小6', badge: '1021字', bg: '#DBF6F0', rot: '1.5deg' },
   { emoji: '🌍', name: 'えいごボキャブラリー',  target: '小3〜小6', badge: '275語', bg: '#FFF6E5', rot: '-0.8deg' },
   { emoji: '🔢', name: 'けいさんチャレンジ',    target: '小2〜小6', badge: '∞もん', bg: '#EFE8FF', rot: '1.2deg' },
   { emoji: '📐', name: 'さんすうぶんしょうだい', target: '小1〜小3', badge: '立式',  bg: '#FFE3EE', rot: '-1.5deg' },
@@ -137,7 +137,7 @@ const COMPANY_INFO = [
 
 const STATS = [
   { num: '8', sub: '+', label: 'アプリ' },
-  { num: '944', sub: '字', label: 'かんじ' },
+  { num: '1021', sub: '字', label: 'かんじ' },
   { num: '25', sub: 'こ', label: 'バッジ' },
   { num: '5', sub: 'ふん', label: 'まいにち' },
 ]
