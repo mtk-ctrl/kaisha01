@@ -14,6 +14,25 @@ const GUEST_VALUE = 'guest'
 const TESTER_VALUE = 'tester'
 const MEMBER_VALUE = 'member'
 const PROFILE_KEY = 'tanq_profile_v1'
+const SECTION_ORDER_KEY = 'tanq-section-order'
+type SectionId = 'youji' | 'shougakusei' | 'chuugakujuken'
+const DEFAULT_SECTION_ORDER: SectionId[] = ['youji', 'shougakusei', 'chuugakujuken']
+
+function loadSectionOrder(): SectionId[] {
+  if (typeof window === 'undefined') return DEFAULT_SECTION_ORDER
+  try {
+    const stored = localStorage.getItem(SECTION_ORDER_KEY)
+    if (!stored) return DEFAULT_SECTION_ORDER
+    const parsed = JSON.parse(stored)
+    if (Array.isArray(parsed) && parsed.length === 3) return parsed as SectionId[]
+    return DEFAULT_SECTION_ORDER
+  } catch { return DEFAULT_SECTION_ORDER }
+}
+
+function saveSectionOrder(order: SectionId[]) {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(SECTION_ORDER_KEY, JSON.stringify(order))
+}
 
 type UserType = 'guest' | 'tester' | 'member'
 
@@ -108,41 +127,6 @@ const CARD_COLORS = [
 
 function getCardColor(index: number): string {
   return CARD_COLORS[index % CARD_COLORS.length]
-}
-
-function getTodayRecommendations(
-  profile: Profile,
-  userType: UserType,
-  stats: ReturnType<typeof computeStats> | NonNullable<ReturnType<typeof computeStats>>,
-): { app: typeof APPS[number]; prog: number; desc: string }[] {
-  if (profile.grade === '幼稚園') {
-    return [
-      { app: APPS.find(a => a.id === 'thinking-youji')!, prog: 0, desc: 'Lv1・Lv2が むりょうで たいけんできるよ' },
-      { app: APPS.find(a => a.id === 'youji-math')!, prog: 0, desc: 'たべものと かずあそび' },
-    ]
-  }
-  if (userType === 'guest') {
-    return [
-      { app: APPS.find(a => a.id === 'thinking')!, prog: 0, desc: 'Lv1・Lv2が体験できます' },
-      {
-        app: APPS.find(a => a.id === 'kanji')!,
-        prog: stats && stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
-        desc: stats ? `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` : '0/0字 習得',
-      },
-    ]
-  }
-  return [
-    {
-      app: APPS.find(a => a.id === 'kanji')!,
-      prog: stats && stats.kanjiTotal > 0 ? Math.round(stats.kanjiMastered / stats.kanjiTotal * 100) : 0,
-      desc: stats ? `${stats.kanjiMastered}/${stats.kanjiTotal}字 習得` : '0/0字 習得',
-    },
-    {
-      app: APPS.find(a => a.id === 'english')!,
-      prog: stats && stats.engTotal > 0 ? Math.round(stats.engMastered / stats.engTotal * 100) : 0,
-      desc: stats ? `${stats.engMastered}/${stats.engTotal}語 習得` : '0/0語 習得',
-    },
-  ]
 }
 
 type Tab = 'home' | 'records' | 'settings'
@@ -272,11 +256,12 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
 // ─────────────────────────────────────────
 // HomeTab — sticker style
 // ─────────────────────────────────────────
-function HomeTab({ profile, stats, userType, onTabChange }: {
+function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
   profile: Profile
   stats: NonNullable<ReturnType<typeof computeStats>>
   userType: UserType
   onTabChange: (t: Tab) => void
+  sectionOrder: SectionId[]
 }) {
   const totalCleared = stats.kanjiMastered + stats.engMastered + stats.zokuseiStages + stats.codingCleared
   const totalLearning = stats.kanjiLearning + stats.engLearning
@@ -364,10 +349,6 @@ function HomeTab({ profile, stats, userType, onTabChange }: {
   const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
   const youjiApps = APPS.filter(a => a.audience === 'youji')
   const chuugakujukenApps = APPS.filter(a => a.audience === 'chuugakujuken')
-  const isYoujiProfile = profile.grade === '幼稚園'
-
-  // Recommendation cards
-  const recs = getTodayRecommendations(profile, userType, stats)
 
   return (
     <div className="px-4 pb-4 pt-4">
@@ -421,68 +402,34 @@ function HomeTab({ profile, stats, userType, onTabChange }: {
         </div>
       )}
 
-      {/* Today's recommendation */}
-      <div className="mb-5">
-        <div className="flex items-baseline justify-between gap-3 mb-3">
-          <h3 className="font-black text-xl flex items-center gap-2" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
-            <span className="text-2xl">⭐</span>まずここから
-          </h3>
-          <p className="text-xs font-bold" style={{ color: '#6B5A52' }}>えらんだ {recs.length}つのアプリ</p>
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {recs.map(({ app, prog, desc }, i) => {
-            const bgColor = i === 0 ? 'bg-[#DBF6F0]' : 'bg-[#EFE8FF]'
-            const cardContent = (
-              <>
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 text-2xl"
-                  style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A', transform: 'rotate(-3deg)' }}>
-                  {app.emoji}
-                </div>
-                <div className="font-black text-sm leading-tight mb-0.5" style={{ color: '#3A2E2A' }}>{app.name}</div>
-                <div className="text-[10px] font-bold mb-2" style={{ color: '#6B5A52' }}>{desc}</div>
-                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.15)' }}>
-                  <div className="h-full rounded-full" style={{ width: `${prog}%`, background: app.color }} />
-                </div>
-              </>
-            )
-            const cls = `block rounded-[22px] p-4 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 ${bgColor}`
-            const sty = { border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', textDecoration: 'none' }
-            return <Link key={app.id} href={app.url} className={cls} style={sty}>{cardContent}</Link>
-          })}
-        </div>
-      </div>
-
       {/* All apps sections */}
-      {isYoujiProfile ? (
-        <>
-          <SectionLabel emoji="🌱" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
-          <div className="grid grid-cols-2 gap-3 mb-2">
-            {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
-          </div>
-          <SectionLabel emoji="📘" label="小学生（小1〜小6）" sub="6〜12才｜学年別カリキュラム" />
-          <div className="grid grid-cols-2 gap-3 mb-2">
-            {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
-          </div>
-        </>
-      ) : (
-        <>
-          <SectionLabel emoji="📘" label="小学生（小1〜小6）" sub="6〜12才｜学年別カリキュラム" />
-          <div className="grid grid-cols-2 gap-3 mb-2">
-            {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
-          </div>
-          <SectionLabel emoji="🌱" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
-          <div className="grid grid-cols-2 gap-3 mb-2">
-            {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
-          </div>
-        </>
-      )}
-      {/* 中学受験セクション */}
-      <SectionLabel emoji="🏆" label="中学受験" sub="小4〜中3｜算数・国語 入試対策" />
-      {chuugakujukenApps.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
-          {chuugakujukenApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
-        </div>
-      )}
+      {sectionOrder.map(sectionId => {
+        if (sectionId === 'youji') return (
+          <React.Fragment key="youji">
+            <SectionLabel emoji="🌱" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
+            </div>
+          </React.Fragment>
+        )
+        if (sectionId === 'shougakusei') return (
+          <React.Fragment key="shougakusei">
+            <SectionLabel emoji="📘" label="小学生（小1〜小6）" sub="6〜12才｜学年別カリキュラム" />
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
+            </div>
+          </React.Fragment>
+        )
+        if (sectionId === 'chuugakujuken') return (
+          <React.Fragment key="chuugakujuken">
+            <SectionLabel emoji="🏆" label="中学受験" sub="小4〜中3｜算数・国語 入試対策" />
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              {chuugakujukenApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
+            </div>
+          </React.Fragment>
+        )
+        return null
+      })}
     </div>
   )
 }
@@ -1154,7 +1101,7 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
 // ─────────────────────────────────────────
 // SettingsTab — sticker style
 // ─────────────────────────────────────────
-function SettingsTab({ profile, onSave, userType, onLogout }: { profile: Profile; onSave: (p: Profile) => void; userType: UserType; onLogout: () => void }) {
+function SettingsTab({ profile, onSave, userType, onLogout, sectionOrder, onSectionOrderChange }: { profile: Profile; onSave: (p: Profile) => void; userType: UserType; onLogout: () => void; sectionOrder: SectionId[]; onSectionOrderChange: (order: SectionId[]) => void }) {
   const [draft, setDraft] = useState(profile)
   const [saved, setSaved] = useState(false)
 
@@ -1206,7 +1153,7 @@ function SettingsTab({ profile, onSave, userType, onLogout }: { profile: Profile
       </div>
 
       {/* Grade */}
-      <div className="mb-8">
+      <div className="mb-4">
         <label className="block text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#6B5A52' }}>学年</label>
         <div className="grid grid-cols-3 gap-2">
           {GRADES.map((g) => (
@@ -1218,6 +1165,54 @@ function SettingsTab({ profile, onSave, userType, onLogout }: { profile: Profile
               {g}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Section order */}
+      <div className="rounded-[22px] p-5 mb-6" style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+        <label className="block text-xs font-black uppercase tracking-wider mb-3" style={{ color: '#6B5A52' }}>アプリの並び順</label>
+        <div className="flex flex-col gap-2">
+          {sectionOrder.map((id, idx) => {
+            const sectionMeta: Record<SectionId, { emoji: string; label: string }> = {
+              youji: { emoji: '🌱', label: '就学前（幼稚園）' },
+              shougakusei: { emoji: '📘', label: '小学生' },
+              chuugakujuken: { emoji: '🏆', label: '中学受験' },
+            }
+            const { emoji, label } = sectionMeta[id]
+            return (
+              <div key={id} className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+                style={{ background: '#FFF6E5', border: '2px solid #3A2E2A' }}>
+                <span className="text-lg">{emoji}</span>
+                <span className="flex-1 font-black text-sm" style={{ color: '#3A2E2A' }}>{label}</span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => {
+                      if (idx === 0) return
+                      const next = [...sectionOrder]
+                      ;[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
+                      onSectionOrderChange(next)
+                    }}
+                    disabled={idx === 0}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs transition-all"
+                    style={{ background: idx === 0 ? '#E8E0D8' : '#FFC83D', border: '2px solid #3A2E2A', color: '#3A2E2A', opacity: idx === 0 ? 0.4 : 1 }}>
+                    ▲
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (idx === sectionOrder.length - 1) return
+                      const next = [...sectionOrder]
+                      ;[next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
+                      onSectionOrderChange(next)
+                    }}
+                    disabled={idx === sectionOrder.length - 1}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs transition-all"
+                    style={{ background: idx === sectionOrder.length - 1 ? '#E8E0D8' : '#FFC83D', border: '2px solid #3A2E2A', color: '#3A2E2A', opacity: idx === sectionOrder.length - 1 ? 0.4 : 1 }}>
+                    ▼
+                  </button>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -1257,11 +1252,20 @@ function SettingsTab({ profile, onSave, userType, onLogout }: { profile: Profile
 // ─────────────────────────────────────────
 // BottomNav — sticker style
 // ─────────────────────────────────────────
+function GearIcon({ color }: { color: string }) {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" fill={color} />
+      <path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.04 7.04 0 0 0-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.476.476 0 0 0-.59.22L2.74 8.87a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94l-2.03 1.58a.47.47 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.37 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.47.47 0 0 0-.12-.61l-2.01-1.58z" fill={color} />
+    </svg>
+  )
+}
+
 function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) {
-  const items: { id: Tab; label: string; icon: string }[] = [
-    { id: 'home', label: 'ホーム', icon: '🏠' },
-    { id: 'records', label: 'きろく', icon: '📊' },
-    { id: 'settings', label: 'せってい', icon: '⚙️' },
+  const items: { id: Tab; label: string; icon: (active: boolean) => React.ReactNode }[] = [
+    { id: 'home',     label: 'ホーム',   icon: () => <span className="text-xl leading-none">🏠</span> },
+    { id: 'records',  label: 'きろく',   icon: () => <span className="text-xl leading-none">📊</span> },
+    { id: 'settings', label: 'せってい', icon: (active) => <GearIcon color={active ? '#FF6F9C' : '#6B5A52'} /> },
   ]
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50"
@@ -1271,7 +1275,7 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
           <button key={id} onClick={() => onChange(id)}
             className="flex-1 flex flex-col items-center py-3 gap-1 transition-all"
             style={{ color: tab === id ? '#FF6F9C' : '#6B5A52' }}>
-            <span className="text-xl leading-none">{icon}</span>
+            {icon(tab === id)}
             <span className="text-[10px] font-black leading-none">{label}</span>
             {tab === id && (
               <div className="w-4 h-1 rounded-full mt-0.5" style={{ background: '#FF6F9C', border: '1.5px solid #3A2E2A' }} />
@@ -1289,10 +1293,12 @@ function BottomNav({ tab, onChange }: { tab: Tab; onChange: (t: Tab) => void }) 
 function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => void }) {
   const [tab, setTab] = useState<Tab>('home')
   const [profile, setProfile] = useState<Profile>(DEFAULT_PROFILE)
+  const [sectionOrder, setSectionOrder] = useState<SectionId[]>(DEFAULT_SECTION_ORDER)
   const { stats, refresh: refreshStats } = useStats()
 
   useEffect(() => {
     setProfile(loadProfile(userType))
+    setSectionOrder(loadSectionOrder())
     if (userType === 'member') {
       pullFromSupabase().then(() => refreshStats())
     } else {
@@ -1341,9 +1347,9 @@ function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => vo
         </div>
 
         {/* Tab content */}
-        {tab === 'home' && stats && <HomeTab profile={profile} stats={stats} userType={userType} onTabChange={setTab} />}
+        {tab === 'home' && stats && <HomeTab profile={profile} stats={stats} userType={userType} onTabChange={setTab} sectionOrder={sectionOrder} />}
         {tab === 'records' && stats && <RecordsTab stats={stats} />}
-        {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} userType={userType} onLogout={onLogout} />}
+        {tab === 'settings' && <SettingsTab profile={profile} onSave={(p) => { setProfile(p); saveProfile(p) }} userType={userType} onLogout={onLogout} sectionOrder={sectionOrder} onSectionOrderChange={(order) => { setSectionOrder(order); saveSectionOrder(order) }} />}
 
         <BottomNav tab={tab} onChange={setTab} />
       </div>
