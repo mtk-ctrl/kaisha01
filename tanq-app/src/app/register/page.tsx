@@ -8,19 +8,12 @@ import Footer from '@/components/Footer'
 import { createClient } from '@/lib/supabase/client'
 
 const GRADES = [
-  '小学1年生', '小学2年生', '小学3年生', '小学4年生',
-  '小学5年生', '小学6年生', '中学1年生', '中学2年生',
-  '中学3年生', '高校1年生', '高校2年生', '高校3年生',
-]
-
-const MODES = [
-  { id: 'spark',  label: 'Spark Mode',  emoji: '✨', desc: '遊び感覚で科学を発見',     color: '#FFC83D', bg: '#FFF1B8' },
-  { id: 'deep',   label: 'Deep Mode',   emoji: '🔬', desc: '本格的な科学的思考力',     color: '#4ECDC4', bg: '#DBF6F0' },
-  { id: 'wonder', label: 'Wonder Mode', emoji: '🌟', desc: 'はじめての探究体験',       color: '#B197FC', bg: '#EFE8FF' },
+  '幼稚園',
+  '小1', '小2', '小3', '小4', '小5', '小6',
+  '中1', '中2', '中3',
 ]
 
 export default function RegisterPage() {
-  const [selectedMode, setSelectedMode] = useState<string>('')
   const [submitted,    setSubmitted]    = useState(false)
   const [loading,      setLoading]      = useState(false)
   const [apiError,     setApiError]     = useState<string | null>(null)
@@ -49,7 +42,7 @@ export default function RegisterPage() {
           password: form.password,
           childName: form.childName,
           grade: form.grade,
-          mode: selectedMode || 'spark',
+          mode: 'spark',
         }),
       })
       const data = await res.json()
@@ -95,7 +88,7 @@ export default function RegisterPage() {
         </h1>
         <p className="text-base font-bold leading-relaxed" style={{ color: '#6B5A52', maxWidth: 480, margin: '0 auto' }}>
           メールアドレスだけで かんたん とうろく。<br />
-          ぜんアプリ 14日間 むりょうで ためせます。
+          テスト公開中 — いまは ぜんアプリ むりょうで あそべます！
         </p>
       </section>
 
@@ -159,7 +152,7 @@ export default function RegisterPage() {
 
                 <h2 className="text-2xl font-black text-center mb-2" style={{ fontFamily: 'var(--font-zen)' }}>むりょう とうろく</h2>
                 <p className="text-sm text-center font-bold mb-6 leading-relaxed" style={{ color: '#6B5A52' }}>
-                  ぜんアプリ 14日間 ためし放題。<br />
+                  テスト公開中 — ぜんアプリ むりょうで あそべます。<br />
                   クレジットカード <strong style={{ color: '#3A2E2A' }}>不要</strong>。
                 </p>
 
@@ -251,36 +244,10 @@ export default function RegisterPage() {
                       }}
                     >
                       <option value="" disabled>学年を選択</option>
-                      <option value="幼児">ようじ</option>
                       {GRADES.map((g) => (
                         <option key={g} value={g}>{g}</option>
                       ))}
                     </select>
-                  </div>
-
-                  {/* Mode selection */}
-                  <div>
-                    <label className="block text-xs font-black mb-2" style={{ color: '#3A2E2A' }}>
-                      興味のあるモード
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {MODES.map((mode) => (
-                        <button
-                          type="button"
-                          key={mode.id}
-                          onClick={() => setSelectedMode(mode.id)}
-                          className="rounded-2xl p-3 text-center transition-all hover:-translate-y-0.5"
-                          style={selectedMode === mode.id
-                            ? { background: mode.bg, border: `2.5px solid #3A2E2A`, boxShadow: '3px 3px 0 0 #3A2E2A' }
-                            : { background: '#FFF6E5', border: '2px solid #3A2E2A' }}>
-                          <div className="text-2xl mb-1">{mode.emoji}</div>
-                          <div className="text-[10px] font-black" style={{ color: selectedMode === mode.id ? '#3A2E2A' : '#6B5A52' }}>
-                            {mode.label}
-                          </div>
-                          <div className="text-[9px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>{mode.desc}</div>
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   {/* Terms checkbox */}
@@ -324,7 +291,7 @@ export default function RegisterPage() {
                 <div className="flex justify-center flex-wrap gap-3 mt-5">
                   {[
                     { icon: '🚫', label: '広告なし' },
-                    { icon: '✓', label: 'いつでも解約OK' },
+                    { icon: '🧪', label: 'テスト公開中・無料' },
                     { icon: '🔒', label: 'SSL暗号化' },
                   ].map(({ icon, label }) => (
                     <span key={label}
