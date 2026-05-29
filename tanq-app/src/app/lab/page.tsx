@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { TOTALS, computeStats } from '@/lib/stats'
 import { useStats } from '@/hooks/useStats'
 import { createClient } from '@/lib/supabase/client'
+import { pullFromSupabase, pushToSupabase } from '@/lib/learningSync'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -67,6 +68,7 @@ const APPS: {
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'ふしぎ探検',         audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
   { id: 'juku',         name: '中学受験 算数①',  emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '12単元｜図で考える', audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
   { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
+  { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `20レベル`,          audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
   { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',     badge: 'タイムアタック',     audience: 'shougakusei',   targetAge: '小2〜小6', guestAccess: true  },
@@ -1291,12 +1293,23 @@ function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => vo
 
   useEffect(() => {
     setProfile(loadProfile(userType))
-    refreshStats()
+    if (userType === 'member') {
+      pullFromSupabase().then(() => refreshStats())
+    } else {
+      refreshStats()
+    }
   }, [userType, refreshStats])
 
   useEffect(() => {
     if (tab === 'records' || tab === 'home') refreshStats()
   }, [tab, refreshStats])
+
+  useEffect(() => {
+    if (userType !== 'member') return
+    const handler = () => { pushToSupabase() }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [userType])
 
   return (
     <div className="min-h-screen font-sans"
@@ -1386,12 +1399,12 @@ export default function LabPage() {
     setUnlocked(true)
   }
 
-  function handleLogout() {
+  async function handleLogout() {
+    if (userType === 'member') await pushToSupabase()
     localStorage.removeItem(SESSION_KEY)
     localStorage.removeItem('tanq-tester-name')
     setUnlocked(false)
     setUserType('guest')
-    // テスターは /tester へ、それ以外は同ページ（PasswordGate を表示）
     if (userType === 'tester') {
       window.location.href = '/tester'
     }
