@@ -136,9 +136,9 @@ const COMPANY_INFO = [
 ]
 
 const STATS = [
-  { num: '8', sub: '+', label: 'アプリ' },
+  { num: '25', sub: '+', label: 'アプリ' },
   { num: '1026', sub: '字', label: 'かんじ' },
-  { num: '25', sub: 'こ', label: 'バッジ' },
+  { num: '50', sub: 'こ+', label: 'バッジ' },
   { num: '5', sub: 'ふん', label: 'まいにち' },
 ]
 
@@ -418,7 +418,7 @@ export default function HomePage() {
             APPS
           </div>
           <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(26px, 4vw, 42px)', color: 'var(--ink)', lineHeight: 1.2 }}>
-            8つの <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2px solid #3A2E2A' }}>まなびアプリ</span>
+            25本の <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2px solid #3A2E2A' }}>まなびアプリ</span>
           </h2>
           <p style={{ marginTop: '0.75rem', color: 'var(--ink-soft)', fontSize: 15 }}>
             すきなじゅんばんであそんでみよう。ぜんぶひとつのアカウントでつかえるよ。

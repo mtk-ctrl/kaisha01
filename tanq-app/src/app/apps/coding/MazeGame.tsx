@@ -333,7 +333,7 @@ function MazeGrid({
         display: 'grid',
         gridTemplateColumns: `repeat(${grid[0].length}, ${CELL}px)`,
         gap: '2px',
-        background: '#162d5a',
+        background: '#FFFFFF',
         padding: '4px',
       }}
     >
@@ -350,7 +350,7 @@ function MazeGrid({
               style={{
                 width: CELL,
                 height: CELL,
-                background: isWall ? '#0a1a38' : 'rgba(255,255,255,0.05)',
+                background: isWall ? '#D4C4B8' : 'rgba(58,46,42,0.06)',
                 fontSize: 26,
               }}
             >
@@ -447,15 +447,15 @@ function SequentialMazeGame({
   return (
     <div className="flex flex-col items-center w-full">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#0d2248]/90 backdrop-blur-sm z-10">
-        <button onClick={onQuit} className="text-[#94a3c4] hover:text-white text-sm transition-colors">← やめる</button>
-        <span className="text-sm font-bold text-[#4ade80]">もんだい {puzzleIdx + 1} / {total}</span>
-        <span className="text-sm font-bold text-[#4ade80]">せいかい: {score}</span>
+      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#FFF6E5]/90 backdrop-blur-sm z-10">
+        <button onClick={onQuit} className="text-[#6B5A52] hover:opacity-70 text-sm transition-colors">← やめる</button>
+        <span className="text-sm font-bold text-[#16a34a]">もんだい {puzzleIdx + 1} / {total}</span>
+        <span className="text-sm font-bold text-[#16a34a]">せいかい: {score}</span>
       </div>
 
       <div className="mt-16 mb-3 text-center">
-        <h2 className="text-lg font-black text-[#4ade80]">{puzzle.title}</h2>
-        <p className="text-[#94a3c4] text-xs mt-1">ヒント: {puzzle.hint}</p>
+        <h2 className="text-lg font-black text-[#16a34a]">{puzzle.title}</h2>
+        <p className="text-[#6B5A52] text-xs mt-1">ヒント: {puzzle.hint}</p>
       </div>
 
       <MazeGrid grid={puzzle.grid} robotPos={currentPos} />
@@ -464,7 +464,7 @@ function SequentialMazeGame({
       {result === 'correct' && (
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
-          <span className="text-[#4ade80] font-black text-lg">ゴール！すごい！</span>
+          <span className="text-[#16a34a] font-black text-lg">ゴール！すごい！</span>
         </div>
       )}
       {result === 'wrong' && (
@@ -516,7 +516,7 @@ function SequentialMazeGame({
               onClick={removeLastCmd}
               disabled={isRunning}
               className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all hover:opacity-80 disabled:opacity-40"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#94a3c4' }}
+              style={{ background: 'rgba(58,46,42,0.08)', border: '1px solid rgba(58,46,42,0.2)', color: '#6B5A52' }}
               title="さいごを消す"
             >
               ⌫ さいごを消す
@@ -531,8 +531,8 @@ function SequentialMazeGame({
           <button
             onClick={runProgram}
             disabled={isRunning}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02] disabled:opacity-50"
-            style={{ background: '#4ade80', boxShadow: '0 0 30px rgba(74,222,128,0.35)' }}
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] transition-all hover:scale-[1.02] disabled:opacity-50"
+            style={{ background: '#4ade80', boxShadow: '4px 4px 0 0 #3A2E2A', border: '2.5px solid #3A2E2A' }}
           >
             {isRunning ? '▶ じっこう中…' : '▶ じっこうする！'}
           </button>
@@ -540,7 +540,7 @@ function SequentialMazeGame({
         {result === 'correct' && (
           <button
             onClick={next}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] bg-[#4ade80] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] bg-[#4ade80] hover:scale-[1.02] transition-all"
           >
             {puzzleIdx + 1 < total ? '次のもんだい →' : '結果を見る！'}
           </button>
@@ -548,7 +548,7 @@ function SequentialMazeGame({
         {result === 'wrong' && (
           <button
             onClick={reset}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
             style={{ background: '#f0c040' }}
           >
             リセット
@@ -563,7 +563,7 @@ function SequentialMazeGame({
             <span
               key={i}
               className="w-7 h-7 flex items-center justify-center rounded-full text-sm font-black"
-              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#4ade80' : '#f87171', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
+              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#16a34a' : '#dc2626', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
             >
               {ok ? '○' : '×'}
             </span>
@@ -668,16 +668,16 @@ function LoopMazeGame({
   return (
     <div className="flex flex-col items-center w-full">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#0d2248]/90 backdrop-blur-sm z-10">
-        <button onClick={onQuit} className="text-[#94a3c4] hover:text-white text-sm transition-colors">← やめる</button>
-        <span className="text-sm font-bold text-[#4ade80]">もんだい {puzzleIdx + 1} / {total}</span>
-        <span className="text-sm font-bold text-[#4ade80]">せいかい: {score}</span>
+      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#FFF6E5]/90 backdrop-blur-sm z-10">
+        <button onClick={onQuit} className="text-[#6B5A52] hover:opacity-70 text-sm transition-colors">← やめる</button>
+        <span className="text-sm font-bold text-[#16a34a]">もんだい {puzzleIdx + 1} / {total}</span>
+        <span className="text-sm font-bold text-[#16a34a]">せいかい: {score}</span>
       </div>
 
       <div className="mt-16 mb-1 text-center">
-        <h2 className="text-lg font-black text-[#4ade80]">{puzzle.title}</h2>
-        <p className="text-[#94a3c4] text-xs mt-0.5">ヒント: {puzzle.hint}</p>
-        <p className="text-xs mt-1" style={{ color: cmds.length >= puzzle.commandLimit ? '#f87171' : '#94a3c4' }}>
+        <h2 className="text-lg font-black text-[#16a34a]">{puzzle.title}</h2>
+        <p className="text-[#6B5A52] text-xs mt-0.5">ヒント: {puzzle.hint}</p>
+        <p className="text-xs mt-1" style={{ color: cmds.length >= puzzle.commandLimit ? '#f87171' : '#6B5A52' }}>
           コマンド: {cmds.length} / {puzzle.commandLimit}
         </p>
       </div>
@@ -688,7 +688,7 @@ function LoopMazeGame({
       {result === 'correct' && (
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
-          <span className="text-[#4ade80] font-black text-lg">ゴール！すごい！</span>
+          <span className="text-[#16a34a] font-black text-lg">ゴール！すごい！</span>
         </div>
       )}
       {result === 'wrong' && (
@@ -722,7 +722,7 @@ function LoopMazeGame({
       {/* Count multiplier for last command */}
       {result === 'idle' && lastCmd && (
         <div className="mt-2 flex gap-2 items-center">
-          <span className="text-[#94a3c4] text-xs">×回数:</span>
+          <span className="text-[#6B5A52] text-xs">×回数:</span>
           {[1, 2, 3, 4, 5, 6].map((n) => (
             <button
               key={n}
@@ -731,7 +731,7 @@ function LoopMazeGame({
               className="w-8 h-8 rounded-lg font-black text-sm transition-all hover:scale-110 disabled:opacity-40"
               style={{
                 background: lastCmd.count === n ? DIR_COLORS[lastCmd.dir] : `${DIR_COLORS[lastCmd.dir]}33`,
-                color: lastCmd.count === n ? '#050b14' : DIR_COLORS[lastCmd.dir],
+                color: lastCmd.count === n ? '#3A2E2A' : DIR_COLORS[lastCmd.dir],
                 border: `1px solid ${DIR_COLORS[lastCmd.dir]}66`,
               }}
             >
@@ -762,7 +762,7 @@ function LoopMazeGame({
               onClick={removeLastCmd}
               disabled={isRunning}
               className="px-3 py-1.5 rounded-lg text-sm font-bold transition-all hover:opacity-80 disabled:opacity-40"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.2)', color: '#94a3c4' }}
+              style={{ background: 'rgba(58,46,42,0.08)', border: '1px solid rgba(58,46,42,0.2)', color: '#6B5A52' }}
             >
               ⌫ さいごを消す
             </button>
@@ -776,8 +776,8 @@ function LoopMazeGame({
           <button
             onClick={runProgram}
             disabled={isRunning}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02] disabled:opacity-50"
-            style={{ background: '#4ade80', boxShadow: '0 0 30px rgba(74,222,128,0.35)' }}
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] transition-all hover:scale-[1.02] disabled:opacity-50"
+            style={{ background: '#4ade80', boxShadow: '4px 4px 0 0 #3A2E2A', border: '2.5px solid #3A2E2A' }}
           >
             {isRunning ? '▶ じっこう中…' : '▶ じっこうする！'}
           </button>
@@ -785,7 +785,7 @@ function LoopMazeGame({
         {result === 'correct' && (
           <button
             onClick={next}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] bg-[#4ade80] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] bg-[#4ade80] hover:scale-[1.02] transition-all"
           >
             {puzzleIdx + 1 < total ? '次のもんだい →' : '結果を見る！'}
           </button>
@@ -793,7 +793,7 @@ function LoopMazeGame({
         {result === 'wrong' && (
           <button
             onClick={reset}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
             style={{ background: '#f0c040' }}
           >
             リセット
@@ -807,7 +807,7 @@ function LoopMazeGame({
             <span
               key={i}
               className="w-7 h-7 flex items-center justify-center rounded-full text-sm font-black"
-              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#4ade80' : '#f87171', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
+              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#16a34a' : '#dc2626', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
             >
               {ok ? '○' : '×'}
             </span>
