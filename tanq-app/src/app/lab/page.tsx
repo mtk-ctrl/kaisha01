@@ -423,9 +423,9 @@ function HomeTab({ profile, stats, userType, onTabChange }: {
       <div className="mb-5">
         <div className="flex items-baseline justify-between gap-3 mb-3">
           <h3 className="font-black text-xl flex items-center gap-2" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
-            <span className="text-2xl">⭐</span>きょうの おすすめ
+            <span className="text-2xl">⭐</span>まずここから
           </h3>
-          <p className="text-xs font-bold" style={{ color: '#6B5A52' }}>{profile.name} さんに ぴったりの {recs.length}つ</p>
+          <p className="text-xs font-bold" style={{ color: '#6B5A52' }}>えらんだ {recs.length}つのアプリ</p>
         </div>
         <div className="grid grid-cols-2 gap-3">
           {recs.map(({ app, prog, desc }, i) => {
@@ -637,6 +637,11 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
   const hasClockYouji = stats.clockYoujiLevels > 0
   const hasZokusei = stats.zokuseiStages > 0
 
+  const hasAny = hasKanji || hasEng || hasWm || hasScience || hasThinking || hasYouji ||
+    hasCoding || hasMath || hasClock || hasShapes || hasKatakana || hasAnimals ||
+    hasHiragana || hasJuucombo || hasMathYouji || hasIro || hasYoujiKanji || hasKuku ||
+    hasClockYouji || hasZokusei || stats.kokugoCleared > 0 || stats.kanyoCleared > 0 || stats.yojiCleared > 0
+
   return (
     <div className="px-4 pt-5 pb-6">
       <h2 className="font-black text-2xl mb-1" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>わたしの記録</h2>
@@ -661,39 +666,49 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
         </div>
       </div>
 
+      {!hasAny && (
+        <div className="rounded-[22px] p-6 text-center" style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+          <div className="text-4xl mb-3">🌱</div>
+          <p className="font-black text-sm mb-1" style={{ color: '#3A2E2A' }}>まだ記録がないよ</p>
+          <p className="text-xs" style={{ color: '#6B5A52' }}>アプリで遊ぶと、ここにあしあとが残るよ！</p>
+        </div>
+      )}
+
       <div className="space-y-3">
         {/* 漢字マスター */}
+        {hasKanji && (
         <RecordsAppCard bg="#EFE8FF">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">📖</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>漢字マスター</span>
-            {!hasKanji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasKanji && <SRSBar mastered={stats.kanjiMastered} total={stats.kanjiTotal} color="#B197FC" />}
           <div className="flex gap-2 flex-wrap mt-2">
             {kanjiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 英語 */}
+        {hasEng && (
         <RecordsAppCard bg="#FFD9D3">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">🌍</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>えいごボキャブラリー</span>
-            {!hasEng && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasEng && <SRSBar mastered={stats.engMastered} total={stats.engTotal} color="#F87171" />}
           <div className="flex gap-2 flex-wrap mt-2">
             {engBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 算数文章題 */}
+        {hasWm && (
         <RecordsAppCard bg="#FFF1B8">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">📐</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>さんすう文章題</span>
-            {!hasWm && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasWm && (
             <div className="space-y-1 mb-3">
@@ -716,13 +731,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {wmBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 理科クイズ */}
+        {hasScience && (
         <RecordsAppCard bg="#DFF6CF">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">⚗️</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>理科クイズ</span>
-            {!hasScience && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasScience && (
             <div className="space-y-1 mb-3">
@@ -744,13 +760,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {scienceBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 国語クイズ */}
+        {stats.kokugoCleared > 0 && (
         <RecordsAppCard bg="#EDE9FE">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">📖</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>国語クイズ</span>
-            {stats.kokugoCleared === 0 && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {stats.kokugoCleared > 0 && (
             <div className="space-y-1 mb-3">
@@ -773,13 +790,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             ].map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 慣用句クイズ */}
+        {stats.kanyoCleared > 0 && (
         <RecordsAppCard bg="#FFF1E6">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">🗣️</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>慣用句クイズ</span>
-            {stats.kanyoCleared === 0 && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {stats.kanyoCleared > 0 && (
             <div className="space-y-1 mb-3">
@@ -802,13 +820,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             ].map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 四字熟語クイズ */}
+        {stats.yojiCleared > 0 && (
         <RecordsAppCard bg="#EEF2FF">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">📝</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>四字熟語クイズ</span>
-            {stats.yojiCleared === 0 && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {stats.yojiCleared > 0 && (
             <div className="space-y-1 mb-3">
@@ -831,43 +850,42 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             ].map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* かんがえる力ジム */}
+        {hasThinking && (
         <RecordsAppCard bg="#D6ECFF">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🧩</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>かんがえる力ジム</span>
           </div>
-          {!hasThinking
-            ? <p className="text-[10px] font-bold" style={{ color: '#B0A49C' }}>まだやっていないよ</p>
-            : <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
+          <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
                 <span>🏁 Lv{stats.thinkingMaxLevel} まで クリア！</span>
                 <span>🏅 バッジ {stats.thinkingBadgeCount}こ</span>
               </div>
-          }
         </RecordsAppCard>
+        )}
 
         {/* ようちえんかんがえるジム */}
+        {hasYouji && (
         <RecordsAppCard bg="#FFE3EE">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🐰</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようちえんかんがえるジム</span>
           </div>
-          {!hasYouji
-            ? <p className="text-[10px] font-bold" style={{ color: '#B0A49C' }}>まだやっていないよ</p>
-            : <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
+          <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
                 <span>🏁 Lv{stats.youjiMaxLevel} まで クリア！</span>
                 <span>🏅 バッジ {stats.youjiBadgeCount}こ</span>
               </div>
-          }
         </RecordsAppCard>
+        )}
 
         {/* カタカナれんしゅう */}
+        {hasKatakana && (
         <RecordsAppCard bg="#F0E8FF">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🔡</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>カタカナ れんしゅう</span>
-            {!hasKatakana && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasKatakana && (
             <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
@@ -876,13 +894,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             </div>
           )}
         </RecordsAppCard>
+        )}
 
         {/* どうぶつさんすう */}
+        {hasAnimals && (
         <RecordsAppCard bg="#FFF0D6">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🐾</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>どうぶつ さんすう</span>
-            {!hasAnimals && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasAnimals && (
             <div className="flex items-center gap-3 text-sm font-black" style={{ color: '#3A2E2A' }}>
@@ -890,13 +909,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             </div>
           )}
         </RecordsAppCard>
+        )}
 
         {/* プログラミング */}
+        {hasCoding && (
         <RecordsAppCard bg="#DFF6CF">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">💻</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>プログラミング</span>
-            {!hasCoding && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasCoding && (
             <div className="mb-2">
@@ -913,13 +933,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {codingBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 計算チャレンジ */}
+        {hasMath && (
         <RecordsAppCard bg="#FFE0CC">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🔢</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>計算チャレンジ</span>
-            {!hasMath && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasMath && (
             <div className="flex gap-3 mb-2 text-[11px] font-bold" style={{ color: '#6B5A52' }}>
@@ -932,13 +953,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {mathBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 時計 */}
+        {hasClock && (
         <RecordsAppCard bg="#9DEDDE">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🕐</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>時計・時間計算</span>
-            {!hasClock && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasClock && (
             <div className="flex gap-3 mb-2 text-[11px] font-bold" style={{ color: '#6B5A52' }}>
@@ -951,13 +973,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {clockBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* 図形 */}
+        {hasShapes && (
         <RecordsAppCard bg="#E8F4FF">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🔷</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>図形トレーニング</span>
-            {!hasShapes && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasShapes && (
             <p className="text-[11px] font-bold mb-2" style={{ color: '#6B5A52' }}>さいこう: {stats.shapesBest}/15もん</p>
@@ -966,13 +989,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {shapesBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* ひらがなスペル */}
+        {hasHiragana && (
         <RecordsAppCard bg="#FFF0F8">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🔤</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ひらがな スペル</span>
-            {!hasHiragana && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasHiragana && (
             <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
@@ -984,13 +1008,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {hiraganaBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* じゅうコンボ */}
+        {hasJuucombo && (
         <RecordsAppCard bg="#F0FFF4">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🔟</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>じゅうコンボ</span>
-            {!hasJuucombo && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasJuucombo && (
             <p className="text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>⭐ さいこう {stats.juucombosBest}もん せいかい</p>
@@ -999,13 +1024,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {juucombosBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* ようじさんすう */}
+        {hasMathYouji && (
         <RecordsAppCard bg="#FFF7ED">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🍎</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようじ さんすう</span>
-            {!hasMathYouji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasMathYouji && (
             <p className="text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>⭐ さいこう {stats.mathYoujiBest}%</p>
@@ -1014,13 +1040,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {mathYoujiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* いろとかたち */}
+        {hasIro && (
         <RecordsAppCard bg="#F5F3FF">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🌈</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>いろと かたち</span>
-            {!hasIro && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasIro && (
             <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
@@ -1032,13 +1059,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {iroBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* ようじかんじ */}
+        {hasYoujiKanji && (
         <RecordsAppCard bg="#FFF1F1">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🈳</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようじ かんじ</span>
-            {!hasYoujiKanji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasYoujiKanji && (
             <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
@@ -1050,13 +1078,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {youjiKanjiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* くくれんしゅう */}
+        {hasKuku && (
         <RecordsAppCard bg="#FFFBEB">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">✕</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>くく れんしゅう</span>
-            {!hasKuku && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasKuku && (
             <div className="flex flex-wrap gap-3 text-[11px] font-bold mb-2" style={{ color: '#6B5A52' }}>
@@ -1068,13 +1097,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {kukuBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* ようじとけい */}
+        {hasClockYouji && (
         <RecordsAppCard bg="#F0FFF8">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🕐</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ようじ とけい</span>
-            {!hasClockYouji && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasClockYouji && (
             <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
@@ -1086,13 +1116,14 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {clockYoujiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
 
         {/* ぞくせいかるた */}
+        {hasZokusei && (
         <RecordsAppCard bg="#FAF0FF">
           <div className="flex items-center gap-2 mb-2">
             <span className="text-xl">🃏</span>
             <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>ぞくせい かるた</span>
-            {!hasZokusei && <span className="text-[10px] font-bold ml-auto" style={{ color: '#B0A49C' }}>まだやっていないよ</span>}
           </div>
           {hasZokusei && (
             <div className="flex items-center gap-3 text-sm font-black mb-2" style={{ color: '#3A2E2A' }}>
@@ -1104,6 +1135,7 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
             {zokuseiiBadges.map(b => <BadgeChip key={b.label} {...b} />)}
           </div>
         </RecordsAppCard>
+        )}
       </div>
 
       {/* SRS explanation */}

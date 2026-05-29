@@ -111,23 +111,23 @@ function ChapterResultScreen({
   const rank = getRank(score, total)
 
   return (
-    <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center">
+    <div className="min-h-screen bg-[#FFF6E5] text-[#3A2E2A] font-sans flex flex-col items-center justify-center px-6 text-center">
       <div className="text-6xl mb-3">{rank.emoji}</div>
       <h2 className="text-3xl font-black mb-1" style={{ color: chapter.color }}>{chapter.name}</h2>
-      <p className="text-[#94a3c4] text-sm mb-6">チャプター {chapterIdx + 1} 終了！</p>
+      <p className="text-[#6B5A52] text-sm mb-6">チャプター {chapterIdx + 1} 終了！</p>
 
       <div className="flex flex-col items-center mb-6">
         <span className="text-6xl font-black" style={{ color: chapter.color }}>{score}</span>
-        <span className="text-[#94a3c4] text-sm">/ {total} 問 正解</span>
-        <span className="mt-2 text-lg font-black text-[#e8f0fe]">{rank.label}</span>
+        <span className="text-[#6B5A52] text-sm">/ {total} 問 正解</span>
+        <span className="mt-2 text-lg font-black text-[#3A2E2A]">{rank.label}</span>
       </div>
 
       <div className="flex flex-col gap-3 w-full max-w-xs">
         {chapterIdx + 1 < CHAPTERS.length && (
           <button
             onClick={onNext}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] hover:scale-[1.02] transition-all"
-            style={{ background: chapter.color, boxShadow: `0 0 30px ${chapter.color}44` }}
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
+            style={{ background: chapter.color, boxShadow: '4px 4px 0 0 #3A2E2A', border: '2.5px solid #3A2E2A' }}
           >
             次のチャプター →
           </button>
@@ -135,15 +135,15 @@ function ChapterResultScreen({
         {chapterIdx + 1 >= CHAPTERS.length && (
           <button
             onClick={onNext}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] hover:scale-[1.02] transition-all"
-            style={{ background: '#4ade80', boxShadow: '0 0 30px rgba(74,222,128,0.4)' }}
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
+            style={{ background: '#4ade80', boxShadow: '4px 4px 0 0 #3A2E2A', border: '2.5px solid #3A2E2A' }}
           >
             最終結果を見る！
           </button>
         )}
         <button
           onClick={onMenu}
-          className="w-full py-3 rounded-2xl font-bold text-base border border-white/20 text-[#94a3c4] hover:text-[#4ade80] transition-all"
+          className="w-full py-3 rounded-2xl font-bold text-base border border-[#3A2E2A]/30 text-[#6B5A52] hover:text-[#2BA39A] transition-all"
         >
           チャプター選択に戻る
         </button>
@@ -166,18 +166,18 @@ function AllDoneScreen({
   const rank = getTotalRank(totalScore, totalProblems)
 
   return (
-    <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center">
-      <Link href="/lab" className="absolute top-6 left-6 text-[#94a3c4] hover:text-[#4ade80] text-sm transition-colors">← ラボに戻る</Link>
+    <div className="min-h-screen bg-[#FFF6E5] text-[#3A2E2A] font-sans flex flex-col items-center justify-center px-6 text-center">
+      <Link href="/lab" className="absolute top-6 left-6 text-[#6B5A52] hover:text-[#2BA39A] text-sm transition-colors">← ラボに戻る</Link>
 
       <div className="text-6xl mb-3">{rank.emoji}</div>
-      <h1 className="text-3xl font-black text-[#4ade80] mb-1">全チャプター完了！</h1>
-      <p className="text-[#94a3c4] text-sm mb-6">{rank.label}</p>
+      <h1 className="text-3xl font-black text-[#3A2E2A] mb-1" style={{ fontFamily: 'var(--font-zen)' }}>全チャプター完了！</h1>
+      <p className="text-[#6B5A52] text-sm mb-6">{rank.label}</p>
 
-      <div className="text-7xl font-black text-[#4ade80] mb-1">{totalScore}</div>
-      <div className="text-[#94a3c4] text-sm mb-6">/ {totalProblems} 問 正解</div>
+      <div className="text-7xl font-black mb-1" style={{ color: '#2BA39A' }}>{totalScore}</div>
+      <div className="text-[#6B5A52] text-sm mb-6">/ {totalProblems} 問 正解</div>
 
       {/* Per-chapter scores */}
-      <div className="w-full max-w-sm bg-[#162d5a] rounded-2xl p-4 mb-6 flex flex-col gap-2">
+      <div className="w-full max-w-sm rounded-2xl p-4 mb-6 flex flex-col gap-2" style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
         {CHAPTERS.map((ch, i) => {
           const s = chapterScores[i]
           return (
@@ -194,14 +194,14 @@ function AllDoneScreen({
       <div className="flex flex-col gap-3 w-full max-w-xs">
         <button
           onClick={onRestart}
-          className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] bg-[#4ade80] hover:scale-[1.02] transition-all"
-          style={{ boxShadow: '0 0 30px rgba(74,222,128,0.4)' }}
+          className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] bg-[#4ade80] hover:scale-[1.02] transition-all"
+          style={{ boxShadow: '4px 4px 0 0 #3A2E2A', border: '2.5px solid #3A2E2A' }}
         >
           もう一回！
         </button>
         <Link
           href="/lab"
-          className="w-full py-4 rounded-2xl font-bold text-lg border border-white/20 text-[#94a3c4] hover:text-[#4ade80] transition-all text-center"
+          className="w-full py-4 rounded-2xl font-bold text-lg border border-[#3A2E2A]/30 text-[#6B5A52] hover:text-[#2BA39A] transition-all text-center"
         >
           ラボに戻る
         </Link>
@@ -220,12 +220,12 @@ function MenuScreen({
   onPlay: (idx: number) => void
 }) {
   return (
-    <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center py-16 px-4">
-      <Link href="/lab" className="fixed top-4 left-4 text-[#94a3c4] hover:text-[#4ade80] text-sm transition-colors z-10">← ラボに戻る</Link>
+    <div className="min-h-screen bg-[#FFF6E5] text-[#3A2E2A] font-sans flex flex-col items-center py-16 px-4">
+      <Link href="/lab" className="fixed top-4 left-4 text-[#6B5A52] hover:text-[#2BA39A] text-sm transition-colors z-10">← ラボに戻る</Link>
 
       <div className="text-5xl mb-3 mt-4">💻</div>
-      <h1 className="text-3xl font-black text-[#4ade80] mb-1">プログラミング思考</h1>
-      <p className="text-[#94a3c4] text-sm mb-8 max-w-xs text-center">
+      <h1 className="text-3xl font-black text-[#3A2E2A] mb-1" style={{ fontFamily: 'var(--font-zen)' }}>プログラミング思考</h1>
+      <p className="text-[#6B5A52] text-sm mb-8 max-w-xs text-center">
         5つのチャプターでプログラミングの考え方を学ぼう！
       </p>
 
@@ -239,7 +239,7 @@ function MenuScreen({
             <div
               key={i}
               className="rounded-2xl p-4 flex flex-col gap-2"
-              style={{ background: '#162d5a', border: `1px solid ${ch.color}33` }}
+              style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}
             >
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{ch.icon}</span>
@@ -253,12 +253,12 @@ function MenuScreen({
                       {ch.concept}
                     </span>
                   </div>
-                  <p className="text-[#94a3c4] text-xs mt-0.5">{ch.description}</p>
+                  <p className="text-[#6B5A52] text-xs mt-0.5">{ch.description}</p>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs text-[#94a3c4]">
+                <div className="flex items-center gap-2 text-xs text-[#6B5A52]">
                   <span>{ch.total}もんだい</span>
                   {played && rank && (
                     <span className="font-bold" style={{ color: ch.color }}>
@@ -268,8 +268,8 @@ function MenuScreen({
                 </div>
                 <button
                   onClick={() => onPlay(i)}
-                  className="px-5 py-2 rounded-xl font-black text-sm text-[#050b14] hover:scale-[1.04] transition-all"
-                  style={{ background: ch.color }}
+                  className="px-5 py-2 rounded-xl font-black text-sm text-[#3A2E2A] hover:scale-[1.04] transition-all"
+                  style={{ background: ch.color, border: '2px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }}
                 >
                   {played ? 'もう一回' : 'プレイ'}
                 </button>
@@ -347,7 +347,7 @@ export default function CodingPage() {
     }
 
     return (
-      <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center py-20 px-4">
+      <div className="min-h-screen bg-[#FFF6E5] text-[#3A2E2A] font-sans flex flex-col items-center py-20 px-4">
         {currentChapter === 0 && (
           <MazeGame chapterIndex={0} {...gameProps} />
         )}

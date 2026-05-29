@@ -172,7 +172,7 @@ function MazeGrid({
         display: 'grid',
         gridTemplateColumns: `repeat(${grid[0].length}, ${CELL}px)`,
         gap: '2px',
-        background: '#162d5a',
+        background: '#FFFFFF',
         padding: '4px',
       }}
     >
@@ -189,7 +189,7 @@ function MazeGrid({
               style={{
                 width: CELL,
                 height: CELL,
-                background: isWall ? '#0a1a38' : 'rgba(255,255,255,0.05)',
+                background: isWall ? '#D4C4B8' : 'rgba(58,46,42,0.06)',
                 fontSize: 24,
               }}
             >
@@ -291,15 +291,15 @@ export default function DebugGame({
   return (
     <div className="flex flex-col items-center w-full">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#0d2248]/90 backdrop-blur-sm z-10">
-        <button onClick={onQuit} className="text-[#94a3c4] hover:text-white text-sm transition-colors">← やめる</button>
-        <span className="text-sm font-bold text-[#4ade80]">もんだい {puzzleIdx + 1} / {total}</span>
-        <span className="text-sm font-bold text-[#4ade80]">せいかい: {score}</span>
+      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#FFF6E5]/90 backdrop-blur-sm z-10">
+        <button onClick={onQuit} className="text-[#6B5A52] hover:opacity-70 text-sm transition-colors">← やめる</button>
+        <span className="text-sm font-bold text-[#16a34a]">もんだい {puzzleIdx + 1} / {total}</span>
+        <span className="text-sm font-bold text-[#16a34a]">せいかい: {score}</span>
       </div>
 
       <div className="mt-16 mb-2 text-center px-4">
-        <h2 className="text-lg font-black text-[#4ade80]">{puzzle.title}</h2>
-        <p className="text-[#94a3c4] text-xs mt-1">ヒント: {puzzle.hint}</p>
+        <h2 className="text-lg font-black text-[#16a34a]">{puzzle.title}</h2>
+        <p className="text-[#6B5A52] text-xs mt-1">ヒント: {puzzle.hint}</p>
         <p className="text-[#f0c040] text-xs mt-1">コマンドをタップして直そう！</p>
       </div>
 
@@ -307,7 +307,7 @@ export default function DebugGame({
 
       {/* Broken program chips */}
       <div className="mt-4 px-4 w-full max-w-sm">
-        <p className="text-[#94a3c4] text-xs mb-2 text-center">プログラム（バグがある！）</p>
+        <p className="text-[#6B5A52] text-xs mb-2 text-center">プログラム（バグがある！）</p>
         <div className="flex flex-wrap gap-2 justify-center">
           {userCmds.map((d, i) => {
             const changed = changedIndices.has(i)
@@ -336,7 +336,7 @@ export default function DebugGame({
       {result === 'correct' && (
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
-          <span className="text-[#4ade80] font-black text-lg">バグ修正！すごい！</span>
+          <span className="text-[#16a34a] font-black text-lg">バグ修正！すごい！</span>
         </div>
       )}
       {result === 'wrong' && (
@@ -352,8 +352,8 @@ export default function DebugGame({
           <button
             onClick={runProgram}
             disabled={isRunning}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] transition-all hover:scale-[1.02] disabled:opacity-50"
-            style={{ background: '#4ade80', boxShadow: '0 0 30px rgba(74,222,128,0.35)' }}
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] transition-all hover:scale-[1.02] disabled:opacity-50"
+            style={{ background: '#4ade80', boxShadow: '4px 4px 0 0 #3A2E2A', border: '2.5px solid #3A2E2A' }}
           >
             {isRunning ? '▶ じっこう中…' : '▶ じっこうする！'}
           </button>
@@ -361,7 +361,7 @@ export default function DebugGame({
         {result === 'correct' && (
           <button
             onClick={next}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] bg-[#4ade80] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] bg-[#4ade80] hover:scale-[1.02] transition-all"
           >
             {puzzleIdx + 1 < total ? '次のもんだい →' : '結果を見る！'}
           </button>
@@ -369,7 +369,7 @@ export default function DebugGame({
         {result === 'wrong' && (
           <button
             onClick={reset}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
             style={{ background: '#f0c040' }}
           >
             リセット
@@ -383,7 +383,7 @@ export default function DebugGame({
             <span
               key={i}
               className="w-7 h-7 flex items-center justify-center rounded-full text-sm font-black"
-              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#4ade80' : '#f87171', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
+              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#16a34a' : '#dc2626', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
             >
               {ok ? '○' : '×'}
             </span>

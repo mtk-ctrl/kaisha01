@@ -312,7 +312,7 @@ function MazeGrid({
         display: 'grid',
         gridTemplateColumns: `repeat(${grid[0].length}, ${CELL}px)`,
         gap: '2px',
-        background: '#162d5a',
+        background: '#FFFFFF',
         padding: '4px',
       }}
     >
@@ -331,10 +331,10 @@ function MazeGrid({
                 width: CELL,
                 height: CELL,
                 background: isWall
-                  ? '#0a1a38'
+                  ? '#D4C4B8'
                   : isTile
                   ? `${TILE_COLORS[cell]}22`
-                  : 'rgba(255,255,255,0.05)',
+                  : 'rgba(58,46,42,0.06)',
                 fontSize: 24,
                 border: isTile ? `1px solid ${TILE_COLORS[cell]}66` : undefined,
               }}
@@ -441,16 +441,16 @@ export default function ConditionalGame({
   return (
     <div className="flex flex-col items-center w-full">
       {/* Header */}
-      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#0d2248]/90 backdrop-blur-sm z-10">
-        <button onClick={onQuit} className="text-[#94a3c4] hover:text-white text-sm transition-colors">← やめる</button>
-        <span className="text-sm font-bold text-[#4ade80]">もんだい {puzzleIdx + 1} / {total}</span>
-        <span className="text-sm font-bold text-[#4ade80]">せいかい: {score}</span>
+      <div className="fixed top-0 left-0 right-0 px-5 py-3 flex items-center justify-between bg-[#FFF6E5]/90 backdrop-blur-sm z-10">
+        <button onClick={onQuit} className="text-[#6B5A52] hover:opacity-70 text-sm transition-colors">← やめる</button>
+        <span className="text-sm font-bold text-[#16a34a]">もんだい {puzzleIdx + 1} / {total}</span>
+        <span className="text-sm font-bold text-[#16a34a]">せいかい: {score}</span>
       </div>
 
       <div className="mt-16 mb-3 text-center px-4">
         <div className="text-4xl mb-1">🔀</div>
-        <h2 className="text-lg font-black text-[#4ade80]">{puzzle.title}</h2>
-        <p className="text-[#94a3c4] text-xs mt-1">ヒント: {puzzle.hint}</p>
+        <h2 className="text-lg font-black text-[#16a34a]">{puzzle.title}</h2>
+        <p className="text-[#6B5A52] text-xs mt-1">ヒント: {puzzle.hint}</p>
         <p className="text-[#f0c040] text-xs mt-1">ルールを選んでロボットを動かそう！</p>
       </div>
 
@@ -460,7 +460,7 @@ export default function ConditionalGame({
       {result === 'correct' && (
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
-          <span className="text-[#4ade80] font-black text-lg">ゴール！すごい！</span>
+          <span className="text-[#16a34a] font-black text-lg">ゴール！すごい！</span>
         </div>
       )}
       {result === 'wrong' && (
@@ -486,10 +486,10 @@ export default function ConditionalGame({
               style={{
                 background: 'rgba(255,255,255,0.07)',
                 border: '1px solid rgba(255,255,255,0.15)',
-                color: '#e8f0fe',
+                color: '#3A2E2A',
               }}
             >
-              <span className="text-[#94a3c4] mr-2 font-black">{['A', 'B', 'C', 'D'][i]})</span>
+              <span className="text-[#6B5A52] mr-2 font-black">{['A', 'B', 'C', 'D'][i]})</span>
               {choice.label}
             </button>
           ))}
@@ -519,7 +519,7 @@ export default function ConditionalGame({
                       ? '#f87171'
                       : 'rgba(255,255,255,0.1)'
                   }`,
-                  color: isCorrChoice ? '#4ade80' : isSelected ? '#f87171' : '#94a3c4',
+                  color: isCorrChoice ? '#16a34a' : isSelected ? '#dc2626' : '#6B5A52',
                 }}
               >
                 <span className="mr-2 font-black">{['A', 'B', 'C', 'D'][i]})</span>
@@ -536,7 +536,7 @@ export default function ConditionalGame({
         {result === 'correct' && (
           <button
             onClick={next}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] bg-[#4ade80] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] bg-[#4ade80] hover:scale-[1.02] transition-all"
           >
             {puzzleIdx + 1 < total ? '次のもんだい →' : '結果を見る！'}
           </button>
@@ -544,7 +544,7 @@ export default function ConditionalGame({
         {result === 'wrong' && (
           <button
             onClick={retry}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#050b14] hover:scale-[1.02] transition-all"
+            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
             style={{ background: '#f0c040' }}
           >
             もう一回！
@@ -558,7 +558,7 @@ export default function ConditionalGame({
             <span
               key={i}
               className="w-7 h-7 flex items-center justify-center rounded-full text-sm font-black"
-              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#4ade80' : '#f87171', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
+              style={{ background: ok ? '#4ade8033' : '#f8717133', color: ok ? '#16a34a' : '#dc2626', border: `1px solid ${ok ? '#4ade80' : '#f87171'}66` }}
             >
               {ok ? '○' : '×'}
             </span>

@@ -9,42 +9,32 @@ import Footer from '@/components/Footer'
 /* ── Static data ── */
 
 const FREE_FEATURES = [
-  'とけいチャレンジ（ちょうど・30ぷん）',
-  'かんじクイズ 小1〜小2',
-  'がくしゅうりれき（7にちぶん）',
+  '計算チャレンジ（全レベル・無制限）',
+  '漢字マスター（小1〜小6 1026字）',
+  'かんがえる力ジム（思考力）',
+  '算数文章題・九九・都道府県など',
+  '就学前アプリ 全8本',
 ]
 
 const FREE_DISABLED = [
-  'ぜんアプリかいほう',
-  'TANQストーリー（りか）',
-  'ほごしゃレポート',
+  'TANQ理科（ストーリー型学習）',
+  '理科クイズ・英語ボキャブラリー',
+  '時計・慣用句・四字熟語・図形など',
 ]
 
 const PREMIUM_FEATURES = [
-  'ぜんアプリかんぜんかいほう',
-  'TANQストーリー（りか）ぜんUnit',
-  'かんじクイズ 小1〜小6（944字）',
-  'さんすう・とけい・ずけい・えいご・コーディング',
-  'がくしゅうりれき（むせいげん）',
-  '保護者向け成績レポート',
+  '全25本のアプリ完全解放',
+  'TANQ理科（ストーリー型・全Unit）',
+  '理科・英語・時計・図形・プログラミング',
+  '慣用句クイズ・四字熟語クイズ',
+  '中学受験 算数①（全12単元）',
+  '学習バッジ・進捗記録（無制限）',
 ]
 
 const FAQ_ITEMS = [
   {
-    q: '14日間の無料トライアルって何ですか？',
-    a: '登録から14日間、Premiumの全機能を無料でお試しいただけます。期間中はいつでも解約でき、課金は発生しません。気に入っていただければそのまま継続、合わなければ解約 — どちらでもOKです。',
-  },
-  {
-    q: '解約はかんたんにできますか？',
-    a: 'はい。マイページから1クリックで解約できます。電話やメール連絡は不要。お子さまが飽きてしまっても、安心して止められます。',
-  },
-  {
-    q: '兄弟で使う場合は別料金ですか？',
-    a: 'ひとつのアカウントで複数のプロフィールが作成できます。兄弟姉妹で使う場合も追加料金なしで、それぞれの進捗とレポートを管理できます。',
-  },
-  {
-    q: '支払い方法は？',
-    a: 'クレジットカード（Visa / Master / JCB / AMEX）に対応しています。請求書払いは法人プランのみ対応です。',
+    q: '現在はどういう状態ですか？',
+    a: 'TANQは現在テスト中（招待制）です。全アプリが無料でご利用いただけます。料金プランは近日公開予定です。ご登録はメールアドレスだけで完了します。',
   },
   {
     q: '子どもがアプリの中で課金してしまわない？',
@@ -53,6 +43,10 @@ const FAQ_ITEMS = [
   {
     q: 'スマホでも使えますか？',
     a: 'はい。スマホ・タブレット・PCのブラウザ全てに対応しています。アプリのインストールは不要です。',
+  },
+  {
+    q: 'データはどのくらい保存されますか？',
+    a: '登録ユーザーは漢字・英語などの学習状況がアカウントに紐付けて記録されます。未登録のゲスト体験はお使いの端末のみに保存されます。',
   },
 ]
 
@@ -119,10 +113,22 @@ export default function PricingPage() {
         <h1 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(28px, 5vw, 52px)', color: 'var(--ink)', lineHeight: 1.2, marginBottom: '1rem' }}>
           シンプルな <span style={{ color: 'var(--pink)' }}>りょうきん</span>
         </h1>
-        <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.8, maxWidth: '28em', margin: '0 auto' }}>
-          まずは <strong>むりょう</strong> でたいけん。きにいったらいつでもアップグレード。<br/>
-          14にちかんの むりょうトライアルつき。
+        <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.8, maxWidth: '28em', margin: '0 auto 1.25rem' }}>
+          まずは <strong>むりょう</strong> でたいけん。<br/>
+          きにいったら登録するだけ — 今なら全アプリ無料。
         </p>
+        <div style={{
+          display: 'inline-block',
+          background: '#FFF1B8',
+          border: '2.5px solid #3A2E2A',
+          borderRadius: 9999,
+          padding: '6px 20px',
+          fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 13,
+          color: 'var(--ink)',
+          boxShadow: '3px 3px 0 0 #3A2E2A',
+        }}>
+          🧪 テスト公開中 — 料金プランは近日リリース予定
+        </div>
       </section>
 
       {/* ════════ PLAN CARDS ════════ */}
@@ -201,10 +207,10 @@ export default function PricingPage() {
 
             <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 24, color: 'var(--ink)', marginBottom: '0.25rem' }}>TANQ Premium</h2>
             <p style={{ fontSize: 13, color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>毎日たくさんあそびたい人に</p>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.25rem', marginBottom: '1.5rem' }}>
-              <span style={{ fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 52, color: 'var(--ink)', lineHeight: 1 }}>¥100</span>
-              <span style={{ fontSize: 15, color: 'var(--ink-soft)', marginBottom: '0.5rem' }}>/つき</span>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.25rem', marginBottom: '0.5rem' }}>
+              <span style={{ fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 36, color: 'var(--ink)', lineHeight: 1 }}>準備中</span>
             </div>
+            <p style={{ fontSize: 12, color: 'var(--ink-soft)', marginBottom: '1rem' }}>今はテスト中のため全機能無料でご利用いただけます</p>
 
             <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem', flex: 1 }}>
               {PREMIUM_FEATURES.map((f) => (
@@ -216,11 +222,11 @@ export default function PricingPage() {
             </ul>
 
             <Link
-              href="/register?plan=premium"
+              href="/register"
               className="btn-sticker btn-yellow"
               style={{ display: 'block', textAlign: 'center', fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, padding: '12px 20px', textDecoration: 'none' }}
             >
-              14日かん むりょうで ためす →
+              むりょう登録で全部使う →
             </Link>
           </div>
         </div>
@@ -243,8 +249,8 @@ export default function PricingPage() {
               がっこう・じゅく・学童むけ
             </h2>
             <p style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.8, maxWidth: '32em', margin: '0 auto 1.75rem' }}>
-              スクールライセンスなら、クラス全員で使えてさらにお得。<br/>
-              授業用投影モード・管理者ダッシュボードつき。まずはお問い合わせください。
+              学校・塾・学童での導入についてはお気軽にご相談ください。<br/>
+              スクールプランの詳細は準備中です。まずはお問い合わせください。
             </p>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.75rem' }}>
               <Link
