@@ -61,14 +61,6 @@ export default function TanqPage() {
           クイズにこたえるたびに、どんどんかしこくなれるよ！
         </p>
 
-        <Link
-          href="/apps/science"
-          className="btn-sticker btn-yellow"
-          style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, padding: '13px 32px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}
-        >
-          <span>理科クイズをはじめる</span>
-          <svg viewBox="0 0 24 24" width={16} height={16}><path d="M5 12h14M13 6l6 6-6 6" stroke="#3A2E2A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
-        </Link>
       </section>
 
       {/* ════════ TANQ びっくり はっけん！ ════════ */}
@@ -147,9 +139,6 @@ export default function TanqPage() {
             ))}
           </div>
 
-          <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: 13, color: 'var(--ink-soft)' }}>
-            もっとびっくりしたい人は、下のクイズでためしてみよう！👇
-          </p>
         </div>
       </section>
 
@@ -271,19 +260,10 @@ export default function TanqPage() {
               タンキューと <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2.5px solid #3A2E2A' }}>ふしぎ</span> をみつけよう！
             </h2>
             <p style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.75, marginBottom: '2rem' }}>
-              とうろくなしで今すぐあそべるよ。<br/>
-              <ruby>小学<rt>しょうがく</rt></ruby>4年〜6年レベルの<ruby>理科<rt>りか</rt></ruby>260問。
+              4つのせかいで<ruby>科学<rt>かがく</rt></ruby>のふしぎを<ruby>発見<rt>はっけん</rt></ruby>しよう。
             </p>
 
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.75rem' }}>
-              <Link
-                href="/apps/science"
-                className="btn-sticker btn-yellow"
-                style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, padding: '13px 32px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8 }}
-              >
-                <span>はじめる</span>
-                <svg viewBox="0 0 24 24" width={16} height={16}><path d="M5 12h14M13 6l6 6-6 6" stroke="#3A2E2A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
-              </Link>
               <Link
                 href="/lab"
                 className="btn-sticker btn-white"
