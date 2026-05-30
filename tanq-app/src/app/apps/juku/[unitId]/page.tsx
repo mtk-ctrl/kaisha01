@@ -508,11 +508,88 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
   )
 }
 
+// ─────────────────────────────────────
+// SVG: 差あつめ図（差集め算・過不足算）📦
+//   1あたりの差 × 個数 ＝ 全体の差 を、積み木が積み上がるイメージで段階表示
+// ─────────────────────────────────────
+function GapDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const perDiff   = spec.perDiff   as number          // 1あたりの差
+  const totalDiff = spec.totalDiff as number          // 全体の差
+  const count     = spec.count     as number          // 個数（答え）
+  const diffText  = (spec.diffText as string) ?? ''   // 全体の差の作り方の説明
+  const itemName  = (spec.itemName as string) ?? '人' // 配る箱（人・脚・室・個）
+  const unit      = (spec.unit     as string) ?? ''   // 中身の単位（個・円・人）
+  const showValues = (spec.showValues as boolean) ?? false
+  const wc = showValues ? 3 : wrongCount
+
+  // 積み木（1あたりの差）を個数ぶん横に並べる。多すぎるときは省略表示
+  const display = Math.min(count, 10)
+  const omitted = count > display
+  const blockW = 18, gap = 3, startX = 40, baseY = 50, blockH = 16
+
+  return (
+    <div className="w-full space-y-1">
+      {/* ① 2通りの配り方 → 1あたりの差 */}
+      <p className="text-[11px] font-bold mb-0.5" style={{ color: '#6B5A52' }}>
+        ①配り方を変えると、1{itemName}あたり {perDiff}{unit} の差
+      </p>
+
+      {/* 積み木の列：1あたりの差が個数分ならぶ */}
+      <svg viewBox="0 0 250 72" className="w-full max-w-sm mx-auto overflow-visible">
+        {Array.from({ length: display }, (_, i) => {
+          const x = startX + i * (blockW + gap)
+          return (
+            <g key={i}>
+              <rect x={x} y={baseY - blockH} width={blockW} height={blockH} rx="2"
+                fill={wc >= 1 ? 'rgba(248,113,113,0.18)' : '#FFF1B8'}
+                stroke={wc >= 1 ? '#f87171' : '#3A2E2A'} strokeWidth="1.5"
+                strokeDasharray={wc >= 1 ? '3 2' : undefined} />
+              <text x={x + blockW / 2} y={baseY - 4} textAnchor="middle" fontSize="8"
+                fill={wc >= 1 ? '#f87171' : '#3A2E2A'} fontWeight="bold">{perDiff}</text>
+            </g>
+          )
+        })}
+        {omitted && (
+          <text x={startX + display * (blockW + gap) + 6} y={baseY - 4} fontSize="10"
+            fill="#6B5A52" fontWeight="bold">… 計{count}{itemName}</text>
+        )}
+        {/* 下のブラケット：個数 */}
+        <line x1={startX} y1={baseY + 4} x2={startX + display * (blockW + gap) - gap} y2={baseY + 4}
+          stroke="#16a34a" strokeWidth="1.5" />
+        <text x={startX + (display * (blockW + gap) - gap) / 2} y={baseY + 16} textAnchor="middle"
+          fontSize="9" fill="#16a34a" fontWeight="bold">{itemName}の数 = ？</text>
+      </svg>
+
+      {/* ② 全体の差の作り方（Stage 2+） */}
+      {wc >= 2 && diffText && (
+        <>
+          <p className="text-[11px] font-bold mt-1 mb-0.5" style={{ color: '#6B5A52' }}>
+            ②差が集まって「全体の差」に
+          </p>
+          <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(248,113,113,0.12)', border: '1.5px dashed #f87171' }}>
+            <span className="text-[10px] font-black" style={{ color: '#f87171' }}>{diffText}</span>
+          </div>
+        </>
+      )}
+
+      {/* ③ 全体の差 ÷ 1あたりの差 ＝ 個数（Stage 3） */}
+      {wc >= 3 && (
+        <div className="rounded-lg px-2 py-1.5 text-center mt-1" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+          <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
+            {totalDiff} ÷ {perDiff} ＝ {count}{itemName}！
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   slide: '📐 スライド図',
   'dot-line': '🌳 植木のイメージ',
   'line-seg': '📏 線分図',
   arrow: '→ 矢印図',
+  gap: '📦 差あつめ図',
 }
 
 function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; spec: Record<string, unknown>; wrongCount?: number }) {
@@ -530,6 +607,7 @@ function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; sp
       {type === 'dot-line' && <DotLineDiagram spec={spec} />}
       {type === 'line-seg' && <LineSegDiagram spec={spec} wrongCount={wrongCount} />}
       {type === 'area'     && <AreaDiagram    spec={spec} wrongCount={wrongCount} />}
+      {type === 'gap'      && <GapDiagram     spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
