@@ -56,6 +56,11 @@ export default function JukuMenu() {
 
   const layers = [1, 2, 3, 4] as const
 
+  // 実際に問題が入っている（公開済みの）単元数。「12単元」と過大表示しないため動的に算出
+  const liveUnitCount = JUKU_UNITS.filter(u => u.problems.length > 0).length
+  const freeUnitCount = JUKU_UNITS.filter(u => u.isFree && u.problems.length > 0).length
+  const totalUnitCount = JUKU_UNITS.length
+
   return (
     <div
       className="min-h-screen pb-20"
@@ -80,7 +85,7 @@ export default function JukuMenu() {
                 中学受験 算数①
               </h1>
               <p className="text-xs font-bold mt-0.5" style={{ color: '#6B5A52' }}>
-                文章題・特殊算 12単元
+                文章題・特殊算 公開中{liveUnitCount}単元（全{totalUnitCount}単元・順次公開）
               </p>
             </div>
           </div>
@@ -92,10 +97,10 @@ export default function JukuMenu() {
             <div className="mt-3 rounded-2xl px-3 py-2"
               style={{ background: '#FFF1B8', border: '2px solid #3A2E2A' }}>
               <p className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
-                🔓 第1層（2単元）は無料で体験できます
+                🔓 第1層（{freeUnitCount}単元）は無料で体験できます
               </p>
               <Link href="/register" className="text-[11px] font-black hover:underline" style={{ color: '#FF6F9C' }}>
-                全12単元を使うには → 無料登録
+                公開中の全単元を使うには → 無料登録
               </Link>
             </div>
           )}
