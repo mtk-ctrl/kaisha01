@@ -510,73 +510,173 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
 
 // ─────────────────────────────────────
 // SVG: 差あつめ図（差集め算・過不足算）📦
-//   1あたりの差 × 個数 ＝ 全体の差 を、積み木が積み上がるイメージで段階表示
+//   2つのモード:
+//   - 'shortage'（過不足）: 「実際の数（両方で同じ）」を縦線で示し、
+//       ①②2通りの配り方が必要とする量を2本の棒で並べる。
+//       実際より少ない分＝あまり／多い分＝不足。両者の和（または差）が
+//       2本の棒の差＝全体の差になることを、縦線で割れて見えるよう可視化。
+//   - 'collect'（差集め）: 1あたりの差が個数分集まって全体の差になる様子。
+//   間違えるごとに段階表示（wrongCount連動）。
 // ─────────────────────────────────────
 function GapDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
-  const perDiff   = spec.perDiff   as number          // 1あたりの差
-  const totalDiff = spec.totalDiff as number          // 全体の差
-  const count     = spec.count     as number          // 個数（答え）
-  const diffText  = (spec.diffText as string) ?? ''   // 全体の差の作り方の説明
-  const itemName  = (spec.itemName as string) ?? '人' // 配る箱（人・脚・室・個）
-  const unit      = (spec.unit     as string) ?? ''   // 中身の単位（個・円・人）
+  const mode = (spec.mode as string) ?? 'shortage'
   const showValues = (spec.showValues as boolean) ?? false
   const wc = showValues ? 3 : wrongCount
 
-  // 積み木（1あたりの差）を個数ぶん横に並べる。多すぎるときは省略表示
-  const display = Math.min(count, 10)
-  const omitted = count > display
-  const blockW = 18, gap = 3, startX = 40, baseY = 50, blockH = 16
+  const perDiff   = spec.perDiff   as number
+  const totalDiff = spec.totalDiff as number
+  const count     = spec.count     as number
+  const itemName  = (spec.itemName as string) ?? '人'
+  const unit      = (spec.unit     as string) ?? ''
+
+  // ───────── collect（純粋な差集め算）─────────
+  if (mode === 'collect') {
+    const bar1Label = (spec.bar1Label as string) ?? ''   // 高い方の式
+    const bar2Label = (spec.bar2Label as string) ?? ''   // 安い方の式
+    const per1 = spec.per1 as number   // 高い方の単価
+    const per2 = spec.per2 as number   // 安い方の単価
+    const L = 60, maxW = 150
+    const scale = maxW / Math.max(per1, per2)
+    const w1 = Math.round(per1 * scale), w2 = Math.round(per2 * scale)
+    return (
+      <div className="w-full space-y-1">
+        <p className="text-[11px] font-bold mb-0.5" style={{ color: '#6B5A52' }}>
+          ①1{itemName}あたりのちがいは {perDiff}{unit}
+        </p>
+        <svg viewBox="0 0 250 70" className="w-full max-w-sm mx-auto overflow-visible">
+          <text x={L - 4} y="16" textAnchor="end" fontSize="9" fill="#3A2E2A" fontWeight="bold">高い方</text>
+          <rect x={L} y="6" width={w1} height="16" rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+          <text x={L + w1 / 2} y="18" textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">{per1}{unit}</text>
+          <text x={L - 4} y="40" textAnchor="end" fontSize="9" fill="#3A2E2A" fontWeight="bold">安い方</text>
+          <rect x={L} y="30" width={w2} height="16" rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+          <text x={L + w2 / 2} y="42" textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">{per2}{unit}</text>
+          {/* 1個あたりの差（赤） */}
+          <line x1={L + w2} y1="6" x2={L + w2} y2="46" stroke="#2BA39A" strokeWidth="1.5" strokeDasharray="3 2" />
+          {wc >= 1 && (
+            <>
+              <rect x={L + w2} y="6" width={w1 - w2} height="16" rx="2"
+                fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.5" strokeDasharray="3 2" />
+              <text x={L + w2 + (w1 - w2) / 2} y="4" textAnchor="middle" fontSize="8" fill="#f87171" fontWeight="bold">差{perDiff}</text>
+            </>
+          )}
+        </svg>
+        {wc >= 2 && (
+          <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(248,113,113,0.12)', border: '1.5px dashed #f87171' }}>
+            <span className="text-[10px] font-black" style={{ color: '#f87171' }}>
+              この {perDiff}{unit} が {itemName}の数だけ集まって、全体の差 {totalDiff}{unit}
+            </span>
+          </div>
+        )}
+        {wc >= 3 && (
+          <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+            <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
+              {totalDiff} ÷ {perDiff} ＝ {count}{itemName}！
+            </span>
+          </div>
+        )}
+        {bar1Label && wc >= 3 && (
+          <p className="text-[9px] text-center font-bold" style={{ color: '#6B5A52' }}>{bar1Label}／{bar2Label}</p>
+        )}
+      </div>
+    )
+  }
+
+  // ───────── shortage（過不足算）: 正統な線分図 ─────────
+  // 考え方: 「実際に持っている数（両方で同じ）」を縦の基準線で示す。
+  //   配り方①が必要とする数（短い棒）・②が必要とする数（長い棒）を並べ、
+  //   各棒の右端と基準線のすき間が あまり / 不足。
+  //   2本の棒の右端どうしのへだたり ＝ 全体の差。基準線がそこを
+  //   「あまり部分」と「不足部分」に切り分けるので、和や差になる理由が見える。
+  const method1Label = (spec.method1Label as string) ?? '配り方①'
+  const method2Label = (spec.method2Label as string) ?? '配り方②'
+  const need1 = spec.need1 as number   // 必要量①（method1の1あたり×個数）
+  const need2 = spec.need2 as number   // 必要量②（method2の1あたり×個数。need2>need1）
+  const actual = spec.actual as number // 実際に持っている数
+  const totalName = (spec.totalName as string) ?? '持っている数'
+  const rem1 = actual - need1          // ＋:あまり ／ −:不足
+  const rem2 = actual - need2
+
+  // 相対座標（p1=need1 を 0 基準に）: p1→0, p2→totalDiff, 実際→rem1
+  const pts = [0, totalDiff, rem1]
+  const lo = Math.min(...pts), hi = Math.max(...pts)
+  const span = hi - lo || 1
+  const LX = 78          // 棒の左端（共通の起点）
+  const baseStub = 26    // 棒の最小の見える長さ（模式的）
+  const zoomW = 120      // 右端まわりのズーム幅
+  // 値 v(相対) → x座標。baseStub ぶん右にずらして棒の根元を見せる
+  const X = (v: number) => LX + baseStub + ((v - lo) / span) * zoomW
+  const xP1 = X(0)            // 必要量①の右端
+  const xP2 = X(totalDiff)    // 必要量②の右端
+  const xT  = X(rem1)         // 実際の数の縦線
+  const y1 = 28, y2 = 50, barH = 15
+
+  const fmtRem = (r: number) => (r > 0 ? `あまり${r}${unit}` : r < 0 ? `不足${-r}${unit}` : 'ちょうど')
 
   return (
     <div className="w-full space-y-1">
-      {/* ① 2通りの配り方 → 1あたりの差 */}
       <p className="text-[11px] font-bold mb-0.5" style={{ color: '#6B5A52' }}>
-        ①配り方を変えると、1{itemName}あたり {perDiff}{unit} の差
+        同じ「{totalName}」を、2通りに配って比べよう
       </p>
 
-      {/* 積み木の列：1あたりの差が個数分ならぶ */}
-      <svg viewBox="0 0 250 72" className="w-full max-w-sm mx-auto overflow-visible">
-        {Array.from({ length: display }, (_, i) => {
-          const x = startX + i * (blockW + gap)
-          return (
-            <g key={i}>
-              <rect x={x} y={baseY - blockH} width={blockW} height={blockH} rx="2"
-                fill={wc >= 1 ? 'rgba(248,113,113,0.18)' : '#FFF1B8'}
-                stroke={wc >= 1 ? '#f87171' : '#3A2E2A'} strokeWidth="1.5"
-                strokeDasharray={wc >= 1 ? '3 2' : undefined} />
-              <text x={x + blockW / 2} y={baseY - 4} textAnchor="middle" fontSize="8"
-                fill={wc >= 1 ? '#f87171' : '#3A2E2A'} fontWeight="bold">{perDiff}</text>
-            </g>
-          )
-        })}
-        {omitted && (
-          <text x={startX + display * (blockW + gap) + 6} y={baseY - 4} fontSize="10"
-            fill="#6B5A52" fontWeight="bold">… 計{count}{itemName}</text>
+      <svg viewBox="0 0 250 108" className="w-full max-w-sm mx-auto overflow-visible">
+        {/* 実際に持っている数：縦の基準線（両方で共通） */}
+        <line x1={xT} y1="16" x2={xT} y2="74" stroke="#2BA39A" strokeWidth="2" strokeDasharray="4 2" />
+        <text x={xT} y="12" textAnchor="middle" fontSize="8" fill="#0d9488" fontWeight="bold">{totalName}{actual}{unit}</text>
+
+        {/* 配り方①の必要量バー（短い） */}
+        <text x={LX - 4} y={y1 + 11} textAnchor="end" fontSize="8" fill="#3A2E2A" fontWeight="bold">{method1Label}</text>
+        <rect x={LX} y={y1} width={xP1 - LX} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+        <text x={(LX + xP1) / 2} y={y1 + 11} textAnchor="middle" fontSize="8" fill="#3A2E2A" fontWeight="bold">必要{need1}</text>
+
+        {/* 配り方②の必要量バー（長い） */}
+        <text x={LX - 4} y={y2 + 11} textAnchor="end" fontSize="8" fill="#3A2E2A" fontWeight="bold">{method2Label}</text>
+        <rect x={LX} y={y2} width={xP2 - LX} height={barH} rx="3" fill="#FFE0B8" stroke="#3A2E2A" strokeWidth="2" />
+        <text x={(LX + xP2) / 2} y={y2 + 11} textAnchor="middle" fontSize="8" fill="#3A2E2A" fontWeight="bold">必要{need2}</text>
+
+        {/* 各棒の右端〜実際 ＝ あまり/不足（wc>=1） */}
+        {wc >= 1 && (
+          <>
+            <rect x={Math.min(xP1, xT)} y={y1} width={Math.abs(xT - xP1)} height={barH} rx="2"
+              fill={rem1 >= 0 ? 'rgba(43,163,154,0.20)' : 'rgba(248,113,113,0.20)'}
+              stroke={rem1 >= 0 ? '#2BA39A' : '#f87171'} strokeWidth="1.3" strokeDasharray="3 2" />
+            <text x={(Math.min(xP1, xT) + Math.max(xP1, xT)) / 2} y={y1 - 3} textAnchor="middle" fontSize="8"
+              fill={rem1 >= 0 ? '#0d9488' : '#f87171'} fontWeight="bold">{fmtRem(rem1)}</text>
+
+            <rect x={Math.min(xP2, xT)} y={y2} width={Math.abs(xT - xP2)} height={barH} rx="2"
+              fill={rem2 >= 0 ? 'rgba(43,163,154,0.20)' : 'rgba(248,113,113,0.20)'}
+              stroke={rem2 >= 0 ? '#2BA39A' : '#f87171'} strokeWidth="1.3" strokeDasharray="3 2" />
+            <text x={(Math.min(xP2, xT) + Math.max(xP2, xT)) / 2} y={y2 + barH + 9} textAnchor="middle" fontSize="8"
+              fill={rem2 >= 0 ? '#0d9488' : '#f87171'} fontWeight="bold">{fmtRem(rem2)}</text>
+          </>
         )}
-        {/* 下のブラケット：個数 */}
-        <line x1={startX} y1={baseY + 4} x2={startX + display * (blockW + gap) - gap} y2={baseY + 4}
-          stroke="#16a34a" strokeWidth="1.5" />
-        <text x={startX + (display * (blockW + gap) - gap) / 2} y={baseY + 16} textAnchor="middle"
-          fontSize="9" fill="#16a34a" fontWeight="bold">{itemName}の数 = ？</text>
+
+        {/* 全体の差 ＝ ①の右端〜②の右端（wc>=2） */}
+        {wc >= 2 && (
+          <>
+            <line x1={xP1} y1="84" x2={xP2} y2="84" stroke="#f0c040" strokeWidth="2" />
+            <line x1={xP1} y1="80" x2={xP1} y2="88" stroke="#f0c040" strokeWidth="2" />
+            <line x1={xP2} y1="80" x2={xP2} y2="88" stroke="#f0c040" strokeWidth="2" />
+            <text x={(xP1 + xP2) / 2} y="100" textAnchor="middle" fontSize="8.5" fill="#b45309" fontWeight="bold">
+              全体の差 = {totalDiff}{unit}
+            </text>
+          </>
+        )}
       </svg>
 
-      {/* ② 全体の差の作り方（Stage 2+） */}
-      {wc >= 2 && diffText && (
-        <>
-          <p className="text-[11px] font-bold mt-1 mb-0.5" style={{ color: '#6B5A52' }}>
-            ②差が集まって「全体の差」に
-          </p>
-          <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(248,113,113,0.12)', border: '1.5px dashed #f87171' }}>
-            <span className="text-[10px] font-black" style={{ color: '#f87171' }}>{diffText}</span>
-          </div>
-        </>
+      {/* なぜ全体の差になるか（式で明示・wc>=2） */}
+      {wc >= 2 && (
+        <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.14)', border: '1.5px dashed #f0c040' }}>
+          <span className="text-[10px] font-black" style={{ color: '#b45309' }}>
+            {(spec.diffText as string) ?? `全体の差 = ${totalDiff}${unit}`}
+          </span>
+        </div>
       )}
 
-      {/* ③ 全体の差 ÷ 1あたりの差 ＝ 個数（Stage 3） */}
+      {/* 全体の差 ÷ 1あたりの差 ＝ 個数（wc>=3） */}
       {wc >= 3 && (
-        <div className="rounded-lg px-2 py-1.5 text-center mt-1" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+        <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
           <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
-            {totalDiff} ÷ {perDiff} ＝ {count}{itemName}！
+            全体の差{totalDiff} ÷ 1{itemName}あたりの差{perDiff} ＝ {count}{itemName}！
           </span>
         </div>
       )}
