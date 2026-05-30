@@ -4,21 +4,25 @@
 
 ## クイックナビ
 
-| ディレクトリ | 用途 |
+| ディレクトリ / ファイル | 用途 |
 |-------------|------|
-| [`board/`](./board/) | 取締役会（オーナー ↔ Jobs） |
-| [`executive/`](./executive/) | 執行チーム（Jobs & AIメンバー） |
-| [`departments/`](./departments/) | 各部門 |
-| [`projects/`](./projects/) | プロジェクト管理 |
-| [`strategy/`](./strategy/) | 戦略・ビジョン・ロードマップ |
-| [`metrics/`](./metrics/) | KPI・パフォーマンス管理 |
+| [`CLAUDE.md`](./CLAUDE.md) | CEO（Jobs）の役割・運営ルール（起動ファイル） |
+| [`NOW.md`](./NOW.md) | 現在地・サービス状態・次アクション |
+| [`OWNER.md`](./OWNER.md) | オーナー向けダッシュボード |
+| [`board/`](./board/) | 取締役会（オーナー ↔ Jobs）・マーケ・ユーザーリサーチ |
+| [`company/`](./company/) | 会社概要・ターゲットユーザー・マネタイズ |
+| [`product/`](./product/) | アプリ一覧・インフラ・ルート・ロードマップ |
+| [`agents/`](./agents/) | スタッフ定義（テツ・アキ・yuu・rou 他） |
+| [`logs/decisions/`](./logs/decisions/) | 重要な経営判断の記録 |
+| [`docs/`](./docs/) | 技術セットアップ手順 |
 
 ## 重要ドキュメント
 
-- [会社概要・ミッション](./COMPANY.md)
-- [Jobsプロフィール・権限](./executive/ceo/PROFILE.md)
-- [長期ビジョン](./strategy/vision.md)
-- [ロードマップ](./strategy/roadmap.md)
+- [会社概要・ミッション](./company/overview.md)
+- [ターゲットユーザー](./company/users.md)
+- [マネタイズ戦略](./company/monetization.md)
+- [ロードマップ](./product/roadmap.md)
+- [アプリ一覧](./product/apps.md)
 
 ---
 

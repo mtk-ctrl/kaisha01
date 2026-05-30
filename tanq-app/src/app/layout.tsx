@@ -37,7 +37,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  // ピンチズームを許可（WCAG 1.4.4 準拠）。弱視の子・保護者が拡大できるよう maximumScale は制限しない
+  maximumScale: 5,
+  userScalable: true,
 }
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
