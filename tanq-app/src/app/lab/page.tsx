@@ -7,6 +7,7 @@ import { TOTALS, computeStats } from '@/lib/stats'
 import { useStats } from '@/hooks/useStats'
 import { createClient } from '@/lib/supabase/client'
 import { pullFromSupabase, pushToSupabase } from '@/lib/learningSync'
+import { masteryBadges } from '@/lib/badges'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -477,20 +478,11 @@ function SRSBar({ mastered, total, color }: { mastered: number; total: number; c
 function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
   if (!stats) return null
 
-  const kanjiBadges = [
-    { emoji: '🌱', label: 'めがでた', color: '#7BE8B0', earned: stats.kanjiMastered >= 5 },
-    { emoji: '🔥', label: 'すごい', color: '#FB923C', earned: stats.kanjiMastered >= 20 },
-    { emoji: '⭐', label: 'はかせ', color: '#F0C040', earned: stats.kanjiMastered >= 50 },
-    { emoji: '👑', label: 'おう', color: '#B197FC', earned: stats.kanjiMastered >= 100 },
-    { emoji: '🏆', label: 'ぜんぶ！', color: '#FF6F9C', earned: stats.kanjiMastered >= stats.kanjiTotal && stats.kanjiTotal > 0 },
-  ]
-  const engBadges = [
-    { emoji: '🌱', label: 'はじめの\nいっぽ', color: '#7BE8B0', earned: stats.engMastered >= 5 },
-    { emoji: '🔥', label: 'えいごずき', color: '#FB923C', earned: stats.engMastered >= 20 },
-    { emoji: '⭐', label: 'はかせ', color: '#F0C040', earned: stats.engMastered >= 50 },
-    { emoji: '👑', label: 'えいごおう', color: '#B197FC', earned: stats.engMastered >= 100 },
-    { emoji: '🏆', label: 'ぜんぶ！', color: '#FF6F9C', earned: stats.engMastered >= stats.engTotal && stats.engTotal > 0 },
-  ]
+  // 習得数ベースのバッジは共通ジェネレータ（lib/badges）で統一（A-7）。ラベル文言のみアプリ固有
+  const kanjiBadges = masteryBadges(stats.kanjiMastered, stats.kanjiTotal,
+    ['めがでた', 'すごい', 'はかせ', 'おう', 'ぜんぶ！'])
+  const engBadges = masteryBadges(stats.engMastered, stats.engTotal,
+    ['はじめの\nいっぽ', 'えいごずき', 'はかせ', 'えいごおう', 'ぜんぶ！'])
   const wmBadges = stats.wmByGrade.map(({ grade, done }) => ({
     emoji: grade === '小1' ? '📘' : grade === '小2' ? '📗' : '📕',
     label: `${grade}マスター`,
