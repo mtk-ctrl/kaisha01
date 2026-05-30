@@ -870,6 +870,9 @@ export default function JukuUnitPage() {
             <h1 className="font-black text-lg leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
               {unit.title}
             </h1>
+            {unit.titleKana && (
+              <p className="text-[10px] font-bold leading-tight" style={{ color: '#6B5A52' }}>{unit.titleKana}</p>
+            )}
             {totalProblems > 0 && (
               <div className="flex items-center gap-2 mt-1">
                 <div className="h-1.5 flex-1 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.15)' }}>
