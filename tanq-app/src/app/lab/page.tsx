@@ -615,6 +615,18 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
         </div>
       </div>
 
+      {/* 保護者レポートへの導線 */}
+      <Link href="/report"
+        className="flex items-center gap-3 rounded-[18px] p-3.5 mb-5 transition-all hover:-translate-y-0.5"
+        style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A', textDecoration: 'none' }}>
+        <span className="text-2xl">📊</span>
+        <div className="flex-1">
+          <div className="font-black text-sm" style={{ color: '#3A2E2A' }}>保護者レポート</div>
+          <div className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>今週のがんばり・先週からの伸びを見る</div>
+        </div>
+        <span className="text-lg" style={{ color: '#B0A49C' }}>›</span>
+      </Link>
+
       {!hasAny && (
         <div className="rounded-[22px] p-6 text-center" style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
           <div className="text-4xl mb-3">🌱</div>
