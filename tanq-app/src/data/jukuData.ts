@@ -1042,8 +1042,8 @@ export const JUKU_UNITS: JukuUnit[] = [
       ],
       diagramSpec: {
         perDiff: 2, totalDiff: 12, count: 6,
-        need1: 24, need2: 36, actual: 32,
-        method1Label: '4個ずつ', method2Label: '6個ずつ', totalName: 'おはじき',
+        per1: 4, per2: 6, rem1: 8, rem2: -4,
+        method1Label: '4個ずつ', method2Label: '6個ずつ',
         diffText: '全体の差 ＝ あまり8 ＋ 不足4 ＝ 12',
         itemName: '人', unit: '個', showValues: true,
       },
@@ -1061,8 +1061,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 2, totalDiff: 12, count: 6,
-          need1: 24, need2: 36, actual: 32,
-          method1Label: '4個ずつ', method2Label: '6個ずつ', totalName: 'おはじき',
+          per1: 4, per2: 6, rem1: 8, rem2: -4,
+          method1Label: '4個ずつ', method2Label: '6個ずつ',
           diffText: '全体の差 ＝ あまり8 ＋ 不足4 ＝ 12',
           itemName: '人', unit: '個',
         },
@@ -1082,8 +1082,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 2, totalDiff: 14, count: 7,
-          need1: 35, need2: 49, actual: 39,
-          method1Label: '5枚ずつ', method2Label: '7枚ずつ', totalName: '色紙',
+          per1: 5, per2: 7, rem1: 4, rem2: -10,
+          method1Label: '5枚ずつ', method2Label: '7枚ずつ',
           diffText: '全体の差 ＝ あまり4 ＋ 不足10 ＝ 14',
           itemName: '人', unit: '枚',
         },
@@ -1103,8 +1103,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 3, totalDiff: 15, count: 5,
-          need1: 20, need2: 35, actual: 37,
-          method1Label: '4個ずつ', method2Label: '7個ずつ', totalName: 'あめ',
+          per1: 4, per2: 7, rem1: 17, rem2: 2,
+          method1Label: '4個ずつ', method2Label: '7個ずつ',
           diffText: '全体の差 ＝ あまり17 − あまり2 ＝ 15',
           itemName: '人', unit: '個',
         },
@@ -1124,8 +1124,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 1, totalDiff: 8, count: 8,
-          need1: 40, need2: 48, actual: 38,
-          method1Label: '5本ずつ', method2Label: '6本ずつ', totalName: 'えんぴつ',
+          per1: 5, per2: 6, rem1: -2, rem2: -10,
+          method1Label: '5本ずつ', method2Label: '6本ずつ',
           diffText: '全体の差 ＝ 不足10 − 不足2 ＝ 8',
           itemName: '人', unit: '本',
         },
@@ -1148,8 +1148,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 2, totalDiff: 12, count: 6,
-          need1: 24, need2: 36, actual: 36,
-          method1Label: '4人ずつ', method2Label: '6人ずつ', totalName: '子どもの数',
+          per1: 4, per2: 6, rem1: 12, rem2: 0,
+          method1Label: '4人ずつ', method2Label: '6人ずつ',
           diffText: '全体の差 ＝ 座れない12 ＋ ちょうど0 ＝ 12',
           itemName: '脚', unit: '人',
         },
@@ -1169,8 +1169,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 3, totalDiff: 21, count: 7,
-          need1: 28, need2: 49, actual: 46,
-          method1Label: '4人ずつ', method2Label: '7人ずつ', totalName: '子どもの数',
+          per1: 4, per2: 7, rem1: 18, rem2: -3,
+          method1Label: '4人ずつ', method2Label: '7人ずつ',
           diffText: '全体の差 ＝ 座れない18 ＋ あまり席3 ＝ 21',
           itemName: '脚', unit: '人',
         },
@@ -1190,8 +1190,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 2, totalDiff: 12, count: 6,
-          need1: 30, need2: 42, actual: 33,
-          method1Label: '5本ずつ', method2Label: '7本ずつ', totalName: 'えんぴつ',
+          per1: 5, per2: 7, rem1: 3, rem2: -9,
+          method1Label: '5本ずつ', method2Label: '7本ずつ',
           diffText: '全体の差 ＝ あまり3 ＋ 不足9 ＝ 12',
           itemName: '人', unit: '本',
         },
@@ -1212,7 +1212,9 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramSpec: {
           mode: 'collect',
           perDiff: 30, totalDiff: 450, count: 15,
-          per1: 80, per2: 50,
+          per1: 50, per2: 80,
+          method1Label: 'あめ50円', method2Label: 'チョコ80円',
+          diffText: '全体の差 ＝ 代金のちがい ＝ 450円',
           itemName: '個', unit: '円',
         },
         hints: [
@@ -1231,8 +1233,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 30, totalDiff: 360, count: 12,
-          need1: 1080, need2: 1440, actual: 1300,
-          method1Label: '90円ノート', method2Label: '120円ノート', totalName: '持っているお金',
+          per1: 90, per2: 120, rem1: 220, rem2: -140,
+          method1Label: '90円ノート', method2Label: '120円ノート',
           diffText: '全体の差 ＝ 不足140 ＋ あまり220 ＝ 360',
           itemName: '冊', unit: '円',
         },
@@ -1255,8 +1257,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 2, totalDiff: 16, count: 8,
-          need1: 32, need2: 48, actual: 44,
-          method1Label: '4個ずつ', method2Label: '6個ずつ', totalName: 'あめ',
+          per1: 4, per2: 6, rem1: 12, rem2: -4,
+          method1Label: '4個ずつ', method2Label: '6個ずつ',
           diffText: '全体の差 ＝ あまり12 ＋ 不足4 ＝ 16',
           itemName: '人', unit: '個',
         },
@@ -1276,8 +1278,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 1, totalDiff: 14, count: 14,
-          need1: 70, need2: 84, actual: 82,
-          method1Label: '5枚ずつ', method2Label: '6枚ずつ', totalName: '画用紙',
+          per1: 5, per2: 6, rem1: 12, rem2: -2,
+          method1Label: '5枚ずつ', method2Label: '6枚ずつ',
           diffText: '全体の差 ＝ あまり12 ＋ 不足2 ＝ 14',
           itemName: '人', unit: '枚',
         },
@@ -1298,7 +1300,9 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramSpec: {
           mode: 'collect',
           perDiff: 20, totalDiff: 300, count: 15,
-          per1: 70, per2: 50,
+          per1: 50, per2: 70,
+          method1Label: 'みかん50円', method2Label: 'りんご70円',
+          diffText: '全体の差 ＝ 多く買えた6個分 ＝ 50×6 ＝ 300円',
           itemName: '個', unit: '円',
         },
         hints: [
@@ -1317,8 +1321,8 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramType: 'gap',
         diagramSpec: {
           perDiff: 2, totalDiff: 22, count: 11,
-          need1: 55, need2: 77, actual: 63,
-          method1Label: '5人ずつ', method2Label: '7人ずつ', totalName: '子どもの数',
+          per1: 5, per2: 7, rem1: 8, rem2: -14,
+          method1Label: '5人ずつ', method2Label: '7人ずつ',
           diffText: '全体の差 ＝ 入れない8 ＋ あまり部屋分(7×2=14) ＝ 22',
           itemName: '室', unit: '人',
         },
