@@ -521,18 +521,22 @@ function GapDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; w
 
   return (
     <div className="w-full space-y-2">
-      {/* 考え方の切り替えタブ */}
-      <div className="flex items-center justify-center gap-1.5">
-        <span className="text-[9px] font-bold mr-1" style={{ color: '#6B5A52' }}>図のタイプ</span>
-        {([['line', '① ならべる図'], ['area', '② 面積図']] as const).map(([v, label]) => (
-          <button key={v} type="button" onClick={() => setView(v)}
-            className="text-[10px] font-black px-2.5 py-1 rounded-full transition-all"
-            style={view === v
-              ? { background: '#3A2E2A', color: '#FFF6E5', border: '2px solid #3A2E2A' }
-              : { background: '#FFFFFF', color: '#6B5A52', border: '2px solid #C4B8AE' }}>
-            {label}
-          </button>
-        ))}
+      {/* 考え方の切り替えタブ（目立つトグル） */}
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-[10px] font-black" style={{ color: '#b45309' }}>
+          👇 図のタイプを えらべるよ！
+        </span>
+        <div className="inline-flex p-1 rounded-full" style={{ background: '#F0E5D8', border: '2px solid #C4B8AE' }}>
+          {([['line', '① ならべる図'], ['area', '② 面積図']] as const).map(([v, label]) => (
+            <button key={v} type="button" onClick={() => setView(v)}
+              className="text-[11px] font-black px-3.5 py-1.5 rounded-full transition-all"
+              style={view === v
+                ? { background: '#f0c040', color: '#3A2E2A', boxShadow: '0 2px 0 #c79a1e, 0 3px 6px rgba(0,0,0,0.18)', transform: 'translateY(-1px)' }
+                : { background: 'transparent', color: '#8a7a70' }}>
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
       {/* showValues（introSlide）は両方の図を続けて見せる */}
       {showValues ? (
