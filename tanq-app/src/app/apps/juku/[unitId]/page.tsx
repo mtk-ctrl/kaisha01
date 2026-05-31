@@ -509,15 +509,50 @@ function AreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; 
 }
 
 // ─────────────────────────────────────
-// SVG: 差あつめ図（差集め算・過不足算）📦
-//   答え（人数・個数）を一切使わずに描ける図。
-//   「1人あたりの数」を箱で表し、配る人数は □人 のまま（未知）にする。
-//   大きい配り方は小さい配り方より1人につき perDiff だけ多い → その赤い差が
-//   □人ぶん集まって「全体の差（＝あまり＋不足）」になる、を視覚化する。
-//   間違えるごとに段階表示（wrongCount連動）。
+// 差あつめ図（差集め算・過不足算）📦
+//   子どもによって響く図は違うので、2つの「考え方」をタブで切り替えられる。
+//   ① ならべる図（線分図ベース／かるび式）: 1あたりの差が□人ぶん連なって全体の差に
+//   ② 面積図（studyup式）: たて=1あたりの差・よこ=□人 の長方形の面積=全体の差
+//   どちらも答え（人数）を使わず □ のまま描く。間違えるほど段階表示。
 // ─────────────────────────────────────
 function GapDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
-  const mode = (spec.mode as string) ?? 'shortage'
+  const showValues = (spec.showValues as boolean) ?? false
+  const [view, setView] = useState<'line' | 'area'>('line')
+
+  return (
+    <div className="w-full space-y-2">
+      {/* 考え方の切り替えタブ */}
+      <div className="flex items-center justify-center gap-1.5">
+        <span className="text-[9px] font-bold mr-1" style={{ color: '#6B5A52' }}>図のタイプ</span>
+        {([['line', '① ならべる図'], ['area', '② 面積図']] as const).map(([v, label]) => (
+          <button key={v} type="button" onClick={() => setView(v)}
+            className="text-[10px] font-black px-2.5 py-1 rounded-full transition-all"
+            style={view === v
+              ? { background: '#3A2E2A', color: '#FFF6E5', border: '2px solid #3A2E2A' }
+              : { background: '#FFFFFF', color: '#6B5A52', border: '2px solid #C4B8AE' }}>
+            {label}
+          </button>
+        ))}
+      </div>
+      {/* showValues（introSlide）は両方の図を続けて見せる */}
+      {showValues ? (
+        <div className="space-y-3">
+          <GapLineDiagram spec={spec} wrongCount={wrongCount} />
+          <div className="h-px" style={{ background: '#E8E0D8' }} />
+          <GapAreaDiagram spec={spec} wrongCount={wrongCount} />
+        </div>
+      ) : view === 'line' ? (
+        <GapLineDiagram spec={spec} wrongCount={wrongCount} />
+      ) : (
+        <GapAreaDiagram spec={spec} wrongCount={wrongCount} />
+      )}
+    </div>
+  )
+}
+
+// ① ならべる図（線分図ベース・かるび式）
+//   1あたりの差が□人ぶん連なって全体の差になることを、横に並ぶ赤帯で見せる。
+function GapLineDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
   const showValues = (spec.showValues as boolean) ?? false
   const wc = showValues ? 3 : wrongCount
 
@@ -530,6 +565,7 @@ function GapDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; w
   const per2 = (spec.per2 as number) // 大きい方の1あたり
   const rem1 = spec.rem1 as number | undefined // 小さい方の あまり(+)/不足(-)
   const rem2 = spec.rem2 as number | undefined // 大きい方の あまり(+)/不足(-)
+  const mode = (spec.mode as string) ?? 'shortage'
   const m1 = (spec.method1Label as string) ?? `${per1}${unit}ずつ`
   const m2 = (spec.method2Label as string) ?? `${per2}${unit}ずつ`
   const diffText = (spec.diffText as string) ?? `全体の差 ＝ ${totalDiff}${unit}`
@@ -634,6 +670,87 @@ function GapDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; w
         <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
           <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
             全体の差 {totalDiff} ÷ 1{itemName}あたりの差 {perDiff} ＝ {count}{itemName}！
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ② 面積図（studyup式）
+//   たて＝1人あたりの差（perDiff）、よこ＝□人。長方形の面積＝全体の差。
+//   「たて×よこ＝面積」で 全体の差 ÷ 1あたりの差 ＝ □人 が見える。答えは□のまま。
+function GapAreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const showValues = (spec.showValues as boolean) ?? false
+  const wc = showValues ? 3 : wrongCount
+
+  const perDiff   = spec.perDiff   as number
+  const totalDiff = spec.totalDiff as number
+  const count     = spec.count     as number
+  const itemName  = (spec.itemName as string) ?? '人'
+  const unit      = (spec.unit     as string) ?? ''
+  const diffText  = (spec.diffText as string) ?? `全体の差 ＝ ${totalDiff}${unit}`
+
+  // レイアウト（答えは使わず □ で表す）
+  const LX = 56, RW = 150, topY = 16, rectH = 52
+  const rectX = LX, rectW = RW
+
+  return (
+    <div className="w-full space-y-1.5">
+      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+        たて×よこ＝面積 で考えよう
+      </p>
+
+      <svg viewBox="0 0 250 104" className="w-full mx-auto overflow-visible" style={{ maxWidth: 340 }}>
+        {/* たて = 1あたりの差 */}
+        <line x1={LX - 10} y1={topY} x2={LX - 10} y2={topY + rectH} stroke="#f87171" strokeWidth="1.5" />
+        <line x1={LX - 13} y1={topY} x2={LX - 7} y2={topY} stroke="#f87171" strokeWidth="1.5" />
+        <line x1={LX - 13} y1={topY + rectH} x2={LX - 7} y2={topY + rectH} stroke="#f87171" strokeWidth="1.5" />
+        <text x={LX - 16} y={topY + rectH / 2} textAnchor="end" fontSize="8.5" fill="#f87171" fontWeight="bold">たて</text>
+        <text x={LX - 16} y={topY + rectH / 2 + 10} textAnchor="end" fontSize="8.5" fill="#f87171" fontWeight="bold">{perDiff}{unit}</text>
+
+        {/* 長方形（面積=全体の差） */}
+        <rect x={rectX} y={topY} width={rectW} height={rectH} rx="3"
+          fill={wc >= 1 ? 'rgba(248,113,113,0.15)' : '#FFF1B8'} stroke="#3A2E2A" strokeWidth="2" />
+
+        {/* たてに「1あたりの差」が並ぶ点線（1人ぶんの区切り） */}
+        {[1, 2].map(i => (
+          <line key={i} x1={rectX + (rectW / 3) * i} y1={topY} x2={rectX + (rectW / 3) * i} y2={topY + rectH}
+            stroke="#C4B8AE" strokeWidth="1" strokeDasharray="2 2" />
+        ))}
+
+        {/* 面積ラベル */}
+        {wc >= 2 ? (
+          <text x={rectX + rectW / 2} y={topY + rectH / 2 + 4} textAnchor="middle" fontSize="10" fill="#b45309" fontWeight="bold">
+            面積 = 全体の差 {totalDiff}{unit}
+          </text>
+        ) : (
+          <text x={rectX + rectW / 2} y={topY + rectH / 2 + 4} textAnchor="middle" fontSize="10" fill="#6B5A52" fontWeight="bold">
+            面積 = 全体の差
+          </text>
+        )}
+
+        {/* よこ = □人 */}
+        <line x1={rectX} y1={topY + rectH + 8} x2={rectX + rectW} y2={topY + rectH + 8} stroke="#3A2E2A" strokeWidth="1.5" />
+        <line x1={rectX} y1={topY + rectH + 5} x2={rectX} y2={topY + rectH + 11} stroke="#3A2E2A" strokeWidth="1.5" />
+        <line x1={rectX + rectW} y1={topY + rectH + 5} x2={rectX + rectW} y2={topY + rectH + 11} stroke="#3A2E2A" strokeWidth="1.5" />
+        <text x={rectX + rectW / 2} y={topY + rectH + 20} textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">
+          よこ = □{itemName}（もとめたい数）
+        </text>
+      </svg>
+
+      {/* 全体の差の作り方（wc>=2） */}
+      {wc >= 2 && (
+        <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
+          <span className="text-[10px] font-black" style={{ color: '#b45309' }}>{diffText}</span>
+        </div>
+      )}
+
+      {/* よこ＝面積÷たて（wc>=3） */}
+      {wc >= 3 && (
+        <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+          <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
+            よこ＝面積÷たて → {totalDiff} ÷ {perDiff} ＝ {count}{itemName}！
           </span>
         </div>
       )}
