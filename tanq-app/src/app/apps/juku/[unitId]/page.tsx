@@ -247,6 +247,209 @@ function LineSegDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown
 }
 
 // ─────────────────────────────────────
+// SVG: 相当算の帯図 🎯
+//   全体を①とおいた帯。一部分の「割合」が具体的な「数量」に対応する。
+//   「①にあたる量 ＝ 実数 ÷ その割合」で全体を逆算する。
+//   mode: single（部分が既知）/ diff（差が割合）/ seq（逐次消費）
+//   間違えるごとに段階表示（wrongCount連動）。
+// ─────────────────────────────────────
+function RatioBarDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const mode = (spec.mode as string) ?? 'single'
+  const showValues = (spec.showValues as boolean) ?? false
+  const wc = showValues ? 3 : wrongCount
+  const unit = (spec.unit as string) ?? ''
+  const answerValue = spec.answerValue as number
+  const findLabel = (spec.findLabel as string) ?? '全体'
+
+  const barStart = 46, barEnd = 236
+  const barW = barEnd - barStart
+
+  // ── 逐次消費（seq）: 残りを「新しい①」とみて2本帯で追う ──
+  if (mode === 'seq') {
+    const bars = spec.bars as { usedSpan: number; denom: number; usedLabel: string; remainLabel?: string; remainValue?: number; remainText?: string }[]
+    const finalFracText = (spec.finalFracText as string) ?? ''
+    const lastRemain = bars[bars.length - 1].remainValue
+    const barH = 20
+    return (
+      <div className="w-full space-y-1.5">
+        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+          のこりを「あたらしい①」とみて、じゅんに考えよう
+        </p>
+        <svg viewBox="0 0 250 130" className="w-full mx-auto overflow-visible" style={{ maxWidth: 340 }}>
+          {bars.map((b, bi) => {
+            const y = 20 + bi * 56
+            const usedW = barW * b.usedSpan / b.denom
+            const remW = barW - usedW
+            const isLast = bi === bars.length - 1
+            return (
+              <g key={bi}>
+                <text x={barStart} y={y - 4} fontSize="8" fill="#6B5A52" fontWeight="bold">
+                  {bi === 0 ? 'はじめ（全体①）' : '↑ のこりを①とみる'}
+                </text>
+                {/* 使った（赤） */}
+                <rect x={barStart} y={y} width={usedW} height={barH} rx="3" fill="rgba(248,113,113,0.22)" stroke="#f87171" strokeWidth="1.8" />
+                <text x={barStart + usedW / 2} y={y + 13} textAnchor="middle" fontSize="7.5" fill="#f87171" fontWeight="bold">{b.usedLabel}</text>
+                {/* のこり（水色） */}
+                <rect x={barStart + usedW} y={y} width={remW} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+                <text x={barStart + usedW + remW / 2} y={y + 13} textAnchor="middle" fontSize="7.5" fill="#3A2E2A" fontWeight="bold">{b.remainLabel ?? 'のこり'}</text>
+                {/* 最後の帯の「のこり＝実数」 */}
+                {isLast && b.remainValue !== undefined && wc >= 1 && (
+                  <>
+                    <line x1={barStart + usedW} y1={y + barH + 3} x2={barEnd} y2={y + barH + 3} stroke="#0d9488" strokeWidth="1.5" />
+                    <text x={barStart + usedW + remW / 2} y={y + barH + 12} textAnchor="middle" fontSize="8.5" fill="#0d9488" fontWeight="bold">{b.remainText ?? `${b.remainValue}${unit}`}</text>
+                  </>
+                )}
+                {/* 1本目の「のこり」から2本目の全体へ降ろす点線 */}
+                {bi === 0 && (
+                  <line x1={barStart + usedW + remW / 2} y1={y + barH + 2} x2={barStart + barW / 2} y2={y + 56 - 8} stroke="#C4B8AE" strokeWidth="1.2" strokeDasharray="3 2" />
+                )}
+              </g>
+            )
+          })}
+        </svg>
+        {wc >= 2 && finalFracText && (
+          <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
+            <span className="text-[10px] font-black" style={{ color: '#b45309' }}>
+              のこり {lastRemain}{unit} は、全体の {finalFracText} にあたる
+            </span>
+          </div>
+        )}
+        {wc >= 3 && (
+          <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+            <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
+              {findLabel} ＝ {lastRemain} ÷ {finalFracText} ＝ {answerValue}{unit}！
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ── 差が割合（diff）: A群・B群を左そろえで積み、差の区画をハイライト ──
+  if (mode === 'diff') {
+    const denom = spec.denom as number
+    const segs = spec.segs as { span: number; label: string; role: string }[]
+    const knownDiff = spec.knownDiff as { value: number; text?: string }
+    const segA = segs.find(s => s.role === 'A')!
+    const segB = segs.find(s => s.role === 'B')!
+    const diffSpan = Math.abs(segA.span - segB.span)
+    const segW = barW / denom
+    const oneUnit = knownDiff.value / diffSpan
+    const barH = 22, yA = 28, yB = yA + barH + 8
+    const bigSpan = Math.max(segA.span, segB.span)
+    const smallSpan = Math.min(segA.span, segB.span)
+    return (
+      <div className="w-full space-y-1.5">
+        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+          全体を {denom} 区画に分けて、差が何区画かを見よう
+        </p>
+        <svg viewBox="0 0 250 92" className="w-full mx-auto overflow-visible" style={{ maxWidth: 340 }}>
+          {/* 全体①ブラケット */}
+          <line x1={barStart} y1={yA - 8} x2={barEnd} y2={yA - 8} stroke="#6B5A52" strokeWidth="1.2" />
+          <text x={(barStart + barEnd) / 2} y={yA - 11} textAnchor="middle" fontSize="8.5" fill="#6B5A52" fontWeight="bold">{findLabel} ＝ ①（{denom}区画）</text>
+          {/* A群 */}
+          <rect x={barStart} y={yA} width={segW * segA.span} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+          <text x={barStart + segW * segA.span / 2} y={yA + 14} textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">{segA.label}</text>
+          {/* B群 */}
+          <rect x={barStart} y={yB} width={segW * segB.span} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+          <text x={barStart + segW * segB.span / 2} y={yB + 14} textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">{segB.label}</text>
+          {/* 差の区画ハイライト＋ブラケット */}
+          {wc >= 1 && diffSpan > 0 && (
+            <>
+              <rect x={barStart + segW * smallSpan} y={yA} width={segW * diffSpan} height={barH} rx="3"
+                fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.6" strokeDasharray="4 2" />
+              <line x1={barStart + segW * smallSpan} y1={yA - 3} x2={barStart + segW * bigSpan} y2={yA - 3} stroke="#f87171" strokeWidth="1.4" />
+              <text x={barStart + segW * (smallSpan + bigSpan) / 2} y={yA + 14} textAnchor="middle" fontSize="8" fill="#f87171" fontWeight="bold">差{knownDiff.value}{unit}</text>
+            </>
+          )}
+        </svg>
+        {wc >= 2 && (
+          <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
+            <span className="text-[10px] font-black" style={{ color: '#b45309' }}>
+              1区画（1/{denom}）＝ {knownDiff.value} ÷ {diffSpan} ＝ {oneUnit}{unit}
+            </span>
+          </div>
+        )}
+        {wc >= 3 && (
+          <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+            <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
+              {findLabel} ＝ {oneUnit} × {denom} ＝ {answerValue}{unit}！
+            </span>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ── single: 全体①を分母で区切り、既知の部分を実数に対応させる ──
+  const denom = spec.denom as number
+  const segs = spec.segs as { span: number; label: string; role: string }[]
+  const known = spec.known as { role: string; value: number; text?: string }
+  const segW = barW / denom
+  const knownSpan = segs.filter(s => s.role === known.role).reduce((a, s) => a + s.span, 0)
+  const barH = 26, y = 34
+  // 既知セグメントの描画範囲（連続している前提）
+  let cursor = barStart, knownX = barStart, knownW = segW * knownSpan, found = false
+  for (const s of segs) {
+    if (s.role === known.role && !found) { knownX = cursor; found = true }
+    cursor += segW * s.span
+  }
+  return (
+    <div className="w-full space-y-1.5">
+      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+        全体を①として、わかっている部分の「割合」と「数」を合わせよう
+      </p>
+      <svg viewBox="0 0 250 84" className="w-full mx-auto overflow-visible" style={{ maxWidth: 340 }}>
+        {/* 全体①ブラケット */}
+        <line x1={barStart} y1={y - 8} x2={barEnd} y2={y - 8} stroke="#6B5A52" strokeWidth="1.2" />
+        <line x1={barStart} y1={y - 11} x2={barStart} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
+        <line x1={barEnd} y1={y - 11} x2={barEnd} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
+        <text x={(barStart + barEnd) / 2} y={y - 11} textAnchor="middle" fontSize="8.5" fill="#6B5A52" fontWeight="bold">{findLabel} ＝ ①</text>
+        {/* セグメント */}
+        {(() => {
+          let cx = barStart
+          return segs.map((s, i) => {
+            const w = segW * s.span
+            const isKnown = s.role === known.role
+            const x = cx; cx += w
+            return (
+              <g key={i}>
+                <rect x={x} y={y} width={w} height={barH} rx="3"
+                  fill={isKnown ? '#DBF6F0' : '#FFF1B8'} stroke={isKnown ? '#2BA39A' : '#3A2E2A'} strokeWidth="2" />
+                <text x={x + w / 2} y={y + 16} textAnchor="middle" fontSize="8.5" fill="#3A2E2A" fontWeight="bold">{s.label}</text>
+              </g>
+            )
+          })
+        })()}
+        {/* 既知部分＝実数 のブラケット（wc>=1） */}
+        {wc >= 1 && (
+          <>
+            <line x1={knownX} y1={y + barH + 4} x2={knownX + knownW} y2={y + barH + 4} stroke="#0d9488" strokeWidth="1.5" />
+            <line x1={knownX} y1={y + barH + 1} x2={knownX} y2={y + barH + 7} stroke="#0d9488" strokeWidth="1.5" />
+            <line x1={knownX + knownW} y1={y + barH + 1} x2={knownX + knownW} y2={y + barH + 7} stroke="#0d9488" strokeWidth="1.5" />
+            <text x={knownX + knownW / 2} y={y + barH + 14} textAnchor="middle" fontSize="8.5" fill="#0d9488" fontWeight="bold">{known.text ?? `${known.value}${unit}`}</text>
+          </>
+        )}
+      </svg>
+      {wc >= 2 && (
+        <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
+          <span className="text-[10px] font-black" style={{ color: '#b45309' }}>
+            ①にあたる量を求める：{known.value} ÷ {knownSpan} × {denom} ＝ {answerValue}{unit}
+          </span>
+        </div>
+      )}
+      {wc >= 3 && (
+        <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+          <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>
+            {findLabel} ＝ {answerValue}{unit}！
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
 // SVG: 点線図（植木算）🌳 emoji版
 // ─────────────────────────────────────
 function DotLineDiagram({ spec }: { spec: Record<string, unknown> }) {
@@ -768,6 +971,7 @@ const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   'line-seg': '📏 線分図',
   arrow: '→ 矢印図',
   gap: '📦 差あつめ図',
+  'ratio-bar': '🎯 わりあいの帯図',
 }
 
 function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; spec: Record<string, unknown>; wrongCount?: number }) {
@@ -786,6 +990,7 @@ function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; sp
       {type === 'line-seg' && <LineSegDiagram spec={spec} wrongCount={wrongCount} />}
       {type === 'area'     && <AreaDiagram    spec={spec} wrongCount={wrongCount} />}
       {type === 'gap'      && <GapDiagram     spec={spec} wrongCount={wrongCount} />}
+      {type === 'ratio-bar' && <RatioBarDiagram spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
