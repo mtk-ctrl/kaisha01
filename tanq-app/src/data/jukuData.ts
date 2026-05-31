@@ -1,4 +1,4 @@
-export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'none'
+export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'ratio-bar' | 'none'
 export type Difficulty = 1 | 2 | 3
 
 export interface HintStep {
@@ -1338,9 +1338,334 @@ export const JUKU_UNITS: JukuUnit[] = [
   {
     id: 'equivalent', order: 6, title: '相当算', titleKana: 'そうとうざん',
     emoji: '🎯', color: '#c4a8ff', layer: 3, prerequisiteIds: ['excess-deficit'],
-    isFree: false, coreConcept: '「全体の何分のいくつか」が具体的な数量と対応する',
-    approachText: '全体を①とおいた線分図で逆算する。',
-    primaryDiagram: 'line-seg', problems: [],
+    isFree: false,
+    coreConcept: '「全体の何分のいくつか（割合）」が、具体的な数量に対応する',
+    approachText:
+      '全体を①とおいた帯図で考える。わかっている「割合」と「数量」を対応させると、\n①にあたる量 ＝ 数量 ÷ その割合 で全体が逆算できる。\nのこりが問われたら、まず「のこりの割合」を作ってから対応させよう。',
+    primaryDiagram: 'ratio-bar',
+    introSlide: {
+      title: 'わりあいの帯図の読み方',
+      explanation: [
+        '全体を①（まるいち）とおいて、1本の帯で表す',
+        '帯を「分母」の数だけ区切り、わかっている部分の割合をぬる',
+        'その部分にあたる「実際の数」を対応させる（例：3/5 が 60）',
+        '①にあたる量 ＝ 数 ÷ 割合。60 ÷ 3 × 5 ＝ 100 で全体が出る！',
+      ],
+      diagramSpec: {
+        mode: 'single', denom: 5,
+        segs: [
+          { span: 3, label: '3/5', role: 'part' },
+          { span: 2, label: 'のこり 2/5', role: 'rest' },
+        ],
+        known: { role: 'part', value: 60, text: '3/5 ＝ 60' },
+        answerValue: 100, unit: '', findLabel: 'ある数', showValues: true,
+      },
+    },
+    problems: [
+      // ──────────────────────────────────
+      // ★ かんたん（部分の割合 ↔ 実数）
+      // ──────────────────────────────────
+      {
+        id: 'eq-01',
+        title: '部分の割合から全体（基本）',
+        difficulty: 1,
+        problemText: 'ある数の 3/5 が 60 です。ある数はいくつですか？',
+        answer: '100', answerUnit: '',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'single', denom: 5,
+          segs: [
+            { span: 3, label: '3/5 ＝ 60', role: 'part' },
+            { span: 2, label: 'のこり 2/5', role: 'rest' },
+          ],
+          known: { role: 'part', value: 60, text: '3/5 ＝ 60' },
+          answerValue: 100, unit: '', findLabel: 'ある数',
+        },
+        hints: [
+          { step: 1, text: '全体（ある数）を①とおくよ。①を5つに区切ると、そのうち3つぶんが60にあたるね。' },
+          { step: 2, text: '1区画（1/5）は 60 ÷ 3 ＝ 20。' },
+          { step: 3, text: '①は5区画だから 20 × 5 ＝ 100。確かめ：100 × 3/5 ＝ 60 ◎' },
+        ],
+        explanationText: '①にあたる量 ＝ 60 ÷ 3 × 5 ＝ 100。3/5 が 60 なら全体は 100。',
+      },
+      {
+        id: 'eq-02',
+        title: 'テープの長さ',
+        difficulty: 1,
+        problemText: 'あるテープの 2/7 の長さが 14cm でした。テープ全体の長さは何cmですか？',
+        answer: '49', answerUnit: 'cm',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'single', denom: 7,
+          segs: [
+            { span: 2, label: '2/7 ＝ 14cm', role: 'part' },
+            { span: 5, label: 'のこり 5/7', role: 'rest' },
+          ],
+          known: { role: 'part', value: 14, text: '2/7 ＝ 14cm' },
+          answerValue: 49, unit: 'cm', findLabel: 'テープ全体',
+        },
+        hints: [
+          { step: 1, text: 'テープ全体を①として7区画に分けると、2区画ぶんが14cmだよ。' },
+          { step: 2, text: '1区画（1/7）は 14 ÷ 2 ＝ 7cm。' },
+          { step: 3, text: '全体は7区画だから 7 × 7 ＝ 49cm。' },
+        ],
+        explanationText: '①にあたる量 ＝ 14 ÷ 2 × 7 ＝ 49cm。',
+      },
+      {
+        id: 'eq-03',
+        title: 'クラスの人数',
+        difficulty: 1,
+        problemText: 'あるクラスの 5/9 が女子で、女子は 20 人です。クラス全体は何人ですか？',
+        answer: '36', answerUnit: '人',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'single', denom: 9,
+          segs: [
+            { span: 5, label: '女子 5/9 ＝ 20人', role: 'part' },
+            { span: 4, label: '男子 4/9', role: 'rest' },
+          ],
+          known: { role: 'part', value: 20, text: '5/9 ＝ 20人' },
+          answerValue: 36, unit: '人', findLabel: 'クラス全体',
+        },
+        hints: [
+          { step: 1, text: 'クラス全体を①として9区画に分けると、女子は5区画ぶん＝20人。' },
+          { step: 2, text: '1区画（1/9）は 20 ÷ 5 ＝ 4人。' },
+          { step: 3, text: '全体は9区画だから 4 × 9 ＝ 36人。男子は4×4＝16人、16＋20＝36◎' },
+        ],
+        explanationText: '①にあたる量 ＝ 20 ÷ 5 × 9 ＝ 36人。',
+      },
+      {
+        id: 'eq-04',
+        title: '水そうの水',
+        difficulty: 1,
+        problemText: '水そうに入る水の 3/4 は 54L です。水そういっぱいでは何L入りますか？',
+        answer: '72', answerUnit: 'L',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'single', denom: 4,
+          segs: [
+            { span: 3, label: '3/4 ＝ 54L', role: 'part' },
+            { span: 1, label: 'のこり 1/4', role: 'rest' },
+          ],
+          known: { role: 'part', value: 54, text: '3/4 ＝ 54L' },
+          answerValue: 72, unit: 'L', findLabel: '満水',
+        },
+        hints: [
+          { step: 1, text: '満水を①として4区画に分けると、3区画ぶんが54L。' },
+          { step: 2, text: '1区画（1/4）は 54 ÷ 3 ＝ 18L。' },
+          { step: 3, text: '満水は4区画だから 18 × 4 ＝ 72L。' },
+        ],
+        explanationText: '①にあたる量 ＝ 54 ÷ 3 × 4 ＝ 72L。',
+      },
+      // ──────────────────────────────────
+      // ★★ ふつう（のこりが実数 / 差が割合）
+      // ──────────────────────────────────
+      {
+        id: 'eq-05',
+        title: 'お金を使ったのこり',
+        difficulty: 2,
+        problemText: '持っていたお金の 3/8 を使ったら、のこりは 50 円になりました。はじめにいくら持っていましたか？',
+        answer: '80', answerUnit: '円',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'single', denom: 8,
+          segs: [
+            { span: 3, label: '使った 3/8', role: 'used' },
+            { span: 5, label: 'のこり 5/8 ＝ 50円', role: 'remain' },
+          ],
+          known: { role: 'remain', value: 50, text: 'のこり 5/8 ＝ 50円' },
+          answerValue: 80, unit: '円', findLabel: 'はじめのお金',
+        },
+        hints: [
+          { step: 1, text: '問われているのは「はじめのお金」。使った 3/8 の“のこり”は 1－3/8 ＝ 5/8 だね。' },
+          { step: 2, text: 'のこり 5/8 が 50 円。1区画（1/8）は 50 ÷ 5 ＝ 10円。' },
+          { step: 3, text: 'はじめは8区画だから 10 × 8 ＝ 80円。確かめ：80×3/8＝30使い、のこり50◎' },
+        ],
+        explanationText: 'のこりの割合 5/8 を作る。①にあたる量 ＝ 50 ÷ 5 × 8 ＝ 80円。',
+      },
+      {
+        id: 'eq-06',
+        title: '本を読んだのこり',
+        difficulty: 2,
+        problemText: 'ある本の 2/5 を読んだら、のこりは 36 ページでした。この本は全部で何ページですか？',
+        answer: '60', answerUnit: 'ページ',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'single', denom: 5,
+          segs: [
+            { span: 2, label: '読んだ 2/5', role: 'used' },
+            { span: 3, label: 'のこり 3/5 ＝ 36', role: 'remain' },
+          ],
+          known: { role: 'remain', value: 36, text: 'のこり 3/5 ＝ 36ページ' },
+          answerValue: 60, unit: 'ページ', findLabel: '本全体',
+        },
+        hints: [
+          { step: 1, text: 'のこりの割合は 1－2/5 ＝ 3/5 だよ。' },
+          { step: 2, text: 'のこり 3/5 が 36 ページ。1区画（1/5）は 36 ÷ 3 ＝ 12ページ。' },
+          { step: 3, text: '全体は5区画だから 12 × 5 ＝ 60ページ。' },
+        ],
+        explanationText: 'のこり 3/5 ＝ 36。①にあたる量 ＝ 36 ÷ 3 × 5 ＝ 60ページ。',
+      },
+      {
+        id: 'eq-07',
+        title: 'リボンを使ったのこり',
+        difficulty: 2,
+        problemText: 'リボンの 4/9 を使ったら、のこりは 35cm でした。リボンははじめ何cmありましたか？',
+        answer: '63', answerUnit: 'cm',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'single', denom: 9,
+          segs: [
+            { span: 4, label: '使った 4/9', role: 'used' },
+            { span: 5, label: 'のこり 5/9 ＝ 35cm', role: 'remain' },
+          ],
+          known: { role: 'remain', value: 35, text: 'のこり 5/9 ＝ 35cm' },
+          answerValue: 63, unit: 'cm', findLabel: 'リボン全体',
+        },
+        hints: [
+          { step: 1, text: 'のこりの割合は 1－4/9 ＝ 5/9 だよ。' },
+          { step: 2, text: 'のこり 5/9 が 35cm。1区画（1/9）は 35 ÷ 5 ＝ 7cm。' },
+          { step: 3, text: 'はじめは9区画だから 7 × 9 ＝ 63cm。' },
+        ],
+        explanationText: 'のこり 5/9 ＝ 35。①にあたる量 ＝ 35 ÷ 5 × 9 ＝ 63cm。',
+      },
+      {
+        id: 'eq-08',
+        title: '差が割合（男女の差）',
+        difficulty: 2,
+        problemText: 'あるクラスの男子は全体の 4/7 です。男子は女子より 6 人多いそうです。クラス全体は何人ですか？',
+        answer: '42', answerUnit: '人',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'diff', denom: 7,
+          segs: [
+            { span: 4, label: '男子 4/7', role: 'A' },
+            { span: 3, label: '女子 3/7', role: 'B' },
+          ],
+          knownDiff: { value: 6, text: '男子が6人多い' },
+          answerValue: 42, unit: '人', findLabel: 'クラス全体',
+        },
+        hints: [
+          { step: 1, text: '男子は 4/7、女子はのこりの 3/7。割合の差は 4/7－3/7 ＝ 1/7（1区画）だよ。' },
+          { step: 2, text: 'その1区画ぶんの差が6人。1区画（1/7）＝ 6 ÷ 1 ＝ 6人。' },
+          { step: 3, text: '全体は7区画だから 6 × 7 ＝ 42人。男子24・女子18で差6◎' },
+        ],
+        explanationText: '差の割合 1/7 が6人。①にあたる量 ＝ 6 × 7 ＝ 42人。',
+      },
+      {
+        id: 'eq-09',
+        title: '2回使ったのこり（逐次の入口）',
+        difficulty: 2,
+        problemText: '持っていたお金の 1/2 を使い、つぎにのこりの 1/3 を使ったら、まだ 20 円のこりました。はじめにいくら持っていましたか？',
+        answer: '60', answerUnit: '円',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'seq',
+          bars: [
+            { usedSpan: 1, denom: 2, usedLabel: '1回目 1/2', remainLabel: 'のこり' },
+            { usedSpan: 1, denom: 3, usedLabel: '2回目 のこりの1/3', remainLabel: 'のこり', remainValue: 20, remainText: '20円' },
+          ],
+          finalFracText: '1/3', answerValue: 60, unit: '円', findLabel: 'はじめのお金',
+        },
+        hints: [
+          { step: 1, text: '1回目でのこりは 1/2。その「のこり」を新しい①とみるのがコツだよ。' },
+          { step: 2, text: '2回目はのこりの 1/3 を使うので、のこるのは 2/3。最後ののこりは 1/2 × 2/3 ＝ 1/3（全体に対して）。' },
+          { step: 3, text: '全体の 1/3 が 20 円だから、はじめは 20 ÷ 1 × 3 ＝ 60円。確かめ：60→30使い残30→10使い残20◎' },
+        ],
+        explanationText: '最後ののこりは全体の 1/2×2/3 ＝ 1/3。20 ÷ 1/3 ＝ 60円。',
+      },
+      // ──────────────────────────────────
+      // ★★★ むずかしい（逐次消費）
+      // ──────────────────────────────────
+      {
+        id: 'eq-10',
+        title: '2段階で使う（個数）',
+        difficulty: 3,
+        problemText: 'あめ全体の 2/5 を配り、つぎにのこりの 1/4 を配ったら、まだ 18 個のこりました。あめははじめ何個ありましたか？',
+        answer: '40', answerUnit: '個',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'seq',
+          bars: [
+            { usedSpan: 2, denom: 5, usedLabel: '1回目 2/5', remainLabel: 'のこり 3/5' },
+            { usedSpan: 1, denom: 4, usedLabel: '2回目 のこりの1/4', remainLabel: 'のこり', remainValue: 18, remainText: '18個' },
+          ],
+          finalFracText: '9/20', answerValue: 40, unit: '個', findLabel: 'はじめの個数',
+        },
+        hints: [
+          { step: 1, text: '1回目でのこりは 1－2/5 ＝ 3/5。それを新しい①とみよう。' },
+          { step: 2, text: '2回目はのこりの 1/4 を配るので、のこるのは 3/4。最後ののこりは 3/5 × 3/4 ＝ 9/20（全体に対して）。' },
+          { step: 3, text: '全体の 9/20 が 18 個だから 18 ÷ 9 × 20 ＝ 40個。確かめ：40→16配り残24→6配り残18◎' },
+        ],
+        explanationText: '最後ののこりは全体の 3/5×3/4 ＝ 9/20。18 ÷ 9/20 ＝ 40個。',
+      },
+      {
+        id: 'eq-11',
+        title: '2日で読む本',
+        difficulty: 3,
+        problemText: '1日目に本全体の 1/3 を読み、2日目にのこりの 2/5 を読むと、まだ 36 ページのこっています。この本は全部で何ページですか？',
+        answer: '90', answerUnit: 'ページ',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'seq',
+          bars: [
+            { usedSpan: 1, denom: 3, usedLabel: '1日目 1/3', remainLabel: 'のこり 2/3' },
+            { usedSpan: 2, denom: 5, usedLabel: '2日目 のこりの2/5', remainLabel: 'のこり', remainValue: 36, remainText: '36ページ' },
+          ],
+          finalFracText: '2/5', answerValue: 90, unit: 'ページ', findLabel: '本全体',
+        },
+        hints: [
+          { step: 1, text: '1日目でのこりは 2/3。それを新しい①とみよう。' },
+          { step: 2, text: '2日目はのこりの 2/5 を読むので、のこるのは 3/5。最後ののこりは 2/3 × 3/5 ＝ 2/5（全体に対して）。' },
+          { step: 3, text: '全体の 2/5 が 36 ページだから 36 ÷ 2 × 5 ＝ 90ページ。確かめ：90→30読み残60→24読み残36◎' },
+        ],
+        explanationText: '最後ののこりは全体の 2/3×3/5 ＝ 2/5。36 ÷ 2/5 ＝ 90ページ。',
+      },
+      {
+        id: 'eq-12',
+        title: '所持金を2回使う',
+        difficulty: 3,
+        problemText: '所持金の 1/4 を使い、さらにのこりの 2/3 を使うと、最後に 150 円のこりました。はじめにいくら持っていましたか？',
+        answer: '600', answerUnit: '円',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'seq',
+          bars: [
+            { usedSpan: 1, denom: 4, usedLabel: '1回目 1/4', remainLabel: 'のこり 3/4' },
+            { usedSpan: 2, denom: 3, usedLabel: '2回目 のこりの2/3', remainLabel: 'のこり', remainValue: 150, remainText: '150円' },
+          ],
+          finalFracText: '1/4', answerValue: 600, unit: '円', findLabel: 'はじめのお金',
+        },
+        hints: [
+          { step: 1, text: '1回目でのこりは 3/4。それを新しい①とみよう。' },
+          { step: 2, text: '2回目はのこりの 2/3 を使うので、のこるのは 1/3。最後ののこりは 3/4 × 1/3 ＝ 1/4（全体に対して）。' },
+          { step: 3, text: '全体の 1/4 が 150 円だから 150 × 4 ＝ 600円。確かめ：600→150使い残450→300使い残150◎' },
+        ],
+        explanationText: '最後ののこりは全体の 3/4×1/3 ＝ 1/4。150 ÷ 1/4 ＝ 600円。',
+      },
+      {
+        id: 'eq-13',
+        title: '2日でする仕事',
+        difficulty: 3,
+        problemText: 'ある仕事を1日目に全体の 3/8、2日目にのこりの 2/5 を終わらせると、まだ全体の一部が30こぶんのこりました。仕事全体は何こぶんですか？',
+        answer: '80', answerUnit: 'こ',
+        diagramType: 'ratio-bar',
+        diagramSpec: {
+          mode: 'seq',
+          bars: [
+            { usedSpan: 3, denom: 8, usedLabel: '1日目 3/8', remainLabel: 'のこり 5/8' },
+            { usedSpan: 2, denom: 5, usedLabel: '2日目 のこりの2/5', remainLabel: 'のこり', remainValue: 30, remainText: '30こ' },
+          ],
+          finalFracText: '3/8', answerValue: 80, unit: 'こ', findLabel: '仕事全体',
+        },
+        hints: [
+          { step: 1, text: '1日目でのこりは 5/8。それを新しい①とみよう。' },
+          { step: 2, text: '2日目はのこりの 2/5 を終えるので、のこるのは 3/5。最後ののこりは 5/8 × 3/5 ＝ 3/8（全体に対して）。' },
+          { step: 3, text: '全体の 3/8 が 30 こだから 30 ÷ 3 × 8 ＝ 80こ。確かめ：80→30終え残50→20終え残30◎' },
+        ],
+        explanationText: '最後ののこりは全体の 5/8×3/5 ＝ 3/8。30 ÷ 3/8 ＝ 80こ。',
+      },
+    ],
   },
   {
     id: 'ratio-basics', order: 7, title: '割合と比の基礎', titleKana: 'わりあいとひのきそ',
