@@ -740,43 +740,67 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
     </div>
   ) : null
 
+  // 濃度(%)の「本物のたて軸」をつくる。全箱の最大濃度から軸の上限を決め、高さを正しくスケール。
+  // これで「高さ＝濃度・面積＝食塩」が視覚的に成立する（軸も目盛りもある）。
+  const axisX = 26, plotLeft = axisX + 8, plotRight = 240, axisTop = 16, axisH = 58
+  const aa = spec.a as { weight: number; pct: number; salt: number; label?: string }
+  const bb = spec.b as { weight: number; pct: number; salt: number; label?: string }
+  const rr = spec.result as { weight: number; pct: number; salt: number; label?: string }
+  const boxes = (spec.boxes as { weight: number; pct: number; salt: number; label?: string; op?: string }[]) ?? []
+  const pcts = mode === 'mix' ? [aa.pct, bb.pct, rr.pct] : boxes.map(x => x.pct)
+  const maxPct = Math.max(...pcts)
+  const step = maxPct <= 30 ? 5 : 10
+  const axisMax = Math.ceil(maxPct / step) * step
+  const kh = axisH / axisMax
+  const baseY = axisTop + axisH
+  const ticks: number[] = []
+  for (let p = 0; p <= axisMax + 0.001; p += step) ticks.push(p)
+  const Axis = (
+    <g>
+      <text x={axisX - 2} y={axisTop - 5} textAnchor="middle" fontSize="7" fill="#6B5A52" fontWeight="bold">濃度%</text>
+      {ticks.map((p, i) => {
+        const yy = baseY - p * kh
+        return (
+          <g key={i}>
+            <line x1={axisX} y1={yy} x2={plotRight} y2={yy} stroke="#EAE0D4" strokeWidth="0.8" />
+            <line x1={axisX - 3} y1={yy} x2={axisX} y2={yy} stroke="#6B5A52" strokeWidth="1" />
+            <text x={axisX - 5} y={yy + 2.5} textAnchor="end" fontSize="7" fill="#6B5A52">{p}</text>
+          </g>
+        )
+      })}
+      <line x1={axisX} y1={axisTop - 2} x2={axisX} y2={baseY} stroke="#6B5A52" strokeWidth="1.2" />
+    </g>
+  )
+
   // ── mix: 2つの食塩水を並べ、ならした濃さ（平均線）で見せる ──
   if (mode === 'mix') {
-    const a = spec.a as { weight: number; pct: number; salt: number; label?: string }
-    const b = spec.b as { weight: number; pct: number; salt: number; label?: string }
-    const r = spec.result as { weight: number; pct: number; salt: number; label?: string }
-    const kh = 3.2
-    const x0 = 28
-    const kw = 192 / (a.weight + b.weight)
-    const baseY = 100
-    const wA = a.weight * kw, wB = b.weight * kw
-    const hA = a.pct * kh, hB = b.pct * kh, hR = r.pct * kh
+    const kw = (plotRight - plotLeft) / (aa.weight + bb.weight)
+    const wA = aa.weight * kw, wB = bb.weight * kw
+    const hA = aa.pct * kh, hB = bb.pct * kh, hR = rr.pct * kh
     const colA = { fill: '#CDE4FF', stroke: '#2563eb' }
     const colB = { fill: '#FFE3C2', stroke: '#ea7a1e' }
     return (
       <div className="w-full space-y-1.5">
         <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
-          食塩どうし・食塩水どうしを合わせて、ならした濃さを考えよう
+          たて＝濃度・よこ＝食塩水・面積＝食塩。2つをならした高さが答え
         </p>
-        <svg viewBox="0 0 250 132" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
-          {/* たて＝濃度 のめもり */}
-          <line x1={x0} y1={baseY} x2={x0 + wA + wB} y2={baseY} stroke="#3A2E2A" strokeWidth="1.5" />
-          {/* A・B の箱（高さ＝濃度・幅＝食塩水・面積＝食塩） */}
-          <rect x={x0} y={baseY - hA} width={wA} height={hA} fill={colA.fill} stroke={colA.stroke} strokeWidth="2" />
-          <rect x={x0 + wA} y={baseY - hB} width={wB} height={hB} fill={colB.fill} stroke={colB.stroke} strokeWidth="2" />
+        <svg viewBox="0 0 250 120" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+          {Axis}
+          <rect x={plotLeft} y={baseY - hA} width={wA} height={hA} fill={colA.fill} stroke={colA.stroke} strokeWidth="2" />
+          <rect x={plotLeft + wA} y={baseY - hB} width={wB} height={hB} fill={colB.fill} stroke={colB.stroke} strokeWidth="2" />
           {/* ならした濃さ（平均線） */}
-          <line x1={x0} y1={baseY - hR} x2={x0 + wA + wB} y2={baseY - hR} stroke="#0d9488" strokeWidth="1.6" strokeDasharray="4 2" />
-          <text x={x0 + wA + wB + 3} y={baseY - hR + 3} fontSize="8" fill="#0d9488" fontWeight="bold">{r.pct}%</text>
-          {/* 濃度ラベル（たて） */}
-          <text x={x0 + wA / 2} y={baseY - hA - 3} textAnchor="middle" fontSize="8" fill={colA.stroke} fontWeight="bold">{a.pct}%</text>
-          <text x={x0 + wA + wB / 2} y={baseY - hB - 3} textAnchor="middle" fontSize="8" fill={colB.stroke} fontWeight="bold">{b.pct}%</text>
-          {/* 食塩ラベル（面積） */}
-          <text x={x0 + wA / 2} y={baseY - hA / 2 + 3} textAnchor="middle" fontSize="7" fill={colA.stroke} fontWeight="bold">塩{a.salt}g</text>
-          <text x={x0 + wA + wB / 2} y={baseY - hB / 2 + 3} textAnchor="middle" fontSize="7" fill={colB.stroke} fontWeight="bold">塩{b.salt}g</text>
-          {/* 食塩水ラベル（よこ） */}
-          <text x={x0 + wA / 2} y={baseY + 11} textAnchor="middle" fontSize="8" fill={colA.stroke} fontWeight="bold">{a.weight}g</text>
-          <text x={x0 + wA + wB / 2} y={baseY + 11} textAnchor="middle" fontSize="8" fill={colB.stroke} fontWeight="bold">{b.weight}g</text>
-          <text x={x0 + (wA + wB) / 2} y={baseY + 22} textAnchor="middle" fontSize="8" fill="#6B5A52" fontWeight="bold">合わせて {r.weight}g（食塩 {r.salt}g）</text>
+          <line x1={plotLeft} y1={baseY - hR} x2={plotLeft + wA + wB} y2={baseY - hR} stroke="#0d9488" strokeWidth="1.6" strokeDasharray="4 2" />
+          <text x={plotLeft + wA + wB + 2} y={baseY - hR + 3} fontSize="8" fill="#0d9488" fontWeight="bold">{rr.pct}%</text>
+          {/* 濃度ラベル */}
+          <text x={plotLeft + wA / 2} y={baseY - hA - 3} textAnchor="middle" fontSize="7.5" fill={colA.stroke} fontWeight="bold">{aa.pct}%</text>
+          <text x={plotLeft + wA + wB / 2} y={baseY - hB - 3} textAnchor="middle" fontSize="7.5" fill={colB.stroke} fontWeight="bold">{bb.pct}%</text>
+          {/* 食塩（面積） */}
+          <text x={plotLeft + wA / 2} y={baseY - hA / 2 + 3} textAnchor="middle" fontSize="7" fill={colA.stroke} fontWeight="bold">塩{aa.salt}</text>
+          <text x={plotLeft + wA + wB / 2} y={baseY - hB / 2 + 3} textAnchor="middle" fontSize="7" fill={colB.stroke} fontWeight="bold">塩{bb.salt}</text>
+          {/* 食塩水（よこ） */}
+          <text x={plotLeft + wA / 2} y={baseY + 11} textAnchor="middle" fontSize="7.5" fill={colA.stroke} fontWeight="bold">{aa.weight}g</text>
+          <text x={plotLeft + wA + wB / 2} y={baseY + 11} textAnchor="middle" fontSize="7.5" fill={colB.stroke} fontWeight="bold">{bb.weight}g</text>
+          <text x={plotLeft + (wA + wB) / 2} y={baseY + 21} textAnchor="middle" fontSize="7.5" fill="#6B5A52" fontWeight="bold">合わせて {rr.weight}g・食塩 {rr.salt}g</text>
         </svg>
         {Step2}{Step3}
       </div>
@@ -784,23 +808,21 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
   }
 
   // ── box: 単一／before→after の面積図 ──
-  const boxes = spec.boxes as { weight: number; pct: number; salt: number; label?: string; op?: string }[]
-  const kh = 3.0
   const gap = 38
   const totalW = boxes.reduce((s, x) => s + x.weight, 0)
-  const avail = 234 - 16 - gap * (boxes.length - 1)
-  const kw = avail / totalW
-  const baseY = 80
-  let cx = 14
+  const availW = (plotRight - plotLeft) - gap * (boxes.length - 1)
+  const kw = availW / totalW
+  let cx = plotLeft
   return (
     <div className="w-full space-y-1.5">
       <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
-        よこ＝食塩水・たて＝濃度・面積＝食塩 で考えよう
+        たて＝濃度・よこ＝食塩水・面積＝食塩（軸の高さが濃度）
       </p>
-      <svg viewBox="0 0 250 112" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+      <svg viewBox="0 0 250 116" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+        {Axis}
         {boxes.map((bx, i) => {
           const w = bx.weight * kw
-          const h = Math.max(bx.pct * kh, 16)
+          const h = bx.pct * kh
           const x = cx
           const arrowCx = x - gap / 2
           cx += w + gap
@@ -808,15 +830,15 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
             <g key={i}>
               {i > 0 && (
                 <>
-                  <text x={arrowCx} y={baseY - h / 2} textAnchor="middle" fontSize="13" fill="#b45309" fontWeight="bold">→</text>
-                  {bx.op && <text x={arrowCx} y={baseY - h / 2 - 10} textAnchor="middle" fontSize="8" fill="#b45309" fontWeight="bold">{bx.op}</text>}
+                  <text x={arrowCx} y={baseY - 18} textAnchor="middle" fontSize="13" fill="#b45309" fontWeight="bold">→</text>
+                  {bx.op && <text x={arrowCx} y={baseY - 30} textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">{bx.op}</text>}
                 </>
               )}
               <rect x={x} y={baseY - h} width={w} height={h} fill="#DBF6F0" stroke="#0d9488" strokeWidth="2" />
-              <text x={x + w / 2} y={baseY - h - 3} textAnchor="middle" fontSize="8.5" fill="#0d9488" fontWeight="bold">{bx.pct}%</text>
+              <text x={x + w / 2} y={baseY - h - 3} textAnchor="middle" fontSize="8" fill="#0d9488" fontWeight="bold">{bx.pct}%</text>
               <text x={x + w / 2} y={baseY - h / 2 + 3} textAnchor="middle" fontSize="7.5" fill="#3A2E2A" fontWeight="bold">塩{bx.salt}g</text>
-              <text x={x + w / 2} y={baseY + 11} textAnchor="middle" fontSize="8.5" fill="#3A2E2A" fontWeight="bold">{bx.weight}g</text>
-              {bx.label && <text x={x + w / 2} y={baseY + 22} textAnchor="middle" fontSize="7.5" fill="#6B5A52" fontWeight="bold">{bx.label}</text>}
+              <text x={x + w / 2} y={baseY + 11} textAnchor="middle" fontSize="8" fill="#3A2E2A" fontWeight="bold">{bx.weight}g</text>
+              {bx.label && <text x={x + w / 2} y={baseY + 21} textAnchor="middle" fontSize="7" fill="#6B5A52" fontWeight="bold">{bx.label}</text>}
             </g>
           )
         })}
