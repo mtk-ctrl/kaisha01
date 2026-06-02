@@ -1,4 +1,4 @@
-export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'ratio-bar' | 'ratio2' | 'none'
+export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'ratio-bar' | 'ratio2' | 'noudo' | 'none'
 export type Difficulty = 1 | 2 | 3
 
 export interface HintStep {
@@ -1977,9 +1977,303 @@ export const JUKU_UNITS: JukuUnit[] = [
   {
     id: 'concentration', order: 8, title: '濃度算（食塩水）', titleKana: 'のうどざん',
     emoji: '🧪', color: '#0ea5e9', layer: 3, prerequisiteIds: ['ratio-basics'],
-    isFree: false, coreConcept: '食塩水×濃度＝塩の重さ を面積図で可視化する',
-    approachText: '鶴亀算と同じ面積図の発想を使う。',
-    primaryDiagram: 'area', problems: [],
+    isFree: false,
+    coreConcept: '食塩水の重さ × 濃度 ＝ 食塩の重さ（よこ×たて＝面積）',
+    approachText:
+      '食塩水を「よこ＝重さ・たて＝濃度・面積＝食塩」の長方形で考える。\n水を加えても蒸発させても「食塩の重さ」は変わらないのがカギ。\n2つを混ぜるときは、食塩どうし・食塩水どうしを合計してから割る。',
+    primaryDiagram: 'noudo',
+    introSlide: {
+      title: '濃度の面積図の読み方',
+      explanation: [
+        '食塩水は「よこ＝重さ(g)・たて＝濃度(%)」の長方形であらわす',
+        'その面積が「食塩の重さ(g)」。食塩水 × 濃度 ＝ 食塩',
+        '濃度をもとめるときは 食塩 ÷ 食塩水 × 100（％）',
+        '水を加える・蒸発させても、食塩の重さは変わらない！',
+      ],
+      diagramSpec: {
+        mode: 'box',
+        boxes: [{ weight: 200, pct: 15, salt: 30, label: '食塩水' }],
+        unit: '%', showValues: true,
+        step2Text: '濃度 ＝ 食塩 ÷ 食塩水 × 100', step3Text: '30 ÷ 200 × 100 ＝ 15%',
+      },
+    },
+    problems: [
+      // ──────────────────────────────────
+      // ★ かんたん（3用法）
+      // ──────────────────────────────────
+      {
+        id: 'nd-01',
+        title: '濃度を求める',
+        difficulty: 1,
+        problemText: '200g の食塩水に、食塩が 30g とけています。この食塩水の濃度は何 % ですか？',
+        answer: '15', answerUnit: '%',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', boxes: [{ weight: 200, pct: 15, salt: 30, label: '食塩水' }], unit: '%',
+          step2Text: '濃度 ＝ 食塩 ÷ 食塩水 × 100', step3Text: '30 ÷ 200 × 100 ＝ 15%',
+        },
+        hints: [
+          { step: 1, text: '濃度は「食塩が食塩水全体の何 % か」だよ。' },
+          { step: 2, text: '濃度 ＝ 食塩 ÷ 食塩水 × 100 で求められる。' },
+          { step: 3, text: '30 ÷ 200 ＝ 0.15 → 15%。' },
+        ],
+        explanationText: '濃度 ＝ 食塩 ÷ 食塩水 × 100 ＝ 30 ÷ 200 × 100 ＝ 15%。',
+      },
+      {
+        id: 'nd-02',
+        title: '食塩の重さを求める',
+        difficulty: 1,
+        problemText: '8% の食塩水が 250g あります。この中に食塩は何 g ふくまれていますか？',
+        answer: '20', answerUnit: 'g',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', boxes: [{ weight: 250, pct: 8, salt: 20, label: '食塩水' }], unit: 'g',
+          step2Text: '食塩 ＝ 食塩水 × 濃度', step3Text: '250 × 0.08 ＝ 20g',
+        },
+        hints: [
+          { step: 1, text: '面積（食塩）＝ よこ（食塩水）× たて（濃度）だよ。' },
+          { step: 2, text: '8% は小数で 0.08。食塩 ＝ 250 × 0.08。' },
+          { step: 3, text: '250 × 0.08 ＝ 20g。' },
+        ],
+        explanationText: '食塩 ＝ 食塩水 × 濃度 ＝ 250 × 0.08 ＝ 20g。',
+      },
+      {
+        id: 'nd-03',
+        title: '食塩水の重さを求める',
+        difficulty: 1,
+        problemText: '食塩が 12g とけている 6% の食塩水は、全部で何 g ありますか？',
+        answer: '200', answerUnit: 'g',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', boxes: [{ weight: 200, pct: 6, salt: 12, label: '食塩水' }], unit: 'g',
+          step2Text: '食塩水 ＝ 食塩 ÷ 濃度', step3Text: '12 ÷ 0.06 ＝ 200g',
+        },
+        hints: [
+          { step: 1, text: '面積（食塩）÷ たて（濃度）＝ よこ（食塩水）だよ。' },
+          { step: 2, text: '6% は 0.06。食塩水 ＝ 12 ÷ 0.06。' },
+          { step: 3, text: '12 ÷ 0.06 ＝ 200g。' },
+        ],
+        explanationText: '食塩水 ＝ 食塩 ÷ 濃度 ＝ 12 ÷ 0.06 ＝ 200g。',
+      },
+      {
+        id: 'nd-04',
+        title: '水と食塩から濃度を求める',
+        difficulty: 1,
+        problemText: '水 190g に食塩 10g をとかしました。この食塩水の濃度は何 % ですか？',
+        answer: '5', answerUnit: '%',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', boxes: [{ weight: 200, pct: 5, salt: 10, label: '水190＋塩10' }], unit: '%',
+          step2Text: '食塩水 ＝ 水 ＋ 食塩 ＝ 190 ＋ 10 ＝ 200g', step3Text: '10 ÷ 200 × 100 ＝ 5%',
+        },
+        hints: [
+          { step: 1, text: '食塩水の重さは「水 ＋ 食塩」だよ。190 ＋ 10 ＝ 200g。' },
+          { step: 2, text: '濃度 ＝ 食塩 ÷ 食塩水 × 100 ＝ 10 ÷ 200 × 100。' },
+          { step: 3, text: '10 ÷ 200 ＝ 0.05 → 5%。' },
+        ],
+        explanationText: '食塩水 ＝ 190 ＋ 10 ＝ 200g。濃度 ＝ 10 ÷ 200 × 100 ＝ 5%。',
+      },
+      // ──────────────────────────────────
+      // ★★ ふつう（加水・蒸発・食塩追加・混合）
+      // ──────────────────────────────────
+      {
+        id: 'nd-05',
+        title: '水を加える',
+        difficulty: 2,
+        problemText: '8% の食塩水 200g に、水を 200g 加えました。濃度は何 % になりますか？',
+        answer: '4', answerUnit: '%',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', unit: '%',
+          boxes: [
+            { weight: 200, pct: 8, salt: 16, label: 'はじめ' },
+            { weight: 400, pct: 4, salt: 16, label: '水を加えた後', op: '水＋200g' },
+          ],
+          step2Text: '水を加えても食塩は 16g のまま。食塩水は 400g に', step3Text: '16 ÷ 400 × 100 ＝ 4%',
+        },
+        hints: [
+          { step: 1, text: 'まず食塩の重さ。200 × 0.08 ＝ 16g。' },
+          { step: 2, text: '水を加えても食塩は 16g のまま。食塩水は 200 ＋ 200 ＝ 400g。' },
+          { step: 3, text: '16 ÷ 400 ＝ 0.04 → 4%。箱は「よこが広がってたてが低く」なるね。' },
+        ],
+        explanationText: '食塩は 16g のまま、食塩水は 400g。16 ÷ 400 × 100 ＝ 4%。',
+      },
+      {
+        id: 'nd-06',
+        title: '水を蒸発させる',
+        difficulty: 2,
+        problemText: '6% の食塩水 500g から、水を 100g 蒸発させました。濃度は何 % になりますか？',
+        answer: '7.5', answerUnit: '%',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', unit: '%',
+          boxes: [
+            { weight: 500, pct: 6, salt: 30, label: 'はじめ' },
+            { weight: 400, pct: 7.5, salt: 30, label: '蒸発後', op: '水－100g' },
+          ],
+          step2Text: '蒸発しても食塩は 30g のまま。食塩水は 400g に', step3Text: '30 ÷ 400 × 100 ＝ 7.5%',
+        },
+        hints: [
+          { step: 1, text: 'まず食塩。500 × 0.06 ＝ 30g。' },
+          { step: 2, text: '蒸発するのは水だけ。食塩は 30g のまま、食塩水は 500 － 100 ＝ 400g。' },
+          { step: 3, text: '30 ÷ 400 ＝ 0.075 → 7.5%。こくなったね。' },
+        ],
+        explanationText: '食塩は 30g のまま、食塩水は 400g。30 ÷ 400 × 100 ＝ 7.5%。',
+      },
+      {
+        id: 'nd-07',
+        title: '食塩を加える',
+        difficulty: 2,
+        problemText: '10% の食塩水 180g に、食塩を 20g 加えました。濃度は何 % になりますか？',
+        answer: '19', answerUnit: '%',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', unit: '%',
+          boxes: [
+            { weight: 180, pct: 10, salt: 18, label: 'はじめ' },
+            { weight: 200, pct: 19, salt: 38, label: '食塩追加後', op: '塩＋20g' },
+          ],
+          step2Text: '食塩 18＋20＝38g、食塩水 180＋20＝200g（加えた食塩のぶん両方ふえる）', step3Text: '38 ÷ 200 × 100 ＝ 19%',
+        },
+        hints: [
+          { step: 1, text: 'はじめの食塩は 180 × 0.10 ＝ 18g。' },
+          { step: 2, text: '食塩を加えると、食塩も食塩水も 20g ずつふえる。食塩 38g・食塩水 200g。' },
+          { step: 3, text: '38 ÷ 200 ＝ 0.19 → 19%。' },
+        ],
+        explanationText: '食塩 18＋20＝38g、食塩水 180＋20＝200g。38 ÷ 200 × 100 ＝ 19%。',
+      },
+      {
+        id: 'nd-08',
+        title: '2つを混ぜる（基本）',
+        difficulty: 2,
+        problemText: '5% の食塩水 200g と、10% の食塩水 300g を混ぜました。濃度は何 % になりますか？',
+        answer: '8', answerUnit: '%',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'mix', unit: '%',
+          a: { weight: 200, pct: 5, salt: 10, label: '5%' },
+          b: { weight: 300, pct: 10, salt: 30, label: '10%' },
+          result: { weight: 500, pct: 8, salt: 40 },
+          step2Text: '食塩 10＋30＝40g、食塩水 200＋300＝500g', step3Text: '40 ÷ 500 × 100 ＝ 8%',
+        },
+        hints: [
+          { step: 1, text: 'それぞれの食塩を出す。200×0.05＝10g、300×0.10＝30g。' },
+          { step: 2, text: '食塩は合計 40g、食塩水は合計 500g。' },
+          { step: 3, text: '40 ÷ 500 ＝ 0.08 → 8%。5% と 10% の間になるね。' },
+        ],
+        explanationText: '食塩 10＋30＝40g、食塩水 500g。40 ÷ 500 × 100 ＝ 8%。',
+      },
+      {
+        id: 'nd-09',
+        title: '2つを混ぜる（こい＋うすい）',
+        difficulty: 2,
+        problemText: '12% の食塩水 100g と、4% の食塩水 300g を混ぜました。濃度は何 % になりますか？',
+        answer: '6', answerUnit: '%',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'mix', unit: '%',
+          a: { weight: 100, pct: 12, salt: 12, label: '12%' },
+          b: { weight: 300, pct: 4, salt: 12, label: '4%' },
+          result: { weight: 400, pct: 6, salt: 24 },
+          step2Text: '食塩 12＋12＝24g、食塩水 100＋300＝400g', step3Text: '24 ÷ 400 × 100 ＝ 6%',
+        },
+        hints: [
+          { step: 1, text: '食塩を出す。100×0.12＝12g、300×0.04＝12g。' },
+          { step: 2, text: '食塩は合計 24g、食塩水は合計 400g。' },
+          { step: 3, text: '24 ÷ 400 ＝ 0.06 → 6%。量の多い 4% に近い濃さになるね。' },
+        ],
+        explanationText: '食塩 12＋12＝24g、食塩水 400g。24 ÷ 400 × 100 ＝ 6%。',
+      },
+      // ──────────────────────────────────
+      // ★★★ むずかしい（逆算・目標濃度）
+      // ──────────────────────────────────
+      {
+        id: 'nd-10',
+        title: '混ぜて目標の濃度にする',
+        difficulty: 3,
+        problemText: '8% の食塩水と 3% の食塩水を混ぜて、5% の食塩水を 500g 作ります。8% の食塩水は何 g 必要ですか？',
+        answer: '200', answerUnit: 'g',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'mix', unit: 'g',
+          a: { weight: 200, pct: 8, salt: 16, label: '8%' },
+          b: { weight: 300, pct: 3, salt: 9, label: '3%' },
+          result: { weight: 500, pct: 5, salt: 25 },
+          step2Text: 'できあがりの食塩 ＝ 500×0.05 ＝ 25g。8%を□gとすると 0.08×□＋0.03×(500−□)＝25', step3Text: '0.05×□ ＝ 10 → □ ＝ 200g（8%は200g、3%は300g）',
+        },
+        hints: [
+          { step: 1, text: 'できあがり 500g・5% の食塩は 500 × 0.05 ＝ 25g。' },
+          { step: 2, text: '8% を □g とすると、3% は (500−□)g。食塩の合計で式を作る：0.08□ ＋ 0.03(500−□) ＝ 25。' },
+          { step: 3, text: '0.05□ ＝ 25 − 15 ＝ 10 → □ ＝ 200g。確かめ：8%200g＝16g、3%300g＝9g、合計25g◎' },
+        ],
+        explanationText: 'できあがりの食塩25g。0.08□＋0.03(500−□)＝25 → 0.05□＝10 → □＝200g。',
+      },
+      {
+        id: 'nd-11',
+        title: '水を加えて目標の濃度にする',
+        difficulty: 3,
+        problemText: '12% の食塩水 300g に水を加えて、9% の食塩水にします。水を何 g 加えればよいですか？',
+        answer: '100', answerUnit: 'g',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', unit: 'g',
+          boxes: [
+            { weight: 300, pct: 12, salt: 36, label: 'はじめ' },
+            { weight: 400, pct: 9, salt: 36, label: '9%にする', op: '水＋□g' },
+          ],
+          step2Text: '食塩 36g は変わらない。9% にするには 36 ÷ 0.09 ＝ 400g 必要', step3Text: '加える水 ＝ 400 − 300 ＝ 100g',
+        },
+        hints: [
+          { step: 1, text: 'まず食塩。300 × 0.12 ＝ 36g。水を加えても食塩は変わらない。' },
+          { step: 2, text: '9% にするのに必要な食塩水は 36 ÷ 0.09 ＝ 400g。' },
+          { step: 3, text: '加える水は 400 − 300 ＝ 100g。' },
+        ],
+        explanationText: '食塩36gは一定。9%にするには 36÷0.09＝400g 必要。水 ＝ 400−300 ＝ 100g。',
+      },
+      {
+        id: 'nd-12',
+        title: '蒸発させて目標の濃度にする',
+        difficulty: 3,
+        problemText: '8% の食塩水 400g から水を蒸発させて、10% の食塩水にします。水を何 g 蒸発させればよいですか？',
+        answer: '80', answerUnit: 'g',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'box', unit: 'g',
+          boxes: [
+            { weight: 400, pct: 8, salt: 32, label: 'はじめ' },
+            { weight: 320, pct: 10, salt: 32, label: '10%にする', op: '水－□g' },
+          ],
+          step2Text: '食塩 32g は変わらない。10% にするには 32 ÷ 0.10 ＝ 320g にする', step3Text: '蒸発させる水 ＝ 400 − 320 ＝ 80g',
+        },
+        hints: [
+          { step: 1, text: 'まず食塩。400 × 0.08 ＝ 32g。蒸発するのは水だけで食塩は変わらない。' },
+          { step: 2, text: '10% にするのに必要な食塩水は 32 ÷ 0.10 ＝ 320g。' },
+          { step: 3, text: '蒸発させる水は 400 − 320 ＝ 80g。' },
+        ],
+        explanationText: '食塩32gは一定。10%にするには 32÷0.10＝320g。蒸発 ＝ 400−320 ＝ 80g。',
+      },
+      {
+        id: 'nd-13',
+        title: '混ぜて目標の濃度にする（応用）',
+        difficulty: 3,
+        problemText: '10% の食塩水と 20% の食塩水を混ぜて、16% の食塩水を 450g 作ります。20% の食塩水は何 g 必要ですか？',
+        answer: '270', answerUnit: 'g',
+        diagramType: 'noudo',
+        diagramSpec: {
+          mode: 'mix', unit: 'g',
+          a: { weight: 180, pct: 10, salt: 18, label: '10%' },
+          b: { weight: 270, pct: 20, salt: 54, label: '20%' },
+          result: { weight: 450, pct: 16, salt: 72 },
+          step2Text: 'できあがりの食塩 ＝ 450×0.16 ＝ 72g。10%を□gとすると 0.10×□＋0.20×(450−□)＝72', step3Text: '0.10×□ ＝ 18 → □ ＝ 180g（10%）→ 20% は 450 − 180 ＝ 270g',
+        },
+        hints: [
+          { step: 1, text: 'できあがり 450g・16% の食塩は 450 × 0.16 ＝ 72g。' },
+          { step: 2, text: '10% を □g とすると、20% は (450−□)g。0.10□ ＋ 0.20(450−□) ＝ 72。' },
+          { step: 3, text: '0.10□ ＝ 90 − 72 ＝ 18 → □ ＝ 180g（10%）。20% は 450 − 180 ＝ 270g。' },
+        ],
+        explanationText: 'できあがりの食塩72g。0.10□＋0.20(450−□)＝72 → □＝180g（10%）。20%は270g。',
+      },
+    ],
   },
   {
     id: 'profit-loss', order: 9, title: '損益算', titleKana: 'そんえきざん',

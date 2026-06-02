@@ -718,6 +718,115 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
 }
 
 // ─────────────────────────────────────
+// SVG: 濃度の面積図 🧪
+//   よこ＝食塩水(g)、たて＝濃度(%)、面積＝食塩(g)。
+//   mode: box（単一／加水・蒸発・食塩追加の before→after）/ mix（2液をならす平均線）
+//   計算ステップは step2Text / step3Text を wrongCount 連動で表示。
+// ─────────────────────────────────────
+function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const mode = (spec.mode as string) ?? 'box'
+  const showValues = (spec.showValues as boolean) ?? false
+  const wc = showValues ? 3 : wrongCount
+  const step2 = spec.step2Text as string | undefined
+  const step3 = spec.step3Text as string | undefined
+  const Step2 = step2 && wc >= 2 ? (
+    <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
+      <span className="text-[10px] font-black" style={{ color: '#b45309' }}>{step2}</span>
+    </div>
+  ) : null
+  const Step3 = step3 && wc >= 3 ? (
+    <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+      <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>{step3}</span>
+    </div>
+  ) : null
+
+  // ── mix: 2つの食塩水を並べ、ならした濃さ（平均線）で見せる ──
+  if (mode === 'mix') {
+    const a = spec.a as { weight: number; pct: number; salt: number; label?: string }
+    const b = spec.b as { weight: number; pct: number; salt: number; label?: string }
+    const r = spec.result as { weight: number; pct: number; salt: number; label?: string }
+    const kh = 3.2
+    const x0 = 28
+    const kw = 192 / (a.weight + b.weight)
+    const baseY = 100
+    const wA = a.weight * kw, wB = b.weight * kw
+    const hA = a.pct * kh, hB = b.pct * kh, hR = r.pct * kh
+    const colA = { fill: '#CDE4FF', stroke: '#2563eb' }
+    const colB = { fill: '#FFE3C2', stroke: '#ea7a1e' }
+    return (
+      <div className="w-full space-y-1.5">
+        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+          食塩どうし・食塩水どうしを合わせて、ならした濃さを考えよう
+        </p>
+        <svg viewBox="0 0 250 132" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+          {/* たて＝濃度 のめもり */}
+          <line x1={x0} y1={baseY} x2={x0 + wA + wB} y2={baseY} stroke="#3A2E2A" strokeWidth="1.5" />
+          {/* A・B の箱（高さ＝濃度・幅＝食塩水・面積＝食塩） */}
+          <rect x={x0} y={baseY - hA} width={wA} height={hA} fill={colA.fill} stroke={colA.stroke} strokeWidth="2" />
+          <rect x={x0 + wA} y={baseY - hB} width={wB} height={hB} fill={colB.fill} stroke={colB.stroke} strokeWidth="2" />
+          {/* ならした濃さ（平均線） */}
+          <line x1={x0} y1={baseY - hR} x2={x0 + wA + wB} y2={baseY - hR} stroke="#0d9488" strokeWidth="1.6" strokeDasharray="4 2" />
+          <text x={x0 + wA + wB + 3} y={baseY - hR + 3} fontSize="8" fill="#0d9488" fontWeight="bold">{r.pct}%</text>
+          {/* 濃度ラベル（たて） */}
+          <text x={x0 + wA / 2} y={baseY - hA - 3} textAnchor="middle" fontSize="8" fill={colA.stroke} fontWeight="bold">{a.pct}%</text>
+          <text x={x0 + wA + wB / 2} y={baseY - hB - 3} textAnchor="middle" fontSize="8" fill={colB.stroke} fontWeight="bold">{b.pct}%</text>
+          {/* 食塩ラベル（面積） */}
+          <text x={x0 + wA / 2} y={baseY - hA / 2 + 3} textAnchor="middle" fontSize="7" fill={colA.stroke} fontWeight="bold">塩{a.salt}g</text>
+          <text x={x0 + wA + wB / 2} y={baseY - hB / 2 + 3} textAnchor="middle" fontSize="7" fill={colB.stroke} fontWeight="bold">塩{b.salt}g</text>
+          {/* 食塩水ラベル（よこ） */}
+          <text x={x0 + wA / 2} y={baseY + 11} textAnchor="middle" fontSize="8" fill={colA.stroke} fontWeight="bold">{a.weight}g</text>
+          <text x={x0 + wA + wB / 2} y={baseY + 11} textAnchor="middle" fontSize="8" fill={colB.stroke} fontWeight="bold">{b.weight}g</text>
+          <text x={x0 + (wA + wB) / 2} y={baseY + 22} textAnchor="middle" fontSize="8" fill="#6B5A52" fontWeight="bold">合わせて {r.weight}g（食塩 {r.salt}g）</text>
+        </svg>
+        {Step2}{Step3}
+      </div>
+    )
+  }
+
+  // ── box: 単一／before→after の面積図 ──
+  const boxes = spec.boxes as { weight: number; pct: number; salt: number; label?: string; op?: string }[]
+  const kh = 3.0
+  const gap = 38
+  const totalW = boxes.reduce((s, x) => s + x.weight, 0)
+  const avail = 234 - 16 - gap * (boxes.length - 1)
+  const kw = avail / totalW
+  const baseY = 80
+  let cx = 14
+  return (
+    <div className="w-full space-y-1.5">
+      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+        よこ＝食塩水・たて＝濃度・面積＝食塩 で考えよう
+      </p>
+      <svg viewBox="0 0 250 112" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+        {boxes.map((bx, i) => {
+          const w = bx.weight * kw
+          const h = Math.max(bx.pct * kh, 16)
+          const x = cx
+          const arrowCx = x - gap / 2
+          cx += w + gap
+          return (
+            <g key={i}>
+              {i > 0 && (
+                <>
+                  <text x={arrowCx} y={baseY - h / 2} textAnchor="middle" fontSize="13" fill="#b45309" fontWeight="bold">→</text>
+                  {bx.op && <text x={arrowCx} y={baseY - h / 2 - 10} textAnchor="middle" fontSize="8" fill="#b45309" fontWeight="bold">{bx.op}</text>}
+                </>
+              )}
+              <rect x={x} y={baseY - h} width={w} height={h} fill="#DBF6F0" stroke="#0d9488" strokeWidth="2" />
+              <text x={x + w / 2} y={baseY - h - 3} textAnchor="middle" fontSize="8.5" fill="#0d9488" fontWeight="bold">{bx.pct}%</text>
+              <text x={x + w / 2} y={baseY - h / 2 + 3} textAnchor="middle" fontSize="7.5" fill="#3A2E2A" fontWeight="bold">塩{bx.salt}g</text>
+              <text x={x + w / 2} y={baseY + 11} textAnchor="middle" fontSize="8.5" fill="#3A2E2A" fontWeight="bold">{bx.weight}g</text>
+              {bx.label && <text x={x + w / 2} y={baseY + 22} textAnchor="middle" fontSize="7.5" fill="#6B5A52" fontWeight="bold">{bx.label}</text>}
+            </g>
+          )
+        })}
+      </svg>
+      {Step2}{Step3}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
 // SVG: 点線図（植木算）🌳 emoji版
 // ─────────────────────────────────────
 function DotLineDiagram({ spec }: { spec: Record<string, unknown> }) {
@@ -1241,6 +1350,7 @@ const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   gap: '📦 差あつめ図',
   'ratio-bar': '🎯 わりあいの帯図',
   ratio2: '⚖️ わりあい・比の図',
+  noudo: '🧪 濃度の面積図',
 }
 
 function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; spec: Record<string, unknown>; wrongCount?: number }) {
@@ -1261,6 +1371,7 @@ function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; sp
       {type === 'gap'      && <GapDiagram     spec={spec} wrongCount={wrongCount} />}
       {type === 'ratio-bar' && <RatioBarDiagram spec={spec} wrongCount={wrongCount} />}
       {type === 'ratio2'   && <RatioBasicsDiagram spec={spec} wrongCount={wrongCount} />}
+      {type === 'noudo'    && <NoudoDiagram spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
