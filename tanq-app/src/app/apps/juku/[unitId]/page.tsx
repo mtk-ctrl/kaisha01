@@ -639,7 +639,7 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
   const oneValue = spec.oneValue as number | undefined
   const sumR = items.reduce((a, i) => a + i.r, 0)
   const segW = barW / sumR
-  const y = 34, barH = 26
+  const y = 42, barH = 26
   const rVals = items.map(i => i.r)
   const maxR = Math.max(...rVals), minR = Math.min(...rVals)
   const showParts = (anchorKind === 'total' || anchorKind === 'sum') && oneValue !== undefined && wc >= 3
@@ -648,14 +648,15 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
       <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
         比は丸数字（{items.map(i => i.r).join('：')}）、実際の数は単位つきで区別しよう
       </p>
-      <svg viewBox={`0 0 250 ${showParts ? 92 : 84}`} className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
-        {/* 全体（合計/和）ブラケット */}
+      <svg viewBox="0 0 250 96" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+        {/* 全体（合計/和）ブラケット＋合計の丸数字（例 ⑦ ＝ 35才） */}
         {(anchorKind === 'total' || anchorKind === 'sum') && (
           <>
             <line x1={barStart} y1={y - 8} x2={barEnd} y2={y - 8} stroke="#6B5A52" strokeWidth="1.2" />
             <line x1={barStart} y1={y - 11} x2={barStart} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
             <line x1={barEnd} y1={y - 11} x2={barEnd} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
-            <text x={(barStart + barEnd) / 2} y={y - 11} textAnchor="middle" fontSize="8.5" fill="#6B5A52" fontWeight="bold">{anchorText}</text>
+            <text x={(barStart + barEnd) / 2 - 4} y={y - 14} textAnchor="end" fontSize="8.5" fill="#6B5A52" fontWeight="bold">{anchorText} ＝</text>
+            {circ((barStart + barEnd) / 2 + 10, y - 18, sumR, '#6B5A52')}
           </>
         )}
         {/* セグメント（比の項ごとに色を変える＝A・Cも別色） */}
@@ -704,6 +705,7 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
           return (
             <>
               <rect x={dStart} y={y} width={dW} height={barH} rx="3" fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.6" strokeDasharray="4 2" />
+              {circ(dStart + dW / 2, y + barH / 2, maxR - minR, '#f87171')}
               <line x1={dStart} y1={y + barH + 4} x2={dStart + dW} y2={y + barH + 4} stroke="#f87171" strokeWidth="1.5" />
               <text x={dStart + dW / 2} y={y + barH + 15} textAnchor="middle" fontSize="8.5" fill="#f87171" fontWeight="bold">{anchorText}</text>
             </>
