@@ -476,6 +476,20 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
     </g>
   )
 
+  // 文字ごとの色（A・B・C・Dで必ず色が変わる）。連比では同じ文字を同じ色で追える。
+  const LETTER_COLORS: Record<string, { fill: string; stroke: string }> = {
+    A: { fill: '#CDE4FF', stroke: '#2563eb' },
+    B: { fill: '#C2EDE6', stroke: '#0d9488' },
+    C: { fill: '#FFE3C2', stroke: '#ea7a1e' },
+    D: { fill: '#F3D4F8', stroke: '#a855f7' },
+  }
+  const PALETTE = [
+    { fill: '#CDE4FF', stroke: '#2563eb' },
+    { fill: '#FFE3C2', stroke: '#ea7a1e' },
+    { fill: '#C2EDE6', stroke: '#0d9488' },
+    { fill: '#F3D4F8', stroke: '#a855f7' },
+  ]
+
   const barStart = 34, barEnd = 228, barW = barEnd - barStart
 
   // ── percent: 割合の三用法・百分率/歩合 ──
@@ -525,28 +539,38 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
     )
   }
 
-  // ── renpi: 連比（Bをそろえる）──
+  // ── renpi: 連比（共通の文字をそろえる）──
   if (mode === 'renpi') {
     const rows = spec.rows as { label: string; segs: { name: string; r: number; hl?: boolean }[] }[]
-    const barH = 20
-    const rowY = (i: number) => 24 + i * 30
     const finalRow = spec.finalRow as { label: string; segs: { name: string; r: number }[] } | undefined
-    const fY = rowY(rows.length) + 4
-    const drawRow = (label: string, segs: { name: string; r: number; hl?: boolean }[], y: number, big = false) => {
+    const rStart = 30, rW = 184
+    const barH = 20
+    const rowY = (i: number) => 26 + i * 32
+    const fY = rowY(rows.length) + 8
+    // 共通する文字を見つけ、その数をそろえる倍率を計算する
+    const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
+    const lcm = (a: number, b: number) => (a / gcd(a, b)) * b
+    const common = rows[0].segs.map(s => s.name).find(n => rows.every(r => r.segs.some(s => s.name === n))) ?? 'B'
+    const commonVals = rows.map(r => r.segs.find(s => s.name === common)?.r ?? 1)
+    const target = commonVals.reduce((a, b) => lcm(a, b))
+    const mults = commonVals.map(v => target / v)
+    const colorOf = (name: string, i: number) => LETTER_COLORS[name] ?? PALETTE[i % PALETTE.length]
+    const drawRow = (label: string, segs: { name: string; r: number }[], y: number) => {
       const sum = segs.reduce((a, s) => a + s.r, 0)
-      const segW = barW / sum
-      let cx = barStart
+      const segW = rW / sum
+      let cx = rStart
       return (
         <g>
-          <text x={barStart - 4} y={y + 13} textAnchor="end" fontSize="8" fill="#6B5A52" fontWeight="bold">{label}</text>
+          <text x={rStart - 4} y={y + 13} textAnchor="end" fontSize="8" fill="#6B5A52" fontWeight="bold">{label}</text>
           {segs.map((s, i) => {
             const w = segW * s.r
             const x = cx; cx += w
+            const col = colorOf(s.name, i)
             return (
               <g key={i}>
-                <rect x={x} y={y} width={w} height={barH} rx="3" fill={s.hl ? 'rgba(43,163,154,0.18)' : '#FFF1B8'} stroke={s.hl ? '#2BA39A' : '#3A2E2A'} strokeWidth="2" />
-                <text x={x + w / 2} y={y - 2} textAnchor="middle" fontSize="7.5" fill="#6B5A52" fontWeight="bold">{s.name}</text>
-                {circ(x + w / 2, y + barH / 2, s.r, big ? '#b45309' : '#7c3aed')}
+                <rect x={x} y={y} width={w} height={barH} rx="3" fill={col.fill} stroke={col.stroke} strokeWidth="2" />
+                <text x={x + w / 2} y={y - 2} textAnchor="middle" fontSize="7.5" fill={col.stroke} fontWeight="bold">{s.name}</text>
+                {circ(x + w / 2, y + barH / 2, s.r, col.stroke)}
               </g>
             )
           })}
@@ -556,17 +580,25 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
     const showFinal = wc >= 2 && finalRow
     return (
       <div className="w-full space-y-1.5">
-        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>同じ文字（B）の数をそろえて、1本の比にまとめよう</p>
+        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>同じ文字（{common}）の数をそろえて、1本の比にまとめよう</p>
         <svg viewBox={`0 0 250 ${(showFinal ? fY + barH : rowY(rows.length)) + 10}`} className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
-          {rows.map((r, i) => <g key={i}>{drawRow(r.label, r.segs, rowY(i))}</g>)}
+          {rows.map((r, i) => (
+            <g key={i}>
+              {drawRow(r.label, r.segs, rowY(i))}
+              {/* どれだけ倍にしてそろえるかを明示（×N） */}
+              {showFinal && mults[i] !== 1 && (
+                <text x={rStart + rW + 5} y={rowY(i) + 13} fontSize="9" fill="#b45309" fontWeight="bold">×{mults[i]}</text>
+              )}
+            </g>
+          ))}
           {showFinal && (
             <>
-              <text x={barStart} y={fY - 6} fontSize="8" fill="#b45309" fontWeight="bold">↓ そろえると</text>
-              {drawRow(finalRow!.label, finalRow!.segs, fY, true)}
+              <text x={rStart} y={fY - 6} fontSize="8" fill="#b45309" fontWeight="bold">↓ {common} を {target} にそろえる</text>
+              {drawRow(finalRow!.label, finalRow!.segs, fY)}
             </>
           )}
         </svg>
-        {Step3}
+        {Step2}{Step3}
       </div>
     )
   }
@@ -575,17 +607,19 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
   const items = spec.items as { r: number; label: string }[]
   const anchorKind = (spec.anchorKind as string) ?? 'none'
   const anchorText = spec.anchorText as string | undefined
+  const oneValue = spec.oneValue as number | undefined
   const sumR = items.reduce((a, i) => a + i.r, 0)
   const segW = barW / sumR
   const y = 34, barH = 26
   const rVals = items.map(i => i.r)
   const maxR = Math.max(...rVals), minR = Math.min(...rVals)
+  const showParts = (anchorKind === 'total' || anchorKind === 'sum') && oneValue !== undefined && wc >= 3
   return (
     <div className="w-full space-y-1.5">
       <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
         比は丸数字（{items.map(i => i.r).join('：')}）、実際の数は単位つきで区別しよう
       </p>
-      <svg viewBox="0 0 250 84" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+      <svg viewBox={`0 0 250 ${showParts ? 92 : 84}`} className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
         {/* 全体（合計/和）ブラケット */}
         {(anchorKind === 'total' || anchorKind === 'sum') && (
           <>
@@ -595,18 +629,23 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
             <text x={(barStart + barEnd) / 2} y={y - 11} textAnchor="middle" fontSize="8.5" fill="#6B5A52" fontWeight="bold">{anchorText}</text>
           </>
         )}
-        {/* セグメント */}
+        {/* セグメント（比の項ごとに色を変える＝A・Cも別色） */}
         {(() => {
           let cx = barStart
           return items.map((it, i) => {
             const w = segW * it.r
             const x = cx; cx += w
+            const col = PALETTE[i % PALETTE.length]
             return (
               <g key={i}>
                 <rect x={x} y={y} width={w} height={barH} rx="3"
-                  fill={i % 2 === 0 ? '#FFF1B8' : '#DBF6F0'} stroke="#3A2E2A" strokeWidth="2" />
-                <text x={x + w / 2} y={y - 2} textAnchor="middle" fontSize="8" fill="#3A2E2A" fontWeight="bold">{it.label}</text>
-                {circ(x + w / 2, y + barH / 2, it.r)}
+                  fill={col.fill} stroke={col.stroke} strokeWidth="2" />
+                <text x={x + w / 2} y={y - 2} textAnchor="middle" fontSize="8" fill={col.stroke} fontWeight="bold">{it.label}</text>
+                {circ(x + w / 2, y + barH / 2, it.r, col.stroke)}
+                {/* 比 → 実数の対応（①あたり × 比）。最後の段で各項の実数を見せる */}
+                {showParts && (
+                  <text x={x + w / 2} y={y + barH + 13} textAnchor="middle" fontSize="8.5" fill={col.stroke} fontWeight="bold">{it.r * oneValue!}{unit}</text>
+                )}
               </g>
             )
           })
