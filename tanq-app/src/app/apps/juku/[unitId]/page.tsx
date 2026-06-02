@@ -269,43 +269,37 @@ function RatioBarDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknow
     const bars = spec.bars as { usedSpan: number; denom: number; usedLabel: string; remainLabel?: string; remainValue?: number; remainText?: string }[]
     const finalFracText = (spec.finalFracText as string) ?? ''
     const lastRemain = bars[bars.length - 1].remainValue
-    const barH = 20
+    const sStart = 14, sEnd = 236, sW = sEnd - sStart
+    const barH = 22
+    const b1 = bars[0], b2 = bars[bars.length - 1]
+    const used1W = sW * b1.usedSpan / b1.denom
+    const used2W = sW * b2.usedSpan / b2.denom
+    const y1 = 16, fTop = y1 + barH, fBot = fTop + 18, y2 = fBot + 8
     return (
       <div className="w-full space-y-1.5">
         <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
           のこりを「あたらしい①」とみて、じゅんに考えよう
         </p>
-        <svg viewBox="0 0 250 130" className="w-full mx-auto overflow-visible" style={{ maxWidth: 340 }}>
-          {bars.map((b, bi) => {
-            const y = 20 + bi * 56
-            const usedW = barW * b.usedSpan / b.denom
-            const remW = barW - usedW
-            const isLast = bi === bars.length - 1
-            return (
-              <g key={bi}>
-                <text x={barStart} y={y - 4} fontSize="8" fill="#6B5A52" fontWeight="bold">
-                  {bi === 0 ? 'はじめ（全体①）' : '↑ のこりを①とみる'}
-                </text>
-                {/* 使った（赤） */}
-                <rect x={barStart} y={y} width={usedW} height={barH} rx="3" fill="rgba(248,113,113,0.22)" stroke="#f87171" strokeWidth="1.8" />
-                <text x={barStart + usedW / 2} y={y + 13} textAnchor="middle" fontSize="7.5" fill="#f87171" fontWeight="bold">{b.usedLabel}</text>
-                {/* のこり（水色） */}
-                <rect x={barStart + usedW} y={y} width={remW} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
-                <text x={barStart + usedW + remW / 2} y={y + 13} textAnchor="middle" fontSize="7.5" fill="#3A2E2A" fontWeight="bold">{b.remainLabel ?? 'のこり'}</text>
-                {/* 最後の帯の「のこり＝実数」 */}
-                {isLast && b.remainValue !== undefined && wc >= 1 && (
-                  <>
-                    <line x1={barStart + usedW} y1={y + barH + 3} x2={barEnd} y2={y + barH + 3} stroke="#0d9488" strokeWidth="1.5" />
-                    <text x={barStart + usedW + remW / 2} y={y + barH + 12} textAnchor="middle" fontSize="8.5" fill="#0d9488" fontWeight="bold">{b.remainText ?? `${b.remainValue}${unit}`}</text>
-                  </>
-                )}
-                {/* 1本目の「のこり」から2本目の全体へ降ろす点線 */}
-                {bi === 0 && (
-                  <line x1={barStart + usedW + remW / 2} y1={y + barH + 2} x2={barStart + barW / 2} y2={y + 56 - 8} stroke="#C4B8AE" strokeWidth="1.2" strokeDasharray="3 2" />
-                )}
-              </g>
-            )
-          })}
+        <svg viewBox={`0 0 250 ${y2 + barH + 22}`} className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+          {/* 1本目: はじめ（全体①） */}
+          <text x={sStart} y={y1 - 4} fontSize="8" fill="#6B5A52" fontWeight="bold">はじめ（全体①）</text>
+          <rect x={sStart} y={y1} width={used1W} height={barH} rx="3" fill="rgba(248,113,113,0.22)" stroke="#f87171" strokeWidth="1.8" />
+          <text x={sStart + used1W / 2} y={y1 + 15} textAnchor="middle" fontSize="9.5" fill="#f87171" fontWeight="bold">{b1.usedSpan}/{b1.denom}</text>
+          <rect x={sStart + used1W} y={y1} width={sW - used1W} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+          <text x={sStart + used1W + (sW - used1W) / 2} y={y1 + 15} textAnchor="middle" fontSize="9" fill="#3A2E2A" fontWeight="bold">のこり {b1.denom - b1.usedSpan}/{b1.denom}</text>
+
+          {/* じょうご: 1本目の「のこり」を2本目の全体へ引きのばす */}
+          <polygon points={`${sStart + used1W},${fTop} ${sEnd},${fTop} ${sEnd},${fBot} ${sStart},${fBot}`}
+            fill="rgba(43,163,154,0.10)" stroke="#2BA39A" strokeWidth="1" strokeDasharray="3 2" />
+
+          {/* 2本目: のこりを「あたらしい①」とみる */}
+          <text x={sStart} y={y2 - 4} fontSize="8" fill="#0d9488" fontWeight="bold">↑ のこりを「あたらしい①」とみる</text>
+          <rect x={sStart} y={y2} width={used2W} height={barH} rx="3" fill="rgba(248,113,113,0.22)" stroke="#f87171" strokeWidth="1.8" />
+          <text x={sStart + used2W / 2} y={y2 + 15} textAnchor="middle" fontSize="9.5" fill="#f87171" fontWeight="bold">{b2.usedSpan}/{b2.denom}</text>
+          <rect x={sStart + used2W} y={y2} width={sW - used2W} height={barH} rx="3" fill="#DBF6F0" stroke="#3A2E2A" strokeWidth="2" />
+          <text x={sStart + used2W + (sW - used2W) / 2} y={y2 + 15} textAnchor="middle" fontSize="9" fill="#0d9488" fontWeight="bold">
+            {b2.remainValue !== undefined && wc >= 1 ? (b2.remainText ?? `${b2.remainValue}${unit}`) : 'のこり'}
+          </text>
         </svg>
         {wc >= 2 && finalFracText && (
           <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
