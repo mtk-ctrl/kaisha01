@@ -444,6 +444,210 @@ function RatioBarDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknow
 }
 
 // ─────────────────────────────────────
+// SVG: 割合・比の図 ⚖️
+//   「比の数字（丸数字）」と「実際の数量（単位つき）」を色分けして区別する。
+//   mode: percent（割合の三用法・百分率/歩合）/ bunpai（比例配分・比と実数）/ renpi（連比）
+//   計算ステップは step2Text / step3Text を wrongCount 連動で表示。
+// ─────────────────────────────────────
+function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const mode = (spec.mode as string) ?? 'bunpai'
+  const showValues = (spec.showValues as boolean) ?? false
+  const wc = showValues ? 3 : wrongCount
+  const unit = (spec.unit as string) ?? ''
+  const step2 = spec.step2Text as string | undefined
+  const step3 = spec.step3Text as string | undefined
+
+  const Step2 = step2 && wc >= 2 ? (
+    <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
+      <span className="text-[10px] font-black" style={{ color: '#b45309' }}>{step2}</span>
+    </div>
+  ) : null
+  const Step3 = step3 && wc >= 3 ? (
+    <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+      <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>{step3}</span>
+    </div>
+  ) : null
+
+  // 丸数字（比の数字）。実数と区別するため必ず丸で囲う。
+  const circ = (cx: number, cy: number, n: number | string, color = '#7c3aed') => (
+    <g>
+      <circle cx={cx} cy={cy} r="9" fill="#fff" stroke={color} strokeWidth="1.8" />
+      <text x={cx} y={cy + 3.5} textAnchor="middle" fontSize="9.5" fill={color} fontWeight="bold">{n}</text>
+    </g>
+  )
+
+  const barStart = 34, barEnd = 228, barW = barEnd - barStart
+
+  // ── percent: 割合の三用法・百分率/歩合 ──
+  if (mode === 'percent') {
+    const ratioPct = spec.ratioPct as number
+    const convert = spec.convert as boolean | undefined
+    const y = 34, barH = 26
+    const fillW = barW * ratioPct / 100
+    if (convert) {
+      const dec = spec.decText as string, pct = spec.pctText as string, bu = spec.buText as string
+      return (
+        <div className="w-full space-y-1.5">
+          <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>0 〜 100% の数直線で、3つの表し方をそろえよう</p>
+          <svg viewBox="0 0 250 70" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+            <rect x={barStart} y={y} width={barW} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+            <rect x={barStart} y={y} width={fillW} height={barH} rx="3" fill="rgba(43,163,154,0.30)" stroke="#2BA39A" strokeWidth="1.8" />
+            <line x1={barStart + fillW} y1={y - 4} x2={barStart + fillW} y2={y + barH + 4} stroke="#0d9488" strokeWidth="1.5" />
+            <text x={barStart} y={y + barH + 14} fontSize="8" fill="#6B5A52">0</text>
+            <text x={barEnd} y={y + barH + 14} textAnchor="end" fontSize="8" fill="#6B5A52">100%</text>
+            <text x={barStart + fillW / 2} y={y + 17} textAnchor="middle" fontSize="10" fill="#0d9488" fontWeight="bold">{pct}</text>
+            <text x={barStart + fillW} y={y - 7} textAnchor="middle" fontSize="9" fill="#0d9488" fontWeight="bold">{dec}＝{pct}＝{bu}</text>
+          </svg>
+        </div>
+      )
+    }
+    return (
+      <div className="w-full space-y-1.5">
+        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>もとにする量を100%として、くらべる量の割合を見よう</p>
+        <svg viewBox="0 0 250 76" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+          {/* もとにする量＝100% ブラケット */}
+          <line x1={barStart} y1={y - 8} x2={barEnd} y2={y - 8} stroke="#6B5A52" strokeWidth="1.2" />
+          <line x1={barStart} y1={y - 11} x2={barStart} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
+          <line x1={barEnd} y1={y - 11} x2={barEnd} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
+          <text x={(barStart + barEnd) / 2} y={y - 11} textAnchor="middle" fontSize="8.5" fill="#6B5A52" fontWeight="bold">{spec.baseText as string}</text>
+          {/* 帯 */}
+          <rect x={barStart} y={y} width={barW} height={barH} rx="3" fill="#FFF1B8" stroke="#3A2E2A" strokeWidth="2" />
+          <rect x={barStart} y={y} width={fillW} height={barH} rx="3" fill="rgba(43,163,154,0.28)" stroke="#2BA39A" strokeWidth="1.8" />
+          <text x={barStart + fillW / 2} y={y + 17} textAnchor="middle" fontSize="10" fill="#0d9488" fontWeight="bold">{spec.ratioText as string}</text>
+          {/* くらべる量 ブラケット */}
+          <line x1={barStart} y1={y + barH + 4} x2={barStart + fillW} y2={y + barH + 4} stroke="#0d9488" strokeWidth="1.5" />
+          <line x1={barStart} y1={y + barH + 1} x2={barStart} y2={y + barH + 7} stroke="#0d9488" strokeWidth="1.5" />
+          <line x1={barStart + fillW} y1={y + barH + 1} x2={barStart + fillW} y2={y + barH + 7} stroke="#0d9488" strokeWidth="1.5" />
+          <text x={barStart + fillW / 2} y={y + barH + 15} textAnchor="middle" fontSize="8.5" fill="#0d9488" fontWeight="bold">{spec.compareText as string}</text>
+        </svg>
+        {Step2}{Step3}
+      </div>
+    )
+  }
+
+  // ── renpi: 連比（Bをそろえる）──
+  if (mode === 'renpi') {
+    const rows = spec.rows as { label: string; segs: { name: string; r: number; hl?: boolean }[] }[]
+    const barH = 20
+    const rowY = (i: number) => 24 + i * 30
+    const finalRow = spec.finalRow as { label: string; segs: { name: string; r: number }[] } | undefined
+    const fY = rowY(rows.length) + 4
+    const drawRow = (label: string, segs: { name: string; r: number; hl?: boolean }[], y: number, big = false) => {
+      const sum = segs.reduce((a, s) => a + s.r, 0)
+      const segW = barW / sum
+      let cx = barStart
+      return (
+        <g>
+          <text x={barStart - 4} y={y + 13} textAnchor="end" fontSize="8" fill="#6B5A52" fontWeight="bold">{label}</text>
+          {segs.map((s, i) => {
+            const w = segW * s.r
+            const x = cx; cx += w
+            return (
+              <g key={i}>
+                <rect x={x} y={y} width={w} height={barH} rx="3" fill={s.hl ? 'rgba(43,163,154,0.18)' : '#FFF1B8'} stroke={s.hl ? '#2BA39A' : '#3A2E2A'} strokeWidth="2" />
+                <text x={x + w / 2} y={y - 2} textAnchor="middle" fontSize="7.5" fill="#6B5A52" fontWeight="bold">{s.name}</text>
+                {circ(x + w / 2, y + barH / 2, s.r, big ? '#b45309' : '#7c3aed')}
+              </g>
+            )
+          })}
+        </g>
+      )
+    }
+    const showFinal = wc >= 2 && finalRow
+    return (
+      <div className="w-full space-y-1.5">
+        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>同じ文字（B）の数をそろえて、1本の比にまとめよう</p>
+        <svg viewBox={`0 0 250 ${(showFinal ? fY + barH : rowY(rows.length)) + 10}`} className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+          {rows.map((r, i) => <g key={i}>{drawRow(r.label, r.segs, rowY(i))}</g>)}
+          {showFinal && (
+            <>
+              <text x={barStart} y={fY - 6} fontSize="8" fill="#b45309" fontWeight="bold">↓ そろえると</text>
+              {drawRow(finalRow!.label, finalRow!.segs, fY, true)}
+            </>
+          )}
+        </svg>
+        {Step3}
+      </div>
+    )
+  }
+
+  // ── bunpai: 比例配分・比と実数の対応 ──
+  const items = spec.items as { r: number; label: string }[]
+  const anchorKind = (spec.anchorKind as string) ?? 'none'
+  const anchorText = spec.anchorText as string | undefined
+  const sumR = items.reduce((a, i) => a + i.r, 0)
+  const segW = barW / sumR
+  const y = 34, barH = 26
+  const rVals = items.map(i => i.r)
+  const maxR = Math.max(...rVals), minR = Math.min(...rVals)
+  return (
+    <div className="w-full space-y-1.5">
+      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+        比は丸数字（{items.map(i => i.r).join('：')}）、実際の数は単位つきで区別しよう
+      </p>
+      <svg viewBox="0 0 250 84" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+        {/* 全体（合計/和）ブラケット */}
+        {(anchorKind === 'total' || anchorKind === 'sum') && (
+          <>
+            <line x1={barStart} y1={y - 8} x2={barEnd} y2={y - 8} stroke="#6B5A52" strokeWidth="1.2" />
+            <line x1={barStart} y1={y - 11} x2={barStart} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
+            <line x1={barEnd} y1={y - 11} x2={barEnd} y2={y - 5} stroke="#6B5A52" strokeWidth="1.2" />
+            <text x={(barStart + barEnd) / 2} y={y - 11} textAnchor="middle" fontSize="8.5" fill="#6B5A52" fontWeight="bold">{anchorText}</text>
+          </>
+        )}
+        {/* セグメント */}
+        {(() => {
+          let cx = barStart
+          return items.map((it, i) => {
+            const w = segW * it.r
+            const x = cx; cx += w
+            return (
+              <g key={i}>
+                <rect x={x} y={y} width={w} height={barH} rx="3"
+                  fill={i % 2 === 0 ? '#FFF1B8' : '#DBF6F0'} stroke="#3A2E2A" strokeWidth="2" />
+                <text x={x + w / 2} y={y - 2} textAnchor="middle" fontSize="8" fill="#3A2E2A" fontWeight="bold">{it.label}</text>
+                {circ(x + w / 2, y + barH / 2, it.r)}
+              </g>
+            )
+          })
+        })()}
+        {/* part（既知の1部分）ブラケット */}
+        {anchorKind === 'part' && (() => {
+          const ki = spec.knownIndex as number
+          let kx = barStart
+          for (let i = 0; i < ki; i++) kx += segW * items[i].r
+          const kw = segW * items[ki].r
+          return (
+            <>
+              <line x1={kx} y1={y + barH + 4} x2={kx + kw} y2={y + barH + 4} stroke="#0d9488" strokeWidth="1.5" />
+              <line x1={kx} y1={y + barH + 1} x2={kx} y2={y + barH + 7} stroke="#0d9488" strokeWidth="1.5" />
+              <line x1={kx + kw} y1={y + barH + 1} x2={kx + kw} y2={y + barH + 7} stroke="#0d9488" strokeWidth="1.5" />
+              <text x={kx + kw / 2} y={y + barH + 15} textAnchor="middle" fontSize="8.5" fill="#0d9488" fontWeight="bold">{anchorText}</text>
+            </>
+          )
+        })()}
+        {/* diff（差）ハイライト */}
+        {anchorKind === 'diff' && wc >= 1 && (() => {
+          // 最大の比の項のうち、最小の比ぶんを超える区画を差として示す
+          let bx = barStart
+          for (const it of items) { if (it.r === maxR) break; bx += segW * it.r }
+          const dStart = bx + segW * minR
+          const dW = segW * (maxR - minR)
+          return (
+            <>
+              <rect x={dStart} y={y} width={dW} height={barH} rx="3" fill="rgba(248,113,113,0.18)" stroke="#f87171" strokeWidth="1.6" strokeDasharray="4 2" />
+              <line x1={dStart} y1={y + barH + 4} x2={dStart + dW} y2={y + barH + 4} stroke="#f87171" strokeWidth="1.5" />
+              <text x={dStart + dW / 2} y={y + barH + 15} textAnchor="middle" fontSize="8.5" fill="#f87171" fontWeight="bold">{anchorText}</text>
+            </>
+          )
+        })()}
+      </svg>
+      {Step2}{Step3}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
 // SVG: 点線図（植木算）🌳 emoji版
 // ─────────────────────────────────────
 function DotLineDiagram({ spec }: { spec: Record<string, unknown> }) {
@@ -966,6 +1170,7 @@ const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   arrow: '→ 矢印図',
   gap: '📦 差あつめ図',
   'ratio-bar': '🎯 わりあいの帯図',
+  ratio2: '⚖️ わりあい・比の図',
 }
 
 function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; spec: Record<string, unknown>; wrongCount?: number }) {
@@ -985,6 +1190,7 @@ function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; sp
       {type === 'area'     && <AreaDiagram    spec={spec} wrongCount={wrongCount} />}
       {type === 'gap'      && <GapDiagram     spec={spec} wrongCount={wrongCount} />}
       {type === 'ratio-bar' && <RatioBarDiagram spec={spec} wrongCount={wrongCount} />}
+      {type === 'ratio2'   && <RatioBasicsDiagram spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
