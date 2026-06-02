@@ -1,4 +1,4 @@
-export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'ratio-bar' | 'none'
+export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'ratio-bar' | 'ratio2' | 'none'
 export type Difficulty = 1 | 2 | 3
 
 export interface HintStep {
@@ -1670,9 +1670,308 @@ export const JUKU_UNITS: JukuUnit[] = [
   {
     id: 'ratio-basics', order: 7, title: '割合と比の基礎', titleKana: 'わりあいとひのきそ',
     emoji: '📊', color: '#6366f1', layer: 3, prerequisiteIds: ['equivalent'],
-    isFree: false, coreConcept: '実際の数量（単位あり）と比の数字（丸数字）を区別する',
-    approachText: '比の数字には必ず①のような丸数字を使う。',
-    primaryDiagram: 'line-seg', problems: [],
+    isFree: false,
+    coreConcept: '「実際の数量（単位あり）」と「比の数字（丸数字）」をはっきり区別する',
+    approachText:
+      '割合は「もとにする量」を100%（または①）として、くらべる量がどれだけかを表す。\n比は「②：③」のように丸数字で書き、実際の数量と混ぜない。\n比を実数にするときは「①あたりの量」をまず求めるのがすべての土台になる。',
+    primaryDiagram: 'ratio2',
+    introSlide: {
+      title: 'わりあい・比の図の読み方',
+      explanation: [
+        'もとにする量を100%（①）として、くらべる量の割合を見る',
+        '割合の三用法：くらべる量＝もと×割合／もと＝くらべる量÷割合',
+        '比は丸数字（②：③）で書き、実際の数量（単位つき）と区別する',
+        '比を実数にするときは「①あたりの量」を先に求める',
+      ],
+      diagramSpec: {
+        mode: 'percent', ratioPct: 30,
+        baseText: 'もとにする量 20人（100%）', compareText: 'くらべる量 6人',
+        ratioText: '30%', unit: '人', showValues: true,
+        step2Text: 'くらべる量 ＝ もと × 割合', step3Text: '20 × 0.3 ＝ 6人',
+      },
+    },
+    problems: [
+      // ──────────────────────────────────
+      // ★ かんたん（割合の三用法・百分率/歩合）
+      // ──────────────────────────────────
+      {
+        id: 'rb-01',
+        title: 'くらべる量を求める',
+        difficulty: 1,
+        problemText: 'ある学校の生徒は 20 人です。そのうち 30% が委員会に入っています。委員は何人ですか？',
+        answer: '6', answerUnit: '人',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'percent', ratioPct: 30,
+          baseText: 'もとにする量 20人（100%）', compareText: 'くらべる量 ＝ ?',
+          ratioText: '30%', unit: '人',
+          step2Text: 'くらべる量 ＝ もと × 割合', step3Text: '20 × 0.3 ＝ 6人',
+        },
+        hints: [
+          { step: 1, text: 'もとにする量は「生徒20人」。これを100%とみるよ。' },
+          { step: 2, text: '割合 30% は小数で 0.3。くらべる量 ＝ もと × 割合 だね。' },
+          { step: 3, text: '20 × 0.3 ＝ 6人。' },
+        ],
+        explanationText: 'くらべる量 ＝ もとにする量 × 割合 ＝ 20 × 0.3 ＝ 6人。',
+      },
+      {
+        id: 'rb-02',
+        title: 'もとにする量を求める',
+        difficulty: 1,
+        problemText: 'ある数の 40% が 12 です。ある数はいくつですか？',
+        answer: '30', answerUnit: '',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'percent', ratioPct: 40,
+          baseText: 'もとにする量 ＝ ?（100%）', compareText: 'くらべる量 12',
+          ratioText: '40%', unit: '',
+          step2Text: 'もと ＝ くらべる量 ÷ 割合', step3Text: '12 ÷ 0.4 ＝ 30',
+        },
+        hints: [
+          { step: 1, text: '求めるのは「もとにする量」。100%にあたる数だよ。' },
+          { step: 2, text: '40% ＝ 0.4。もと ＝ くらべる量 ÷ 割合 で逆算するよ。' },
+          { step: 3, text: '12 ÷ 0.4 ＝ 30。確かめ：30 × 0.4 ＝ 12 ◎' },
+        ],
+        explanationText: 'もとにする量 ＝ くらべる量 ÷ 割合 ＝ 12 ÷ 0.4 ＝ 30。',
+      },
+      {
+        id: 'rb-03',
+        title: '割合（何%）を求める',
+        difficulty: 1,
+        problemText: '15 は 20 の何 % ですか？',
+        answer: '75', answerUnit: '%',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'percent', ratioPct: 75,
+          baseText: 'もとにする量 20（100%）', compareText: 'くらべる量 15',
+          ratioText: '? %', unit: '',
+          step2Text: '割合 ＝ くらべる量 ÷ もと', step3Text: '15 ÷ 20 ＝ 0.75 → 75%',
+        },
+        hints: [
+          { step: 1, text: '「20 の何%」なので、もとにする量は 20 だよ。' },
+          { step: 2, text: '割合 ＝ くらべる量 ÷ もと ＝ 15 ÷ 20。' },
+          { step: 3, text: '15 ÷ 20 ＝ 0.75。百分率にすると 75%。' },
+        ],
+        explanationText: '割合 ＝ くらべる量 ÷ もとにする量 ＝ 15 ÷ 20 ＝ 0.75 ＝ 75%。',
+      },
+      {
+        id: 'rb-04',
+        title: '小数・百分率・歩合の変換',
+        difficulty: 1,
+        problemText: '小数で 0.25 にあたる割合を、百分率と歩合で正しく表したものはどれ？',
+        answer: '25%・2割5分', answerUnit: '',
+        choices: ['25%・2割5分', '2.5%・2割5分', '25%・2割5厘', '250%・25割'],
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'percent', convert: true, ratioPct: 25,
+          decText: '0.25', pctText: '25%', buText: '2割5分', unit: '',
+        },
+        hints: [
+          { step: 1, text: '小数を百分率にするには 100 をかけるよ。0.25 × 100 ＝ 25%。' },
+          { step: 2, text: '歩合は、小数第1位が「割」、第2位が「分」、第3位が「厘」。' },
+          { step: 3, text: '0.25 → 2割5分。だから 25%・2割5分。' },
+        ],
+        explanationText: '0.25 ＝ 25%（×100）＝ 2割5分（割→0.1・分→0.01）。',
+      },
+      // ──────────────────────────────────
+      // ★★ ふつう（比の意味・比例配分）
+      // ──────────────────────────────────
+      {
+        id: 'rb-05',
+        title: '比をかんたんにする',
+        difficulty: 2,
+        problemText: '12 : 18 を、いちばんかんたんな整数の比で表すとどれ？',
+        answer: '2:3', answerUnit: '',
+        choices: ['2:3', '3:2', '4:6', '6:9'],
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'bunpai', anchorKind: 'none',
+          items: [{ r: 2, label: '12→2' }, { r: 3, label: '18→3' }],
+          unit: '',
+          step2Text: '両方を 6（最大公約数）でわる', step3Text: '12÷6 : 18÷6 ＝ 2 : 3',
+        },
+        hints: [
+          { step: 1, text: '比は、両方を同じ数でわっても大きさが変わらないよ。' },
+          { step: 2, text: '12 と 18 の最大公約数は 6。両方を 6 でわろう。' },
+          { step: 3, text: '12÷6 ＝ 2、18÷6 ＝ 3。だから 2 : 3。' },
+        ],
+        explanationText: '12 と 18 を最大公約数 6 でわって、2 : 3。',
+      },
+      {
+        id: 'rb-06',
+        title: '比の値',
+        difficulty: 2,
+        problemText: '比 2 : 3 の「比の値」はどれですか？',
+        answer: '2/3', answerUnit: '',
+        choices: ['2/3', '3/2', '2/5', '1/3'],
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'bunpai', anchorKind: 'none',
+          items: [{ r: 2, label: '前の数' }, { r: 3, label: 'うしろの数' }],
+          unit: '',
+          step2Text: '比の値 ＝ 前の数 ÷ うしろの数', step3Text: '2 ÷ 3 ＝ 2/3',
+        },
+        hints: [
+          { step: 1, text: '比の値は「前の数 ÷ うしろの数」で求めるよ。' },
+          { step: 2, text: 'a : b の比の値は a/b。' },
+          { step: 3, text: '2 : 3 の比の値は 2 ÷ 3 ＝ 2/3。' },
+        ],
+        explanationText: '比の値 ＝ 前の数 ÷ うしろの数 ＝ 2 ÷ 3 ＝ 2/3。',
+      },
+      {
+        id: 'rb-07',
+        title: '比と実数（①あたり）',
+        difficulty: 2,
+        problemText: 'あめを兄と弟で 3 : 5 に分けたら、弟は 20 個になりました。兄は何個ですか？',
+        answer: '12', answerUnit: '個',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'bunpai', anchorKind: 'part', knownIndex: 1,
+          items: [{ r: 3, label: '兄' }, { r: 5, label: '弟' }],
+          anchorText: '弟 ＝ 20個', unit: '個',
+          step2Text: '①あたり ＝ 20 ÷ 5 ＝ 4個', step3Text: '兄 ＝ 4 × 3 ＝ 12個',
+        },
+        hints: [
+          { step: 1, text: '弟は比の 5 にあたる部分で、それが 20 個だね。' },
+          { step: 2, text: '①（1つぶん）あたりは 20 ÷ 5 ＝ 4個。' },
+          { step: 3, text: '兄は比の 3 ぶんだから 4 × 3 ＝ 12個。' },
+        ],
+        explanationText: '①あたり ＝ 20 ÷ 5 ＝ 4個。兄は 4 × 3 ＝ 12個。',
+      },
+      {
+        id: 'rb-08',
+        title: '比例配分（2つに分ける）',
+        difficulty: 2,
+        problemText: '3000 円を兄と弟で 2 : 3 に分けます。少ない方は何円になりますか？',
+        answer: '1200', answerUnit: '円',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'bunpai', anchorKind: 'total',
+          items: [{ r: 2, label: '兄' }, { r: 3, label: '弟' }],
+          anchorText: '合計 3000円', unit: '円',
+          step2Text: '①あたり ＝ 3000 ÷ 5 ＝ 600円', step3Text: '少ない方（兄）＝ 600 × 2 ＝ 1200円',
+        },
+        hints: [
+          { step: 1, text: '比の合計は 2 ＋ 3 ＝ 5。全体 3000 円が 5 ぶんにあたるよ。' },
+          { step: 2, text: '①あたりは 3000 ÷ 5 ＝ 600円。' },
+          { step: 3, text: '少ない方は比の 2 ぶんだから 600 × 2 ＝ 1200円。' },
+        ],
+        explanationText: '①あたり ＝ 3000 ÷ 5 ＝ 600円。少ない方 ＝ 600 × 2 ＝ 1200円。',
+      },
+      {
+        id: 'rb-09',
+        title: '比例配分（3つに分ける）',
+        difficulty: 2,
+        problemText: 'おはじき 24 個を 1 : 2 : 3 で分けます。いちばん多い人は何個もらえますか？',
+        answer: '12', answerUnit: '個',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'bunpai', anchorKind: 'total',
+          items: [{ r: 1, label: 'A' }, { r: 2, label: 'B' }, { r: 3, label: 'C' }],
+          anchorText: '合計 24個', unit: '個',
+          step2Text: '①あたり ＝ 24 ÷ 6 ＝ 4個', step3Text: 'いちばん多いC ＝ 4 × 3 ＝ 12個',
+        },
+        hints: [
+          { step: 1, text: '比の合計は 1 ＋ 2 ＋ 3 ＝ 6。24 個が 6 ぶんにあたるよ。' },
+          { step: 2, text: '①あたりは 24 ÷ 6 ＝ 4個。' },
+          { step: 3, text: 'いちばん多いのは比の 3 ぶんだから 4 × 3 ＝ 12個。' },
+        ],
+        explanationText: '①あたり ＝ 24 ÷ 6 ＝ 4個。いちばん多い人 ＝ 4 × 3 ＝ 12個。',
+      },
+      // ──────────────────────────────────
+      // ★★★ むずかしい（連比・比＋差和）
+      // ──────────────────────────────────
+      {
+        id: 'rb-10',
+        title: '連比（A:B:C にまとめる）',
+        difficulty: 3,
+        problemText: 'A : B ＝ 2 : 3、B : C ＝ 4 : 5 のとき、A : B : C はどれですか？',
+        answer: '8:12:15', answerUnit: '',
+        choices: ['8:12:15', '2:3:5', '8:12:20', '2:12:5'],
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'renpi',
+          rows: [
+            { label: 'A:B', segs: [{ name: 'A', r: 2 }, { name: 'B', r: 3, hl: true }] },
+            { label: 'B:C', segs: [{ name: 'B', r: 4, hl: true }, { name: 'C', r: 5 }] },
+          ],
+          finalRow: { label: 'A:B:C', segs: [{ name: 'A', r: 8 }, { name: 'B', r: 12 }, { name: 'C', r: 15 }] },
+          unit: '',
+          step3Text: 'B を 12 にそろえて A:B:C ＝ 8 : 12 : 15',
+        },
+        hints: [
+          { step: 1, text: '共通する B の数をそろえるよ。B は 3 と 4 だから、最小公倍数の 12 にそろえよう。' },
+          { step: 2, text: 'A:B ＝ 2:3 を 4倍 → 8:12。B:C ＝ 4:5 を 3倍 → 12:15。' },
+          { step: 3, text: 'B が 12 でそろったので A:B:C ＝ 8 : 12 : 15。' },
+        ],
+        explanationText: 'B を 12（3と4の最小公倍数）にそろえる。2:3→8:12、4:5→12:15。よって 8:12:15。',
+      },
+      {
+        id: 'rb-11',
+        title: '比と差（差から実数）',
+        difficulty: 3,
+        problemText: '兄と弟の所持金の比は 5 : 3 で、兄は弟より 400 円多く持っています。兄はいくら持っていますか？',
+        answer: '1000', answerUnit: '円',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'bunpai', anchorKind: 'diff',
+          items: [{ r: 5, label: '兄' }, { r: 3, label: '弟' }],
+          anchorText: '差 400円', unit: '円',
+          step2Text: '比の差 5－3＝2 が 400円 → ①あたり ＝ 200円', step3Text: '兄 ＝ 200 × 5 ＝ 1000円',
+        },
+        hints: [
+          { step: 1, text: '兄は比の 5、弟は比の 3。比の差は 5 － 3 ＝ 2 だよ。' },
+          { step: 2, text: 'その 2 ぶんの差が 400 円。①あたりは 400 ÷ 2 ＝ 200円。' },
+          { step: 3, text: '兄は比の 5 ぶんだから 200 × 5 ＝ 1000円。確かめ：弟600、差400 ◎' },
+        ],
+        explanationText: '比の差 2 が 400円 → ①あたり 200円。兄 ＝ 200 × 5 ＝ 1000円。',
+      },
+      {
+        id: 'rb-12',
+        title: '比と和（和から実数）',
+        difficulty: 3,
+        problemText: '姉と妹の年れいの比は 4 : 3 で、2人の年れいの和は 35 才です。姉は何才ですか？',
+        answer: '20', answerUnit: '才',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'bunpai', anchorKind: 'sum',
+          items: [{ r: 4, label: '姉' }, { r: 3, label: '妹' }],
+          anchorText: '和 35才', unit: '才',
+          step2Text: '比の和 4＋3＝7 が 35才 → ①あたり ＝ 5才', step3Text: '姉 ＝ 5 × 4 ＝ 20才',
+        },
+        hints: [
+          { step: 1, text: '姉は比の 4、妹は比の 3。比の和は 4 ＋ 3 ＝ 7 だよ。' },
+          { step: 2, text: 'その 7 ぶんが 35 才。①あたりは 35 ÷ 7 ＝ 5才。' },
+          { step: 3, text: '姉は比の 4 ぶんだから 5 × 4 ＝ 20才。確かめ：妹15、和35 ◎' },
+        ],
+        explanationText: '比の和 7 が 35才 → ①あたり 5才。姉 ＝ 5 × 4 ＝ 20才。',
+      },
+      {
+        id: 'rb-13',
+        title: '連比＋実数（応用）',
+        difficulty: 3,
+        problemText: 'A : B ＝ 3 : 4、B : C ＝ 2 : 5 です。A が 18 のとき、C はいくつですか？',
+        answer: '60', answerUnit: '',
+        diagramType: 'ratio2',
+        diagramSpec: {
+          mode: 'renpi',
+          rows: [
+            { label: 'A:B', segs: [{ name: 'A', r: 3 }, { name: 'B', r: 4, hl: true }] },
+            { label: 'B:C', segs: [{ name: 'B', r: 2, hl: true }, { name: 'C', r: 5 }] },
+          ],
+          finalRow: { label: 'A:B:C', segs: [{ name: 'A', r: 3 }, { name: 'B', r: 4 }, { name: 'C', r: 10 }] },
+          unit: '',
+          step2Text: 'B を 4 にそろえる → A:B:C ＝ 3 : 4 : 10',
+          step3Text: 'A の 3 が 18 → ①あたり6 → C ＝ 10 × 6 ＝ 60',
+        },
+        hints: [
+          { step: 1, text: 'まず連比にまとめよう。B は 4 と 2 だから、4 にそろえるよ。' },
+          { step: 2, text: 'B:C ＝ 2:5 を 2倍 → 4:10。よって A:B:C ＝ 3 : 4 : 10。' },
+          { step: 3, text: 'A の比 3 が 18 だから ①あたり ＝ 18 ÷ 3 ＝ 6。C ＝ 10 × 6 ＝ 60。' },
+        ],
+        explanationText: 'B を 4 にそろえ A:B:C ＝ 3:4:10。Aの3が18 → ①あたり6 → C ＝ 10×6 ＝ 60。',
+      },
+    ],
   },
   {
     id: 'concentration', order: 8, title: '濃度算（食塩水）', titleKana: 'のうどざん',
