@@ -1848,7 +1848,7 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramSpec: {
           mode: 'bunpai', anchorKind: 'total',
           items: [{ r: 2, label: '兄' }, { r: 3, label: '弟' }],
-          anchorText: '合計 3000円', unit: '円',
+          anchorText: '合計 3000円', unit: '円', oneValue: 600,
           step2Text: '①あたり ＝ 3000 ÷ 5 ＝ 600円', step3Text: '少ない方（兄）＝ 600 × 2 ＝ 1200円',
         },
         hints: [
@@ -1868,7 +1868,7 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramSpec: {
           mode: 'bunpai', anchorKind: 'total',
           items: [{ r: 1, label: 'A' }, { r: 2, label: 'B' }, { r: 3, label: 'C' }],
-          anchorText: '合計 24個', unit: '個',
+          anchorText: '合計 24個', unit: '個', oneValue: 4,
           step2Text: '①あたり ＝ 24 ÷ 6 ＝ 4個', step3Text: 'いちばん多いC ＝ 4 × 3 ＝ 12個',
         },
         hints: [
@@ -1897,7 +1897,8 @@ export const JUKU_UNITS: JukuUnit[] = [
           ],
           finalRow: { label: 'A:B:C', segs: [{ name: 'A', r: 8 }, { name: 'B', r: 12 }, { name: 'C', r: 15 }] },
           unit: '',
-          step3Text: 'B を 12 にそろえて A:B:C ＝ 8 : 12 : 15',
+          step2Text: 'A:B＝2:3 を ×4、B:C＝4:5 を ×3 → B を 12 にそろえる',
+          step3Text: 'A:B:C ＝ 8 : 12 : 15',
         },
         hints: [
           { step: 1, text: '共通する B の数をそろえるよ。B は 3 と 4 だから、最小公倍数の 12 にそろえよう。' },
@@ -1936,7 +1937,7 @@ export const JUKU_UNITS: JukuUnit[] = [
         diagramSpec: {
           mode: 'bunpai', anchorKind: 'sum',
           items: [{ r: 4, label: '姉' }, { r: 3, label: '妹' }],
-          anchorText: '和 35才', unit: '才',
+          anchorText: '和 35才', unit: '才', oneValue: 5,
           step2Text: '比の和 4＋3＝7 が 35才 → ①あたり ＝ 5才', step3Text: '姉 ＝ 5 × 4 ＝ 20才',
         },
         hints: [
@@ -1961,7 +1962,7 @@ export const JUKU_UNITS: JukuUnit[] = [
           ],
           finalRow: { label: 'A:B:C', segs: [{ name: 'A', r: 3 }, { name: 'B', r: 4 }, { name: 'C', r: 10 }] },
           unit: '',
-          step2Text: 'B を 4 にそろえる → A:B:C ＝ 3 : 4 : 10',
+          step2Text: 'B:C＝2:5 を ×2 → B を 4 にそろえる（A:B:C＝3:4:10）',
           step3Text: 'A の 3 が 18 → ①あたり6 → C ＝ 10 × 6 ＝ 60',
         },
         hints: [
