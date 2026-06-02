@@ -1897,7 +1897,7 @@ export const JUKU_UNITS: JukuUnit[] = [
           ],
           finalRow: { label: 'A:B:C', segs: [{ name: 'A', r: 8 }, { name: 'B', r: 12 }, { name: 'C', r: 15 }] },
           unit: '',
-          step2Text: 'A:B＝2:3 を ×4、B:C＝4:5 を ×3 → B を 12 にそろえる',
+          step2Text: 'A:B＝2:3 を ×4、B:C＝4:5 を ×3 → B を最小公倍数 12 にそろえる',
           step3Text: 'A:B:C ＝ 8 : 12 : 15',
         },
         hints: [
@@ -1962,11 +1962,11 @@ export const JUKU_UNITS: JukuUnit[] = [
           ],
           finalRow: { label: 'A:B:C', segs: [{ name: 'A', r: 3 }, { name: 'B', r: 4 }, { name: 'C', r: 10 }] },
           unit: '',
-          step2Text: 'B:C＝2:5 を ×2 → B を 4 にそろえる（A:B:C＝3:4:10）',
+          step2Text: 'B:C＝2:5 を ×2 → B を最小公倍数 4 にそろえる（A:B:C＝3:4:10）',
           step3Text: 'A の 3 が 18 → ①あたり6 → C ＝ 10 × 6 ＝ 60',
         },
         hints: [
-          { step: 1, text: 'まず連比にまとめよう。B は 4 と 2 だから、4 にそろえるよ。' },
+          { step: 1, text: 'まず連比にまとめよう。B は 4 と 2 だから、最小公倍数の 4 にそろえるよ。' },
           { step: 2, text: 'B:C ＝ 2:5 を 2倍 → 4:10。よって A:B:C ＝ 3 : 4 : 10。' },
           { step: 3, text: 'A の比 3 が 18 だから ①あたり ＝ 18 ÷ 3 ＝ 6。C ＝ 10 × 6 ＝ 60。' },
         ],

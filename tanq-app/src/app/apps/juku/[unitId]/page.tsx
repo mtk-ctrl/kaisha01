@@ -539,15 +539,13 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
     )
   }
 
-  // ── renpi: 連比（共通の文字をそろえる）──
+  // ── renpi: 連比（共通の文字を「同じ長さ」に固定してそろえる）──
   if (mode === 'renpi') {
-    const rows = spec.rows as { label: string; segs: { name: string; r: number; hl?: boolean }[] }[]
+    const rows = spec.rows as { label: string; segs: { name: string; r: number }[] }[]
     const finalRow = spec.finalRow as { label: string; segs: { name: string; r: number }[] } | undefined
-    const rStart = 30, rW = 184
     const barH = 20
     const rowY = (i: number) => 26 + i * 32
-    const fY = rowY(rows.length) + 8
-    // 共通する文字を見つけ、その数をそろえる倍率を計算する
+    const fY = rowY(rows.length) + 10
     const gcd = (a: number, b: number): number => (b ? gcd(b, a % b) : a)
     const lcm = (a: number, b: number) => (a / gcd(a, b)) * b
     const common = rows[0].segs.map(s => s.name).find(n => rows.every(r => r.segs.some(s => s.name === n))) ?? 'B'
@@ -555,15 +553,41 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
     const target = commonVals.reduce((a, b) => lcm(a, b))
     const mults = commonVals.map(v => target / v)
     const colorOf = (name: string, i: number) => LETTER_COLORS[name] ?? PALETTE[i % PALETTE.length]
+
+    // 共通文字 B を固定長 Blen で描き、上下で B の左右をそろえる。
+    // → A は B の左、C は B の右に「はみ出す」形になり、棒の長さの矛盾が消える。
+    const leftLabelW = 28, rightPad = 8, availW = 250 - leftLabelW - rightPad
+    let leftU = 0, rightU = 0
+    const allRows = finalRow ? [...rows, finalRow] : rows
+    allRows.forEach(r => {
+      const ci = r.segs.findIndex(s => s.name === common)
+      const bc = r.segs[ci]?.r ?? 1
+      r.segs.forEach((s, i) => {
+        if (i === ci) return
+        const u = s.r / bc
+        if (i < ci) leftU = Math.max(leftU, u); else rightU = Math.max(rightU, u)
+      })
+    })
+    const Blen = availW / (leftU + 1 + rightU)
+    const Bx = leftLabelW + leftU * Blen
+    const geom = (segs: { name: string; r: number }[]) => {
+      const ci = segs.findIndex(s => s.name === common)
+      const bc = segs[ci]?.r ?? 1
+      const u = Blen / bc
+      const widths = segs.map(s => s.r * u)
+      let before = 0
+      for (let i = 0; i < ci; i++) before += widths[i]
+      const x0 = Bx - before
+      return { x0, widths, right: x0 + widths.reduce((a, b) => a + b, 0) }
+    }
     const drawRow = (label: string, segs: { name: string; r: number }[], y: number) => {
-      const sum = segs.reduce((a, s) => a + s.r, 0)
-      const segW = rW / sum
-      let cx = rStart
+      const { x0, widths } = geom(segs)
+      let cx = x0
       return (
         <g>
-          <text x={rStart - 4} y={y + 13} textAnchor="end" fontSize="8" fill="#6B5A52" fontWeight="bold">{label}</text>
+          <text x={leftLabelW - 5} y={y + 13} textAnchor="end" fontSize="7.5" fill="#6B5A52" fontWeight="bold">{label}</text>
           {segs.map((s, i) => {
-            const w = segW * s.r
+            const w = widths[i]
             const x = cx; cx += w
             const col = colorOf(s.name, i)
             return (
@@ -578,22 +602,27 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
       )
     }
     const showFinal = wc >= 2 && finalRow
+    const bottomY = showFinal ? fY + barH : rowY(rows.length - 1) + barH
     return (
       <div className="w-full space-y-1.5">
-        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>同じ文字（{common}）の数をそろえて、1本の比にまとめよう</p>
-        <svg viewBox={`0 0 250 ${(showFinal ? fY + barH : rowY(rows.length)) + 10}`} className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>{common}（緑）の長さをそろえて、1本の比にまとめよう</p>
+        <svg viewBox={`0 0 250 ${bottomY + 12}`} className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+          {/* B 列のたてガイド（上下で B がそろうことを示す） */}
+          <line x1={Bx} y1={rowY(0) - 3} x2={Bx} y2={bottomY + 3} stroke="#2BA39A" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
+          <line x1={Bx + Blen} y1={rowY(0) - 3} x2={Bx + Blen} y2={bottomY + 3} stroke="#2BA39A" strokeWidth="1" strokeDasharray="3 2" opacity="0.6" />
           {rows.map((r, i) => (
             <g key={i}>
               {drawRow(r.label, r.segs, rowY(i))}
-              {/* どれだけ倍にしてそろえるかを明示（×N） */}
+              {/* 何倍してそろえるか（×N） */}
               {showFinal && mults[i] !== 1 && (
-                <text x={rStart + rW + 5} y={rowY(i) + 13} fontSize="9" fill="#b45309" fontWeight="bold">×{mults[i]}</text>
+                <text x={geom(r.segs).right + 4} y={rowY(i) + 13} fontSize="9" fill="#b45309" fontWeight="bold">×{mults[i]}</text>
               )}
             </g>
           ))}
           {showFinal && (
             <>
-              <text x={rStart} y={fY - 6} fontSize="8" fill="#b45309" fontWeight="bold">↓ {common} を {target} にそろえる</text>
+              <text x={leftLabelW - 5} y={fY - 5} textAnchor="end" fontSize="7" fill="#b45309" fontWeight="bold">↓</text>
+              <text x={Bx} y={fY - 5} fontSize="7.5" fill="#b45309" fontWeight="bold">{common} を最小公倍数 {target} にそろえる</text>
               {drawRow(finalRow!.label, finalRow!.segs, fY)}
             </>
           )}
