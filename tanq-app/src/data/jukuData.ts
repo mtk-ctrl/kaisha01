@@ -1,4 +1,4 @@
-export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'ratio-bar' | 'ratio2' | 'noudo' | 'none'
+export type DiagramType = 'slide' | 'dot-line' | 'area' | 'line-seg' | 'arrow' | 'gap' | 'ratio-bar' | 'ratio2' | 'noudo' | 'profit' | 'none'
 export type Difficulty = 1 | 2 | 3
 
 export interface HintStep {
@@ -2275,12 +2275,362 @@ export const JUKU_UNITS: JukuUnit[] = [
       },
     ],
   },
+  // ─────────────────────────────────────
+  // Unit 9: 損益算
+  // ─────────────────────────────────────
   {
-    id: 'profit-loss', order: 9, title: '損益算', titleKana: 'そんえきざん',
-    emoji: '💰', color: '#f59e0b', layer: 3, prerequisiteIds: ['ratio-basics'],
-    isFree: false, coreConcept: '原価・定価・売価・利益の流れを線分図で整理する',
-    approachText: '一本道の線分図でお金の流れを追う。',
-    primaryDiagram: 'line-seg', problems: [],
+    id: 'profit-loss',
+    order: 9,
+    title: '損益算',
+    titleKana: 'そんえきざん',
+    emoji: '💰',
+    color: '#f59e0b',
+    layer: 3,
+    prerequisiteIds: ['ratio-basics'],
+    isFree: false,
+    coreConcept: '原価→定価→売価の流れをラダー図で整理。「何を100%の基準にするか」が解くカギ。',
+    approachText:
+      '損益算は「お金の3段階」がすべて。\n' +
+      '① 原価（仕入れ値）を100%と考え、利益を乗せると定価になる。\n' +
+      '② 定価を100%と考えて値引きすると売価になる。\n' +
+      '図の色分け（緑＝利益ゾーン、赤＝値引きゾーン）で基準を確認してから式を立てよう。',
+    primaryDiagram: 'profit',
+    introSlide: {
+      title: '損益ラダー図の読み方',
+      explanation: [
+        '横バーの一番下が「原価（仕入れ値）」。これを①（100%）とおく。',
+        '緑ゾーンが「利益（もうけ）」。原価＋利益＝定価になる。',
+        '定価から赤ゾーン（値引き）を引いたのが「売価（実際の売り値）」。',
+        '「？」のマスを求めるのが損益算のゴール。基準（%の元）を間違えないように！',
+      ],
+      diagramSpec: {
+        mode: 'ladder',
+        genka: 600, teika: 780, baika: 702,
+        riekiRate: 30, waribikiRate: 10,
+        unknown: 'none',
+        showValues: true,
+      },
+    },
+    problems: [
+      // ── ★ かんたん（4問） ──
+      {
+        id: 'sp-01',
+        title: '定価を求めよう',
+        difficulty: 1,
+        problemText: '原価600円の品物に、原価の25%の利益を乗せて定価をつけました。定価は何円ですか？',
+        answer: '750',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 600, riekiRate: 25,
+          teika: 750, baika: 750,
+          waribikiRate: 0,
+          unknown: 'teika',
+        },
+        hints: [
+          { step: 1, text: '原価を①（100%）とおくと、利益は25%だから定価は何%になるかな？' },
+          { step: 2, text: '定価＝原価×（1＋0.25）＝原価×1.25 だよ。600×1.25 を計算してみよう。' },
+          { step: 3, text: '600 × 1.25 ＝ 600 + 600×0.25 ＝ 600 + 150 ＝ 750円！' },
+        ],
+        explanationText: '原価600円の25%増し。定価 ＝ 600 × 1.25 ＝ 750円。',
+      },
+      {
+        id: 'sp-02',
+        title: '売価を求めよう',
+        difficulty: 1,
+        problemText: '定価1500円の品物を2割引きで売りました。売価は何円ですか？',
+        answer: '1200',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 0, riekiRate: 0,
+          teika: 1500, baika: 1200,
+          waribikiRate: 20,
+          unknown: 'baika',
+          hideGenka: true,
+        },
+        hints: [
+          { step: 1, text: '2割引きとは、定価の20%を引くということ。定価を①（100%）とおくと、売価は何%？' },
+          { step: 2, text: '売価 ＝ 定価 × （1 − 0.2）＝ 定価 × 0.8 だよ。1500 × 0.8 を計算しよう。' },
+          { step: 3, text: '1500 × 0.8 ＝ 1200円。2割引き＝8掛けと覚えよう！' },
+        ],
+        explanationText: '定価1500円の2割引き。売価 ＝ 1500 × 0.8 ＝ 1200円。',
+      },
+      {
+        id: 'sp-03',
+        title: '利益を求めよう',
+        difficulty: 1,
+        problemText: '800円で仕入れた品物を1050円で売りました。利益は何円ですか？',
+        answer: '250',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 800, riekiRate: 0,
+          teika: 1050, baika: 1050,
+          waribikiRate: 0,
+          unknown: 'rieki',
+          showRieki: true,
+        },
+        hints: [
+          { step: 1, text: '利益 ＝ 売価 − 原価 だよ。売価と原価はそれぞれ何円？' },
+          { step: 2, text: '売価は1050円、原価は800円。1050 − 800 ＝ ？' },
+          { step: 3, text: '1050 − 800 ＝ 250円の利益！' },
+        ],
+        explanationText: '利益 ＝ 売価 − 原価 ＝ 1050 − 800 ＝ 250円。',
+      },
+      {
+        id: 'sp-04',
+        title: '定価をつけよう（4割の利益）',
+        difficulty: 1,
+        problemText: '原価700円の品物に、原価の4割の利益を乗せて定価をつけました。定価は何円ですか？',
+        answer: '980',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 700, riekiRate: 40,
+          teika: 980, baika: 980,
+          waribikiRate: 0,
+          unknown: 'teika',
+        },
+        hints: [
+          { step: 1, text: '4割の利益とは40%増しということ。定価 ＝ 原価 × 1.4 だよ。' },
+          { step: 2, text: '700 × 1.4 ＝ 700 + 700 × 0.4 ＝ 700 + 280 ＝ ？' },
+          { step: 3, text: '700 + 280 ＝ 980円！' },
+        ],
+        explanationText: '4割増し。定価 ＝ 700 × 1.4 ＝ 980円。',
+      },
+
+      // ── ★★ ふつう（5問） ──
+      {
+        id: 'sp-05',
+        title: '2段階計算（値上げして値引き）',
+        difficulty: 2,
+        problemText:
+          '原価400円の品物に3割の利益を乗せて定価をつけ、定価の1割引きで売りました。利益は何円ですか？',
+        answer: '68',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 400, riekiRate: 30,
+          teika: 520, baika: 468,
+          waribikiRate: 10,
+          unknown: 'rieki',
+          showRieki: true,
+        },
+        hints: [
+          { step: 1, text: 'まず定価を求めよう。定価 ＝ 原価 × 1.3 ＝ 400 × 1.3 ＝ ？' },
+          { step: 2, text: '定価520円の1割引き。売価 ＝ 520 × 0.9 ＝ ？円。' },
+          { step: 3, text: '売価468円 − 原価400円 ＝ 68円の利益！定価で売らなくても利益は出るよ。' },
+        ],
+        explanationText:
+          '定価＝400×1.3＝520円。売価＝520×0.9＝468円。利益＝468−400＝68円。',
+      },
+      {
+        id: 'sp-06',
+        title: '売価から定価を逆算',
+        difficulty: 2,
+        problemText:
+          '原価2400円の品物に定価をつけ、定価の2割引きで売ったところ120円の利益が出ました。定価は何円ですか？',
+        answer: '3150',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 2400, riekiRate: 0,
+          teika: 3150, baika: 2520,
+          waribikiRate: 20,
+          unknown: 'teika',
+        },
+        hints: [
+          { step: 1, text: '売価 ＝ 原価 ＋ 利益 ＝ 2400 ＋ 120 ＝ 2520円。まず売価を出そう。' },
+          { step: 2, text: '売価2520円は、定価の2割引き後。定価×0.8 ＝ 2520 だから、定価 ＝ 2520 ÷ 0.8 ＝ ？' },
+          { step: 3, text: '2520 ÷ 0.8 ＝ 3150円！「×0.8した後」から戻すには「÷0.8」だよ。' },
+        ],
+        explanationText:
+          '売価＝2400＋120＝2520円。定価×0.8＝2520 → 定価＝2520÷0.8＝3150円。',
+      },
+      {
+        id: 'sp-07',
+        title: '利益率を求めよう',
+        difficulty: 2,
+        problemText:
+          '原価に3割の利益を乗せて定価をつけ、定価の1割引きで売りました。利益は原価の何%ですか？',
+        answer: '17',
+        answerUnit: '%',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 100, riekiRate: 30,
+          teika: 130, baika: 117,
+          waribikiRate: 10,
+          unknown: 'riekiRate2',
+        },
+        choices: ['17%', '20%', '13%', '27%'],
+        hints: [
+          { step: 1, text: '原価を100円と仮定して考えよう。定価 ＝ 100 × 1.3 ＝ 130円。' },
+          { step: 2, text: '定価130円の1割引き。売価 ＝ 130 × 0.9 ＝ 117円。' },
+          { step: 3, text: '利益 ＝ 117 − 100 ＝ 17円。原価100円に対して17円だから、利益率は17%！' },
+        ],
+        explanationText:
+          '原価100円仮定。定価130円。売価＝130×0.9＝117円。利益率＝（117−100）÷100＝17%。',
+      },
+      {
+        id: 'sp-08',
+        title: '原価を求めよう（逆算）',
+        difficulty: 2,
+        problemText:
+          '原価に4割の利益を乗せて定価をつけました。定価の1割5分引きで売ったところ、利益が170円でした。原価は何円ですか？',
+        answer: '1000',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 1000, riekiRate: 40,
+          teika: 1400, baika: 1190,
+          waribikiRate: 15,
+          unknown: 'genka',
+        },
+        hints: [
+          { step: 1, text: '原価を①とおくと、定価は①×1.4。売価は定価の15%引き＝①×1.4×0.85。' },
+          { step: 2, text: '①×1.4×0.85 ＝ ①×1.19。利益 ＝ 売価 − 原価 ＝ ①×1.19 − ① ＝ ①×0.19 ＝ 170円。' },
+          { step: 3, text: '① ＝ 170 ÷ 0.19 ＝ 1000 — 原価は1000円！' },
+        ],
+        explanationText:
+          '原価①。定価＝①×1.4、売価＝①×1.4×0.85＝①×1.19。利益①×0.19＝170→①＝1000円。',
+      },
+      {
+        id: 'sp-09',
+        title: '定価の1割引きで売ると利益が出る',
+        difficulty: 2,
+        problemText:
+          '原価1800円の品物に定価をつけ、定価の1割引きで売ったところ180円の利益が出ました。定価は何円ですか？',
+        answer: '2200',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 1800, riekiRate: 0,
+          teika: 2200, baika: 1980,
+          waribikiRate: 10,
+          unknown: 'teika',
+        },
+        hints: [
+          { step: 1, text: '売価 ＝ 原価 ＋ 利益 ＝ 1800 ＋ 180 ＝ 1980円。' },
+          { step: 2, text: '売価1980円 ＝ 定価の1割引き＝定価×0.9。' },
+          { step: 3, text: '定価 ＝ 1980 ÷ 0.9 ＝ 2200円！' },
+        ],
+        explanationText:
+          '売価＝1980円。定価×0.9＝1980 → 定価＝2200円。',
+      },
+
+      // ── ★★★ むずかしい（4問） ──
+      {
+        id: 'sp-10',
+        title: '何%引きにすれば目標の利益が出る？',
+        difficulty: 3,
+        problemText:
+          '原価に4割の利益を乗せて定価をつけました。定価の何%引きで売れば、原価の12%の利益になりますか？',
+        answer: '20',
+        answerUnit: '%',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 100, riekiRate: 40,
+          teika: 140, baika: 112,
+          waribikiRate: 20,
+          unknown: 'waribikiRate',
+        },
+        choices: ['20%', '16%', '12%', '28%'],
+        hints: [
+          { step: 1, text: '原価を100円と仮定。定価＝100×1.4＝140円。目標売価＝100×1.12＝112円。' },
+          { step: 2, text: '売価112円が定価140円の何%になるか → 112 ÷ 140 ＝ 0.8 → 80%。' },
+          { step: 3, text: '定価の80%で売るということは、20%引き！定価×（1−0.2）＝定価×0.8 ＝ 112円。' },
+        ],
+        explanationText:
+          '原価100円仮定。定価140円。必要売価＝112円。112÷140＝0.8→定価の80%＝20%引き。',
+      },
+      {
+        id: 'sp-11',
+        title: '定価販売と割引販売の組み合わせ',
+        difficulty: 3,
+        problemText:
+          '原価500円の品物を30個仕入れ、原価の4割の利益を見込んで定価をつけました。20個は定価で、残りの10個は定価の2割引きで売りました。全体の利益は何円ですか？',
+        answer: '4600',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'batch',
+          genka: 500, riekiRate: 40,
+          teika: 700, waribikiRate: 20,
+          baika2: 560,
+          lots: 30, teikaSell: 20, waribikiSell: 10,
+          unknown: 'totalRieki',
+          totalRieki: 4600,
+        },
+        hints: [
+          { step: 1, text: '定価 ＝ 500 × 1.4 ＝ 700円。割引売価 ＝ 700 × 0.8 ＝ 560円。' },
+          { step: 2, text: '定価で売ったときの1個あたりの利益 ＝ 700 − 500 ＝ 200円 × 20個 ＝ 4000円。' },
+          { step: 3, text: '割引で売ったときの利益 ＝ 560 − 500 ＝ 60円 × 10個 ＝ 600円。合計 ＝ 4000 ＋ 600 ＝ 4600円！' },
+        ],
+        explanationText:
+          '定価700円。割引売価560円。定価販売利益200×20＝4000円、割引販売利益60×10＝600円。計4600円。',
+      },
+      {
+        id: 'sp-12',
+        title: '売れ残りが出た場合の利益計算',
+        difficulty: 3,
+        problemText:
+          '原価400円の品物を20個仕入れ、原価の2割5分の利益を乗せて定価をつけました。売れ残りを定価の4割引きで売ったところ、全体で1200円の利益が出ました。売れ残りは何個ですか？',
+        answer: '4',
+        answerUnit: '個',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'batch',
+          genka: 400, riekiRate: 25,
+          teika: 500, waribikiRate: 40,
+          baika2: 300,
+          lots: 20, teikaSell: 0, waribikiSell: 0,
+          unknown: 'waribikiSell',
+          totalRieki: 1200,
+        },
+        hints: [
+          { step: 1, text: '定価＝400×1.25＝500円。4割引き売価＝500×0.6＝300円（原価400円より安い＝損失）。' },
+          { step: 2, text: '売れ残りをx個とする。定価販売(20-x個)の利益＝100(20-x)円。割引販売(x個)の損失＝(400-300)×x＝100x円。' },
+          { step: 3, text: '100(20-x) − 100x ＝ 1200 → 2000 − 200x ＝ 1200 → x ＝ 4個！' },
+        ],
+        explanationText:
+          '定価500円、割引売価300円（損失100円/個）。方程式 100(20-x)−100x＝1200 → x＝4個。',
+      },
+      {
+        id: 'sp-13',
+        title: '定価の何割引きで売っても利益が出る（逆算応用）',
+        difficulty: 3,
+        problemText:
+          '原価に3割の利益を見込んで定価をつけました。セールで定価の2割引きで売っても1個あたり160円の利益が出ました。原価は何円ですか？',
+        answer: '4000',
+        answerUnit: '円',
+        diagramType: 'profit',
+        diagramSpec: {
+          mode: 'ladder',
+          genka: 4000, riekiRate: 30,
+          teika: 5200, baika: 4160,
+          waribikiRate: 20,
+          unknown: 'genka',
+        },
+        hints: [
+          { step: 1, text: '原価を①とおくと、定価 ＝ ①×1.3。売価（2割引き）＝ ①×1.3×0.8 ＝ ①×1.04。' },
+          { step: 2, text: '利益 ＝ 売価 − 原価 ＝ ①×1.04 − ① ＝ ①×0.04 ＝ 160円。' },
+          { step: 3, text: '① ＝ 160 ÷ 0.04 ＝ 4000円！「0.04（4%）に当たる金額が160円」と読もう。' },
+        ],
+        explanationText:
+          '原価①。売価＝①×1.3×0.8＝①×1.04。利益＝①×0.04＝160 → 原価＝4000円。',
+      },
+    ],
   },
   {
     id: 'work-newton', order: 10, title: '仕事算・ニュートン算', titleKana: 'しごとざん・にゅーとんざん',

@@ -870,6 +870,196 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
 }
 
 // ─────────────────────────────────────
+// SVG: 損益ラダー図（損益算）💰
+// ─────────────────────────────────────
+function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const reveal = (spec.showValues as boolean) ?? false
+  const mode = (spec.mode as string) ?? 'ladder'
+  const genka = spec.genka as number
+  const teika = spec.teika as number
+  const baika = spec.baika as number
+  const riekiRate = spec.riekiRate as number    // 原価に対する利益率(%)
+  const waribikiRate = spec.waribikiRate as number // 定価に対する値引き率(%)
+  const unknown = spec.unknown as string
+  const hideGenka = !!(spec.hideGenka as boolean)
+
+  // バッチモード（個数混在）
+  if (mode === 'batch') {
+    const lots = spec.lots as number
+    const teikaSell = spec.teikaSell as number
+    const waribikiSell = spec.waribikiSell as number
+    const baika2 = spec.baika2 as number   // 割引後の売価
+    const totalRieki = spec.totalRieki as number
+    const unknownWS = unknown === 'waribikiSell'
+    const teikaSellN = unknownWS ? lots - (waribikiSell || 0) : teikaSell
+    const waribikiSellN = unknownWS ? '?' : waribikiSell
+    const ri1 = teika - genka   // 定価販売の1個あたり利益
+    const ri2 = baika2 - genka  // 割引販売の1個あたり利益（負の場合もある）
+    return (
+      <div className="w-full space-y-2">
+        {/* 価格ラベル行 */}
+        <div className="grid grid-cols-3 gap-1 text-center text-[11px] font-black">
+          {[
+            { label: '原価', val: genka + '円', bg: '#FFF1B8', border: '#C99700' },
+            { label: '定価', val: teika + '円', bg: '#DBF6F0', border: '#0d9488' },
+            { label: '割引売価', val: baika2 + '円', bg: '#FFE3EE', border: '#FF6F9C' },
+          ].map(({ label, val, bg, border }) => (
+            <div key={label} className="rounded-xl py-1" style={{ background: bg, border: `2px solid ${border}` }}>
+              <div style={{ color: '#6B5A52', fontSize: 9 }}>{label}</div>
+              <div style={{ color: '#3A2E2A' }}>{val}</div>
+            </div>
+          ))}
+        </div>
+        {/* 販売内訳 */}
+        <div className="rounded-xl p-2 space-y-1" style={{ background: '#FAFAF7', border: '2px solid #C4B8AE' }}>
+          <div className="flex items-center justify-between text-[11px] font-bold">
+            <span style={{ color: '#0d9488' }}>🏷️ 定価販売 {teikaSellN}個</span>
+            <span style={{ color: '#3A2E2A' }}>利益 {ri1}円 × {teikaSellN}個 ＝ {reveal || unknown !== 'totalRieki' ? ri1 * teikaSellN + '円' : '？円'}</span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] font-bold">
+            <span style={{ color: ri2 < 0 ? '#f87171' : '#f59e0b' }}>
+              {ri2 < 0 ? '⬇️' : '🏷️'} 割引販売 {unknownWS ? '?個' : waribikiSellN + '個'}
+            </span>
+            <span style={{ color: '#3A2E2A' }}>
+              {ri2 < 0 ? '損失' : '利益'} {Math.abs(ri2)}円 × {unknownWS ? '?個' : waribikiSellN + '個'} ＝ {reveal && !unknownWS ? Math.abs(ri2) * (waribikiSell || 0) + '円' : '？円'}
+            </span>
+          </div>
+          <div className="flex items-center justify-between text-[11px] font-black" style={{ borderTop: '1.5px solid #C4B8AE', paddingTop: 4 }}>
+            <span style={{ color: '#3A2E2A' }}>全体の利益</span>
+            <span style={{ color: '#2BA39A' }}>{reveal ? totalRieki + '円' : '？円'}</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // ラダー（基本）モード
+  // 各価格の横バーを段状に表示
+  const maxVal = Math.max(teika || 0, baika || 0, genka || 0, 1)
+  const W = 200  // SVG内のバー最大幅
+  const genkaPx = hideGenka ? 0 : (genka / maxVal) * W
+  const teikaPx = (teika / maxVal) * W
+  const baikaPx = (baika / maxVal) * W
+  const rieki = teika - genka
+  const waribiki = teika - baika
+  const showRieki = !!(spec.showRieki as boolean)
+
+  const unknownTeika = unknown === 'teika' && !reveal
+  const unknownBaika = unknown === 'baika' && !reveal
+  const unknownGenka = unknown === 'genka' && !reveal
+  const unknownRieki = (unknown === 'rieki' || showRieki) && !reveal && wrongCount < 3
+  const unknownWR2 = unknown === 'riekiRate2' && !reveal  // 利益率（原価比）
+  const unknownWR = unknown === 'waribikiRate' && !reveal
+
+  // 段ごとの行
+  type Row = { label: string; px: number; color: string; border: string; val: string; extra?: React.ReactNode }
+  const rows: Row[] = []
+
+  if (!hideGenka) {
+    rows.push({
+      label: '原価',
+      px: genkaPx,
+      color: '#FFF1B8',
+      border: '#C99700',
+      val: unknownGenka ? '？円' : genka + '円',
+    })
+  }
+
+  // 利益ゾーン（定価に達するまでの緑帯）
+  // unknownRieki のときは「?円」では誤解を招く（markup≠final profit）のでゾーンを非表示
+  // reveal(正解後)のときは全値を表示してOK
+  const showRiekiZone = !unknownTeika && !hideGenka && rieki > 0 && (!unknownRieki || reveal)
+  if (showRiekiZone) {
+    rows.push({
+      label: '利益',
+      px: teikaPx,
+      color: '#D1FAE5',
+      border: '#10b981',
+      val: `＋${rieki}円`,
+    })
+  }
+
+  rows.push({
+    label: '定価',
+    px: teikaPx,
+    color: '#DBF6F0',
+    border: '#0d9488',
+    val: unknownTeika ? '？円' : teika + '円',
+  })
+
+  // 値引きゾーン
+  const showWRZone = !unknownBaika && waribikiRate > 0 && baika > 0
+  if (showWRZone) {
+    rows.push({
+      label: `値引き(${unknownWR ? '?' : waribikiRate}%)`,
+      px: teikaPx,
+      color: '#FFE3EE',
+      border: '#FF6F9C',
+      val: unknownWR ? '？円' : `−${waribiki}円`,
+    })
+  }
+
+  // 値引きがある場合・売価が問われている場合・損失が出る場合のみ売価行を追加表示（定価=売価の場合は重複しない）
+  const hasDiff = waribikiRate > 0 || unknownBaika || unknownWR || (baika > 0 && baika < genka)
+  if (hasDiff) {
+    rows.push({
+      label: '売価',
+      px: baikaPx,
+      color: (baika < genka && !unknownBaika) ? '#fee2e2' : '#FFF6E5',
+      border: (baika < genka && !unknownBaika) ? '#f87171' : '#C99700',
+      val: unknownBaika ? '？円' : baika + '円',
+    })
+  }
+
+  // 利益率（結果）
+  if (unknown === 'riekiRate2') {
+    const riekiActual = baika - genka
+    rows.push({
+      label: '利益率（原価比）',
+      px: 0,
+      color: '#EDE9FE',
+      border: '#8b5cf6',
+      val: (reveal || wrongCount >= 3) ? `${Math.round(riekiActual / genka * 100)}%` : '？%',
+    })
+  }
+
+  return (
+    <div className="w-full space-y-1">
+      {rows.map((row, i) => (
+        <div key={i} className="flex items-center gap-2">
+          <span className="text-[10px] font-black w-16 text-right shrink-0" style={{ color: '#6B5A52' }}>{row.label}</span>
+          <div className="relative flex-1 h-6">
+            {row.px > 0 ? (
+              <div
+                className="absolute left-0 top-0 h-6 rounded-md flex items-center justify-end pr-1.5"
+                style={{
+                  width: `${(row.px / W) * 100}%`,
+                  background: row.color,
+                  border: `2px solid ${row.border}`,
+                  minWidth: 28,
+                  transition: 'width 0.3s',
+                }}>
+              </div>
+            ) : (
+              <div className="absolute left-0 top-0 h-6 rounded-md flex items-center px-2"
+                style={{ background: row.color, border: `2px solid ${row.border}`, minWidth: 80 }}>
+              </div>
+            )}
+          </div>
+          <span className="text-[11px] font-black w-16 shrink-0" style={{ color: '#3A2E2A' }}>{row.val}</span>
+        </div>
+      ))}
+      {/* 損失注記 */}
+      {baika > 0 && baika < genka && !unknownBaika && (
+        <p className="text-[10px] font-black text-center" style={{ color: '#f87171' }}>
+          ⚠️ 売価が原価を下回っているので損失！
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────
 // SVG: 点線図（植木算）🌳 emoji版
 // ─────────────────────────────────────
 function DotLineDiagram({ spec }: { spec: Record<string, unknown> }) {
@@ -1394,6 +1584,7 @@ const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   'ratio-bar': '🎯 わりあいの帯図',
   ratio2: '⚖️ わりあい・比の図',
   noudo: '🧪 濃度の面積図',
+  profit: '💰 損益ラダー図',
 }
 
 function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; spec: Record<string, unknown>; wrongCount?: number }) {
@@ -1415,6 +1606,7 @@ function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; sp
       {type === 'ratio-bar' && <RatioBarDiagram spec={spec} wrongCount={wrongCount} />}
       {type === 'ratio2'   && <RatioBasicsDiagram spec={spec} wrongCount={wrongCount} />}
       {type === 'noudo'    && <NoudoDiagram spec={spec} wrongCount={wrongCount} />}
+      {type === 'profit'   && <ProfitDiagram spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
@@ -1535,9 +1727,10 @@ function ProblemSolver({
       </div>
 
       {/* 図（wrongCount に連動して段階的に変化）— line-seg/area は1回間違えてから表示。
+          profit は最初から表示（価格構造を見ながら解くのが損益算の学習スタイル）。
           正解／答えを見た後は、その専用パネル内の図に一本化するためここでは隠す */}
       {!solved && !revealed && problem.diagramType !== 'none' &&
-        (problem.diagramType === 'slide' || problem.diagramType === 'dot-line' || wrongCount > 0) && (
+        (problem.diagramType === 'slide' || problem.diagramType === 'dot-line' || problem.diagramType === 'profit' || wrongCount > 0) && (
         <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} wrongCount={wrongCount} />
       )}
 
@@ -1624,6 +1817,11 @@ function ProblemSolver({
               <DiagramRenderer type="noudo" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
             </div>
           )}
+          {problem.diagramType === 'profit' && (
+            <div className="rounded-2xl bg-white/70 p-2">
+              <DiagramRenderer type="profit" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
+            </div>
+          )}
           <p className="text-sm font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
             {problem.explanationText}
           </p>
@@ -1652,6 +1850,11 @@ function ProblemSolver({
           {problem.diagramType === 'noudo' && (
             <div className="rounded-2xl bg-white/70 p-2">
               <DiagramRenderer type="noudo" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
+            </div>
+          )}
+          {problem.diagramType === 'profit' && (
+            <div className="rounded-2xl bg-white/70 p-2">
+              <DiagramRenderer type="profit" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
             </div>
           )}
           <p className="text-sm font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
