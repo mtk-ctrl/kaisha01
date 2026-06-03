@@ -721,86 +721,101 @@ function RatioBasicsDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unk
 // SVG: 濃度の面積図 🧪
 //   よこ＝食塩水(g)、たて＝濃度(%)、面積＝食塩(g)。
 //   mode: box（単一／加水・蒸発・食塩追加の before→after）/ mix（2液をならす平均線）
-//   計算ステップは step2Text / step3Text を wrongCount 連動で表示。
+//   reveal（showValues＝正解後の解説／イントロ）でだけ「答えの面積図」を見せ、
+//   解いている間は たずねられた量を「?」で表示して答えを描かない。
 // ─────────────────────────────────────
+type NoudoBox = { weight: number; pct: number; salt: number; label?: string; op?: string; unknown?: 'pct' | 'salt' | 'weight' }
 function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  void wrongCount
   const mode = (spec.mode as string) ?? 'box'
-  const showValues = (spec.showValues as boolean) ?? false
-  const wc = showValues ? 3 : wrongCount
+  const reveal = (spec.showValues as boolean) ?? false   // 正解後の解説／イントロでだけ答えを見せる
   const step2 = spec.step2Text as string | undefined
   const step3 = spec.step3Text as string | undefined
-  const Step2 = step2 && wc >= 2 ? (
+  const Step2 = reveal && step2 ? (
     <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
       <span className="text-[10px] font-black" style={{ color: '#b45309' }}>{step2}</span>
     </div>
   ) : null
-  const Step3 = step3 && wc >= 3 ? (
+  const Step3 = reveal && step3 ? (
     <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
       <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>{step3}</span>
     </div>
   ) : null
 
-  // 濃度(%)の「本物のたて軸」をつくる。全箱の最大濃度から軸の上限を決め、高さを正しくスケール。
-  // これで「高さ＝濃度・面積＝食塩」が視覚的に成立する（軸も目盛りもある）。
+  // 濃度(%)のたて軸。最大濃度から軸の上限を決め、高さを正しくスケール。
   const axisX = 26, plotLeft = axisX + 8, plotRight = 240, axisTop = 16, axisH = 58
-  const aa = spec.a as { weight: number; pct: number; salt: number; label?: string }
-  const bb = spec.b as { weight: number; pct: number; salt: number; label?: string }
-  const rr = spec.result as { weight: number; pct: number; salt: number; label?: string }
-  const boxes = (spec.boxes as { weight: number; pct: number; salt: number; label?: string; op?: string }[]) ?? []
-  const pcts = mode === 'mix' ? [aa.pct, bb.pct, rr.pct] : boxes.map(x => x.pct)
-  const maxPct = Math.max(...pcts)
-  const step = maxPct <= 30 ? 5 : 10
-  const axisMax = Math.ceil(maxPct / step) * step
-  const kh = axisH / axisMax
-  const baseY = axisTop + axisH
-  const ticks: number[] = []
-  for (let p = 0; p <= axisMax + 0.001; p += step) ticks.push(p)
-  const Axis = (
-    <g>
-      <text x={axisX - 2} y={axisTop - 5} textAnchor="middle" fontSize="7" fill="#6B5A52" fontWeight="bold">濃度%</text>
-      {ticks.map((p, i) => {
-        const yy = baseY - p * kh
-        return (
-          <g key={i}>
-            <line x1={axisX} y1={yy} x2={plotRight} y2={yy} stroke="#EAE0D4" strokeWidth="0.8" />
-            <line x1={axisX - 3} y1={yy} x2={axisX} y2={yy} stroke="#6B5A52" strokeWidth="1" />
-            <text x={axisX - 5} y={yy + 2.5} textAnchor="end" fontSize="7" fill="#6B5A52">{p}</text>
-          </g>
-        )
-      })}
-      <line x1={axisX} y1={axisTop - 2} x2={axisX} y2={baseY} stroke="#6B5A52" strokeWidth="1.2" />
-    </g>
+  const PH = axisH * 0.6   // 濃度が「?」のときの仮の高さ（答えを軸から読めないようにする）
+  function buildAxis(maxPct: number) {
+    const step = maxPct <= 30 ? 5 : 10
+    const axisMax = Math.max(step, Math.ceil(maxPct / step) * step)
+    const kh = axisH / axisMax
+    const baseY = axisTop + axisH
+    const ticks: number[] = []
+    for (let p = 0; p <= axisMax + 0.001; p += step) ticks.push(p)
+    const node = (
+      <g>
+        <text x={axisX - 2} y={axisTop - 5} textAnchor="middle" fontSize="7" fill="#6B5A52" fontWeight="bold">濃度%</text>
+        {ticks.map((p, i) => {
+          const yy = baseY - p * kh
+          return (
+            <g key={i}>
+              <line x1={axisX} y1={yy} x2={plotRight} y2={yy} stroke="#EAE0D4" strokeWidth="0.8" />
+              <line x1={axisX - 3} y1={yy} x2={axisX} y2={yy} stroke="#6B5A52" strokeWidth="1" />
+              <text x={axisX - 5} y={yy + 2.5} textAnchor="end" fontSize="7" fill="#6B5A52">{p}</text>
+            </g>
+          )
+        })}
+        <line x1={axisX} y1={axisTop - 2} x2={axisX} y2={baseY} stroke="#6B5A52" strokeWidth="1.2" />
+      </g>
+    )
+    return { kh, baseY, node }
+  }
+  const note = (
+    <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+      よこ＝食塩水（g）、たて＝濃度（%）。色のついた面積が食塩（g）だよ。
+    </p>
   )
 
-  // ── mix: 2つの食塩水を並べ、ならした濃さ（平均線）で見せる ──
+  // ── mix: 2つの食塩水を並べる ──
   if (mode === 'mix') {
-    const kw = (plotRight - plotLeft) / (aa.weight + bb.weight)
-    const wA = aa.weight * kw, wB = bb.weight * kw
-    const hA = aa.pct * kh, hB = bb.pct * kh, hR = rr.pct * kh
+    const a = spec.a as NoudoBox, b = spec.b as NoudoBox, r = spec.result as NoudoBox
+    const aWU = !reveal && a.unknown === 'weight'   // 量が「?」
+    const bWU = !reveal && b.unknown === 'weight'
+    const rPU = !reveal && r.unknown === 'pct'       // ならした濃さが「?」
+    const { kh, baseY, node } = buildAxis(Math.max(a.pct, b.pct, r.pct))
+    const kw = (plotRight - plotLeft) / (a.weight + b.weight)
+    const wA = a.weight * kw, wB = b.weight * kw
+    const hA = a.pct * kh, hB = b.pct * kh, hR = r.pct * kh
     const colA = { fill: '#CDE4FF', stroke: '#2563eb' }
     const colB = { fill: '#FFE3C2', stroke: '#ea7a1e' }
     return (
       <div className="w-full space-y-1.5">
-        <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
-          たて＝濃度・よこ＝食塩水・面積＝食塩。2つをならした高さが答え
-        </p>
+        {note}
         <svg viewBox="0 0 250 120" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
-          {Axis}
+          {node}
           <rect x={plotLeft} y={baseY - hA} width={wA} height={hA} fill={colA.fill} stroke={colA.stroke} strokeWidth="2" />
           <rect x={plotLeft + wA} y={baseY - hB} width={wB} height={hB} fill={colB.fill} stroke={colB.stroke} strokeWidth="2" />
-          {/* ならした濃さ（平均線） */}
-          <line x1={plotLeft} y1={baseY - hR} x2={plotLeft + wA + wB} y2={baseY - hR} stroke="#0d9488" strokeWidth="1.6" strokeDasharray="4 2" />
-          <text x={plotLeft + wA + wB + 2} y={baseY - hR + 3} fontSize="8" fill="#0d9488" fontWeight="bold">{rr.pct}%</text>
+          {/* ならした濃さ（平均線）。? のときは引かない */}
+          {rPU ? (
+            <text x={plotLeft + (wA + wB) / 2} y={axisTop + 4} textAnchor="middle" fontSize="8" fill="#0d9488" fontWeight="bold">ならした濃さ ＝ ?%</text>
+          ) : (
+            <>
+              <line x1={plotLeft} y1={baseY - hR} x2={plotLeft + wA + wB} y2={baseY - hR} stroke="#0d9488" strokeWidth="1.6" strokeDasharray="4 2" />
+              <text x={plotLeft + wA + wB + 2} y={baseY - hR + 3} fontSize="8" fill="#0d9488" fontWeight="bold">{r.pct}%</text>
+            </>
+          )}
           {/* 濃度ラベル */}
-          <text x={plotLeft + wA / 2} y={baseY - hA - 3} textAnchor="middle" fontSize="7.5" fill={colA.stroke} fontWeight="bold">{aa.pct}%</text>
-          <text x={plotLeft + wA + wB / 2} y={baseY - hB - 3} textAnchor="middle" fontSize="7.5" fill={colB.stroke} fontWeight="bold">{bb.pct}%</text>
+          <text x={plotLeft + wA / 2} y={baseY - hA - 3} textAnchor="middle" fontSize="7.5" fill={colA.stroke} fontWeight="bold">{a.pct}%</text>
+          <text x={plotLeft + wA + wB / 2} y={baseY - hB - 3} textAnchor="middle" fontSize="7.5" fill={colB.stroke} fontWeight="bold">{b.pct}%</text>
           {/* 食塩（面積） */}
-          <text x={plotLeft + wA / 2} y={baseY - hA / 2 + 3} textAnchor="middle" fontSize="7" fill={colA.stroke} fontWeight="bold">塩{aa.salt}</text>
-          <text x={plotLeft + wA + wB / 2} y={baseY - hB / 2 + 3} textAnchor="middle" fontSize="7" fill={colB.stroke} fontWeight="bold">塩{bb.salt}</text>
+          <text x={plotLeft + wA / 2} y={baseY - hA / 2 + 3} textAnchor="middle" fontSize="7" fill={colA.stroke} fontWeight="bold">塩{aWU ? '?' : a.salt}</text>
+          <text x={plotLeft + wA + wB / 2} y={baseY - hB / 2 + 3} textAnchor="middle" fontSize="7" fill={colB.stroke} fontWeight="bold">塩{bWU ? '?' : b.salt}</text>
           {/* 食塩水（よこ） */}
-          <text x={plotLeft + wA / 2} y={baseY + 11} textAnchor="middle" fontSize="7.5" fill={colA.stroke} fontWeight="bold">{aa.weight}g</text>
-          <text x={plotLeft + wA + wB / 2} y={baseY + 11} textAnchor="middle" fontSize="7.5" fill={colB.stroke} fontWeight="bold">{bb.weight}g</text>
-          <text x={plotLeft + (wA + wB) / 2} y={baseY + 21} textAnchor="middle" fontSize="7.5" fill="#6B5A52" fontWeight="bold">合わせて {rr.weight}g・食塩 {rr.salt}g</text>
+          <text x={plotLeft + wA / 2} y={baseY + 11} textAnchor="middle" fontSize="7.5" fill={colA.stroke} fontWeight="bold">{aWU ? '?g' : a.weight + 'g'}</text>
+          <text x={plotLeft + wA + wB / 2} y={baseY + 11} textAnchor="middle" fontSize="7.5" fill={colB.stroke} fontWeight="bold">{bWU ? '?g' : b.weight + 'g'}</text>
+          <text x={plotLeft + (wA + wB) / 2} y={baseY + 21} textAnchor="middle" fontSize="7.5" fill="#6B5A52" fontWeight="bold">
+            {reveal ? `合わせて ${r.weight}g・食塩 ${r.salt}g` : `合わせて ${r.weight}g`}
+          </text>
         </svg>
         {Step2}{Step3}
       </div>
@@ -808,6 +823,9 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
   }
 
   // ── box: 単一／before→after の面積図 ──
+  const boxes = (spec.boxes as NoudoBox[]) ?? []
+  const basisPcts = (reveal ? boxes : boxes.filter(x => x.unknown !== 'pct')).map(x => x.pct)
+  const { kh, baseY, node } = buildAxis(basisPcts.length ? Math.max(...basisPcts) : 20)
   const gap = 38
   const totalW = boxes.reduce((s, x) => s + x.weight, 0)
   const availW = (plotRight - plotLeft) - gap * (boxes.length - 1)
@@ -815,14 +833,15 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
   let cx = plotLeft
   return (
     <div className="w-full space-y-1.5">
-      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
-        たて＝濃度・よこ＝食塩水・面積＝食塩（軸の高さが濃度）
-      </p>
+      {note}
       <svg viewBox="0 0 250 116" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
-        {Axis}
+        {node}
         {boxes.map((bx, i) => {
+          const pU = !reveal && bx.unknown === 'pct'
+          const sU = !reveal && bx.unknown === 'salt'
+          const wU = !reveal && bx.unknown === 'weight'
           const w = bx.weight * kw
-          const h = bx.pct * kh
+          const h = pU ? PH : bx.pct * kh
           const x = cx
           const arrowCx = x - gap / 2
           cx += w + gap
@@ -834,10 +853,12 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
                   {bx.op && <text x={arrowCx} y={baseY - 30} textAnchor="middle" fontSize="7.5" fill="#b45309" fontWeight="bold">{bx.op}</text>}
                 </>
               )}
-              <rect x={x} y={baseY - h} width={w} height={h} fill="#DBF6F0" stroke="#0d9488" strokeWidth="2" />
-              <text x={x + w / 2} y={baseY - h - 3} textAnchor="middle" fontSize="8" fill="#0d9488" fontWeight="bold">{bx.pct}%</text>
-              <text x={x + w / 2} y={baseY - h / 2 + 3} textAnchor="middle" fontSize="7.5" fill="#3A2E2A" fontWeight="bold">塩{bx.salt}g</text>
-              <text x={x + w / 2} y={baseY + 11} textAnchor="middle" fontSize="8" fill="#3A2E2A" fontWeight="bold">{bx.weight}g</text>
+              <rect x={x} y={baseY - h} width={w} height={h}
+                fill={pU ? '#F3EEE7' : '#DBF6F0'} stroke="#0d9488" strokeWidth="2"
+                strokeDasharray={pU ? '5 3' : undefined} />
+              <text x={x + w / 2} y={baseY - h - 3} textAnchor="middle" fontSize="8" fill="#0d9488" fontWeight="bold">{pU ? '?%' : bx.pct + '%'}</text>
+              <text x={x + w / 2} y={baseY - h / 2 + 3} textAnchor="middle" fontSize="7.5" fill="#3A2E2A" fontWeight="bold">塩{sU ? '?g' : bx.salt + 'g'}</text>
+              <text x={x + w / 2} y={baseY + 11} textAnchor="middle" fontSize="8" fill="#3A2E2A" fontWeight="bold">{wU ? '?g' : bx.weight + 'g'}</text>
               {bx.label && <text x={x + w / 2} y={baseY + 21} textAnchor="middle" fontSize="7" fill="#6B5A52" fontWeight="bold">{bx.label}</text>}
             </g>
           )
@@ -1596,6 +1617,11 @@ function ProblemSolver({
             <span className="text-2xl">⭐</span>
             <span className="font-black text-lg" style={{ color: '#2BA39A' }}>せいかい！</span>
           </div>
+          {problem.diagramType === 'noudo' && (
+            <div className="rounded-2xl bg-white/70 p-2">
+              <DiagramRenderer type="noudo" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
+            </div>
+          )}
           <p className="text-sm font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
             {problem.explanationText}
           </p>
