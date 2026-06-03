@@ -2327,6 +2327,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 750, baika: 750,
           waribikiRate: 0,
           unknown: 'teika',
+          step1Text: '定価＝原価×(1＋0.25)＝原価×1.25',
+          step2Text: '600 × 1.25 ＝ ？',
+          step3Text: '600 × 1.25 ＝ 750円',
         },
         hints: [
           { step: 1, text: '原価を①（100%）とおくと、利益は25%だから定価は何%になるかな？' },
@@ -2350,6 +2353,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           waribikiRate: 20,
           unknown: 'baika',
           hideGenka: true,
+          step1Text: '定価を100%とおく→売価は80%',
+          step2Text: '売価＝1500×0.8＝？',
+          step3Text: '1500×0.8＝1200円（2割引き＝8掛け）',
         },
         hints: [
           { step: 1, text: '2割引きとは、定価の20%を引くということ。定価を①（100%）とおくと、売価は何%？' },
@@ -2373,6 +2379,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           waribikiRate: 0,
           unknown: 'rieki',
           showRieki: true,
+          step1Text: '利益＝売価−原価',
+          step2Text: '利益＝1050−800＝？',
+          step3Text: '1050−800＝250円',
         },
         hints: [
           { step: 1, text: '利益 ＝ 売価 − 原価 だよ。売価と原価はそれぞれ何円？' },
@@ -2395,6 +2404,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 980, baika: 980,
           waribikiRate: 0,
           unknown: 'teika',
+          step1Text: '定価＝原価×(1＋0.4)＝原価×1.4',
+          step2Text: '700×1.4＝？',
+          step3Text: '700×1.4＝980円',
         },
         hints: [
           { step: 1, text: '4割の利益とは40%増しということ。定価 ＝ 原価 × 1.4 だよ。' },
@@ -2421,6 +2433,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           waribikiRate: 10,
           unknown: 'rieki',
           showRieki: true,
+          step1Text: '定価＝400×1.3＝520円（先に計算！）',
+          step2Text: '売価＝520×0.9＝468円',
+          step3Text: '利益＝468−400＝68円',
         },
         hints: [
           { step: 1, text: 'まず定価を求めよう。定価 ＝ 原価 × 1.3 ＝ 400 × 1.3 ＝ ？' },
@@ -2445,6 +2460,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 3150, baika: 2520,
           waribikiRate: 20,
           unknown: 'teika',
+          step1Text: '売価＝原価＋利益＝2400＋120＝2520円',
+          step2Text: '定価×0.8＝2520→定価＝2520÷0.8',
+          step3Text: '2520÷0.8＝3150円',
         },
         hints: [
           { step: 1, text: '売価 ＝ 原価 ＋ 利益 ＝ 2400 ＋ 120 ＝ 2520円。まず売価を出そう。' },
@@ -2469,6 +2487,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 130, baika: 117,
           waribikiRate: 10,
           unknown: 'riekiRate2',
+          step1Text: '原価を100円と仮定→定価＝130円',
+          step2Text: '売価＝130×0.9＝117円→利益17円',
+          step3Text: '利益率＝17÷100＝17%',
         },
         choices: ['17%', '20%', '13%', '27%'],
         hints: [
@@ -2494,6 +2515,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 1400, baika: 1190,
           waribikiRate: 15,
           unknown: 'genka',
+          step1Text: '原価を①とおく→売価＝①×1.4×0.85＝①×1.19',
+          step2Text: '利益＝①×0.19＝170円',
+          step3Text: '原価＝170÷0.19＝1000円',
         },
         hints: [
           { step: 1, text: '原価を①とおくと、定価は①×1.4。売価は定価の15%引き＝①×1.4×0.85。' },
@@ -2518,6 +2542,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 2200, baika: 1980,
           waribikiRate: 10,
           unknown: 'teika',
+          step1Text: '売価＝原価＋利益＝1800＋180＝1980円',
+          step2Text: '定価×0.9＝1980→定価＝1980÷0.9',
+          step3Text: '1980÷0.9＝2200円',
         },
         hints: [
           { step: 1, text: '売価 ＝ 原価 ＋ 利益 ＝ 1800 ＋ 180 ＝ 1980円。' },
@@ -2544,6 +2571,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 140, baika: 112,
           waribikiRate: 20,
           unknown: 'waribikiRate',
+          step1Text: '定価140円。目標売価＝100×1.12＝112円',
+          step2Text: '売価÷定価＝112÷140＝0.8＝80%で売る',
+          step3Text: '値引き率＝1−0.8＝20%引き',
         },
         choices: ['20%', '16%', '12%', '28%'],
         hints: [
@@ -2571,6 +2601,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           lots: 30, teikaSell: 20, waribikiSell: 10,
           unknown: 'totalRieki',
           totalRieki: 4600,
+          step1Text: '定価700円。割引売価＝700×0.8＝560円',
+          step2Text: '定価販売利益＝200×20＝4000円',
+          step3Text: '割引販売利益＝60×10＝600円。合計4600円',
         },
         hints: [
           { step: 1, text: '定価 ＝ 500 × 1.4 ＝ 700円。割引売価 ＝ 700 × 0.8 ＝ 560円。' },
@@ -2597,6 +2630,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           lots: 20, teikaSell: 0, waribikiSell: 0,
           unknown: 'waribikiSell',
           totalRieki: 1200,
+          step1Text: '売れ残りをx個とすると定価販売＝(20−x)個',
+          step2Text: '100(20−x)−100x＝2000−200x＝1200',
+          step3Text: '200x＝800→x＝4個',
         },
         hints: [
           { step: 1, text: '定価＝400×1.25＝500円。4割引き売価＝500×0.6＝300円（原価400円より安い＝損失）。' },
@@ -2621,6 +2657,9 @@ export const JUKU_UNITS: JukuUnit[] = [
           teika: 5200, baika: 4160,
           waribikiRate: 20,
           unknown: 'genka',
+          step1Text: '原価を①とおく→売価＝①×1.3×0.8＝①×1.04',
+          step2Text: '利益＝①×0.04＝160円',
+          step3Text: '原価＝160÷0.04＝4000円',
         },
         hints: [
           { step: 1, text: '原価を①とおくと、定価 ＝ ①×1.3。売価（2割引き）＝ ①×1.3×0.8 ＝ ①×1.04。' },
