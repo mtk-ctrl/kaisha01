@@ -1467,6 +1467,7 @@ function ProblemSolver({
 }) {
   const [input, setInput] = useState('')
   const [solved, setSolved] = useState(false)
+  const [revealed, setRevealed] = useState(false)
   const [wrongCount, setWrongCount] = useState(0)
   const [wrongFlash, setWrongFlash] = useState(false)
   const [selectedChoice, setSelectedChoice] = useState<string | null>(null)
@@ -1540,7 +1541,7 @@ function ProblemSolver({
       )}
 
       {/* 答え入力エリア */}
-      {!solved && (
+      {!solved && !revealed && (
         isChoice ? (
           /* 選択式（単位変換） */
           <div className="grid grid-cols-2 gap-2">
@@ -1633,8 +1634,41 @@ function ProblemSolver({
         </div>
       )}
 
+      {/* 答えを見た（自力では解かず確認） */}
+      {revealed && !solved && (
+        <div className="rounded-[18px] p-4 space-y-3"
+          style={{ background: '#FFF1B8', border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">💡</span>
+            <span className="font-black text-lg" style={{ color: '#C99700' }}>こたえ</span>
+          </div>
+          <div className="rounded-2xl px-4 py-3 text-center" style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A' }}>
+            <span className="font-black text-2xl" style={{ color: '#3A2E2A' }}>{problem.answer}</span>
+            {problem.answerUnit && (
+              <span className="font-black text-base ml-1" style={{ color: '#6B5A52' }}>{problem.answerUnit}</span>
+            )}
+          </div>
+          {problem.diagramType === 'noudo' && (
+            <div className="rounded-2xl bg-white/70 p-2">
+              <DiagramRenderer type="noudo" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
+            </div>
+          )}
+          <p className="text-sm font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
+            {problem.explanationText}
+          </p>
+          <p className="text-[11px] font-bold leading-relaxed" style={{ color: '#8A7D74' }}>
+            ※ この問題は「答えを見た」であつかうよ。あとでもう一度ちょうせんしてみてね。
+          </p>
+          <button onClick={onSkip}
+            className="w-full py-3 rounded-full font-black text-sm transition-all hover:-translate-y-0.5"
+            style={{ background: '#FFC83D', border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A', color: '#3A2E2A' }}>
+            {isLast ? '単元をおわる 🏁' : 'つぎの問題 →'}
+          </button>
+        </div>
+      )}
+
       {/* ヒント（まちがえた回数分だけ表示） */}
-      {visibleHints.length > 0 && !solved && (
+      {visibleHints.length > 0 && !solved && !revealed && (
         <div className="space-y-2">
           <p className="text-[11px] font-black" style={{ color: '#6B5A52' }}>
             💡 ヒント（{visibleHints.length}/{maxHints}）
@@ -1654,19 +1688,26 @@ function ProblemSolver({
       )}
 
       {/* まだヒントがない場合の案内 */}
-      {visibleHints.length === 0 && !solved && (
+      {visibleHints.length === 0 && !solved && !revealed && (
         <p className="text-center text-[10px] font-bold" style={{ color: '#B0A49C' }}>
           まちがえるとヒントが出るよ
         </p>
       )}
 
-      {/* とばすボタン */}
-      {!solved && (
-        <button onClick={onSkip}
-          className="w-full py-2 rounded-full font-bold text-xs transition-all hover:opacity-70"
-          style={{ background: 'transparent', border: '1.5px dashed #C4B8AE', color: '#B0A49C' }}>
-          わからない、とばす →
-        </button>
+      {/* わからないとき：答えを見る／とばす */}
+      {!solved && !revealed && (
+        <div className="space-y-2 pt-1">
+          <button onClick={() => setRevealed(true)}
+            className="w-full py-3 rounded-full font-black text-sm transition-all hover:-translate-y-0.5"
+            style={{ background: '#FFFFFF', border: '2.5px solid #C99700', boxShadow: '3px 3px 0 0 #C99700', color: '#C99700' }}>
+            🙋 わからない、答えを見る
+          </button>
+          <button onClick={onSkip}
+            className="w-full py-2 rounded-full font-bold text-xs transition-all hover:opacity-70"
+            style={{ background: 'transparent', border: '1.5px dashed #C4B8AE', color: '#B0A49C' }}>
+            この問題はとばす →
+          </button>
+        </div>
       )}
     </div>
   )
