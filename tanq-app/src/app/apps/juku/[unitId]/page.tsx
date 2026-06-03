@@ -874,7 +874,7 @@ function NoudoDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
 // ─────────────────────────────────────
 function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
   const reveal = (spec.showValues as boolean) ?? false
-  const wc = reveal ? 3 : wrongCount   // reveal=trueならヒント全出しと同じ扱い
+  const wc = reveal ? 3 : wrongCount
   const mode = (spec.mode as string) ?? 'ladder'
   const genka = spec.genka as number
   const teika = spec.teika as number
@@ -884,10 +884,15 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
   const unknown = spec.unknown as string
   const hideGenka = !!(spec.hideGenka as boolean)
 
-  // ステップヒント（wrongCountに連動して追加表示）
   const s1 = spec.step1Text as string | undefined
   const s2 = spec.step2Text as string | undefined
   const s3 = spec.step3Text as string | undefined
+
+  // wc=2から棒に%注記を追加（wc=1は棒の構造だけ、wc=2で%が書き加えられる）
+  const showPct = wc >= 2
+
+  // 小数末尾の不要な0を除く（1.40→1.4）
+  const fmtMul = (n: number) => parseFloat(n.toFixed(2)).toString()
 
   const StepBox = ({ text, stage }: { text: string; stage: 1 | 2 | 3 }) => (
     <div className="rounded-lg px-2 py-1.5" style={{
@@ -900,7 +905,7 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
     </div>
   )
 
-  // ── バッチモード（個数混在） ──────────────────────────────
+  // ── バッチモード ──────────────────────────────────────────────
   if (mode === 'batch') {
     const lots = spec.lots as number
     const teikaSell = spec.teikaSell as number
@@ -913,30 +918,27 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
     const waribikiSellN = unknownWS ? '?' : waribikiSell
     const ri1 = teika - genka
     const ri2 = baika2 - genka
-
-    // 定価販売側の合計：wc>=2で表示（hint2で計算ステップを示してから）
     const showTeikaSub = unknownTotal ? wc >= 2 : true
-    // 割引販売側の合計：wc>=3で表示
     const showWariSub = unknownTotal ? wc >= 3 : (wc >= 2)
-    // 全体利益：wc>=3で表示
     const showTotal = reveal || wc >= 3
+
+    const batchCells = [
+      { label: '原価',    val: genka + '円',  bg: '#FFF1B8', border: '#C99700', pct: '①＝100%' },
+      { label: '定価',    val: teika + '円',  bg: '#DBF6F0', border: '#0d9488', pct: `①×${fmtMul(1 + riekiRate / 100)}` },
+      { label: '割引売価', val: baika2 + '円', bg: '#FFE3EE', border: '#FF6F9C', pct: `定価×${fmtMul(1 - waribikiRate / 100)}` },
+    ]
 
     return (
       <div className="w-full space-y-2">
-        {/* 価格3列ヘッダー */}
         <div className="grid grid-cols-3 gap-1 text-center text-[11px] font-black">
-          {[
-            { label: '原価', val: genka + '円', bg: '#FFF1B8', border: '#C99700' },
-            { label: '定価', val: teika + '円', bg: '#DBF6F0', border: '#0d9488' },
-            { label: '割引売価', val: baika2 + '円', bg: '#FFE3EE', border: '#FF6F9C' },
-          ].map(({ label, val, bg, border }) => (
-            <div key={label} className="rounded-xl py-1" style={{ background: bg, border: `2px solid ${border}` }}>
+          {batchCells.map(({ label, val, bg, border, pct }) => (
+            <div key={label} className="rounded-xl py-1.5 space-y-0.5" style={{ background: bg, border: `2px solid ${border}` }}>
               <div style={{ color: '#6B5A52', fontSize: 9 }}>{label}</div>
               <div style={{ color: '#3A2E2A' }}>{val}</div>
+              {showPct && <div className="text-[8px] font-black" style={{ color: '#6B5A52' }}>{pct}</div>}
             </div>
           ))}
         </div>
-        {/* 販売内訳 */}
         <div className="rounded-xl p-2 space-y-1" style={{ background: '#FAFAF7', border: '2px solid #C4B8AE' }}>
           <div className="flex items-center justify-between text-[11px] font-bold">
             <span style={{ color: '#0d9488' }}>🏷️ 定価販売 {unknownWS ? `(${lots}-?)個` : `${teikaSellN}個`}</span>
@@ -957,7 +959,6 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
             <span style={{ color: '#2BA39A' }}>{showTotal ? totalRieki + '円' : '？円'}</span>
           </div>
         </div>
-        {/* ステップヒント */}
         {wc >= 1 && s1 && <StepBox text={s1} stage={1} />}
         {wc >= 2 && s2 && <StepBox text={s2} stage={2} />}
         {wc >= 3 && s3 && <StepBox text={s3} stage={3} />}
@@ -965,7 +966,7 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
     )
   }
 
-  // ── ラダーモード ──────────────────────────────────────────
+  // ── ラダーモード ──────────────────────────────────────────────
   const maxVal = Math.max(teika || 0, baika || 0, genka || 0, 1)
   const W = 200
   const genkaPx = hideGenka ? 0 : (genka / maxVal) * W
@@ -973,81 +974,86 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
   const baikaPx = (baika / maxVal) * W
   const rieki = teika - genka
   const waribiki = teika - baika
-  const showRieki = !!(spec.showRieki as boolean)
 
-  // wrongCountに応じて段階的に情報を開示（wc=3で未知値を解放）
+  // 段階開示フラグ（wc=3で未知値を解放）
   const unknownTeika = unknown === 'teika' && wc < 3
   const unknownBaika = unknown === 'baika' && wc < 3
   const unknownGenka = unknown === 'genka' && wc < 3
-  const unknownRieki = (unknown === 'rieki' || showRieki) && wc < 3
-  const unknownWR = unknown === 'waribikiRate' && wc < 3
-  void unknownRieki  // showRiekiZone の条件で使用
+  const unknownWR    = unknown === 'waribikiRate' && wc < 3
+  const riekiIsUnknown = unknown === 'rieki' && wc < 3
 
-  // 段ごとの行。isUnknown=trueのバーは破線スタイルで「まだ答えがわからない」を視覚化
-  type Row = { label: string; px: number; color: string; border: string; val: string; isUnknown?: boolean }
+  // 各棒の%注記テキスト（wc>=2で棒の中に表示）
+  // genkaが非表示の場合はteikaが①になる
+  const gPct = hideGenka ? undefined : '①＝100%'
+  const tPct = hideGenka
+    ? '①＝100%'
+    : (riekiRate > 0 ? `①×${fmtMul(1 + riekiRate / 100)}` : undefined)
+  const rPct = riekiRate > 0 ? `＋${riekiRate}%` : undefined
+  const wPct = waribikiRate > 0 ? `−${unknownWR ? '？' : waribikiRate}%` : undefined
+  const bPct = waribikiRate > 0
+    ? (hideGenka ? `①×${fmtMul(1 - waribikiRate / 100)}` : `${100 - waribikiRate}%`)
+    : undefined
+
+  type Row = { label: string; px: number; color: string; border: string; val: string; isUnknown?: boolean; pct?: string }
   const rows: Row[] = []
 
   if (!hideGenka) {
     rows.push({
-      label: '原価',
-      px: genkaPx,
+      label: '原価', px: genkaPx,
       color: '#FFF1B8', border: '#C99700',
       val: unknownGenka ? '？円' : genka + '円',
-      isUnknown: unknownGenka,
+      isUnknown: unknownGenka, pct: gPct,
     })
   }
 
-  // 利益ゾーン：unknown='rieki'のときは markup≠final profit になりうるので非表示
-  // reveal=true（正解後）は全情報を見せてOK
-  const showRiekiZone = !unknownTeika && !hideGenka && rieki > 0 && (unknown !== 'rieki' || reveal)
+  // 利益ゾーン：
+  //   unknown='rieki'かつ割引なし（sp-03型）→ 破線で表示（markup＝実利益）
+  //   unknown='rieki'かつ割引あり（sp-05型）→ 非表示（markup≠実利益で誤解の元）
+  //   それ以外かつteika既知 → 通常表示
+  const showRiekiZone = !unknownTeika && !hideGenka && rieki > 0 &&
+    !(unknown === 'rieki' && waribikiRate > 0)
   if (showRiekiZone) {
     rows.push({
-      label: '利益',
-      px: teikaPx,
-      color: '#D1FAE5', border: '#10b981',
-      val: `＋${rieki}円`,
+      label: '利益', px: teikaPx,
+      color: riekiIsUnknown ? '#F3EEE7' : '#D1FAE5',
+      border: riekiIsUnknown ? '#C4B8AE' : '#10b981',
+      val: riekiIsUnknown ? '？円' : `＋${rieki}円`,
+      isUnknown: riekiIsUnknown, pct: rPct,
     })
   }
 
   rows.push({
-    label: '定価',
-    px: teikaPx,
+    label: '定価', px: teikaPx,
     color: '#DBF6F0', border: '#0d9488',
     val: unknownTeika ? '？円' : teika + '円',
-    isUnknown: unknownTeika,
+    isUnknown: unknownTeika, pct: tPct,
   })
 
-  // 値引きゾーン
   const showWRZone = !unknownBaika && waribikiRate > 0 && baika > 0
   if (showWRZone) {
     rows.push({
-      label: `値引き(${unknownWR ? '?' : waribikiRate}%)`,
-      px: teikaPx,
+      label: `値引き(${unknownWR ? '?' : waribikiRate}%)`, px: teikaPx,
       color: '#FFE3EE', border: '#FF6F9C',
       val: unknownWR ? '？円' : `−${waribiki}円`,
-      isUnknown: unknownWR,
+      isUnknown: unknownWR, pct: wPct,
     })
   }
 
-  // 売価行（定価=売価の場合は省略）
   const hasDiff = waribikiRate > 0 || unknownBaika || unknownWR || (baika > 0 && baika < genka)
   if (hasDiff) {
     rows.push({
-      label: '売価',
-      px: baikaPx,
+      label: '売価', px: baikaPx,
       color: (baika < genka && !unknownBaika) ? '#fee2e2' : '#FFF6E5',
       border: (baika < genka && !unknownBaika) ? '#f87171' : '#C99700',
       val: unknownBaika ? '？円' : baika + '円',
-      isUnknown: unknownBaika,
+      isUnknown: unknownBaika, pct: bPct,
     })
   }
 
-  // 利益率（原価比）の特殊行
   if (unknown === 'riekiRate2') {
     const riekiActual = baika - genka
     rows.push({
-      label: '利益率（原価比）',
-      px: 0,
+      label: '利益率', px: 0,
       color: '#EDE9FE', border: '#8b5cf6',
       val: wc >= 3 ? `${Math.round(riekiActual / genka * 100)}%` : '？%',
       isUnknown: wc < 3,
@@ -1055,43 +1061,49 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
   }
 
   return (
-    <div className="w-full space-y-1">
+    <div className="w-full space-y-1.5">
       {rows.map((row, i) => (
         <div key={i} className="flex items-center gap-2">
           <span className="text-[10px] font-black w-16 text-right shrink-0" style={{ color: '#6B5A52' }}>{row.label}</span>
-          <div className="relative flex-1 h-6">
+          <div className="relative flex-1 h-7">
             {row.px > 0 ? (
               <div
-                className="absolute left-0 top-0 h-6 rounded-md"
+                className="absolute left-0 top-0 h-7 rounded-md flex items-center justify-end overflow-hidden"
                 style={{
                   width: `${(row.px / W) * 100}%`,
                   background: row.isUnknown ? '#F3EEE7' : row.color,
                   border: row.isUnknown ? '2px dashed #C4B8AE' : `2px solid ${row.border}`,
                   minWidth: 28,
-                  transition: 'all 0.3s',
-                }} />
+                  transition: 'width 0.4s, background 0.3s',
+                }}
+              >
+                {showPct && row.pct && (
+                  <span className="text-[9px] font-black pr-1.5 whitespace-nowrap" style={{ color: row.isUnknown ? '#A09590' : '#3A2E2A' }}>
+                    {row.pct}
+                  </span>
+                )}
+              </div>
             ) : (
-              <div className="absolute left-0 top-0 h-6 rounded-md px-2"
+              <div
+                className="absolute left-0 top-0 h-7 rounded-md flex items-center justify-end overflow-hidden"
                 style={{
                   background: row.isUnknown ? '#F3EEE7' : row.color,
                   border: row.isUnknown ? '2px dashed #C4B8AE' : `2px solid ${row.border}`,
                   minWidth: 80,
-                }} />
+                }}
+              />
             )}
           </div>
-          <span className="text-[11px] font-black w-16 shrink-0"
-            style={{ color: row.isUnknown ? '#C4B8AE' : '#3A2E2A' }}>
+          <span className="text-[11px] font-black w-16 shrink-0" style={{ color: row.isUnknown ? '#C4B8AE' : '#3A2E2A' }}>
             {row.val}
           </span>
         </div>
       ))}
-      {/* 損失注記 */}
       {baika > 0 && baika < genka && !unknownBaika && (
         <p className="text-[10px] font-black text-center" style={{ color: '#f87171' }}>
           ⚠️ 売価が原価を下回っているので損失！
         </p>
       )}
-      {/* ステップヒント（wrongCountに連動して1つずつ追加） */}
       {wc >= 1 && s1 && <StepBox text={s1} stage={1} />}
       {wc >= 2 && s2 && <StepBox text={s2} stage={2} />}
       {wc >= 3 && s3 && <StepBox text={s3} stage={3} />}
@@ -1770,7 +1782,7 @@ function ProblemSolver({
           profit は最初から表示（価格構造を見ながら解くのが損益算の学習スタイル）。
           正解／答えを見た後は、その専用パネル内の図に一本化するためここでは隠す */}
       {!solved && !revealed && problem.diagramType !== 'none' &&
-        (problem.diagramType === 'slide' || problem.diagramType === 'dot-line' || problem.diagramType === 'profit' || wrongCount > 0) && (
+        (problem.diagramType === 'slide' || problem.diagramType === 'dot-line' || wrongCount > 0) && (
         <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} wrongCount={wrongCount} />
       )}
 
