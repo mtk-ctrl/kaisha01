@@ -6,7 +6,13 @@ import { getDataKey } from '@/lib/storage'
 import { saveScore } from '@/lib/scoreApi'
 import { STORAGE_KEYS } from '@/lib/storageKeys'
 
-const ROWS = [
+interface RomajiItem {
+  hira: string
+  roman: string
+  alt?: string  // PC入力で使われる別表記 (si, ti, tu, hu など)
+}
+
+const ROWS: { id: string; name: string; items: RomajiItem[] }[] = [
   { id: 'a',  name: 'あ行', items: [
     { hira: 'あ', roman: 'a' }, { hira: 'い', roman: 'i' }, { hira: 'う', roman: 'u' },
     { hira: 'え', roman: 'e' }, { hira: 'お', roman: 'o' },
@@ -16,11 +22,11 @@ const ROWS = [
     { hira: 'け', roman: 'ke' }, { hira: 'こ', roman: 'ko' },
   ]},
   { id: 'sa', name: 'さ行', items: [
-    { hira: 'さ', roman: 'sa' }, { hira: 'し', roman: 'shi' }, { hira: 'す', roman: 'su' },
+    { hira: 'さ', roman: 'sa' }, { hira: 'し', roman: 'shi', alt: 'si' }, { hira: 'す', roman: 'su' },
     { hira: 'せ', roman: 'se' }, { hira: 'そ', roman: 'so' },
   ]},
   { id: 'ta', name: 'た行', items: [
-    { hira: 'た', roman: 'ta' }, { hira: 'ち', roman: 'chi' }, { hira: 'つ', roman: 'tsu' },
+    { hira: 'た', roman: 'ta' }, { hira: 'ち', roman: 'chi', alt: 'ti' }, { hira: 'つ', roman: 'tsu', alt: 'tu' },
     { hira: 'て', roman: 'te' }, { hira: 'と', roman: 'to' },
   ]},
   { id: 'na', name: 'な行', items: [
@@ -28,7 +34,7 @@ const ROWS = [
     { hira: 'ね', roman: 'ne' }, { hira: 'の', roman: 'no' },
   ]},
   { id: 'ha', name: 'は行', items: [
-    { hira: 'は', roman: 'ha' }, { hira: 'ひ', roman: 'hi' }, { hira: 'ふ', roman: 'fu' },
+    { hira: 'は', roman: 'ha' }, { hira: 'ひ', roman: 'hi' }, { hira: 'ふ', roman: 'fu', alt: 'hu' },
     { hira: 'へ', roman: 'he' }, { hira: 'ほ', roman: 'ho' },
   ]},
   { id: 'ma', name: 'ま行', items: [
@@ -48,8 +54,9 @@ const ROWS = [
 ]
 
 const ALL_ITEMS = ROWS.flatMap(r => r.items)
-const ALL_ROMAN = ALL_ITEMS.map(i => i.roman)
-const ALL_HIRA  = ALL_ITEMS.map(i => i.hira)
+// distractor pool: primary romanizations only（alt は含まない）
+const ALL_ROMAN_PRIMARY = ALL_ITEMS.map(i => i.roman)
+const ALL_HIRA = ALL_ITEMS.map(i => i.hira)
 
 type GameMode = 'hira2roman' | 'roman2hira'
 type CaseMode = 'lower' | 'upper'
@@ -58,13 +65,13 @@ type Phase    = 'menu' | 'game' | 'result'
 interface Question {
   hira: string
   roman: string
+  alt?: string       // 別表記（あれば選択肢に両方登場し、どちらも正解）
   choices: string[]
   mode: GameMode
 }
 
 interface LogEntry {
   q: Question
-  correct: string
   chosen: string
   ok: boolean
 }
@@ -87,32 +94,49 @@ function applyCase(s: string, caseMode: CaseMode): string {
   return caseMode === 'upper' ? s.toUpperCase() : s
 }
 
-function buildQuestions(mode: GameMode, caseMode: CaseMode, row: string, count: number): Question[] {
-  let pool = row === 'all' ? ALL_ITEMS : (ROWS.find(r => r.id === row)?.items ?? ALL_ITEMS)
+// altありの場合は「shi / si」形式で表示するラベルを返す
+function romanLabel(roman: string, alt: string | undefined, caseMode: CaseMode): string {
+  const r = applyCase(roman, caseMode)
+  return alt ? `${r} / ${applyCase(alt, caseMode)}` : r
+}
 
-  let src: typeof pool = []
+// その選択肢が正解かどうか判定（alt も正解とする）
+function isCorrectChoice(c: string, q: Question, caseMode: CaseMode): boolean {
+  if (q.mode === 'roman2hira') return c === q.hira
+  return c === applyCase(q.roman, caseMode) || (q.alt !== undefined && c === applyCase(q.alt, caseMode))
+}
+
+function buildQuestions(mode: GameMode, caseMode: CaseMode, row: string, count: number): Question[] {
+  const pool = row === 'all' ? ALL_ITEMS : (ROWS.find(r => r.id === row)?.items ?? ALL_ITEMS)
+
+  let src: RomajiItem[] = []
   while (src.length < count) src = src.concat(shuffle([...pool]))
   src = src.slice(0, count)
 
   return src.map(item => {
     let choices: string[]
     if (mode === 'hira2roman') {
-      const correct = applyCase(item.roman, caseMode)
-      const distractors = shuffle(ALL_ROMAN.filter(r => r !== item.roman))
-        .slice(0, 3)
-        .map(r => applyCase(r, caseMode))
-      choices = shuffle([correct, ...distractors])
+      const excluded = new Set([item.roman, item.alt].filter(Boolean) as string[])
+      if (item.alt) {
+        // alt あり: 正解2枚(roman + alt) + 不正解2枚 = 4択
+        const distractors = shuffle(ALL_ROMAN_PRIMARY.filter(r => !excluded.has(r)))
+          .slice(0, 2)
+          .map(r => applyCase(r, caseMode))
+        choices = shuffle([applyCase(item.roman, caseMode), applyCase(item.alt, caseMode), ...distractors])
+      } else {
+        // alt なし: 正解1枚 + 不正解3枚 = 4択
+        const distractors = shuffle(ALL_ROMAN_PRIMARY.filter(r => !excluded.has(r)))
+          .slice(0, 3)
+          .map(r => applyCase(r, caseMode))
+        choices = shuffle([applyCase(item.roman, caseMode), ...distractors])
+      }
     } else {
-      const correct = item.hira
+      // roman2hira: ひらがな4択
       const distractors = shuffle(ALL_HIRA.filter(h => h !== item.hira)).slice(0, 3)
-      choices = shuffle([correct, ...distractors])
+      choices = shuffle([item.hira, ...distractors])
     }
-    return { hira: item.hira, roman: item.roman, choices, mode }
+    return { hira: item.hira, roman: item.roman, alt: item.alt, choices, mode }
   })
-}
-
-function getCorrect(q: Question, caseMode: CaseMode): string {
-  return q.mode === 'roman2hira' ? q.hira : applyCase(q.roman, caseMode)
 }
 
 function saveRecord(data: Omit<RomajiRecord, 'date'>) {
@@ -154,8 +178,7 @@ export default function RomajiPage() {
   const handleAnswer = useCallback((c: string) => {
     if (chosen !== null) return
     const q = questions[idx]
-    const correct = getCorrect(q, caseMode)
-    const ok = c === correct
+    const ok = isCorrectChoice(c, q, caseMode)
 
     setChosen(c); setShowFeedback(true)
 
@@ -168,7 +191,7 @@ export default function RomajiPage() {
     } else {
       setCombo(0)
     }
-    setLog(prev => [...prev, { q, correct, chosen: c, ok }])
+    setLog(prev => [...prev, { q, chosen: c, ok }])
   }, [chosen, questions, idx, combo, maxCombo, score, caseMode])
 
   const nextQuestion = useCallback(() => {
@@ -295,8 +318,8 @@ export default function RomajiPage() {
   if (phase === 'game') {
     const q = questions[idx]
     const total = questions.length
-    const correct = getCorrect(q, caseMode)
     const pct = (idx / total) * 100
+    const hasAlt = q.mode === 'hira2roman' && q.alt !== undefined
 
     return (
       <div className="bg-gradient-to-b from-blue-50 to-indigo-50 min-h-screen pb-20">
@@ -324,15 +347,18 @@ export default function RomajiPage() {
             {q.mode === 'hira2roman' ? (
               <>
                 <div className="text-6xl font-black text-blue-700 mb-3">{q.hira}</div>
-                <p className="text-sm text-gray-500">この ひらがなを ローマじで かくと？</p>
+                <p className="text-sm text-gray-500">
+                  この ひらがなを ローマじで かくと？
+                  {hasAlt && <span className="ml-1 text-xs text-indigo-400">（2つ せいかいあり）</span>}
+                </p>
               </>
             ) : (
               <>
                 <div
-                  className="text-5xl font-black mb-3"
-                  style={{ fontFamily: 'monospace', color: '#4338ca', letterSpacing: '0.05em' }}
+                  className="font-black mb-2"
+                  style={{ fontFamily: 'monospace', color: '#4338ca', letterSpacing: '0.05em', fontSize: q.alt ? '2.5rem' : '3rem' }}
                 >
-                  {applyCase(q.roman, caseMode)}
+                  {romanLabel(q.roman, q.alt, caseMode)}
                 </div>
                 <p className="text-sm text-gray-500">この ローマじは どの ひらがな？</p>
               </>
@@ -341,16 +367,18 @@ export default function RomajiPage() {
 
           <div className="grid grid-cols-2 gap-3">
             {q.choices.map((c, i) => {
-              let cls = 'w-full py-4 rounded-2xl font-black transition-all '
+              const correct = chosen !== null && isCorrectChoice(c, q, caseMode)
+              const wrong = chosen !== null && c === chosen && !isCorrectChoice(c, q, caseMode)
               const isRoman = q.mode === 'hira2roman'
+              let cls = `w-full py-4 rounded-2xl font-black transition-all ${isRoman ? 'text-lg' : 'text-2xl'} `
               if (chosen === null) {
-                cls += `${isRoman ? 'text-lg' : 'text-2xl'} bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg`
-              } else if (c === correct) {
-                cls += `${isRoman ? 'text-lg' : 'text-2xl'} bg-green-100 text-green-700 border-2 border-green-400`
-              } else if (c === chosen && c !== correct) {
-                cls += `${isRoman ? 'text-lg' : 'text-2xl'} bg-red-100 text-red-600 border-2 border-red-400`
+                cls += 'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
+              } else if (correct) {
+                cls += 'bg-green-100 text-green-700 border-2 border-green-400'
+              } else if (wrong) {
+                cls += 'bg-red-100 text-red-600 border-2 border-red-400'
               } else {
-                cls += `${isRoman ? 'text-lg' : 'text-2xl'} bg-gray-100 text-gray-400`
+                cls += 'bg-gray-100 text-gray-400'
               }
               return (
                 <button
@@ -367,20 +395,23 @@ export default function RomajiPage() {
           </div>
 
           {showFeedback && chosen !== null && (
-            <div className={`rounded-2xl p-4 text-center ${chosen === correct ? 'bg-green-50' : 'bg-red-50'}`}>
-              <div className="text-3xl mb-1">{chosen === correct ? '⭕' : '❌'}</div>
+            <div className={`rounded-2xl p-4 text-center ${isCorrectChoice(chosen, q, caseMode) ? 'bg-green-50' : 'bg-red-50'}`}>
+              <div className="text-3xl mb-1">{isCorrectChoice(chosen, q, caseMode) ? '⭕' : '❌'}</div>
               {q.mode === 'hira2roman' ? (
                 <p className="text-sm font-bold text-gray-700">
                   「{q.hira}」→{' '}
-                  <span className="text-green-600" style={{ fontFamily: 'monospace' }}>{correct}</span>
+                  <span className="text-green-600" style={{ fontFamily: 'monospace' }}>
+                    {romanLabel(q.roman, q.alt, caseMode)}
+                  </span>
+                  {q.alt && <span className="text-xs text-gray-400 ml-1">どちらも せいかい</span>}
                 </p>
               ) : (
                 <p className="text-sm font-bold text-gray-700">
-                  <span style={{ fontFamily: 'monospace' }}>{applyCase(q.roman, caseMode)}</span>
+                  <span style={{ fontFamily: 'monospace' }}>{romanLabel(q.roman, q.alt, caseMode)}</span>
                   {' '}→ <span className="text-green-600">「{q.hira}」</span>
                 </p>
               )}
-              {combo >= 3 && chosen === correct && (
+              {combo >= 3 && isCorrectChoice(chosen, q, caseMode) && (
                 <p className="text-orange-500 font-black mt-1">🔥 {combo}れんぞく！！</p>
               )}
               <button
@@ -440,13 +471,19 @@ export default function RomajiPage() {
           {log.map((l, i) => {
             const qLabel = l.q.mode === 'hira2roman'
               ? `${l.q.hira} →？`
-              : `${applyCase(l.q.roman, caseMode)} →？`
+              : `${romanLabel(l.q.roman, l.q.alt, caseMode)} →？`
+            const answerLabel = l.q.mode === 'roman2hira'
+              ? l.q.hira
+              : romanLabel(l.q.roman, l.q.alt, caseMode)
             return (
               <div key={i} className={`flex items-center gap-2 text-sm p-2 rounded-xl ${l.ok ? 'bg-green-50' : 'bg-red-50'}`}>
                 <span>{l.ok ? '⭕' : '❌'}</span>
                 <span className="flex-1 text-gray-700">{qLabel}</span>
-                <span className={`font-bold ${l.ok ? 'text-green-600' : 'text-red-500'}`} style={{ fontFamily: l.q.mode === 'roman2hira' ? undefined : 'monospace' }}>
-                  {l.correct}
+                <span
+                  className={`font-bold ${l.ok ? 'text-green-600' : 'text-red-500'}`}
+                  style={{ fontFamily: l.q.mode === 'roman2hira' ? undefined : 'monospace' }}
+                >
+                  {answerLabel}
                 </span>
               </div>
             )
