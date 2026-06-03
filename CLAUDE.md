@@ -108,17 +108,20 @@ cd tanq-app && npm run build   # ビルドエラーがないこと
 > `remote: fatal error in commit_refs` で後続が全滅する（Race Condition）。  
 > concurrency 設定で待機するようにしたが、**根本は「1 push ずつ、完了確認してから次」を守ること**。
 
-画面レビューの手順（優先順）:
+**画面レビューの手順は `product/screen-review.md` に必ず従う**（オーナーが「画面レビューして」と言ったら、まずこのファイルを開く）。要点だけ:
 
-1. **本番URL**（`tanq-app.vercel.app`）— `claude/*` デプロイ後。HTML・主要CSS/JSが200か、期待する要素（例: `<base href>`）があるかを確認
-2. **ローカル** — 静的youjiアプリは `tanq-app/public` を配信して確認
-3. **Playwright** — `scripts/screenshot-app.js` が整備されたら `scripts/screenshots/` に保存して確認（未整備の間は 1 または 2 で代替）
-
-```bash
-# Playwright 整備後の例
-python3 -m http.server 8080 --directory tanq-app/public &
-node scripts/screenshot-app.js
-```
+1. **SVGモックは画面レビューではない。** 実際にアプリが描画した画面を撮って Read で目視する。
+2. **本番URL（`tanq-app.vercel.app`）は HTTP 403 で中身が読めない** → 使わない。
+3. **標準はローカル起動 + Playwright**:
+   ```bash
+   # 1) playwright を入れる（ブラウザ本体は /opt/pw-browsers に同梱・DLスキップ）
+   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install playwright --no-save
+   # 2) 本番相当ビルドを起動（Next.js 本体は npm run start が必要）
+   cd tanq-app && npm run build && (npm run start -- -p 3000 >/tmp/next.log 2>&1 &)
+   # 3) スクショ（juku はフロー込みの雛形あり）
+   node scripts/screenshot-juku.mjs   # → scripts/screenshots/*.png（.gitignore 済み）
+   ```
+4. 撮った PNG を **Read で目視**し、違和感があれば直して撮り直す。必要なら `SendUserFile` でオーナーに見せる。
 
 ---
 
