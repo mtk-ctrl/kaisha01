@@ -1534,8 +1534,9 @@ function ProblemSolver({
         </p>
       </div>
 
-      {/* 図（wrongCount に連動して段階的に変化）— line-seg/area は1回間違えてから表示 */}
-      {problem.diagramType !== 'none' &&
+      {/* 図（wrongCount に連動して段階的に変化）— line-seg/area は1回間違えてから表示。
+          正解／答えを見た後は、その専用パネル内の図に一本化するためここでは隠す */}
+      {!solved && !revealed && problem.diagramType !== 'none' &&
         (problem.diagramType === 'slide' || problem.diagramType === 'dot-line' || wrongCount > 0) && (
         <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} wrongCount={wrongCount} />
       )}
