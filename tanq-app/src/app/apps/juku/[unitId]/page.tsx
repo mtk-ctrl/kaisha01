@@ -994,7 +994,8 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
     ? (hideGenka ? `①×${fmtMul(1 - waribikiRate / 100)}` : `${100 - waribikiRate}%`)
     : undefined
 
-  type Row = { label: string; px: number; color: string; border: string; val: string; isUnknown?: boolean; pct?: string }
+  // pxStart: バーの開始位置（デフォルト0）。利益・値引きゾーンは差分だけ表示するために使用
+  type Row = { label: string; px: number; pxStart?: number; color: string; border: string; val: string; isUnknown?: boolean; pct?: string }
   const rows: Row[] = []
 
   if (!hideGenka) {
@@ -1014,7 +1015,7 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
     !(unknown === 'rieki' && waribikiRate > 0)
   if (showRiekiZone) {
     rows.push({
-      label: '利益', px: teikaPx,
+      label: '利益', px: teikaPx, pxStart: genkaPx,
       color: riekiIsUnknown ? '#F3EEE7' : '#D1FAE5',
       border: riekiIsUnknown ? '#C4B8AE' : '#10b981',
       val: riekiIsUnknown ? '？円' : `＋${rieki}円`,
@@ -1032,7 +1033,7 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
   const showWRZone = !unknownBaika && waribikiRate > 0 && baika > 0
   if (showWRZone) {
     rows.push({
-      label: `値引き(${unknownWR ? '?' : waribikiRate}%)`, px: teikaPx,
+      label: `値引き(${unknownWR ? '?' : waribikiRate}%)`, px: teikaPx, pxStart: baikaPx,
       color: '#FFE3EE', border: '#FF6F9C',
       val: unknownWR ? '？円' : `−${waribiki}円`,
       isUnknown: unknownWR, pct: wPct,
@@ -1068,13 +1069,14 @@ function ProfitDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>
           <div className="relative flex-1 h-7">
             {row.px > 0 ? (
               <div
-                className="absolute left-0 top-0 h-7 rounded-md flex items-center justify-end overflow-hidden"
+                className="absolute top-0 h-7 rounded-md flex items-center justify-end overflow-hidden"
                 style={{
-                  width: `${(row.px / W) * 100}%`,
+                  left: `${((row.pxStart || 0) / W) * 100}%`,
+                  width: `${((row.px - (row.pxStart || 0)) / W) * 100}%`,
                   background: row.isUnknown ? '#F3EEE7' : row.color,
                   border: row.isUnknown ? '2px dashed #C4B8AE' : `2px solid ${row.border}`,
-                  minWidth: 28,
-                  transition: 'width 0.4s, background 0.3s',
+                  minWidth: row.pxStart ? 0 : 28,
+                  transition: 'width 0.4s, left 0.4s, background 0.3s',
                 }}
               >
                 {showPct && row.pct && (
