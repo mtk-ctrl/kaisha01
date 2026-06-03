@@ -4,3 +4,4 @@ node_modules
 out
 *.local
 tsconfig.tsbuildinfo
+scripts/screenshots/
