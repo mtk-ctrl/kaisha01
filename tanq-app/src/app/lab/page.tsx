@@ -110,6 +110,7 @@ const APPS: {
   { id: 'youji-juucombo',  name: '10に なる かずを さがせ！',  emoji: '🔟', color: '#60a5fa', url: '/apps/youji-juucombo',  badge: 'たして10',         audience: 'youji', targetAge: '5〜6才', guestAccess: true },
   { id: 'youji-hiragana',  name: 'にたもじ どっち？',          emoji: '🔤', color: '#c4a8ff', url: '/apps/youji-hiragana',  badge: 'おう/づ/ぢ識別',   audience: 'shougakusei', targetAge: '小1〜小2', guestAccess: true },
   { id: 'romaji',          name: 'ローマじ れんしゅう',         emoji: '🔠', color: '#3b82f6', url: '/apps/romaji',           badge: '小文字・大文字',   audience: 'shougakusei', targetAge: '小3〜小4', guestAccess: true },
+  { id: 'koubai',          name: 'こうばいすう・こうやくすう',  emoji: '🔢', color: '#10b981', url: '/apps/koubai',           badge: 'LCM・GCD',         audience: 'shougakusei', targetAge: '小5〜小6', guestAccess: true },
   { id: 'youji-clock',     name: 'なんじ かな？',              emoji: '🕑', color: '#4ade80', url: '/apps/youji-clock',     badge: '何時・何時半',     audience: 'youji', targetAge: '4〜6才', guestAccess: true },
   { id: 'youji-animals',   name: 'どうぶつ さんすう',           emoji: '🐾', color: '#fb923c', url: '/apps/youji-animals',  badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才', guestAccess: true },
   { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん / 10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },
