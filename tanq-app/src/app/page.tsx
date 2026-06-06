@@ -6,20 +6,20 @@ import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'TANQ — まなびのファンタジーラボ',
-  description: 'あそびながら、かしこくなる。小学生向け学習アプリが8つ以上そろった探究ラボ。',
+  description: 'あそびながら、かしこくなる。小学生向け学習アプリが25本以上そろった探究ラボ。登録なしですぐ体験できる。',
 }
 
 /* ── Static data ── */
 
 const APPS = [
-  { emoji: '🧩', name: 'かんがえるちからジム', target: '小4〜小6', badge: '100問', bg: '#FFE3EE', rot: '-1deg' },
-  { emoji: '📖', name: 'かんじマスター',        target: '小1〜小6', badge: '1026字', bg: '#DBF6F0', rot: '1.5deg' },
-  { emoji: '🌍', name: 'えいごボキャブラリー',  target: '小3〜小6', badge: '275語', bg: '#FFF6E5', rot: '-0.8deg' },
-  { emoji: '🔢', name: 'けいさんチャレンジ',    target: '小2〜小6', badge: '∞もん', bg: '#EFE8FF', rot: '1.2deg' },
-  { emoji: '📐', name: 'さんすうぶんしょうだい', target: '小1〜小3', badge: '立式',  bg: '#FFE3EE', rot: '-1.5deg' },
-  { emoji: '💻', name: 'プログラミング',        target: '小3〜小6', badge: '5ステージ', bg: '#DBF6F0', rot: '0.8deg' },
-  { emoji: '🕐', name: 'とけい・じかんけいさん', target: '小2〜小4', badge: '分・時', bg: '#EFE8FF', rot: '-1deg' },
-  { emoji: '✖️', name: 'くくマスター',          target: '小2〜小4', badge: '2〜9段', bg: '#FFF6E5', rot: '1.3deg' },
+  { emoji: '🧩', name: 'かんがえるちからジム',  target: '小4〜小6', badge: '100問',    bg: '#FFE3EE', rot: '-1deg' },
+  { emoji: '📖', name: 'かんじマスター',         target: '小1〜小6', badge: '1026字',   bg: '#DBF6F0', rot: '1.5deg' },
+  { emoji: '🌍', name: 'えいごボキャブラリー',   target: '小3〜小6', badge: '275語',    bg: '#FFF6E5', rot: '-0.8deg' },
+  { emoji: '🔢', name: 'けいさんチャレンジ',     target: '小2〜小6', badge: '∞もん',    bg: '#EFE8FF', rot: '1.2deg' },
+  { emoji: '📐', name: 'さんすうぶんしょうだい', target: '小1〜小3', badge: '立式',     bg: '#FFE3EE', rot: '-1.5deg' },
+  { emoji: '💻', name: 'プログラミング',         target: '小3〜小6', badge: '5ステージ', bg: '#DBF6F0', rot: '0.8deg' },
+  { emoji: '🕐', name: 'とけい・じかんけいさん', target: '小2〜小4', badge: '分・時',   bg: '#EFE8FF', rot: '-1deg' },
+  { emoji: '✖️', name: 'くくマスター',           target: '小2〜小4', badge: '2〜9段',   bg: '#FFF6E5', rot: '1.3deg' },
 ]
 
 const HOW_STEPS = [
@@ -34,7 +34,7 @@ const HOW_STEPS = [
       </svg>
     ),
     title: 'とうろくなしで すぐあそぶ',
-    desc: '「やってみる」ボタンをぽちっと。かんがえるちからジム・かんじ・けいさんの Lv1-2が、とうろくしなくてもあそべるよ。',
+    desc: '「やってみる」ボタンをぽちっと。かんがえるちからジム・かんじ・けいさんなどが、とうろくしなくてもあそべるよ。',
   },
   {
     num: '02',
@@ -63,60 +63,13 @@ const HOW_STEPS = [
   },
 ]
 
-const ENTRY_PATHS = [
-  {
-    emoji: '🆕',
-    tag: 'はじめての方',
-    title: 'むりょう登録',
-    desc: 'ぜんアプリかいほう・進捗がずっとのこる',
-    cta: '登録する →',
-    href: '/register',
-    bg: '#FFF6E5',
-    border: '#FFC83D',
-    rot: '-1deg',
-  },
-  {
-    emoji: '👋',
-    tag: '2回め以降',
-    title: 'ログイン',
-    desc: '登録ずみの方。つづきからあそべる',
-    cta: 'ログイン →',
-    href: '/login',
-    bg: '#DBF6F0',
-    border: '#4ECDC4',
-    rot: '1.2deg',
-  },
-  {
-    emoji: '🎯',
-    tag: 'とりあえず',
-    title: 'とうろくなし体験',
-    desc: 'いくつかのアプリが登録なしですぐあそべる',
-    cta: '体験する →',
-    href: '/lab?trial=1',
-    bg: '#EFE8FF',
-    border: '#B197FC',
-    rot: '-0.8deg',
-  },
-  {
-    emoji: '🧪',
-    tag: '招待の方',
-    title: 'テスター入口',
-    desc: '名前とコードですぐ入場できる',
-    cta: '入場 →',
-    href: '/tester',
-    bg: '#FFE3EE',
-    border: '#FF6F9C',
-    rot: '1.5deg',
-  },
-]
-
 const TARGET_KIDS = [
-  { emoji: '🧩', text: 'さんすうのぶんしょうだいで、しきがえらべない' },
-  { emoji: '📖', text: 'かんじがなかなかおぼえられない' },
-  { emoji: '💭', text: 'かんがえるちからをのばしたい' },
-  { emoji: '🌍', text: 'えいたんごをふやしたい' },
-  { emoji: '⏰', text: 'とけいのよみかたがにがて' },
-  { emoji: '💻', text: 'プログラミングにきょうみがある' },
+  { emoji: '🧩', text: 'さんすうのぶんしょうだいで、しきがえらべない', href: '/lab?trial=1' },
+  { emoji: '📖', text: 'かんじがなかなかおぼえられない',               href: '/lab?trial=1' },
+  { emoji: '💭', text: 'かんがえるちからをのばしたい',                 href: '/lab?trial=1' },
+  { emoji: '🌍', text: 'えいたんごをふやしたい',                       href: '/lab?trial=1' },
+  { emoji: '⏰', text: 'とけいのよみかたがにがて',                     href: '/lab?trial=1' },
+  { emoji: '💻', text: 'プログラミングにきょうみがある',               href: '/lab?trial=1' },
 ]
 
 const VALUES = [
@@ -131,7 +84,6 @@ const COMPANY_INFO = [
   ['設立',     '2026年5月'],
   ['所在地',   '福岡県福岡市'],
   ['事業内容', '小学生向け 教育テクノロジー'],
-  ['代表',     'Jobs（AI CEO）'],
   ['ミッション','AIで考える喜びをすべての子どもに'],
 ]
 
@@ -139,7 +91,7 @@ const STATS = [
   { num: '25', sub: '+', label: 'アプリ' },
   { num: '1026', sub: '字', label: 'かんじ' },
   { num: '50', sub: 'こ+', label: 'バッジ' },
-  { num: '5', sub: 'ふん', label: 'まいにち' },
+  { num: '5', sub: 'ふん', label: '1日のめやす' },
 ]
 
 /* ── Star SVG ── */
@@ -299,20 +251,21 @@ export default function HomePage() {
                 バッジをあつめながら、まいにち5ふんで パワーアップ！
               </p>
 
+              {/* CTA: 体験ファースト → 登録サブ */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
                 <Link
-                  href="/register"
+                  href="/lab?trial=1"
                   className="btn-sticker btn-yellow"
                   style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, padding: '12px 28px' }}
                 >
-                  むりょう とうろく →
+                  とりあえず やってみる →
                 </Link>
                 <Link
-                  href="/lab?trial=1"
+                  href="/register"
                   className="btn-sticker btn-white"
                   style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 16, padding: '12px 28px' }}
                 >
-                  とりあえず やってみる
+                  むりょう とうろく
                 </Link>
               </div>
               <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>
@@ -421,25 +374,31 @@ export default function HomePage() {
             25本の <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2px solid #3A2E2A' }}>まなびアプリ</span>
           </h2>
           <p style={{ marginTop: '0.75rem', color: 'var(--ink-soft)', fontSize: 15 }}>
-            すきなじゅんばんであそんでみよう。ぜんぶひとつのアカウントでつかえるよ。
+            タップして、すきなアプリを試してみよう。<strong>広告なし・課金誘導なし</strong>。登録なしでもすぐ遊べる。
           </p>
         </div>
 
+        {/* App cards — all clickable */}
         <div className="max-w-6xl mx-auto" style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
           gap: '1.25rem',
         }}>
           {APPS.map((app) => (
-            <div
+            <Link
               key={app.name}
+              href="/lab?trial=1"
               className="card-sticker"
               style={{
                 background: app.bg,
                 borderRadius: 'var(--radius-card)',
                 padding: '1.5rem',
                 transform: `rotate(${app.rot})`,
-                cursor: 'default',
+                textDecoration: 'none',
+                color: 'var(--ink)',
+                display: 'block',
+                cursor: 'pointer',
+                transition: 'transform 0.15s, box-shadow 0.15s',
               }}
             >
               <div style={{ fontSize: 40, marginBottom: '0.5rem' }}>{app.emoji}</div>
@@ -453,26 +412,95 @@ export default function HomePage() {
               <h3 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, color: 'var(--ink)', margin: '0.25rem 0 0.5rem' }}>
                 {app.name}
               </h3>
-              <span style={{
-                display: 'inline-block',
-                background: '#FFFFFF', color: 'var(--ink)',
-                border: '2px solid #3A2E2A',
-                fontSize: 11, fontWeight: 700,
-                padding: '2px 10px', borderRadius: 9999,
-              }}>{app.badge}</span>
-            </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{
+                  display: 'inline-block',
+                  background: '#FFFFFF', color: 'var(--ink)',
+                  border: '2px solid #3A2E2A',
+                  fontSize: 11, fontWeight: 700,
+                  padding: '2px 10px', borderRadius: 9999,
+                }}>{app.badge}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink-soft)' }}>あそぶ →</span>
+              </div>
+            </Link>
           ))}
         </div>
 
         <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
           <Link
-            href="/lab"
+            href="/lab?trial=1"
             className="btn-sticker btn-yellow"
             style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 16, padding: '12px 32px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
           >
             <span>ぜんぶのアプリをみてみる</span>
             <svg viewBox="0 0 24 24" width={18} height={18}><path d="M5 12h14M13 6l6 6-6 6" stroke="#3A2E2A" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>
           </Link>
+        </div>
+      </section>
+
+      {/* ════════ WHO IT'S FOR ════════ */}
+      <section style={{ background: 'var(--pink-bg)', position: 'relative', zIndex: 1, padding: '5rem 1.5rem' }}>
+        <div className="max-w-5xl mx-auto">
+          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 13, letterSpacing: '0.2em', marginBottom: '0.75rem' }}>
+              <svg viewBox="0 0 24 24" width={16} height={16}><path d="M12 4.5c-2 -3 -8 -2 -8 3 c0 5 8 10 8 10 s8 -5 8 -10 c0 -5 -6 -6 -8 -3 z" fill="#FF6F9C" stroke="#3A2E2A" strokeWidth="1.5"/></svg>
+              WHO IT&apos;S FOR
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(24px, 3.5vw, 38px)', color: 'var(--ink)' }}>
+              こんな きみに、ぴったり
+            </h2>
+            <p style={{ marginTop: '0.5rem', color: 'var(--ink-soft)', fontSize: 15 }}>
+              「にがて」も「きょうみ」も、TANQラボならぴったりのアプリがみつかるよ。
+            </p>
+          </div>
+
+          {/* 課題カード — タップでラボへ */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
+            {TARGET_KIDS.map((item) => (
+              <Link
+                key={item.text}
+                href={item.href}
+                className="card-sticker"
+                style={{ background: '#FFFFFF', borderRadius: 'var(--radius-card)', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'var(--ink)' }}
+              >
+                <span style={{ fontSize: 28, flexShrink: 0 }}>{item.emoji}</span>
+                <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 14, color: 'var(--ink)', lineHeight: 1.5, flex: 1 }}>{item.text}</span>
+                <span style={{ fontSize: 13, color: 'var(--ink-soft)', flexShrink: 0 }}>→</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Parent panel */}
+          <div
+            className="card-sticker"
+            style={{
+              marginTop: '2rem',
+              background: '#FFFFFF',
+              borderRadius: 'var(--radius-card)',
+              padding: '1.75rem 2rem',
+              display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.5rem',
+            }}
+          >
+            <div style={{ flexShrink: 0 }}>
+              <svg viewBox="0 0 80 80" width={64} height={64}>
+                <circle cx="28" cy="32" r="14" fill="#FFE39A" stroke="#3A2E2A" strokeWidth="3"/>
+                <circle cx="52" cy="32" r="14" fill="#FFC0DA" stroke="#3A2E2A" strokeWidth="3"/>
+                <circle cx="40" cy="56" r="11" fill="#A8DCFF" stroke="#3A2E2A" strokeWidth="3"/>
+              </svg>
+            </div>
+            <div style={{ flex: '1 1 260px' }}>
+              <span style={{
+                display: 'inline-block', background: 'var(--lav-bg)', border: '2px solid #3A2E2A',
+                borderRadius: 9999, padding: '2px 12px', fontSize: 12, fontWeight: 700, marginBottom: '0.5rem',
+              }}>保護者の方へ</span>
+              <h3 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 17, color: 'var(--ink)', margin: '0 0 0.5rem' }}>
+                広告なし・課金誘導なし。<br/>子どもが一人でも安全に使えるシンプル設計。
+              </h3>
+              <p style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.75, margin: 0 }}>
+                TANQラボは、お子さま自身がのめり込むことを最優先に設計されています。広告はなく、登録なしでも遊べる範囲を残しているので、まずは無料で体験してから、登録するかどうか決めてください。
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -526,110 +554,144 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* 4 entry paths */}
+          {/* 入口: 登録 + 体験の2択のみ */}
           <div style={{ marginTop: '3.5rem' }}>
             <p style={{ textAlign: 'center', fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 15, color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>
-              あなたにぴったりの <ruby>入口<rt>いりぐち</rt></ruby>はどれ？
+              さあ、どこから はじめる？
             </p>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
               gap: '1rem',
+              maxWidth: 560,
+              margin: '0 auto',
             }}>
-              {ENTRY_PATHS.map((ep) => (
-                <Link
-                  key={ep.href}
-                  href={ep.href}
-                  className="card-sticker"
-                  style={{
-                    background: ep.bg,
-                    borderRadius: 'var(--radius-card)',
-                    padding: '1.5rem',
-                    textDecoration: 'none',
-                    color: 'var(--ink)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.4rem',
-                    transform: `rotate(${ep.rot})`,
-                  }}
-                >
-                  <div style={{ fontSize: 36 }}>{ep.emoji}</div>
-                  <span style={{
-                    display: 'inline-block', background: ep.border,
-                    color: '#fff', border: '2px solid #3A2E2A',
-                    borderRadius: 9999, padding: '2px 10px', fontSize: 11, fontWeight: 700, alignSelf: 'flex-start',
-                  }}>{ep.tag}</span>
-                  <h4 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, margin: 0 }}>{ep.title}</h4>
-                  <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: 0 }}>{ep.desc}</p>
-                  <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 14, marginTop: '0.5rem', color: 'var(--ink)' }}>
-                    {ep.cta}
-                  </span>
-                </Link>
-              ))}
+              {/* 体験 */}
+              <Link
+                href="/lab?trial=1"
+                className="card-sticker"
+                style={{
+                  background: '#EFE8FF',
+                  borderRadius: 'var(--radius-card)',
+                  padding: '1.5rem',
+                  textDecoration: 'none',
+                  color: 'var(--ink)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.4rem',
+                  transform: 'rotate(-0.8deg)',
+                }}
+              >
+                <div style={{ fontSize: 36 }}>🎯</div>
+                <span style={{
+                  display: 'inline-block', background: '#B197FC',
+                  color: '#fff', border: '2px solid #3A2E2A',
+                  borderRadius: 9999, padding: '2px 10px', fontSize: 11, fontWeight: 700, alignSelf: 'flex-start',
+                }}>とりあえず</span>
+                <h4 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, margin: 0 }}>とうろくなし体験</h4>
+                <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: 0 }}>いくつかのアプリが登録なしですぐあそべる</p>
+                <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 14, marginTop: '0.5rem', color: 'var(--ink)' }}>
+                  体験する →
+                </span>
+              </Link>
+              {/* 登録 */}
+              <Link
+                href="/register"
+                className="card-sticker"
+                style={{
+                  background: '#FFF6E5',
+                  borderRadius: 'var(--radius-card)',
+                  padding: '1.5rem',
+                  textDecoration: 'none',
+                  color: 'var(--ink)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.4rem',
+                  transform: 'rotate(-1deg)',
+                }}
+              >
+                <div style={{ fontSize: 36 }}>🆕</div>
+                <span style={{
+                  display: 'inline-block', background: '#FFC83D',
+                  color: '#fff', border: '2px solid #3A2E2A',
+                  borderRadius: 9999, padding: '2px 10px', fontSize: 11, fontWeight: 700, alignSelf: 'flex-start',
+                }}>ぜんぶひらく</span>
+                <h4 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, margin: 0 }}>むりょう登録</h4>
+                <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: 0 }}>ぜんアプリかいほう・進捗がずっとのこる</p>
+                <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 14, marginTop: '0.5rem', color: 'var(--ink)' }}>
+                  登録する →
+                </span>
+              </Link>
             </div>
+            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--ink-soft)', marginTop: '1rem' }}>
+              登録ずみの方は <Link href="/login" style={{ color: 'var(--ink)', fontWeight: 700 }}>ログイン →</Link>
+            </p>
           </div>
         </div>
       </section>
 
-      {/* ════════ WHO IT'S FOR ════════ */}
-      <section style={{ background: 'var(--pink-bg)', position: 'relative', zIndex: 1, padding: '5rem 1.5rem' }}>
-        <div className="max-w-5xl mx-auto">
-          <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 13, letterSpacing: '0.2em', marginBottom: '0.75rem' }}>
-              <svg viewBox="0 0 24 24" width={16} height={16}><path d="M12 4.5c-2 -3 -8 -2 -8 3 c0 5 8 10 8 10 s8 -5 8 -10 c0 -5 -6 -6 -8 -3 z" fill="#FF6F9C" stroke="#3A2E2A" strokeWidth="1.5"/></svg>
-              WHO IT&apos;S FOR
-            </div>
-            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(24px, 3.5vw, 38px)', color: 'var(--ink)' }}>
-              こんな きみに、ぴったり
-            </h2>
-            <p style={{ marginTop: '0.5rem', color: 'var(--ink-soft)', fontSize: 15 }}>
-              「にがて」も「きょうみ」も、TANQラボならぴったりのアプリがみつかるよ。
-            </p>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
-            {TARGET_KIDS.map((item) => (
-              <div
-                key={item.text}
-                className="card-sticker"
-                style={{ background: '#FFFFFF', borderRadius: 'var(--radius-card)', padding: '1rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
-              >
-                <span style={{ fontSize: 28, flexShrink: 0 }}>{item.emoji}</span>
-                <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 14, color: 'var(--ink)', lineHeight: 1.5 }}>{item.text}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Parent panel */}
+      {/* ════════ FINAL CTA ════════ */}
+      <section id="cta" style={{ background: 'var(--cream)', position: 'relative', zIndex: 1, padding: '3rem 1.5rem' }}>
+        <div className="max-w-3xl mx-auto">
           <div
             className="card-sticker"
             style={{
-              marginTop: '2rem',
-              background: '#FFFFFF',
+              background: 'var(--cream-deep)',
               borderRadius: 'var(--radius-card)',
-              padding: '1.75rem 2rem',
-              display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1.5rem',
+              padding: '3rem 2rem',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            <div style={{ flexShrink: 0 }}>
-              <svg viewBox="0 0 80 80" width={64} height={64}>
-                <circle cx="28" cy="32" r="14" fill="#FFE39A" stroke="#3A2E2A" strokeWidth="3"/>
-                <circle cx="52" cy="32" r="14" fill="#FFC0DA" stroke="#3A2E2A" strokeWidth="3"/>
-                <circle cx="40" cy="56" r="11" fill="#A8DCFF" stroke="#3A2E2A" strokeWidth="3"/>
-              </svg>
+            {/* Corner sticker decorations */}
+            <div aria-hidden="true" style={{ position: 'absolute', top: -10, left: -10 }}>
+              <svg viewBox="0 0 60 60" width={52} height={52}><path d="M30 5l6 18h19l-15 11 6 18-16-11-16 11 6-18-15-11h19z" fill="#FFC83D" stroke="#3A2E2A" strokeWidth="3" strokeLinejoin="round"/></svg>
             </div>
-            <div style={{ flex: '1 1 260px' }}>
-              <span style={{
-                display: 'inline-block', background: 'var(--lav-bg)', border: '2px solid #3A2E2A',
-                borderRadius: 9999, padding: '2px 12px', fontSize: 12, fontWeight: 700, marginBottom: '0.5rem',
-              }}>保護者の方へ</span>
-              <h3 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 17, color: 'var(--ink)', margin: '0 0 0.5rem' }}>
-                広告なし・課金誘導なし。<br/>子どもが一人でも安全に使えるシンプル設計。
-              </h3>
-              <p style={{ fontSize: 14, color: 'var(--ink-soft)', lineHeight: 1.75, margin: 0 }}>
-                TANQラボは、お子さま自身がのめり込むことを最優先に設計されています。広告はなく、登録なしでも遊べる範囲を残しているので、まずは無料で体験してから、登録するかどうか決めてください。
-              </p>
+            <div aria-hidden="true" style={{ position: 'absolute', top: -8, right: -8 }}>
+              <svg viewBox="0 0 60 60" width={48} height={48}><path d="M30 8C20 -2 0 4 0 22 c0 18 30 32 30 32 s30 -14 30 -32 c0 -18 -20 -24 -30 -14z" fill="#FF6F9C" stroke="#3A2E2A" strokeWidth="3"/></svg>
             </div>
+            <div aria-hidden="true" style={{ position: 'absolute', bottom: -8, left: -8 }}>
+              <svg viewBox="0 0 60 60" width={48} height={48}><circle cx="30" cy="30" r="22" fill="#4ECDC4" stroke="#3A2E2A" strokeWidth="3"/><text x="30" y="38" textAnchor="middle" fontSize="22" fill="#3A2E2A">★</text></svg>
+            </div>
+            <div aria-hidden="true" style={{ position: 'absolute', bottom: -8, right: -8 }}>
+              <svg viewBox="0 0 60 60" width={48} height={48}><circle cx="30" cy="30" r="22" fill="#B197FC" stroke="#3A2E2A" strokeWidth="3"/><circle cx="22" cy="28" r="3" fill="#3A2E2A"/><circle cx="38" cy="28" r="3" fill="#3A2E2A"/><path d="M22 36 Q 30 42 38 36" fill="none" stroke="#3A2E2A" strokeWidth="2.5" strokeLinecap="round"/></svg>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
+              <Image src="/tanquu/mischievous.png" alt="タンキュー" width={140} height={140} unoptimized className="animate-float-sticker" />
+            </div>
+
+            <span style={{ fontFamily: 'var(--font-hachi)', fontSize: 15, color: 'var(--ink-soft)', display: 'block', marginBottom: '0.5rem' }}>
+              さあ、はじめよう
+            </span>
+            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(24px, 4vw, 42px)', color: 'var(--ink)', marginBottom: '1rem', lineHeight: 1.2 }}>
+              きょうから <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2.5px solid #3A2E2A' }}>まなびのぼうけん</span> へ。
+            </h2>
+            <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.75, marginBottom: '2rem' }}>
+              とうろくしなくても、いくつかのアプリがすぐあそべる。<br/>
+              きにいったら、むりょうとうろくでぜんぶひらこう！
+            </p>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
+              <Link
+                href="/lab?trial=1"
+                className="btn-sticker btn-yellow"
+                style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 17, padding: '14px 32px' }}
+              >
+                とりあえず やってみる →
+              </Link>
+              <Link
+                href="/register"
+                className="btn-sticker btn-white"
+                style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 17, padding: '14px 32px' }}
+              >
+                むりょう とうろく
+              </Link>
+            </div>
+            <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>
+              登録ずみの方は <Link href="/login" style={{ color: 'var(--ink)', fontWeight: 700 }}>ログイン</Link>
+            </p>
           </div>
         </div>
       </section>
@@ -692,72 +754,6 @@ export default function HomePage() {
                 <p style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.6, margin: 0 }}>{v.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ════════ FINAL CTA ════════ */}
-      <section id="cta" style={{ background: 'var(--cream)', position: 'relative', zIndex: 1, padding: '5rem 1.5rem' }}>
-        <div className="max-w-3xl mx-auto">
-          <div
-            className="card-sticker"
-            style={{
-              background: 'var(--cream-deep)',
-              borderRadius: 'var(--radius-card)',
-              padding: '3rem 2rem',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            {/* Corner sticker decorations */}
-            <div aria-hidden="true" style={{ position: 'absolute', top: -10, left: -10 }}>
-              <svg viewBox="0 0 60 60" width={52} height={52}><path d="M30 5l6 18h19l-15 11 6 18-16-11-16 11 6-18-15-11h19z" fill="#FFC83D" stroke="#3A2E2A" strokeWidth="3" strokeLinejoin="round"/></svg>
-            </div>
-            <div aria-hidden="true" style={{ position: 'absolute', top: -8, right: -8 }}>
-              <svg viewBox="0 0 60 60" width={48} height={48}><path d="M30 8C20 -2 0 4 0 22 c0 18 30 32 30 32 s30 -14 30 -32 c0 -18 -20 -24 -30 -14z" fill="#FF6F9C" stroke="#3A2E2A" strokeWidth="3"/></svg>
-            </div>
-            <div aria-hidden="true" style={{ position: 'absolute', bottom: -8, left: -8 }}>
-              <svg viewBox="0 0 60 60" width={48} height={48}><circle cx="30" cy="30" r="22" fill="#4ECDC4" stroke="#3A2E2A" strokeWidth="3"/><text x="30" y="38" textAnchor="middle" fontSize="22" fill="#3A2E2A">★</text></svg>
-            </div>
-            <div aria-hidden="true" style={{ position: 'absolute', bottom: -8, right: -8 }}>
-              <svg viewBox="0 0 60 60" width={48} height={48}><circle cx="30" cy="30" r="22" fill="#B197FC" stroke="#3A2E2A" strokeWidth="3"/><circle cx="22" cy="28" r="3" fill="#3A2E2A"/><circle cx="38" cy="28" r="3" fill="#3A2E2A"/><path d="M22 36 Q 30 42 38 36" fill="none" stroke="#3A2E2A" strokeWidth="2.5" strokeLinecap="round"/></svg>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.25rem' }}>
-              <Image src="/tanquu/mischievous.png" alt="タンキュー" width={140} height={140} unoptimized className="animate-float-sticker" />
-            </div>
-
-            <span style={{ fontFamily: 'var(--font-hachi)', fontSize: 15, color: 'var(--ink-soft)', display: 'block', marginBottom: '0.5rem' }}>
-              さあ、はじめよう
-            </span>
-            <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(24px, 4vw, 42px)', color: 'var(--ink)', marginBottom: '1rem', lineHeight: 1.2 }}>
-              きょうから <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2.5px solid #3A2E2A' }}>まなびのぼうけん</span> へ。
-            </h2>
-            <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.75, marginBottom: '2rem' }}>
-              とうろくしなくても、いくつかのアプリがすぐあそべる。<br/>
-              きにいったら、むりょうとうろくでぜんぶひらこう！
-            </p>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-              <Link
-                href="/lab?trial=1"
-                className="btn-sticker btn-yellow"
-                style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 17, padding: '14px 32px' }}
-              >
-                とりあえず やってみる →
-              </Link>
-              <Link
-                href="/register"
-                className="btn-sticker btn-white"
-                style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 17, padding: '14px 32px' }}
-              >
-                むりょう とうろく
-              </Link>
-            </div>
-            <p style={{ fontSize: 13, color: 'var(--ink-soft)' }}>
-              🧪 テスターの方は <Link href="/tester" style={{ color: 'var(--ink)', fontWeight: 700 }}>こちら</Link>
-            </p>
           </div>
         </div>
       </section>
