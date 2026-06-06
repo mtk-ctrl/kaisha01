@@ -12,14 +12,14 @@ export const metadata: Metadata = {
 /* ── Static data ── */
 
 const APPS = [
-  { emoji: '🧩', name: 'かんがえるちからジム',  target: '小4〜小6', badge: '100問',    bg: '#FFE3EE', rot: '-1deg' },
-  { emoji: '📖', name: 'かんじマスター',         target: '小1〜小6', badge: '1026字',   bg: '#DBF6F0', rot: '1.5deg' },
-  { emoji: '🌍', name: 'えいごボキャブラリー',   target: '小3〜小6', badge: '275語',    bg: '#FFF6E5', rot: '-0.8deg' },
-  { emoji: '🔢', name: 'けいさんチャレンジ',     target: '小2〜小6', badge: '∞もん',    bg: '#EFE8FF', rot: '1.2deg' },
-  { emoji: '📐', name: 'さんすうぶんしょうだい', target: '小1〜小3', badge: '立式',     bg: '#FFE3EE', rot: '-1.5deg' },
-  { emoji: '💻', name: 'プログラミング',         target: '小3〜小6', badge: '5ステージ', bg: '#DBF6F0', rot: '0.8deg' },
-  { emoji: '🕐', name: 'とけい・じかんけいさん', target: '小2〜小4', badge: '分・時',   bg: '#EFE8FF', rot: '-1deg' },
-  { emoji: '✖️', name: 'くくマスター',           target: '小2〜小4', badge: '2〜9段',   bg: '#FFF6E5', rot: '1.3deg' },
+  { emoji: '🧩', name: 'かんがえるちからジム',  target: '小4〜小6', badge: '100問',    bg: '#FFE3EE', rot: '-1deg',  href: '/apps/thinking' },
+  { emoji: '📖', name: 'かんじマスター',         target: '小1〜小6', badge: '1026字',   bg: '#DBF6F0', rot: '1.5deg', href: '/apps/kanji' },
+  { emoji: '🌍', name: 'えいごボキャブラリー',   target: '小3〜小6', badge: '275語',    bg: '#FFF6E5', rot: '-0.8deg', href: '/apps/english' },
+  { emoji: '🔢', name: 'けいさんチャレンジ',     target: '小2〜小6', badge: '∞もん',    bg: '#EFE8FF', rot: '1.2deg', href: '/apps/math' },
+  { emoji: '📐', name: 'さんすうぶんしょうだい', target: '小1〜小3', badge: '立式',     bg: '#FFE3EE', rot: '-1.5deg', href: '/apps/word-math' },
+  { emoji: '💻', name: 'プログラミング',         target: '小3〜小6', badge: '5ステージ', bg: '#DBF6F0', rot: '0.8deg', href: '/apps/coding' },
+  { emoji: '🕐', name: 'とけい・じかんけいさん', target: '小2〜小4', badge: '分・時',   bg: '#EFE8FF', rot: '-1deg',  href: '/apps/clock' },
+  { emoji: '✖️', name: 'くくマスター',           target: '小2〜小4', badge: '2〜9段',   bg: '#FFF6E5', rot: '1.3deg', href: '/apps/kuku' },
 ]
 
 const HOW_STEPS = [
@@ -317,12 +317,15 @@ export default function HomePage() {
                 📚 きょうも まなぼ！
               </div>
 
-              {/* Handwritten note */}
-              <div style={{
-                position: 'absolute', top: -24, left: -40,
-                fontFamily: 'var(--font-hachi)', fontSize: 15,
-                color: 'var(--ink)', whiteSpace: 'nowrap',
-              }}>
+              {/* Handwritten note — hidden on small screens where it clips */}
+              <div
+                className="hidden sm:block"
+                style={{
+                  position: 'absolute', top: -24, left: -40,
+                  fontFamily: 'var(--font-hachi)', fontSize: 15,
+                  color: 'var(--ink)', whiteSpace: 'nowrap',
+                }}
+              >
                 ぼく、タンキュー！
               </div>
             </div>
@@ -374,7 +377,7 @@ export default function HomePage() {
             25本の <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2px solid #3A2E2A' }}>まなびアプリ</span>
           </h2>
           <p style={{ marginTop: '0.75rem', color: 'var(--ink-soft)', fontSize: 15 }}>
-            タップして、すきなアプリを試してみよう。<strong>広告なし・課金誘導なし</strong>。登録なしでもすぐ遊べる。
+            まずは人気の8本をチェック！タップしたら、そのアプリへ直接ジャンプ。<strong>広告なし・課金誘導なし</strong>。登録なしでもすぐ遊べる。
           </p>
         </div>
 
@@ -387,7 +390,7 @@ export default function HomePage() {
           {APPS.map((app) => (
             <Link
               key={app.name}
-              href="/lab?trial=1"
+              href={app.href}
               className="card-sticker"
               style={{
                 background: app.bg,
@@ -554,78 +557,15 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* 入口: 登録 + 体験の2択のみ */}
-          <div style={{ marginTop: '3.5rem' }}>
-            <p style={{ textAlign: 'center', fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 15, color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>
-              さあ、どこから はじめる？
-            </p>
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              gap: '1rem',
-              maxWidth: 560,
-              margin: '0 auto',
-            }}>
-              {/* 体験 */}
-              <Link
-                href="/lab?trial=1"
-                className="card-sticker"
-                style={{
-                  background: '#EFE8FF',
-                  borderRadius: 'var(--radius-card)',
-                  padding: '1.5rem',
-                  textDecoration: 'none',
-                  color: 'var(--ink)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.4rem',
-                  transform: 'rotate(-0.8deg)',
-                }}
-              >
-                <div style={{ fontSize: 36 }}>🎯</div>
-                <span style={{
-                  display: 'inline-block', background: '#B197FC',
-                  color: '#fff', border: '2px solid #3A2E2A',
-                  borderRadius: 9999, padding: '2px 10px', fontSize: 11, fontWeight: 700, alignSelf: 'flex-start',
-                }}>とりあえず</span>
-                <h4 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, margin: 0 }}>とうろくなし体験</h4>
-                <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: 0 }}>いくつかのアプリが登録なしですぐあそべる</p>
-                <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 14, marginTop: '0.5rem', color: 'var(--ink)' }}>
-                  体験する →
-                </span>
-              </Link>
-              {/* 登録 */}
-              <Link
-                href="/register"
-                className="card-sticker"
-                style={{
-                  background: '#FFF6E5',
-                  borderRadius: 'var(--radius-card)',
-                  padding: '1.5rem',
-                  textDecoration: 'none',
-                  color: 'var(--ink)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.4rem',
-                  transform: 'rotate(-1deg)',
-                }}
-              >
-                <div style={{ fontSize: 36 }}>🆕</div>
-                <span style={{
-                  display: 'inline-block', background: '#FFC83D',
-                  color: '#fff', border: '2px solid #3A2E2A',
-                  borderRadius: 9999, padding: '2px 10px', fontSize: 11, fontWeight: 700, alignSelf: 'flex-start',
-                }}>ぜんぶひらく</span>
-                <h4 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, margin: 0 }}>むりょう登録</h4>
-                <p style={{ fontSize: 12, color: 'var(--ink-soft)', margin: 0 }}>ぜんアプリかいほう・進捗がずっとのこる</p>
-                <span style={{ fontFamily: 'var(--font-zen)', fontWeight: 700, fontSize: 14, marginTop: '0.5rem', color: 'var(--ink)' }}>
-                  登録する →
-                </span>
-              </Link>
-            </div>
-            <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--ink-soft)', marginTop: '1rem' }}>
-              登録ずみの方は <Link href="/login" style={{ color: 'var(--ink)', fontWeight: 700 }}>ログイン →</Link>
-            </p>
+          {/* HOW締めのCTA — 1ボタンだけ。詳細はFINAL CTAセクションへ */}
+          <div style={{ marginTop: '3rem', textAlign: 'center' }}>
+            <Link
+              href="/lab?trial=1"
+              className="btn-sticker btn-yellow"
+              style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 17, padding: '14px 36px', display: 'inline-block' }}
+            >
+              まず やってみる →
+            </Link>
           </div>
         </div>
       </section>
