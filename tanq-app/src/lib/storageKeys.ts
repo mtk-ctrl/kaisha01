@@ -47,4 +47,5 @@ export const STORAGE_KEYS = {
   ZOKUSEI_RECORDS:  'tanq_zokusei_records_v1',
   ROMAJI_RECORDS:   'tanq_romaji_records_v1',
   KOUBAI_RECORDS:   'tanq_koubai_records_v1',
+  BUNSUU_RECORDS:   'tanq_bunsuu_records_v1',
 } as const
