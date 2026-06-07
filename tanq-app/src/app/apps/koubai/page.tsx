@@ -31,10 +31,10 @@ const GCD_L3: [number,number][] = [[36,48],[42,56],[45,60],[48,72],[50,75],[35,4
 const GCD_L4: [number,number][] = [[60,80],[63,84],[72,90],[75,100],[70,98],[65,91],[80,100],[54,90],[44,66],[52,78]]
 
 const GCD_SETS: LcmGcdSet[] = [
-  { level:1, name:'レベル1',     badge:'⭐',     desc:'20以下でかんたん',        color:'#dbeafe', pairs:GCD_L1 },
-  { level:2, name:'レベル2',     badge:'⭐⭐',    desc:'50以下・少しむずかしく',  color:'#bfdbfe', pairs:GCD_L2 },
-  { level:3, name:'レベル3',     badge:'⭐⭐⭐',   desc:'80以下・大きい数',        color:'#93c5fd', pairs:GCD_L3 },
-  { level:4, name:'レベル4',     badge:'⭐⭐⭐⭐',  desc:'100以下・むずかしい',     color:'#60a5fa', pairs:GCD_L4 },
+  { level:1, name:'レベル1',     badge:'⭐',     desc:'20までの数',              color:'#dbeafe', pairs:GCD_L1 },
+  { level:2, name:'レベル2',     badge:'⭐⭐',    desc:'50までの数',              color:'#bfdbfe', pairs:GCD_L2 },
+  { level:3, name:'レベル3',     badge:'⭐⭐⭐',   desc:'80までの数',              color:'#93c5fd', pairs:GCD_L3 },
+  { level:4, name:'レベル4',     badge:'⭐⭐⭐⭐',  desc:'100までの数',             color:'#60a5fa', pairs:GCD_L4 },
   { level:5, name:'ぜんぶまぜまぜ', badge:'🌀',   desc:'レベル1〜4をシャッフル',  color:'#dbeafe', pairs:[...GCD_L1,...GCD_L2,...GCD_L3,...GCD_L4] },
 ]
 
@@ -45,10 +45,10 @@ const LCM_L3: [number,number][] = [[4,6],[6,9],[6,10],[9,12],[8,12],[10,15],[6,1
 const LCM_L4: [number,number][] = [[7,9],[5,8],[7,8],[9,10],[5,12],[8,9],[7,11],[5,16],[4,25],[9,11]]
 
 const LCM_SETS: LcmGcdSet[] = [
-  { level:1, name:'レベル1',     badge:'⭐',     desc:'一方が他方の倍数',         color:'#d1fae5', pairs:LCM_L1 },
-  { level:2, name:'レベル2',     badge:'⭐⭐',    desc:'互いに素な数',             color:'#a7f3d0', pairs:LCM_L2 },
-  { level:3, name:'レベル3',     badge:'⭐⭐⭐',   desc:'共通の因数あり',           color:'#6ee7b7', pairs:LCM_L3 },
-  { level:4, name:'レベル4',     badge:'⭐⭐⭐⭐',  desc:'100以下の大きな数',        color:'#34d399', pairs:LCM_L4 },
+  { level:1, name:'レベル1',     badge:'⭐',     desc:'小さい数から',              color:'#d1fae5', pairs:LCM_L1 },
+  { level:2, name:'レベル2',     badge:'⭐⭐',    desc:'少し大きい数',             color:'#a7f3d0', pairs:LCM_L2 },
+  { level:3, name:'レベル3',     badge:'⭐⭐⭐',   desc:'さらに大きい数',           color:'#6ee7b7', pairs:LCM_L3 },
+  { level:4, name:'レベル4',     badge:'⭐⭐⭐⭐',  desc:'100までの数',              color:'#34d399', pairs:LCM_L4 },
   { level:5, name:'ぜんぶまぜまぜ', badge:'🌀',   desc:'レベル1〜4をシャッフル',   color:'#d1fae5', pairs:[...LCM_L1,...LCM_L2,...LCM_L3,...LCM_L4] },
 ]
 
@@ -73,9 +73,9 @@ const PRIME_L3: PrimeItem[] = [
 ]
 
 const PRIME_SETS: PrimeSet[] = [
-  { level:1, name:'レベル1',     badge:'⭐',    desc:'素数2つのかけ算',          color:'#fce7f3', items:PRIME_L1 },
-  { level:2, name:'レベル2',     badge:'⭐⭐',   desc:'素数3つのかけ算',          color:'#fbcfe8', items:PRIME_L2 },
-  { level:3, name:'レベル3',     badge:'⭐⭐⭐',  desc:'素数4つ以上のかけ算',      color:'#f9a8d4', items:PRIME_L3 },
+  { level:1, name:'レベル1',     badge:'⭐',    desc:'25までの数',               color:'#fce7f3', items:PRIME_L1 },
+  { level:2, name:'レベル2',     badge:'⭐⭐',   desc:'50までの数',               color:'#fbcfe8', items:PRIME_L2 },
+  { level:3, name:'レベル3',     badge:'⭐⭐⭐',  desc:'100までの数',              color:'#f9a8d4', items:PRIME_L3 },
   { level:4, name:'ぜんぶまぜまぜ', badge:'🌀', desc:'レベル1〜3をシャッフル',   color:'#fce7f3', items:[...PRIME_L1,...PRIME_L2,...PRIME_L3] },
 ]
 
@@ -269,8 +269,8 @@ export default function KoubaiPage() {
 
   const currentSets = mode === 'lcm' ? LCM_SETS : mode === 'gcd' ? GCD_SETS : PRIME_SETS
   const modeColor = mode === 'lcm' ? '#10b981' : mode === 'gcd' ? '#3b82f6' : '#a855f7'
-  const modeLabel = mode === 'lcm' ? 'さいしょうこうばいすう' : mode === 'gcd' ? 'さいだいこうやくすう' : 'そいんすうぶんかい'
   const modeKanji = mode === 'lcm' ? '最小公倍数' : mode === 'gcd' ? '最大公約数' : '素因数分解'
+  const modeFuri  = mode === 'lcm' ? 'さいしょうこうばいすう' : mode === 'gcd' ? 'さいだいこうやくすう' : 'そいんすうぶんかい'
 
   const stars = (): number => {
     const pct = questions.length > 0 ? correctCount / questions.length : 0
@@ -289,10 +289,10 @@ export default function KoubaiPage() {
           <p style={{ textAlign: 'center', color: '#6b7280', fontSize: 13, marginBottom: 28 }}>れんしゅうする もんだいを えらぼう</p>
 
           {[
-            { m: 'lcm' as Mode, emoji: '🔢', label: 'さいしょうこうばいすう', kanji: '最小公倍数', color: '#10b981', desc: '両方の数の倍数のうち、いちばん小さい数／レベル1〜4・全混合（100以下）' },
-            { m: 'gcd' as Mode, emoji: '📐', label: 'さいだいこうやくすう',   kanji: '最大公約数', color: '#3b82f6', desc: '両方の数を割り切れる、いちばん大きい数／レベル1〜4・全混合（100以下）' },
-            { m: 'prime' as Mode, emoji: '🔬', label: 'そいんすうぶんかい',   kanji: '素因数分解', color: '#a855f7', desc: '数を素数だけのかけ算に分解しよう／レベル1〜3・全混合' },
-          ].map(({ m, emoji, label, kanji, color, desc }) => (
+            { m: 'lcm' as Mode, emoji: '🔢', kanji: '最小公倍数', furi: 'さいしょうこうばいすう', color: '#10b981', desc: '両方の数の倍数のうち、いちばん小さい数' },
+            { m: 'gcd' as Mode, emoji: '📐', kanji: '最大公約数', furi: 'さいだいこうやくすう',   color: '#3b82f6', desc: '両方の数を割り切れる、いちばん大きい数' },
+            { m: 'prime' as Mode, emoji: '🔬', kanji: '素因数分解', furi: 'そいんすうぶんかい',  color: '#a855f7', desc: '数を素数だけのかけ算に分解しよう' },
+          ].map(({ m, emoji, kanji, furi, color, desc }) => (
             <button
               key={m}
               onClick={() => { setMode(m); setPhase('levelSelect') }}
@@ -304,9 +304,9 @@ export default function KoubaiPage() {
               }}
             >
               <div style={{ fontSize: 26, marginBottom: 6 }}>{emoji}</div>
-              <div style={{ fontSize: 17, fontWeight: 'bold', color, marginBottom: 2 }}>{label}</div>
-              <div style={{ fontSize: 12, color: '#6b7280', marginBottom: 4 }}>{kanji}</div>
-              <div style={{ fontSize: 11, color: '#555' }}>{desc}</div>
+              <div style={{ fontSize: 20, fontWeight: 'bold', color, marginBottom: 2 }}>{kanji}</div>
+              <div style={{ fontSize: 11, color: '#6b7280', marginBottom: 6 }}>{furi}</div>
+              <div style={{ fontSize: 12, color: '#555' }}>{desc}</div>
             </button>
           ))}
         </div>
@@ -320,8 +320,8 @@ export default function KoubaiPage() {
       <div style={{ minHeight: '100vh', background: '#f8fafc', padding: '20px' }}>
         <div style={{ maxWidth: 500, margin: '0 auto' }}>
           <button onClick={() => setPhase('top')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: '#6b7280', marginBottom: 16 }}>← もどる</button>
-          <h2 style={{ fontSize: 17, fontWeight: 'bold', color: modeColor, marginBottom: 2 }}>{modeLabel}</h2>
-          <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 20 }}>{modeKanji} — レベルをえらぼう</p>
+          <h2 style={{ fontSize: 20, fontWeight: 'bold', color: modeColor, marginBottom: 2 }}>{modeKanji}</h2>
+          <p style={{ fontSize: 11, color: '#6b7280', marginBottom: 20 }}>{modeFuri} — レベルをえらぼう</p>
           {currentSets.map((set, idx) => (
             <button
               key={set.level}
@@ -403,7 +403,7 @@ export default function KoubaiPage() {
 
           {/* Question card */}
           <div style={{ background: 'white', borderRadius: 20, padding: '24px', textAlign: 'center', marginBottom: 16, boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}>
-            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 6 }}>{modeLabel}</div>
+            <div style={{ fontSize: 11, color: '#9ca3af', marginBottom: 6 }}>{modeKanji}</div>
 
             {isPrime ? (
               <>
