@@ -285,8 +285,8 @@ export default function KoubaiPage() {
           <div style={{ marginBottom: 16 }}>
             <Link href="/lab" style={{ color: '#6b7280', textDecoration: 'none', fontSize: 14 }}>← ラボへもどる</Link>
           </div>
-          <h1 style={{ fontSize: 22, fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>🔢 こうばいすう・こうやくすう</h1>
-          <p style={{ textAlign: 'center', color: '#6b7280', fontSize: 13, marginBottom: 28 }}>れんしゅうする もんだいを えらぼう</p>
+          <h1 style={{ fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 2 }}>🔢 最小公倍数・最大公約数</h1>
+          <p style={{ textAlign: 'center', color: '#6b7280', fontSize: 12, marginBottom: 28 }}>れんしゅうする もんだいを えらぼう</p>
 
           {[
             { m: 'lcm' as Mode, emoji: '🔢', kanji: '最小公倍数', furi: 'さいしょうこうばいすう', color: '#10b981', desc: '両方の数の倍数のうち、いちばん小さい数' },
