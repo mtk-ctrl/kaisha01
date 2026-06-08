@@ -73,7 +73,8 @@ type CalcOp = '+' | '−' | '×' | '÷'
 interface ReadQ    { kind: 'read';    n: number; d: number; vis: VisType; choices: { n: number; d: number }[]; answerIdx: number; hint: string }
 interface CompareQ { kind: 'compare'; left: { n: number; d: number }; right: { n: number; d: number }; vis: VisType; answer: 'left' | 'right'; hint: string }
 interface CalcQ    { kind: 'calc'; op: CalcOp; ln: number; ld: number; rn: number; rd: number; an: number; ad: number; choices: [number, number][]; hint: string; showVis: boolean }
-type Question = ReadQ | CompareQ | CalcQ
+interface YakubunQ { kind: 'yakubun'; n: number; d: number; an: number; ad: number; choices: [number, number][]; hint: string }
+type Question = ReadQ | CompareQ | CalcQ | YakubunQ
 
 // ---- Utilities ----
 function shuffle<T>(arr: T[]): T[] {
@@ -204,31 +205,83 @@ function makeMulIntQ(): CalcQ {
 
 function makeDivIntQ(): CalcQ {
   const d = pick([2,3,4,6,8])
-  // Pick k that makes nice division: either a%k==0 (numerator divides), or we multiply denominator
   const k = pick([2, 3])
   const a = ri(1, d - 1)
-  // a / (d * k) — multiply denominator by k
   const [an, ad] = simplify(a, d * k)
   const dist: [number, number][] = [[a * k, d], [a, d - k > 0 ? d - k : d + k], [an + 1, ad], [an, ad + 1]]
   const hint = `${d}分の${a} ÷ ${k} → 分母を${k}倍する → ${a}/${d}÷${k} = ${a}/${d*k}${an !== a || ad !== d*k ? ` = ${an}/${ad}（約分）` : ''}`
   return { kind: 'calc', op: '÷', ln: a, ld: d, rn: k, rd: 1, an, ad, choices: buildCalcChoices(an, ad, dist), hint, showVis: false }
 }
 
+function makeMulFracQ(): CalcQ {
+  const d1 = pick([2,3,4,6]), d2 = pick([2,3,4,6])
+  const a = ri(1, d1 - 1), c = ri(1, d2 - 1)
+  const [an, ad] = simplify(a * c, d1 * d2)
+  const dist: [number, number][] = [
+    [a * c, d1 + d2], [a + c, d1 * d2], [an + 1, ad], [an, ad + 1],
+  ]
+  const hint = `分子どうし・分母どうしをかける → (${a}×${c})/(${d1}×${d2}) = ${a*c}/${d1*d2}${an !== a*c || ad !== d1*d2 ? ` = ${an}/${ad}（約分）` : ''}`
+  return { kind: 'calc', op: '×', ln: a, ld: d1, rn: c, rd: d2, an, ad, choices: buildCalcChoices(an, ad, dist), hint, showVis: false }
+}
+
+function makeDivFracQ(): CalcQ {
+  const d1 = pick([2,3,4,6]), d2 = pick([2,3,4,6])
+  const a = ri(1, d1 - 1), c = ri(1, d2 - 1)
+  // a/d1 ÷ c/d2 = a/d1 × d2/c = (a×d2)/(d1×c)
+  const rawN = a * d2, rawD = d1 * c
+  const [an, ad] = simplify(rawN, rawD)
+  const dist: [number, number][] = [
+    [a * c, d1 * d2], [an + 1, ad], [rawN + 1, rawD], [an, ad + 1],
+  ]
+  const hint = `わる分数をひっくりかえして×にする → ${a}/${d1} × ${d2}/${c} = (${a}×${d2})/(${d1}×${c}) = ${rawN}/${rawD}${an !== rawN || ad !== rawD ? ` = ${an}/${ad}（約分）` : ''}`
+  return { kind: 'calc', op: '÷', ln: a, ld: d1, rn: c, rd: d2, an, ad, choices: buildCalcChoices(an, ad, dist), hint, showVis: false }
+}
+
+function makeYakubunQ(denoms: number[]): YakubunQ {
+  let n = 2, d = 4, g = 2, tries = 0
+  do {
+    d = pick(denoms); n = ri(2, d - 2); g = gcd(n, d); tries++
+  } while (g <= 1 && tries < 80)
+  if (g <= 1) { n = 2; d = 4; g = 2 }
+  const [an, ad] = simplify(n, d)
+  const dist: [number, number][] = [
+    [n, d],
+    [an + 1, ad],
+    [an, ad + 1],
+    [n - g > 0 ? n - g : n + 1, d - g > 0 ? d - g : d + 1],
+  ]
+  const hint = `${n}と${d}の 最大公約数は ${g}。分子・分母を${g}でわる → ${n}÷${g}=${an}、${d}÷${g}=${ad}`
+  return { kind: 'yakubun', n, d, an, ad, choices: buildCalcChoices(an, ad, dist), hint }
+}
+
 // ---- Levels ----
 interface LevelDef { id: number; name: string; badge: string; desc: string; color: string; kind: string; denoms?: number[]; sameDenom?: boolean }
 
 const LEVELS: LevelDef[] = [
-  { id:1,  name:'レベル1',     badge:'⭐',      desc:'図を見て分数を読もう（分母 2〜4）',    color:'#fef9c3', kind:'read',       denoms:[2,3,4] },
-  { id:2,  name:'レベル2',     badge:'⭐⭐',     desc:'図を見て分数を読もう（分母 4〜12）',   color:'#fef08a', kind:'read',       denoms:[4,6,8,12] },
-  { id:3,  name:'レベル3',     badge:'⭐⭐⭐',    desc:'どちらが大きい？（同じ分母）',         color:'#fed7aa', kind:'compare',    denoms:[2,3,4,6,8],    sameDenom:true },
-  { id:4,  name:'レベル4',     badge:'⭐⭐⭐⭐',   desc:'どちらが大きい？（ちがう分母）',       color:'#fca5a5', kind:'compare',    denoms:[2,3,4,6,8,12], sameDenom:false },
-  { id:5,  name:'ぜんぶまぜまぜ①', badge:'🌀', desc:'レベル1〜4をシャッフル',               color:'#fef9c3', kind:'mix-read',   denoms:[2,3,4,6,8,12] },
-  { id:6,  name:'レベル5',     badge:'🍕',      desc:'たし算（同じ分母）',                   color:'#dcfce7', kind:'add-same',   denoms:[2,3,4,6,8] },
-  { id:7,  name:'レベル6',     badge:'🍕🍕',    desc:'ひき算（同じ分母）',                   color:'#bbf7d0', kind:'sub-same',   denoms:[3,4,6,8] },
-  { id:8,  name:'レベル7',     badge:'🍕🍕🍕',   desc:'たし算・ひき算（通分が必要）',         color:'#86efac', kind:'add-sub-diff' },
-  { id:9,  name:'レベル8',     badge:'🍕🍕🍕🍕',  desc:'かけ算・わり算（×÷整数）',           color:'#4ade80', kind:'mul-div-int' },
-  { id:10, name:'ぜんぶまぜまぜ②', badge:'🌀🌀', desc:'四則レベルをシャッフル',              color:'#dcfce7', kind:'mix-calc' },
+  { id:1,  name:'レベル1',        badge:'⭐',       desc:'図を見て分数を読もう（分母 2〜4）',    color:'#fef9c3', kind:'read',       denoms:[2,3,4] },
+  { id:2,  name:'レベル2',        badge:'⭐⭐',      desc:'図を見て分数を読もう（分母 4〜12）',   color:'#fef08a', kind:'read',       denoms:[4,6,8,12] },
+  { id:3,  name:'レベル3',        badge:'⭐⭐⭐',     desc:'どちらが大きい？（同じ分母）',         color:'#fed7aa', kind:'compare',    denoms:[2,3,4,6,8],    sameDenom:true },
+  { id:4,  name:'レベル4',        badge:'⭐⭐⭐⭐',    desc:'どちらが大きい？（ちがう分母）',       color:'#fca5a5', kind:'compare',    denoms:[2,3,4,6,8,12], sameDenom:false },
+  { id:5,  name:'ぜんぶまぜまぜ①', badge:'🌀',      desc:'レベル1〜4をシャッフル',               color:'#fef9c3', kind:'mix-read',   denoms:[2,3,4,6,8,12] },
+  { id:6,  name:'レベル5',        badge:'🍕',       desc:'たし算（同じ分母）',                   color:'#dcfce7', kind:'add-same',   denoms:[2,3,4,6,8] },
+  { id:7,  name:'レベル6',        badge:'🍕🍕',     desc:'ひき算（同じ分母）',                   color:'#bbf7d0', kind:'sub-same',   denoms:[3,4,6,8] },
+  { id:8,  name:'レベル7',        badge:'🍕🍕🍕',    desc:'たし算・ひき算（通分が必要）',         color:'#86efac', kind:'add-sub-diff' },
+  { id:9,  name:'レベル8',        badge:'🍕🍕🍕🍕',   desc:'かけ算・わり算（×÷整数）',           color:'#4ade80', kind:'mul-div-int' },
+  { id:10, name:'ぜんぶまぜまぜ②', badge:'🌀🌀',    desc:'四則レベルをシャッフル',              color:'#dcfce7', kind:'mix-calc' },
+  { id:11, name:'かけ算（分数×分数）', badge:'🌟',       desc:'分数どうしのかけ算',                   color:'#d1fae5', kind:'mul-frac' },
+  { id:12, name:'わり算（分数÷分数）', badge:'🌟🌟',     desc:'ひっくりかえして×にしよう',            color:'#a7f3d0', kind:'div-frac' },
+  { id:13, name:'かけ算・わり算まぜ',  badge:'🌟🌟🌟',   desc:'分数どうしのかけ算・わり算シャッフル',  color:'#6ee7b7', kind:'mul-div-frac' },
+  { id:14, name:'約分①',             badge:'✂️',       desc:'2でわってかんたんにしよう（小さい数）', color:'#e0e7ff', kind:'yakubun',    denoms:[4,6,8,10] },
+  { id:15, name:'約分②',             badge:'✂️✂️',     desc:'2・3・5でわってかんたんにしよう',      color:'#c7d2fe', kind:'yakubun',    denoms:[6,9,10,12,15] },
+  { id:16, name:'約分③',             badge:'✂️✂️✂️',   desc:'大きな数もかんたんにしよう',           color:'#a5b4fc', kind:'yakubun',    denoms:[12,15,18,20,24,30] },
 ]
+
+const SECTIONS = [
+  { name: '読み取り・比較',       start: 0,  end: 5  },
+  { name: '四則計算（×÷整数）',  start: 5,  end: 10 },
+  { name: '分数×分数（小6）',    start: 10, end: 13 },
+  { name: '約分',                 start: 13, end: 16 },
+] as const
 
 function buildQuestions(lv: LevelDef, count: number): Question[] {
   return Array.from({ length: count }, (_, i): Question => {
@@ -247,6 +300,10 @@ function buildQuestions(lv: LevelDef, count: number): Question[] {
         if (idx === 2) return Math.random() < 0.5 ? makeAddDiffQ() : makeSubDiffQ()
         return Math.random() < 0.5 ? makeMulIntQ() : makeDivIntQ()
       }
+      case 'mul-frac':     return makeMulFracQ()
+      case 'div-frac':     return makeDivFracQ()
+      case 'mul-div-frac': return Math.random() < 0.5 ? makeMulFracQ() : makeDivFracQ()
+      case 'yakubun':      return makeYakubunQ(lv.denoms!)
       default: return makeReadQ([2,3,4])
     }
   })
@@ -256,6 +313,7 @@ const COUNTS = [5, 10]
 const ACCENT = '#22c55e'
 const PIZZA_COLOR = '#ef4444'
 const BAR_COLOR = '#f59e0b'
+const YAKUBUN_COLOR = '#6366f1'
 
 export default function BunsuuPage() {
   const [phase, setPhase] = useState<Phase>('top')
@@ -327,7 +385,13 @@ export default function BunsuuPage() {
           </div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 16 }}>
-          {[['📖 読み取り・比較', 'レベル1〜4'], ['🍕 たし算・ひき算', 'レベル5〜7'], ['× ÷ かけ算・わり算', 'レベル8'], ['🌀 ぜんぶまぜまぜ', '2種']].map(([t, s]) => (
+          {[
+            ['📖 読み取り・比較', 'レベル1〜4'],
+            ['🍕 たし算・ひき算', 'レベル5〜7'],
+            ['× ÷ 整数のかけ算わり算', 'レベル8（小5）'],
+            ['🌟 分数どうし', 'かけ算・わり算（小6）'],
+            ['✂️ 約分', '約分①〜③'],
+          ].map(([t, s]) => (
             <div key={t} style={{ background: 'white', borderRadius: 10, padding: '10px 12px', fontSize: 12, color: '#374151', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
               <div style={{ fontWeight: 'bold', marginBottom: 2 }}>{t}</div>
               <div style={{ color: '#6b7280', fontSize: 11 }}>{s}</div>
@@ -349,11 +413,11 @@ export default function BunsuuPage() {
         <button onClick={() => setPhase('top')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, color: '#6b7280', marginBottom: 14 }}>← もどる</button>
         <h2 style={{ fontSize: 20, fontWeight: 'bold', color: ACCENT, marginBottom: 2 }}>分数</h2>
         <p style={{ fontSize: 11, color: '#6b7280', marginBottom: 16 }}>ぶんすう — レベルをえらぼう</p>
-        {['読み取り・比較', '四則計算'].map((section, si) => (
-          <div key={si}>
-            <div style={{ fontSize: 12, fontWeight: 'bold', color: '#6b7280', marginBottom: 8, marginTop: si === 1 ? 16 : 0 }}>── {section}</div>
-            {LEVELS.slice(si === 0 ? 0 : 5, si === 0 ? 5 : 10).map((lv, idx) => (
-              <button key={lv.id} onClick={() => { setSelLv(si === 0 ? idx : idx + 5); setPhase('countSelect') }}
+        {SECTIONS.map(({ name, start, end }, si) => (
+          <div key={name}>
+            <div style={{ fontSize: 12, fontWeight: 'bold', color: '#6b7280', marginBottom: 8, marginTop: si > 0 ? 16 : 0 }}>── {name}</div>
+            {LEVELS.slice(start, end).map((lv, idx) => (
+              <button key={lv.id} onClick={() => { setSelLv(start + idx); setPhase('countSelect') }}
                 style={{ width: '100%', padding: '16px 18px', marginBottom: 8, background: lv.color, border: `2px solid ${ACCENT}`, borderRadius: 14, cursor: 'pointer', textAlign: 'left' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div><div style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 1 }}>{lv.name}</div><div style={{ fontSize: 12, color: '#374151' }}>{lv.desc}</div></div>
@@ -431,7 +495,6 @@ export default function BunsuuPage() {
                 <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 14 }}>
                   {q.op === '+' ? 'たし算' : q.op === '−' ? 'ひき算' : q.op === '×' ? 'かけ算' : 'わり算'}
                 </p>
-                {/* Equation */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 14, flexWrap: 'wrap' }}>
                   <Frac n={q.ln} d={q.ld} size={30} />
                   <span style={{ fontSize: 28, fontWeight: 'bold', color: '#374151' }}>{q.op}</span>
@@ -442,7 +505,6 @@ export default function BunsuuPage() {
                   <span style={{ fontSize: 24, color: '#9ca3af' }}>=</span>
                   <span style={{ fontSize: 30, color: '#9ca3af' }}>?</span>
                 </div>
-                {/* Visual aid for same-denom */}
                 {q.showVis && (
                   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
                     <PizzaSvg n={q.ln} d={q.ld} color={PIZZA_COLOR} size={72} />
@@ -452,13 +514,25 @@ export default function BunsuuPage() {
                 )}
               </>
             )}
+            {q.kind === 'yakubun' && (
+              <>
+                <p style={{ fontSize: 14, color: '#6b7280', marginBottom: 18 }}>この分数を <strong style={{ color: YAKUBUN_COLOR }}>約分</strong> しよう</p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 8 }}>
+                  <div style={{ background: '#eef2ff', borderRadius: 12, padding: '16px 24px' }}>
+                    <Frac n={q.n} d={q.d} size={38} color={YAKUBUN_COLOR} />
+                  </div>
+                  <span style={{ fontSize: 26, color: '#9ca3af' }}>=</span>
+                  <span style={{ fontSize: 34, color: '#9ca3af' }}>?</span>
+                </div>
+              </>
+            )}
 
             {/* Feedback */}
             {waiting && (
               <div style={{ marginTop: 14 }}>
                 {feedback === 'correct'
                   ? <div style={{ fontSize: 26 }}>⭕ <span style={{ fontSize: 16, fontWeight: 'bold', color: '#059669' }}>せいかい！</span></div>
-                  : <div style={{ fontSize: 26 }}>❌{q.kind === 'calc' && <span style={{ fontSize: 14, color: '#dc2626', marginLeft: 8 }}>せいかいは <Frac n={q.an} d={q.ad} size={16} color="#dc2626" /></span>}</div>
+                  : <div style={{ fontSize: 26 }}>❌{(q.kind === 'calc' || q.kind === 'yakubun') && <span style={{ fontSize: 14, color: '#dc2626', marginLeft: 8 }}>せいかいは <Frac n={q.an} d={q.ad} size={16} color="#dc2626" /></span>}</div>
                 }
                 <div style={{ marginTop: 10, padding: '10px 14px', background: '#fef3c7', borderRadius: 10, fontSize: 12, color: '#92400e', lineHeight: 1.8, textAlign: 'left' }}>
                   💡 {q.hint}
@@ -501,7 +575,7 @@ export default function BunsuuPage() {
               })}
             </div>
           ) : (
-            /* CalcQ choices */
+            /* CalcQ / YakubunQ choices */
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
               {q.choices.map(([cn, cd], idx) => {
                 const key = `${cn}/${cd}`
