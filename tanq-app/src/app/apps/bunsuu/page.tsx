@@ -114,6 +114,34 @@ function buildCalcChoices(an: number, ad: number, distractors: [number, number][
   return shuffle([[an, ad], ...wrong.slice(0, 3)])
 }
 
+// 約分専用：候補はraw値のまま保持（4/6を「約分し忘れ」として表示できる）
+function buildYakubunChoices(an: number, ad: number, n: number, d: number, g: number): [number, number][] {
+  const seen = new Set([`${an}/${ad}`])
+  const wrong: [number, number][] = []
+  const candidates: [number, number][] = [
+    [n, d],           // 約分し忘れ（4/6のまま）
+    [n / g, d],       // 分子だけ割った
+    [n, d / g],       // 分母だけ割った
+    [an + 1, ad],
+    [an, ad + 1],
+    [an - 1 > 0 ? an - 1 : an + 2, ad],
+  ]
+  for (const [cn, cd] of candidates) {
+    if (!Number.isInteger(cn) || !Number.isInteger(cd)) continue
+    if (cn <= 0 || cd <= 1 || cn >= cd) continue  // 真分数のみ
+    const key = `${cn}/${cd}`  // raw値のまま（simpifyしない）
+    if (!seen.has(key)) { seen.add(key); wrong.push([cn, cd]) }
+    if (wrong.length >= 3) break
+  }
+  // 補充：wider範囲でランダム真分数
+  for (let tries = 0; wrong.length < 3 && tries < 40; tries++) {
+    const sd = ri(2, Math.max(d + 2, 8)), sn = ri(1, sd - 1)
+    const [rn, rd] = simplify(sn, sd); const key = `${rn}/${rd}`
+    if (!seen.has(key)) { seen.add(key); wrong.push([rn, rd]) }
+  }
+  return shuffle([[an, ad], ...wrong.slice(0, 3)])
+}
+
 // ---- Question generators ----
 function makeReadQ(denoms: number[]): ReadQ {
   const d = pick(denoms); const n = ri(1, d - 1)
@@ -244,14 +272,8 @@ function makeYakubunQ(denoms: number[]): YakubunQ {
   } while (g <= 1 && tries < 80)
   if (g <= 1) { n = 2; d = 4; g = 2 }
   const [an, ad] = simplify(n, d)
-  const dist: [number, number][] = [
-    [n, d],
-    [an + 1, ad],
-    [an, ad + 1],
-    [n - g > 0 ? n - g : n + 1, d - g > 0 ? d - g : d + 1],
-  ]
   const hint = `${n}と${d}の 最大公約数は ${g}。分子・分母を${g}でわる → ${n}÷${g}=${an}、${d}÷${g}=${ad}`
-  return { kind: 'yakubun', n, d, an, ad, choices: buildCalcChoices(an, ad, dist), hint }
+  return { kind: 'yakubun', n, d, an, ad, choices: buildYakubunChoices(an, ad, n, d, g), hint }
 }
 
 // ---- Levels ----
@@ -532,7 +554,13 @@ export default function BunsuuPage() {
               <div style={{ marginTop: 14 }}>
                 {feedback === 'correct'
                   ? <div style={{ fontSize: 26 }}>⭕ <span style={{ fontSize: 16, fontWeight: 'bold', color: '#059669' }}>せいかい！</span></div>
-                  : <div style={{ fontSize: 26 }}>❌{(q.kind === 'calc' || q.kind === 'yakubun') && <span style={{ fontSize: 14, color: '#dc2626', marginLeft: 8 }}>せいかいは <Frac n={q.an} d={q.ad} size={16} color="#dc2626" /></span>}</div>
+                  : <div style={{ fontSize: 26, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span>❌</span>
+                      <span style={{ fontSize: 14, color: '#dc2626' }}>せいかいは</span>
+                      {q.kind === 'read' && <Frac n={q.choices[q.answerIdx].n} d={q.choices[q.answerIdx].d} size={16} color="#dc2626" />}
+                      {q.kind === 'compare' && <span style={{ fontSize: 14, color: '#dc2626' }}>{q.answer === 'left' ? '左' : '右'}（<Frac n={q.answer === 'left' ? q.left.n : q.right.n} d={q.answer === 'left' ? q.left.d : q.right.d} size={14} color="#dc2626" />）が大きい</span>}
+                      {(q.kind === 'calc' || q.kind === 'yakubun') && <Frac n={q.an} d={q.ad} size={16} color="#dc2626" />}
+                    </div>
                 }
                 <div style={{ marginTop: 10, padding: '10px 14px', background: '#fef3c7', borderRadius: 10, fontSize: 12, color: '#92400e', lineHeight: 1.8, textAlign: 'left' }}>
                   💡 {q.hint}
