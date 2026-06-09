@@ -3,6 +3,7 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 
 type Difficulty = 'jidou' | 'sanjuppun' | 'all'
 
@@ -21,7 +22,11 @@ const MINS_30     = [0, 30]
 function rndHour() { return Math.floor(Math.random() * 12) + 1 }
 function rndFrom<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
 function rnd(min: number, max: number) { return Math.floor(Math.random() * (max - min + 1)) + min }
-function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] }
+  return a
+}
 
 function formatTime(h: number, m: number) {
   return `${h}時${m === 0 ? 'ちょうど' : `${m}分`}`
@@ -36,53 +41,101 @@ function makeReadQuestion(mins: number[]): ClockQuestion {
   const h1 = rndHour(); const m1 = rndFrom(mins)
   const correct = formatTime(h1, m1)
   const wrongs = new Set<string>()
+  // ありがちなまちがい①: 短いはりが次の数字寄りに見えて「時」を1すすめて読む
+  if (m1 >= 30) {
+    const w = formatTime((h1 % 12) + 1, m1)
+    if (w !== correct) wrongs.add(w)
+  }
+  // ありがちなまちがい②: 長いはりと短いはりの取りちがえ（5分きざみモードのみ）
+  if (mins.length >= 12) {
+    const w = formatTime(m1 === 0 ? 12 : m1 / 5, (h1 % 12) * 5)
+    if (w !== correct) wrongs.add(w)
+  }
   while (wrongs.size < 3) { const w = formatTime(rndHour(), rndFrom(mins)); if (w !== correct) wrongs.add(w) }
+  const explanation = m1 === 0
+    ? `長いはりが12をさして、短いはりが${h1}なら「${correct}」！`
+    : `長いはりが${m1 / 5}をさすと${m1}分（5×${m1 / 5}）。短いはりは${h1}をすぎたところだから${h1}時。答えは「${correct}」！`
   return {
     type: 'read', h1, m1,
     question: 'この時計は何時何分？',
     correct,
-    choices: shuffle([correct, ...Array.from(wrongs)]),
-    explanation: `長い針が${m1 === 0 ? '12' : m1 / 5}を指すと${m1}分、短い針が${h1}寄りなら${h1}時台。答えは「${correct}」！`,
+    choices: shuffle([correct, ...Array.from(wrongs).slice(0, 3)]),
+    explanation,
   }
 }
 
 function makeDiffQuestion(): ClockQuestion {
-  const h1 = rndHour(); const m1 = rndFrom(MINS_ALL)
+  const m1 = rndFrom(MINS_ALL)
   let diffH = rndFrom([0,1,2]); let diffM = rndFrom([0,5,10,15,20,30])
   if (diffH === 0 && diffM === 0) diffM = 15
+  const carry = m1 + diffM >= 60 ? 1 : 0
+  // 12時をまたぐと「逆もどり」に見えて混乱するので、またがない範囲で出題する
+  const h1 = rnd(1, 12 - diffH - carry)
   const totalMin2 = h1 * 60 + m1 + diffH * 60 + diffM
-  const h2 = Math.floor(totalMin2 / 60) % 12 || 12; const m2 = totalMin2 % 60
+  const h2 = Math.floor(totalMin2 / 60); const m2 = totalMin2 % 60
   const correct = formatDiff(diffH, diffM)
   const wrongSet = new Set<string>()
   while (wrongSet.size < 3) {
     const wH = rndFrom([0,1,2]); const wM = rndFrom([0,5,10,15,20,30])
     const w = formatDiff(wH, wM); if (w !== correct && w !== '0分') wrongSet.add(w)
   }
+  const explanation = diffH === 0
+    ? `${formatTime(h1, m1)}から${formatTime(h2, m2)}まで、長いはりは${diffM}分すすんだよ。答えは「${correct}」！`
+    : diffM === 0
+    ? `分はおなじで、時だけ${h1}→${h2}と${diffH}すすんだから「${correct}」！`
+    : `${formatTime(h1, m1)}から${diffH}時間で${formatTime(h1 + diffH, m1)}、さらに${diffM}分で${formatTime(h2, m2)}。だから「${correct}」！`
   return {
     type: 'diff', h1, m1, h2, m2, diffH, diffM,
     question: `${formatTime(h1, m1)}から${formatTime(h2, m2)}まで何時間何分？`,
     correct,
     choices: shuffle([correct, ...Array.from(wrongSet)]),
-    explanation: `${formatTime(h1, m1)}→${formatTime(h2, m2)} の差は「${correct}」！`,
+    explanation,
   }
 }
 
 function makeAddQuestion(): ClockQuestion {
   const h1 = rndHour(); const m1 = rndFrom(MINS_ALL)
-  const addH = rnd(0,2); const addM = rndFrom([0,10,15,20,30])
+  let addH = rnd(0,2); let addM = rndFrom([0,10,15,20,30])
+  if (addH === 0 && addM === 0) addM = 30
   const totalMin = h1 * 60 + m1 + addH * 60 + addM
   const h2 = Math.floor(totalMin / 60) % 12 || 12; const m2 = totalMin % 60
   const correct = formatTime(h2, m2)
   const wrongSet = new Set<string>()
+  // ありがちなまちがい: 60分のくり上がりわすれ（時が1つ少ない答え）
+  if (m1 + addM >= 60) {
+    const wH = h2 - 1 === 0 ? 12 : h2 - 1
+    const w = formatTime(wH, m2)
+    if (w !== correct) wrongSet.add(w)
+  }
   while (wrongSet.size < 3) { const w = formatTime(rndHour(), rndFrom(MINS_ALL)); if (w !== correct) wrongSet.add(w) }
   const addLabel = addH > 0 ? (addM > 0 ? `${addH}時間${addM}分` : `${addH}時間`) : `${addM}分`
+  const explanation = m1 + addM >= 60
+    ? `分は${m1}＋${addM}＝${m1 + addM}分。60分＝1時間だから、1時間くり上がって「${correct}」！`
+    : `${formatTime(h1, m1)}から${addLabel}すすめると「${correct}」！`
   return {
-    type: 'add', h1, m1, h2, m2,
+    type: 'add', h1, m1, h2, m2, diffH: addH, diffM: addM,
     question: `${formatTime(h1, m1)}の${addLabel}後は何時？`,
     correct,
-    choices: shuffle([correct, ...Array.from(wrongSet)]),
-    explanation: `${formatTime(h1, m1)} ＋ ${addLabel} ＝ ${formatTime(h2, m2)}！`,
+    choices: shuffle([correct, ...Array.from(wrongSet).slice(0, 3)]),
+    explanation,
   }
+}
+
+// 間違いの「原因」を推測して、答えを見せずに考える足場になるヒントを返す
+function getClockMistakeHint(q: ClockQuestion, wrong: string): string {
+  if (q.type === 'read') {
+    const nextHourWrong = formatTime((q.h1 % 12) + 1, q.m1)
+    if (wrong === nextHourWrong) return `短いはりは、つぎの数字にまだとどいてないよ。とおりすぎた数字が「何時」だよ！`
+    const swapped = formatTime(q.m1 === 0 ? 12 : q.m1 / 5, (q.h1 % 12) * 5)
+    if (wrong === swapped) return `はりが反対かも！ 太くて短いはりが「何時」、細くて長いはりが「何分」だよ`
+    return `短いはりで「何時」、長いはりで「何分」をよもう。長いはりは、さしている数字×5分だよ`
+  }
+  if (q.type === 'add') {
+    if (q.m1 + (q.diffM ?? 0) >= 60) return `分どうしをたすと60分をこえるよ。60分＝1時間にくり上がるのをわすれてないかな？`
+    return `まず「時」をたして、つぎに「分」をたしてみよう`
+  }
+  // diff
+  return `2つの時計をくらべよう。まず「時」がいくつすすんだか、つぎに「分」がいくつすすんだかかぞえてみよう`
 }
 
 function makeQuestion(diff: Difficulty): ClockQuestion {
@@ -142,8 +195,8 @@ function saveClockBest(difficulty: Difficulty, score: number) {
 }
 
 const DIFFICULTIES: { id: Difficulty; label: string; sub: string; badge: string; badgeColor: string; free: boolean }[] = [
-  { id: 'jidou',     label: 'ちょうど',     sub: '1時、2時…ぴったりの時刻',       badge: '★',   badgeColor: '#4ade80', free: true  },
-  { id: 'sanjuppun', label: '30分まで',     sub: 'ちょうどと30分の時刻',           badge: '★★',  badgeColor: '#f0c040', free: true  },
+  { id: 'jidou',     label: 'ちょうど',     sub: '1時、2時…ぴったりのじこく',       badge: '★',   badgeColor: '#4ade80', free: true  },
+  { id: 'sanjuppun', label: '30分まで',     sub: 'ちょうどと30分のじこく',           badge: '★★',  badgeColor: '#f0c040', free: true  },
   { id: 'all',       label: 'ぜんぶ',       sub: '5分きざみ＋時間の計算（プレミアム）', badge: '★★★', badgeColor: '#c4a8ff', free: false },
 ]
 
@@ -153,30 +206,48 @@ export default function ClockChallenge() {
   const [questions, setQuestions] = useState<ClockQuestion[]>([])
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [firstWrong, setFirstWrong] = useState<string | null>(null)
+  const [hint, setHint] = useState<string | null>(null)
   const [score, setScore] = useState(0)
   const [miss, setMiss] = useState(0)
 
   const startGame = useCallback((diff: Difficulty) => {
     setDifficulty(diff)
     setQuestions(Array.from({ length: TOTAL }, () => makeQuestion(diff)))
-    setIndex(0); setScore(0); setMiss(0); setSelected(null)
+    setIndex(0); setScore(0); setMiss(0); setSelected(null); setFirstWrong(null); setHint(null)
     setPhase('playing')
   }, [])
 
   useEffect(() => {
-    if (phase === 'result' && difficulty !== null) saveClockBest(difficulty, score)
+    if (phase === 'result' && difficulty !== null) {
+      saveClockBest(difficulty, score)
+      saveScore('clock', score, TOTAL, difficulty)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 
   function choose(c: string) {
-    if (selected !== null) return
-    setSelected(c)
-    if (c === q?.correct) setScore(s => s + 1); else setMiss(m => m + 1)
+    if (selected !== null || c === firstWrong) return
+    if (c === q.correct) {
+      // 正解。スコアは1回目で正解したときだけ加算（ヒント後の正解で水増ししない）
+      if (firstWrong === null) setScore(s => s + 1)
+      setSelected(c); setHint(null)
+      return
+    }
+    if (firstWrong === null) {
+      // 1回目のまちがい: 答えは見せず、原因に合わせたヒントでもう一度考えさせる
+      setFirstWrong(c)
+      setMiss(m => m + 1)
+      setHint(getClockMistakeHint(q, c))
+      return
+    }
+    // 2回目のまちがい: 答えと説明を見せる
+    setSelected(c); setHint(null)
   }
 
   function goNext() {
     if (index + 1 >= TOTAL) { setPhase('result'); return }
-    setIndex(i => i + 1); setSelected(null)
+    setIndex(i => i + 1); setSelected(null); setFirstWrong(null); setHint(null)
   }
 
   if (phase === 'intro') {
@@ -185,7 +256,7 @@ export default function ClockChallenge() {
         <Link href="/lab" className="absolute top-6 left-6 text-[#94a3c4] hover:text-[#f0c040] text-sm transition-colors">← ラボに戻る</Link>
         <div className="text-6xl mb-3">🕐</div>
         <h1 className="text-4xl font-black mb-1 text-[#f0c040]">時計チャレンジ</h1>
-        <p className="text-[#94a3c4] mb-8 text-sm">難易度を選んでね！</p>
+        <p className="text-[#94a3c4] mb-8 text-sm">レベルをえらんでね！</p>
         <div className="w-full max-w-xs space-y-3">
           {DIFFICULTIES.map(d => (
             <button key={d.id} onClick={() => startGame(d.id)}
@@ -224,7 +295,7 @@ export default function ClockChallenge() {
           </button>
           <button onClick={() => setPhase('intro')}
             className="w-full py-4 rounded-2xl font-bold text-lg border border-white/20 text-[#94a3c4] hover:text-[#f0c040] transition-all">
-            難易度を変える
+            レベルをかえる
           </button>
           <Link href="/lab" className="w-full py-4 rounded-2xl font-bold text-lg border border-white/10 text-[#94a3c4] hover:text-white transition-all text-center">
             ラボに戻る
@@ -273,25 +344,35 @@ export default function ClockChallenge() {
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           {q.choices.map((c) => {
-            let bg = 'rgba(255,255,255,0.07)', border = 'rgba(255,255,255,0.15)', text = '#e8f0fe'
+            let bg = 'rgba(255,255,255,0.07)', border = 'rgba(255,255,255,0.15)', text = '#e8f0fe', opacity = 1
             if (selected !== null) {
               if (c === q.correct) { bg = 'rgba(240,192,64,0.25)'; border = '#f0c040'; text = '#f0c040' }
-              else if (c === selected) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; text = '#f87171' }
+              else if (c === selected || c === firstWrong) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; text = '#f87171' }
+            } else if (c === firstWrong) {
+              bg = 'rgba(248,113,113,0.15)'; border = '#f87171'; text = '#f87171'; opacity = 0.6
             }
             return (
-              <button key={c} onClick={() => choose(c)} disabled={selected !== null}
+              <button key={c} onClick={() => choose(c)} disabled={selected !== null || c === firstWrong}
                 className="py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.03] disabled:cursor-default"
-                style={{ background: bg, border: `2px solid ${border}`, color: text }}>
+                style={{ background: bg, border: `2px solid ${border}`, color: text, opacity }}>
                 {c}
               </button>
             )
           })}
         </div>
 
+        {selected === null && hint !== null && (
+          <div className="rounded-2xl p-4 mb-4 text-left bg-[#f0c040]/10 border border-[#f0c040]/40">
+            <p className="font-black text-sm mb-1 text-[#f0c040]">🤔 おしい！ ヒント</p>
+            <p className="text-[#e8f0fe] text-sm leading-relaxed">{hint}</p>
+            <p className="text-[#94a3c4] text-xs mt-1">もういちど えらんでみよう！</p>
+          </div>
+        )}
+
         {selected !== null && (
           <div className={`rounded-2xl p-4 mb-4 text-left ${isCorrect ? 'bg-[#f0c040]/10 border border-[#f0c040]/40' : 'bg-[#f87171]/10 border border-[#f87171]/40'}`}>
             <p className="font-black text-sm mb-1" style={{ color: isCorrect ? '#f0c040' : '#f87171' }}>
-              {isCorrect ? '✓ 正解！' : `✗ 正解は「${q.correct}」`}
+              {isCorrect ? (firstWrong === null ? '✓ 正解！' : '✓ せいかい！よく気づいたね！') : `✗ 正解は「${q.correct}」`}
             </p>
             <p className="text-[#e8f0fe] text-sm leading-relaxed">{q.explanation}</p>
           </div>

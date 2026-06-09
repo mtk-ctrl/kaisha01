@@ -69,6 +69,28 @@ function makeProblem(difficulty: Difficulty): Problem {
   return { question: `${a} ${op} ${b}`, answer, op, a, b }
 }
 
+// 間違いの「原因」を推測して、答えを見せずに考える足場になるヒントを返す
+function getMistakeHint(p: Problem, wrong: number): string {
+  const diff = Math.abs(wrong - p.answer)
+  if (p.op === '+') {
+    if (diff === 10) return 'くり上がりを わすれていないかな？'
+    if (diff <= 2) return 'おしい！あと すこし。ゆびで かぞえて たしかめよう'
+    return 'ゆっくり もういちど たしてみよう'
+  }
+  if (p.op === '-') {
+    if (diff === 10) return 'くり下がりに 気をつけて！'
+    if (diff <= 2) return 'おしい！あと すこし。1ずつ かぞえて たしかめよう'
+    return 'ゆっくり もういちど ひいてみよう'
+  }
+  if (p.op === '×') {
+    if (wrong === p.a * (p.b + 1) || wrong === p.a * (p.b - 1) || wrong === (p.a + 1) * p.b || wrong === (p.a - 1) * p.b)
+      return `おしい！九九の だんが 1つ ずれてるかも。${p.a}のだんを となえてみよう`
+    return `${p.a}を ${p.b}かい たした かずだよ。九九で かんがえよう`
+  }
+  // ÷
+  return `${p.b} に なにを かけたら ${p.a} に なるかな？ 九九の ${p.b}のだんだよ`
+}
+
 type Phase = 'select' | 'playing' | 'result'
 
 const GUEST_DIFFICULTIES: Difficulty[] = ['かんたん', 'ふつう']
@@ -90,11 +112,14 @@ export default function MathChallenge() {
   const [timeLeft, setTimeLeft] = useState(45)
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null)
   const [showAnswer, setShowAnswer] = useState(false)
+  const [hint, setHint] = useState<string | null>(null)
+  const [missed, setMissed] = useState<Problem[]>([])
   const [timeTaken, setTimeTaken] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const startTimeRef = useRef<number>(0)
   // refでリアルタイム管理（stale closure防止）
   const answeredRef = useRef(0)
+  const attemptRef = useRef(0) // いまの問題で何回まちがえたか
   const [answeredDisplay, setAnsweredDisplay] = useState(0)
 
   const next = useCallback((diff: Difficulty) => {
@@ -102,6 +127,8 @@ export default function MathChallenge() {
     setInput('')
     setFeedback(null)
     setShowAnswer(false)
+    setHint(null)
+    attemptRef.current = 0
   }, [])
 
   const startGame = useCallback((diff: Difficulty) => {
@@ -109,6 +136,7 @@ export default function MathChallenge() {
     setScore(0)
     setMiss(0)
     answeredRef.current = 0
+    attemptRef.current = 0
     setAnsweredDisplay(0)
     setTimeLeft(DIFFICULTY_CONFIG[diff].time)
     setTimeTaken(0)
@@ -116,6 +144,8 @@ export default function MathChallenge() {
     setInput('')
     setFeedback(null)
     setShowAnswer(false)
+    setHint(null)
+    setMissed([])
     startTimeRef.current = Date.now()
     setPhase('playing')
   }, [])
@@ -142,9 +172,10 @@ export default function MathChallenge() {
 
     if (val === problem.answer) {
       playCorrect()
-      setScore((s) => s + 1)
+      if (attemptRef.current === 0) setScore((s) => s + 1) // 1回目で正解したときだけ得点
       setFeedback('correct')
       setShowAnswer(false)
+      setHint(null)
 
       if (mode === '問題数') {
         const newAnswered = answeredRef.current + 1
@@ -161,10 +192,22 @@ export default function MathChallenge() {
       }
     } else {
       playWrong()
-      setMiss((m) => m + 1)
       setFeedback('wrong')
-      setShowAnswer(true)
       setInput('')
+
+      if (attemptRef.current === 0) {
+        // 1回目のまちがい: 答えは見せず、原因に合わせたヒントを出してもう一度考えさせる
+        attemptRef.current = 1
+        setMiss((m) => m + 1)
+        setMissed((arr) => [...arr, problem])
+        setHint(getMistakeHint(problem, val))
+        setTimeout(() => setFeedback(null), 600)
+        return
+      }
+
+      // 2回目のまちがい: 答えを見せて次の問題へ
+      setShowAnswer(true)
+      setHint(null)
 
       if (mode === '問題数') {
         const newAnswered = answeredRef.current + 1
@@ -179,11 +222,11 @@ export default function MathChallenge() {
           }
         }, 1800)
       } else {
-        setTimeout(() => { setFeedback(null); setShowAnswer(false) }, 1800)
+        setTimeout(() => next(difficulty), 1800)
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, problem.answer, mode, targetCount, difficulty, next])
+  }, [phase, problem, mode, targetCount, difficulty, next])
 
   function handleNumpad(key: string) {
     if (phase !== 'playing' || feedback !== null) return
@@ -196,7 +239,8 @@ export default function MathChallenge() {
   useEffect(() => {
     if (phase === 'result') {
       saveMathBest(difficulty, score)
-      saveScore('math', score, targetCount, difficulty)
+      // タイムアタックは挑戦した問題数（正解+ミス）を total として記録する
+      saveScore('math', score, mode === 'タイムアタック' ? score + miss : targetCount, difficulty)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
@@ -286,7 +330,7 @@ export default function MathChallenge() {
 
           {/* ── 難易度 ── */}
           <div>
-            <p className="text-[#8892b0] text-[10px] font-bold mb-2 tracking-widest uppercase">難易度を選んでスタート！</p>
+            <p className="text-[#8892b0] text-[10px] font-bold mb-2 tracking-widest uppercase">むずかしさを えらんで スタート！</p>
             {isGuest && (
               <div className="mb-3 px-3 py-2 bg-[#f0c040]/10 border border-[#f0c040]/30 rounded-xl text-center">
                 <p className="text-[#f0c040] text-xs font-bold">体験中: かんたん・ふつうが使えます</p>
@@ -329,6 +373,20 @@ export default function MathChallenge() {
 
   // ── RESULT ──
   if (phase === 'result') {
+    // まちがえた問題の振り返りリスト（両モード共通）
+    const missedList = missed.length > 0 ? (
+      <div className="w-full max-w-xs bg-white/5 border border-white/10 rounded-2xl p-4 mb-4 text-left">
+        <p className="text-[#f0c040] text-xs font-bold mb-2">📝 まちがえた もんだい（あとで もういちど！）</p>
+        <div className="max-h-32 overflow-y-auto space-y-1 pr-1">
+          {missed.map((m, i) => (
+            <p key={i} className="text-sm font-bold text-[#e8f0fe] tabular-nums">
+              {m.question} = <span className="text-[#4ade80]">{m.answer}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+    ) : null
+
     // 問題数モードのリザルト
     if (mode === '問題数') {
       const accuracy = targetCount > 0 ? Math.round((score / targetCount) * 100) : 0
@@ -362,6 +420,8 @@ export default function MathChallenge() {
             </p>
           )}
 
+          {missedList}
+
           <div className="flex flex-col gap-3 w-full max-w-xs mt-2">
             <button
               onClick={() => startGame(difficulty)}
@@ -387,14 +447,14 @@ export default function MathChallenge() {
     }
 
     // タイムアタックのリザルト
-    const rank = score >= 20 ? '🏆 天才！' : score >= 12 ? '🥇 すごい！' : score >= 6 ? '🥈 よくできました' : '🥉 次は頑張ろう'
+    const rank = score >= 20 ? '🏆 天才！' : score >= 12 ? '🥇 すごい！' : score >= 6 ? '🥈 よくできました' : '🥉 つぎは がんばろう！'
     return (
       <div className="min-h-screen bg-[#071628] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center">
         <div className="text-5xl mb-4">{rank.split(' ')[0]}</div>
         <h2 className="text-3xl font-black mb-2 text-[#60a5fa]">{rank.split(' ').slice(1).join(' ')}</h2>
-        <p className="text-[#8892b0] mb-8">難易度: {difficulty}</p>
+        <p className="text-[#8892b0] mb-8">むずかしさ: {difficulty}</p>
 
-        <div className="flex gap-10 mb-10">
+        <div className="flex gap-10 mb-6">
           <div className="text-center">
             <div className="text-5xl font-black text-[#4ade80]">{score}</div>
             <div className="text-[#8892b0] text-sm mt-1">正解</div>
@@ -404,6 +464,8 @@ export default function MathChallenge() {
             <div className="text-[#8892b0] text-sm mt-1">ミス</div>
           </div>
         </div>
+
+        {missedList}
 
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <button
@@ -416,7 +478,7 @@ export default function MathChallenge() {
             onClick={() => setPhase('select')}
             className="w-full py-4 rounded-2xl font-bold text-lg border border-white/20 text-[#8892b0] hover:text-white hover:border-white/40 transition-all"
           >
-            難易度を変える
+            むずかしさを変える
           </button>
           <Link
             href="/lab"
@@ -486,12 +548,22 @@ export default function MathChallenge() {
         </div>
 
         {feedback === 'correct' && (
-          <div className="text-3xl font-black text-[#4ade80] mb-6 animate-bounce">✓ 正解！</div>
+          <div className="text-3xl font-black text-[#4ade80] mb-6 animate-bounce">
+            {attemptRef.current > 0 ? '✓ できた！' : '✓ 正解！'}
+          </div>
+        )}
+        {/* 1回目のまちがい: 答えは見せずにヒントで再挑戦 */}
+        {hint && !showAnswer && feedback !== 'correct' && (
+          <div className="max-w-xs mx-auto rounded-2xl px-4 py-3 mb-4 border border-[#f0c040]/40 bg-[#f0c040]/10">
+            <p className="text-[#f0c040] text-sm font-black mb-0.5">💡 ヒント</p>
+            <p className="text-[#e8f0fe] text-sm leading-relaxed">{hint}</p>
+            <p className="text-[#8892b0] text-xs mt-1">もういちど やってみよう！</p>
+          </div>
         )}
         {showAnswer && feedback === 'wrong' && (
           <div className="text-xl font-black text-[#f0c040] mb-4">
             答え: <span className="text-3xl">{problem.answer}</span>
-            {mode === '問題数' && <span className="block text-sm font-normal text-[#8892b0] mt-1">次の問題へ…</span>}
+            <span className="block text-sm font-normal text-[#8892b0] mt-1">次の問題へ…</span>
           </div>
         )}
 
