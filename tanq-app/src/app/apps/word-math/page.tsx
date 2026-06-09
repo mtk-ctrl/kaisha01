@@ -5,9 +5,17 @@ import Link from 'next/link'
 import { PROBLEMS } from '@/data/wordMathData'
 import type { Grade, WordProblem } from '@/data/wordMathData'
 import { getDataKey } from '@/lib/storage'
+import { playCorrect, playWrong } from '@/lib/audio'
+import { saveScore } from '@/lib/scoreApi'
 
+// Fisher–Yates（sortベースのシャッフルは偏るため）
 function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5)
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
 }
 
 // ── SRS ──
@@ -104,7 +112,7 @@ function applySRS(store: SRSStore, id: string, correct: boolean): {
 
 const GRADES: Grade[] = ['小1', '小2', '小3']
 const GRADE_COLORS: Record<Grade, string> = { '小1': '#4ade80', '小2': '#60a5fa', '小3': '#f0a050' }
-const GRADE_LABELS: Record<Grade, string> = { '小1': '足し算・引き算', '小2': '2桁計算・かけ算', '小3': '大きい数・時間' }
+const GRADE_LABELS: Record<Grade, string> = { '小1': 'たし算・ひき算', '小2': '2けたの計算・かけ算', '小3': '大きい数・時間' }
 
 type Phase = 'home' | 'playing' | 'result'
 
@@ -119,6 +127,9 @@ export default function WordMathQuiz() {
   const [problems, setProblems] = useState<WordProblem[]>([])
   const [qIdx, setQIdx] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
+  // 段階ヒント用: 1回目に間違えた選択肢（再挑戦中はヒントを表示）/ resolved=答え合わせ完了
+  const [wrongPicks, setWrongPicks] = useState<number[]>([])
+  const [resolved, setResolved] = useState(false)
   const [lastChange, setLastChange] = useState<'mastered' | 'advance' | 'same' | 'regress'>('same')
   const [sessionCorrect, setSessionCorrect] = useState(0)
   const [sessionMastered, setSessionMastered] = useState(0)
@@ -144,6 +155,8 @@ export default function WordMathQuiz() {
     setProblems(items)
     setQIdx(0)
     setSelected(null)
+    setWrongPicks([])
+    setResolved(false)
     setSessionCorrect(0)
     setSessionMastered(0)
     setSessionWeak(0)
@@ -154,29 +167,56 @@ export default function WordMathQuiz() {
   }, [grade, mode])
 
   function choose(val: number) {
-    if (selected !== null) return
-    setSelected(val)
+    if (resolved || wrongPicks.includes(val)) return
     const p = problems[qIdx]
-    const correct = val === p.answer
-    if (correct) setSessionCorrect(n => n + 1)
-    else setSessionWeak(n => n + 1)
-    const { store: newStore, change } = applySRS(store, p.id, correct)
-    setStore(newStore)
-    saveSRS(newStore)
-    setLastChange(change)
-    if (change === 'mastered') setSessionMastered(n => n + 1)
+
+    if (val === p.answer) {
+      playCorrect()
+      setSelected(val)
+      setResolved(true)
+      // 成績（SRS・正解数）は1回目の答えだけで記録する
+      if (wrongPicks.length === 0) {
+        setSessionCorrect(n => n + 1)
+        const { store: newStore, change } = applySRS(store, p.id, true)
+        setStore(newStore)
+        saveSRS(newStore)
+        setLastChange(change)
+        if (change === 'mastered') setSessionMastered(n => n + 1)
+      }
+      return
+    }
+
+    playWrong()
+    if (wrongPicks.length === 0) {
+      // 1回目の不正解: まだ答えは見せない。SRSに記録し、ヒントを出してもう一度考えさせる
+      setSessionWeak(n => n + 1)
+      const { store: newStore, change } = applySRS(store, p.id, false)
+      setStore(newStore)
+      saveSRS(newStore)
+      setLastChange(change)
+      setWrongPicks([val])
+    } else {
+      // 2回目も不正解: 答えと解説を見せる
+      setWrongPicks(prev => [...prev, val])
+      setSelected(val)
+      setResolved(true)
+    }
   }
 
   function goNext() {
+    if (!resolved) return // 連打・誤タップ対策
     if (qIdx + 1 >= problems.length) {
       const ns = recordStudy()
       setFinalStreak(ns)
       setStreak(ns)
+      saveScore('word-math', sessionCorrect, problems.length, grade)
       setPhase('result')
       return
     }
     setQIdx(i => i + 1)
     setSelected(null)
+    setWrongPicks([])
+    setResolved(false)
   }
 
   const color = GRADE_COLORS[grade]
@@ -196,7 +236,7 @@ export default function WordMathQuiz() {
 
         <div className="text-5xl mb-2 mt-4">📐</div>
         <h1 className="text-3xl font-black mb-1 text-[#f0a050]">算数・文章題</h1>
-        <p className="text-[#94a3c4] text-xs mb-8 text-center">文章を読んで正しい答えを選ぼう。間隔反復で苦手な問題を集中学習！</p>
+        <p className="text-[#94a3c4] text-xs mb-8 text-center">もんだいを 読んで 正しい 答えを えらぼう。まちがえた もんだいは くりかえし 出るよ！</p>
 
         {/* Grade selector */}
         <div className="w-full max-w-sm mb-4">
@@ -242,7 +282,7 @@ export default function WordMathQuiz() {
               <>
                 <div className="flex justify-between text-xs text-[#94a3c4] mb-2">
                   <span>{grade}の問題 全{s.total}問</span>
-                  <span style={{ color }}>{pct}% 習得</span>
+                  <span style={{ color }}>{pct}% おぼえた</span>
                 </div>
                 <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-3">
                   <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color }} />
@@ -250,15 +290,15 @@ export default function WordMathQuiz() {
                 <div className="grid grid-cols-3 gap-2 text-center text-xs">
                   <div>
                     <div className="font-black text-xl" style={{ color }}>{s.mastered}</div>
-                    <div className="text-[#94a3c4] text-[10px]">⭐ 習得済み</div>
+                    <div className="text-[#94a3c4] text-[10px]">⭐ おぼえた</div>
                   </div>
                   <div>
                     <div className="font-black text-xl text-[#60a5fa]">{s.learning}</div>
-                    <div className="text-[#94a3c4] text-[10px]">📚 学習中</div>
+                    <div className="text-[#94a3c4] text-[10px]">📚 れんしゅう中</div>
                   </div>
                   <div>
                     <div className="font-black text-xl text-[#e8f0fe]">{s.newCount}</div>
-                    <div className="text-[#94a3c4] text-[10px]">🆕 未学習</div>
+                    <div className="text-[#94a3c4] text-[10px]">🆕 これから</div>
                   </div>
                 </div>
               </>
@@ -274,7 +314,7 @@ export default function WordMathQuiz() {
               style={mode === m
                 ? { background: color, color: '#050b14' }
                 : { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3c4' }}>
-              {m === 'normal' ? '📚 通常モード' : '💪 苦手集中'}
+              {m === 'normal' ? '📚 つうじょうモード' : '💪 にがて とっくん'}
             </button>
           ))}
         </div>
@@ -313,9 +353,9 @@ export default function WordMathQuiz() {
 
         <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-5">
           {[
-            { label: '新規習得', value: `⭐ ${sessionMastered}`, c: color },
+            { label: 'あたらしく おぼえた', value: `⭐ ${sessionMastered}`, c: color },
             { label: '正解数', value: sessionCorrect, c: '#4ade80' },
-            { label: '要復習', value: sessionWeak, c: '#f87171' },
+            { label: 'もういちど', value: sessionWeak, c: '#f87171' },
           ].map(({ label, value, c }) => (
             <div key={label} className="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
               <div className="text-2xl font-black mb-1" style={{ color: c }}>{value}</div>
@@ -326,13 +366,13 @@ export default function WordMathQuiz() {
 
         <div className="w-full max-w-sm bg-white/5 rounded-2xl p-4 mb-6 border border-white/10">
           <div className="flex justify-between text-xs text-[#94a3c4] mb-2">
-            <span>{grade}の習得状況</span>
+            <span>{grade}の おぼえた もんだい</span>
             <span style={{ color }}>{newPct}%</span>
           </div>
           <div className="h-2 bg-white/10 rounded-full overflow-hidden">
             <div className="h-full rounded-full" style={{ width: `${newPct}%`, background: color }} />
           </div>
-          <p className="text-xs text-[#94a3c4] mt-2">習得済み {s.mastered}/{s.total}問</p>
+          <p className="text-xs text-[#94a3c4] mt-2">おぼえた {s.mastered}/{s.total}問</p>
         </div>
 
         <div className="flex flex-col gap-3 w-full max-w-sm">
@@ -345,7 +385,7 @@ export default function WordMathQuiz() {
             <button onClick={() => startGame(grade, 'weak')}
               className="w-full py-4 rounded-2xl font-bold text-base border transition-all"
               style={{ borderColor: `${color}50`, color }}>
-              💪 苦手 {sessionWeak}問を集中練習
+              💪 まちがえた {sessionWeak}問を れんしゅう！
             </button>
           )}
           <button onClick={() => setPhase('home')}
@@ -364,8 +404,10 @@ export default function WordMathQuiz() {
   const p = problems[qIdx]
   if (!p) return null
   const isCorrect = selected === p.answer
+  const firstTry = isCorrect && wrongPicks.length === 0
+  const retrying = !resolved && wrongPicks.length > 0
   const changeColor = lastChange === 'mastered' ? '#f0c040' : lastChange === 'advance' ? '#4ade80' : lastChange === 'regress' ? '#f87171' : '#8892b0'
-  const changeMsg = lastChange === 'mastered' ? '⭐ 習得！' : lastChange === 'advance' ? '📈 いい調子！' : lastChange === 'regress' ? '📉 要復習' : null
+  const changeMsg = lastChange === 'mastered' ? '⭐ おぼえた！' : lastChange === 'advance' ? '📈 いい調子！' : lastChange === 'regress' ? '📉 もういちど れんしゅうしよう' : null
   const gradeColor = GRADE_COLORS[p.grade]
 
   return (
@@ -401,17 +443,22 @@ export default function WordMathQuiz() {
           {p.choices.map((c) => {
             const isCor = c === p.answer
             const isSel = c === selected
+            const isPickedWrong = wrongPicks.includes(c)
             let bg = 'rgba(255,255,255,0.07)'
             let border = 'rgba(255,255,255,0.15)'
             let textCol = '#e8f0fe'
-            if (selected !== null) {
+            let opacity = 1
+            if (resolved) {
               if (isCor) { bg = 'rgba(74,222,128,0.2)'; border = '#4ade80'; textCol = '#4ade80' }
-              else if (isSel) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; textCol = '#f87171' }
+              else if (isSel || isPickedWrong) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; textCol = '#f87171' }
+            } else if (isPickedWrong) {
+              // 再挑戦中: 間違えた選択肢はうすくして選べないように
+              bg = 'rgba(248,113,113,0.1)'; border = 'rgba(248,113,113,0.4)'; textCol = '#f87171'; opacity = 0.45
             }
             return (
-              <button key={c} onClick={() => choose(c)} disabled={selected !== null}
-                className="py-5 rounded-2xl font-black text-2xl transition-all hover:scale-[1.03] disabled:cursor-default"
-                style={{ background: bg, border: `2px solid ${border}`, color: textCol }}>
+              <button key={c} onClick={() => choose(c)} disabled={resolved || isPickedWrong}
+                className="py-5 rounded-2xl font-black text-2xl transition-all hover:scale-[1.03] disabled:cursor-default disabled:hover:scale-100"
+                style={{ background: bg, border: `2px solid ${border}`, color: textCol, opacity }}>
                 {c}
                 <span className="block text-xs font-normal mt-0.5 opacity-70">{p.unit}</span>
               </button>
@@ -419,8 +466,17 @@ export default function WordMathQuiz() {
           })}
         </div>
 
+        {/* 段階ヒント（1回目の不正解 → 答えは見せずに考える足場を出す） */}
+        {retrying && (
+          <div className="rounded-2xl p-4 mb-4 border border-[#f0c040]/40 bg-[#f0c040]/10">
+            <p className="font-black text-sm mb-1.5 text-[#f0c040]">💡 ヒント</p>
+            <p className="text-[#e8f0fe] text-sm leading-relaxed">{p.hint}</p>
+            <p className="text-[#f0c040] text-xs font-bold mt-2">もういちど えらんでみよう！</p>
+          </div>
+        )}
+
         {/* Feedback */}
-        {selected !== null && (
+        {resolved && (
           <>
             <div className="flex items-center justify-end mb-2">
               {changeMsg && (
@@ -434,7 +490,11 @@ export default function WordMathQuiz() {
                 borderColor: isCorrect ? 'rgba(74,222,128,0.4)' : 'rgba(248,113,113,0.4)',
               }}>
               <p className="font-black text-sm mb-2" style={{ color: isCorrect ? '#4ade80' : '#f87171' }}>
-                {isCorrect ? `✓ 正解！ 答えは ${p.answer}${p.unit}` : `✗ 正解は ${p.answer}${p.unit}`}
+                {firstTry
+                  ? `✓ 正解！ 答えは ${p.answer}${p.unit}`
+                  : isCorrect
+                    ? `✓ できた！ 答えは ${p.answer}${p.unit}`
+                    : `✗ 正解は ${p.answer}${p.unit}`}
               </p>
               <p className="text-[#e8f0fe] text-sm leading-relaxed">{p.explanation}</p>
             </div>
