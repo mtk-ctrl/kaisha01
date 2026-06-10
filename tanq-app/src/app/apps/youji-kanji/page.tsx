@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
 import { saveScore } from '@/lib/scoreApi'
@@ -735,16 +735,49 @@ function speak(text: string) {
   } catch {}
 }
 
+// 形が似ていて混同しやすい漢字。誤答候補に優先して混ぜ、弁別学習にする
+const SIMILAR_KANJI: Record<string, string[]> = {
+  '人': ['入', '八'], '入': ['人', '八'], '八': ['人', '入'],
+  '大': ['犬', '天'], '犬': ['大', '天'], '天': ['大', '犬'],
+  '王': ['玉', '五'], '玉': ['王', '金'], '金': ['玉', '王'],
+  '日': ['目', '白'], '目': ['日', '月'], '白': ['百', '日'], '百': ['白', '日'], '月': ['目', '日'],
+  '木': ['本', '林'], '本': ['木', '大'], '林': ['森', '木'], '森': ['林', '木'], '休': ['木', '本'],
+  '土': ['上', '十'], '上': ['下', '土'], '下': ['上', '土'],
+  '石': ['右', '百'], '右': ['石', '左'], '左': ['右', '石'],
+  '一': ['二', '三'], '二': ['一', '三'], '三': ['二', '一'],
+  '十': ['千', '七'], '千': ['十', '七'], '七': ['十', '九'], '九': ['七', '力'], '力': ['九', '七'],
+  '田': ['口', '中'], '口': ['田', '中'], '中': ['口', '田'], '虫': ['中', '貝'],
+  '貝': ['見', '目'], '見': ['貝', '目'],
+  '学': ['字', '子'], '字': ['学', '子'], '子': ['字', '学'],
+  '山': ['出', '川'], '出': ['山', '立'], '川': ['山', '三'],
+  '草': ['花', '早'], '花': ['草', '空'], '早': ['草', '日'],
+  '立': ['音', '出'], '音': ['立', '日'],
+  '町': ['田', '村'], '村': ['町', '林'], '先': ['生', '見'], '生': ['先', '王'],
+  '名': ['夕', '口'], '夕': ['月', '名'], '円': ['月', '百'],
+  '読': ['話', '聞'], '話': ['読', '聞'], '聞': ['読', '話'],
+  '水': ['川', '小'], '小': ['水', '川'], '気': ['空', '天'],
+}
+
 function buildQuestions(count: number): Question[] {
   const pool = shuffle([...KANJI_DATA]).slice(0, count)
   return pool.map((item) => {
     const correct = item.kanji
-    const distractors = shuffle(KANJI_DATA.filter((k) => k.kanji !== correct))
-      .slice(0, 3)
+    // 形が似た字を最大2つ優先（読みが同じ字は正解が2つになるため除外）
+    const sims = shuffle(
+      (SIMILAR_KANJI[correct] ?? []).filter((k) =>
+        KANJI_DATA.some((d) => d.kanji === k && d.reading !== item.reading),
+      ),
+    ).slice(0, 2)
+    const rest = shuffle(
+      KANJI_DATA.filter(
+        (k) => k.kanji !== correct && k.reading !== item.reading && !sims.includes(k.kanji),
+      ),
+    )
+      .slice(0, 3 - sims.length)
       .map((k) => k.kanji)
     return {
       item,
-      choices: shuffle([correct, ...distractors]),
+      choices: shuffle([correct, ...sims, ...rest]),
     }
   })
 }
@@ -762,6 +795,9 @@ export default function YoujiKanjiPage() {
 
   const [chosenKanji, setChosenKanji] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
+  const [attempt, setAttempt] = useState<0 | 1>(0)              // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrong, setFirstWrong] = useState<string | null>(null)
+  const finishedRef = useRef(false)                              // 「つぎへ」連打による結果二重保存ガード
 
   const startGame = useCallback(() => {
     const qs = buildQuestions(count)
@@ -773,6 +809,9 @@ export default function YoujiKanjiPage() {
     setLog([])
     setChosenKanji(null)
     setShowFeedback(false)
+    setAttempt(0)
+    setFirstWrong(null)
+    finishedRef.current = false
     setPhase('game')
     if (qs[0]) {
       speak(qs[0].item.questionSpeech)
@@ -781,44 +820,48 @@ export default function YoujiKanjiPage() {
 
   const handleAnswer = useCallback(
     (kanji: string) => {
-      if (chosenKanji !== null) return
+      if (chosenKanji !== null || kanji === firstWrong) return
       const q = questions[idx]
       const ok = kanji === q.item.kanji
 
-      setChosenKanji(kanji)
-      setShowFeedback(true)
-
-      let newCombo = combo
-      let newMaxCombo = maxCombo
-      let newScore = score
-
-      if (ok) {
-        newCombo = combo + 1
-        if (newCombo > maxCombo) newMaxCombo = newCombo
-        const comboBonus = Math.min(newCombo - 1, 5) * 20
-        newScore = score + 100 + comboBonus
-        setCombo(newCombo)
-        setMaxCombo(newMaxCombo)
-        setScore(newScore)
-        speak(
-          newCombo >= 3
-            ? 'すごい！' + newCombo + 'れんぞく！'
-            : 'せいかい！' + q.item.reading + '！',
-        )
-      } else {
-        setCombo(0)
-        newCombo = 0
-        speak('ざんねん。' + q.item.reading + ' だよ！')
+      if (attempt === 0) {
+        // スコア・コンボは1回目の解答のみで記録する
+        setLog((prev) => [...prev, { item: q.item, chosenKanji: kanji, ok }])
+        if (ok) {
+          const newCombo = combo + 1
+          if (newCombo > maxCombo) setMaxCombo(newCombo)
+          setCombo(newCombo)
+          setScore(score + 100 + Math.min(newCombo - 1, 5) * 20)
+          setChosenKanji(kanji)
+          setShowFeedback(true)
+          speak(
+            newCombo >= 3
+              ? 'すごい！' + newCombo + 'れんぞく！'
+              : 'せいかい！' + q.item.reading + '！',
+          )
+        } else {
+          // 1回目は答えを見せず、絵をヒントにもういちど考えてもらう
+          setCombo(0)
+          setFirstWrong(kanji)
+          setAttempt(1)
+          speak('おしい！えを よくみて もういちど！')
+        }
+        return
       }
 
-      setLog((prev) => [...prev, { item: q.item, chosenKanji: kanji, ok }])
+      // 2回目: 記録は変えず、答え合わせだけ行う
+      setChosenKanji(kanji)
+      setShowFeedback(true)
+      speak(ok ? 'そう！' + q.item.reading + ' だよ！' : 'こたえは ' + q.item.reading + ' だよ！')
     },
-    [chosenKanji, questions, idx, combo, maxCombo, score],
+    [chosenKanji, firstWrong, attempt, questions, idx, combo, maxCombo, score],
   )
 
   const nextQuestion = useCallback(() => {
     const nextIdx = idx + 1
     if (nextIdx >= questions.length) {
+      if (finishedRef.current) return  // 連打による二重保存を防ぐ
+      finishedRef.current = true
       const total = questions.length
       const correctCount = log.filter((l) => l.ok).length
       const pct = correctCount / total
@@ -835,6 +878,8 @@ export default function YoujiKanjiPage() {
       setIdx(nextIdx)
       setChosenKanji(null)
       setShowFeedback(false)
+      setAttempt(0)
+      setFirstWrong(null)
       speak(questions[nextIdx].item.questionSpeech)
     }
   }, [idx, questions, log, score])
@@ -933,12 +978,22 @@ export default function YoujiKanjiPage() {
             </div>
           </div>
 
+          {/* 1かいめ まちがいのあとの はげまし */}
+          {attempt === 1 && chosenKanji === null && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
+              <p className="font-bold text-amber-600">💪 おしい！もういちど！</p>
+              <p className="text-sm text-gray-600 mt-1">えを よくみて べつの かんじを えらんでね</p>
+            </div>
+          )}
+
           {/* Choices — large kanji text */}
           <div className="grid grid-cols-2 gap-3">
             {q.choices.map((c) => {
               let btnClass =
                 'w-full py-5 rounded-2xl text-4xl font-black transition-all '
-              if (chosenKanji === null) {
+              if (chosenKanji === null && c === firstWrong) {
+                btnClass += 'bg-gray-100 text-gray-300'
+              } else if (chosenKanji === null) {
                 btnClass += 'bg-white shadow-md text-gray-800 active:scale-95 hover:shadow-lg'
               } else if (c === q.item.kanji) {
                 btnClass += 'bg-green-100 text-green-700 border-2 border-green-400'
@@ -952,7 +1007,7 @@ export default function YoujiKanjiPage() {
                   key={c}
                   className={btnClass}
                   onClick={() => handleAnswer(c)}
-                  disabled={chosenKanji !== null}
+                  disabled={chosenKanji !== null || c === firstWrong}
                 >
                   {c}
                 </button>
@@ -967,10 +1022,14 @@ export default function YoujiKanjiPage() {
                 chosenKanji === q.item.kanji ? 'bg-green-50' : 'bg-red-50'
               }`}
             >
-              <div className="text-3xl mb-1">{chosenKanji === q.item.kanji ? '⭕' : '❌'}</div>
+              <div className="text-3xl mb-1">
+                {chosenKanji === q.item.kanji ? (attempt === 0 ? '⭕' : '💪') : '❌'}
+              </div>
               <p className="text-sm font-bold text-gray-700">
                 {chosenKanji === q.item.kanji
-                  ? `せいかい！「${q.item.kanji}（${q.item.reading}）」だよ！`
+                  ? attempt === 0
+                    ? `せいかい！「${q.item.kanji}（${q.item.reading}）」だよ！`
+                    : `できたね！「${q.item.kanji}（${q.item.reading}）」だよ！`
                   : `せいかいは「${q.item.kanji}（${q.item.reading}）」だよ！`}
               </p>
               {combo >= 3 && chosenKanji === q.item.kanji && (
@@ -1046,7 +1105,7 @@ export default function YoujiKanjiPage() {
               <span className="flex-1 text-gray-600 text-xs">{l.item.reading}</span>
               {!l.ok && (
                 <span className="text-xs text-red-500">
-                  → こたえ: {l.chosenKanji}
+                  えらんだ: {l.chosenKanji}
                 </span>
               )}
             </div>

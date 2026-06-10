@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
 import { saveScore } from '@/lib/scoreApi'
@@ -34,56 +34,59 @@ const COLORS: ColorItem[] = [
   { id: 'brown',    name: 'ちゃいろ', hex: '#92400e', speech: 'ちゃいろ' },
 ]
 
+// しろ等の薄い色でも図形が見えるよう、常に薄い輪郭線をつける
+const OUTLINE = 'stroke="#CBD5E1" stroke-width="3"'
+
 const SHAPES: ShapeItem[] = [
   {
     id: 'circle',
     name: 'まる（えん）',
     speech: 'まる',
-    svgBody: (c) => `<circle cx="100" cy="100" r="80" fill="${c}"/>`,
+    svgBody: (c) => `<circle cx="100" cy="100" r="80" fill="${c}" ${OUTLINE}/>`,
   },
   {
     id: 'square',
     name: 'しかく（せいほうけい）',
     speech: 'しかく',
-    svgBody: (c) => `<rect x="20" y="20" width="160" height="160" rx="10" fill="${c}"/>`,
+    svgBody: (c) => `<rect x="20" y="20" width="160" height="160" rx="10" fill="${c}" ${OUTLINE}/>`,
   },
   {
     id: 'triangle',
     name: 'さんかく（さんかっけい）',
     speech: 'さんかく',
-    svgBody: (c) => `<polygon points="100,12 188,185 12,185" fill="${c}"/>`,
+    svgBody: (c) => `<polygon points="100,12 188,185 12,185" fill="${c}" ${OUTLINE}/>`,
   },
   {
     id: 'star',
     name: 'ほし（スター）',
     speech: 'ほし',
     svgBody: (c) =>
-      `<polygon points="100,10 122,75 192,75 137,116 158,182 100,142 42,182 63,116 8,75 78,75" fill="${c}"/>`,
+      `<polygon points="100,10 122,75 192,75 137,116 158,182 100,142 42,182 63,116 8,75 78,75" fill="${c}" ${OUTLINE}/>`,
   },
   {
     id: 'heart',
     name: 'ハート（こころ）',
     speech: 'ハート',
     svgBody: (c) =>
-      `<path d="M100 170 C60 145 20 110 20 75 C20 45 40 20 70 20 C85 20 100 35 100 35 C100 35 115 20 130 20 C160 20 180 45 180 75 C180 110 140 145 100 170Z" fill="${c}"/>`,
+      `<path d="M100 170 C60 145 20 110 20 75 C20 45 40 20 70 20 C85 20 100 35 100 35 C100 35 115 20 130 20 C160 20 180 45 180 75 C180 110 140 145 100 170Z" fill="${c}" ${OUTLINE}/>`,
   },
   {
     id: 'diamond',
-    name: 'ひし形（ダイヤ）',
+    name: 'ひしがた（ダイヤ）',
     speech: 'ひしがた',
-    svgBody: (c) => `<polygon points="100,10 190,100 100,190 10,100" fill="${c}"/>`,
+    svgBody: (c) => `<polygon points="100,10 190,100 100,190 10,100" fill="${c}" ${OUTLINE}/>`,
   },
   {
     id: 'rectangle',
     name: 'ちょうほうけい（よこしかく）',
     speech: 'ちょうほうけい',
-    svgBody: (c) => `<rect x="10" y="55" width="180" height="100" rx="8" fill="${c}"/>`,
+    svgBody: (c) => `<rect x="10" y="55" width="180" height="100" rx="8" fill="${c}" ${OUTLINE}/>`,
   },
   {
     id: 'oval',
-    name: 'たまご形（だえん）',
+    name: 'たまごがた（だえん）',
     speech: 'だえん',
-    svgBody: (c) => `<ellipse cx="100" cy="100" rx="85" ry="60" fill="${c}"/>`,
+    svgBody: (c) => `<ellipse cx="100" cy="100" rx="85" ry="60" fill="${c}" ${OUTLINE}/>`,
   },
 ]
 
@@ -163,6 +166,36 @@ function speak(text: string) {
   } catch {}
 }
 
+// まちがえやすい似た色・似た形を誤答候補に優先して混ぜ、弁別学習にする
+const SIMILAR_COLORS: Record<string, string[]> = {
+  red: ['pink', 'orange'], pink: ['red', 'purple'], orange: ['red', 'yellow'],
+  yellow: ['orange', 'green'], green: ['blue', 'yellow'], blue: ['purple', 'green'],
+  purple: ['blue', 'pink'], brown: ['orange', 'black'], black: ['brown', 'purple'],
+  white: ['yellow', 'pink'],
+}
+const SIMILAR_SHAPES: Record<string, string[]> = {
+  circle: ['oval', 'heart'], oval: ['circle', 'rectangle'],
+  square: ['rectangle', 'diamond'], rectangle: ['square', 'oval'],
+  diamond: ['square', 'triangle'], triangle: ['diamond', 'heart'],
+  star: ['diamond', 'triangle'], heart: ['circle', 'triangle'],
+}
+
+// 似たものを最大2つ優先し、残りをランダムで埋める
+function pickSimilarFirst<T extends { id: string }>(
+  correct: T,
+  all: T[],
+  simMap: Record<string, string[]>,
+  n = 3,
+): T[] {
+  const simIds = shuffle(simMap[correct.id] ?? []).slice(0, 2)
+  const sims = all.filter((x) => simIds.includes(x.id))
+  const rest = shuffle(all.filter((x) => x.id !== correct.id && !simIds.includes(x.id))).slice(
+    0,
+    n - sims.length,
+  )
+  return [...sims, ...rest]
+}
+
 function buildQuestions(mode: GameMode, count: number): Question[] {
   const qs: Question[] = []
   for (let i = 0; i < count; i++) {
@@ -170,7 +203,7 @@ function buildQuestions(mode: GameMode, count: number): Question[] {
     if (useIro) {
       const color = pick(COLORS)
       const shape = pick(SHAPES)
-      const distractors = shuffle(COLORS.filter((c) => c.id !== color.id)).slice(0, 3)
+      const distractors = pickSimilarFirst(color, COLORS, SIMILAR_COLORS)
       qs.push({
         type: 'iro',
         color,
@@ -181,7 +214,7 @@ function buildQuestions(mode: GameMode, count: number): Question[] {
     } else {
       const shape = pick(SHAPES)
       const color = pick(COLORS)
-      const distractors = shuffle(SHAPES.filter((s) => s.id !== shape.id)).slice(0, 3)
+      const distractors = pickSimilarFirst(shape, SHAPES, SIMILAR_SHAPES)
       qs.push({
         type: 'katachi',
         color,
@@ -212,6 +245,9 @@ export default function IroPage() {
 
   const [chosenId, setChosenId] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
+  const [attempt, setAttempt] = useState<0 | 1>(0)              // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrong, setFirstWrong] = useState<string | null>(null)
+  const finishedRef = useRef(false)                              // 「つぎへ」連打による結果二重保存ガード
 
   const startGame = useCallback(() => {
     const qs = buildQuestions(mode, count)
@@ -223,6 +259,9 @@ export default function IroPage() {
     setLog([])
     setChosenId(null)
     setShowFeedback(false)
+    setAttempt(0)
+    setFirstWrong(null)
+    finishedRef.current = false
     setPhase('game')
     const q = qs[0]
     if (q) {
@@ -232,52 +271,53 @@ export default function IroPage() {
 
   const handleAnswer = useCallback(
     (cid: string) => {
-      if (chosenId !== null) return
+      if (chosenId !== null || cid === firstWrong) return
       const q = questions[idx]
       const correct = getCorrectId(q)
       const ok = cid === correct
+      const correctSpeech =
+        q.type === 'iro'
+          ? COLORS.find((c) => c.id === correct)?.speech ?? correct
+          : SHAPES.find((s) => s.id === correct)?.speech ?? correct
 
-      setChosenId(cid)
-      setShowFeedback(true)
-
-      let newCombo = combo
-      let newMaxCombo = maxCombo
-      let newScore = score
-
-      if (ok) {
-        newCombo = combo + 1
-        if (newCombo > maxCombo) newMaxCombo = newCombo
-        const comboBonus = Math.min(newCombo - 1, 5) * 20
-        newScore = score + 100 + comboBonus
-        setCombo(newCombo)
-        setMaxCombo(newMaxCombo)
-        setScore(newScore)
-
-        const answerSpeech =
-          q.type === 'iro' ? q.color.speech : q.shape.speech
-        speak(
-          newCombo >= 3
-            ? 'すごい！' + newCombo + 'れんぞく！'
-            : 'せいかい！' + answerSpeech + '！',
-        )
-      } else {
-        setCombo(0)
-        newCombo = 0
-        const correctSpeech =
-          q.type === 'iro'
-            ? COLORS.find((c) => c.id === correct)?.speech ?? correct
-            : SHAPES.find((s) => s.id === correct)?.speech ?? correct
-        speak('ざんねん。' + correctSpeech + ' だよ！')
+      if (attempt === 0) {
+        // スコア・コンボは1回目の解答のみで記録する
+        setLog((prev) => [...prev, { q, chosenId: cid, ok }])
+        if (ok) {
+          const newCombo = combo + 1
+          if (newCombo > maxCombo) setMaxCombo(newCombo)
+          setCombo(newCombo)
+          setScore(score + 100 + Math.min(newCombo - 1, 5) * 20)
+          setChosenId(cid)
+          setShowFeedback(true)
+          speak(
+            newCombo >= 3
+              ? 'すごい！' + newCombo + 'れんぞく！'
+              : 'せいかい！' + correctSpeech + '！',
+          )
+        } else {
+          // 1回目は答えを見せず、もういちど見てもらう
+          setCombo(0)
+          setFirstWrong(cid)
+          setAttempt(1)
+          speak('おしい！もういちど よくみてみよう！')
+        }
+        return
       }
 
-      setLog((prev) => [...prev, { q, chosenId: cid, ok }])
+      // 2回目: 記録は変えず、答え合わせだけ行う
+      setChosenId(cid)
+      setShowFeedback(true)
+      speak(ok ? 'そう！' + correctSpeech + ' だよ！' : 'こたえは ' + correctSpeech + ' だよ！')
     },
-    [chosenId, questions, idx, combo, maxCombo, score],
+    [chosenId, firstWrong, attempt, questions, idx, combo, maxCombo, score],
   )
 
   const nextQuestion = useCallback(() => {
     const nextIdx = idx + 1
     if (nextIdx >= questions.length) {
+      if (finishedRef.current) return  // 連打による二重保存を防ぐ
+      finishedRef.current = true
       const total = questions.length
       const correctCount = log.filter((l) => l.ok).length
       const pct = correctCount / total
@@ -294,6 +334,8 @@ export default function IroPage() {
       setIdx(nextIdx)
       setChosenId(null)
       setShowFeedback(false)
+      setAttempt(0)
+      setFirstWrong(null)
       const q = questions[nextIdx]
       speak(q.type === 'iro' ? 'この かたちは なにいろですか？' : 'この かたちの なまえは なんですか？')
     }
@@ -413,13 +455,23 @@ export default function IroPage() {
             </div>
           </div>
 
+          {/* 1かいめ まちがいのあとの はげまし */}
+          {attempt === 1 && chosenId === null && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
+              <p className="font-bold text-amber-600">💪 おしい！もういちど！</p>
+              <p className="text-sm text-gray-600 mt-1">よーく みて べつの こたえを えらんでね</p>
+            </div>
+          )}
+
           {/* Choices */}
           <div className="grid grid-cols-2 gap-3">
             {q.type === 'iro'
               ? (q.choices as ColorItem[]).map((c) => {
                   let btnClass =
                     'w-full py-3 rounded-2xl text-base font-bold transition-all flex items-center justify-center gap-2 '
-                  if (chosenId === null) {
+                  if (chosenId === null && c.id === firstWrong) {
+                    btnClass += 'bg-gray-100 text-gray-300'
+                  } else if (chosenId === null) {
                     btnClass += 'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
                   } else if (c.id === correctId) {
                     btnClass += 'bg-green-100 text-green-700 border-2 border-green-400'
@@ -433,7 +485,7 @@ export default function IroPage() {
                       key={c.id}
                       className={btnClass}
                       onClick={() => handleAnswer(c.id)}
-                      disabled={chosenId !== null}
+                      disabled={chosenId !== null || c.id === firstWrong}
                     >
                       <span
                         className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0"
@@ -446,7 +498,9 @@ export default function IroPage() {
               : (q.choices as ShapeItem[]).map((s) => {
                   let btnClass =
                     'w-full py-3 rounded-2xl text-sm font-bold transition-all '
-                  if (chosenId === null) {
+                  if (chosenId === null && s.id === firstWrong) {
+                    btnClass += 'bg-gray-100 text-gray-300'
+                  } else if (chosenId === null) {
                     btnClass += 'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
                   } else if (s.id === correctId) {
                     btnClass += 'bg-green-100 text-green-700 border-2 border-green-400'
@@ -460,7 +514,7 @@ export default function IroPage() {
                       key={s.id}
                       className={btnClass}
                       onClick={() => handleAnswer(s.id)}
-                      disabled={chosenId !== null}
+                      disabled={chosenId !== null || s.id === firstWrong}
                     >
                       {s.name}
                     </button>
@@ -475,17 +529,23 @@ export default function IroPage() {
                 chosenId === correctId ? 'bg-green-50' : 'bg-red-50'
               }`}
             >
-              <div className="text-3xl mb-1">{chosenId === correctId ? '⭕' : '❌'}</div>
+              <div className="text-3xl mb-1">
+                {chosenId === correctId ? (attempt === 0 ? '⭕' : '💪') : '❌'}
+              </div>
               {q.type === 'iro' ? (
                 <p className="text-sm font-bold text-gray-700">
                   {chosenId === correctId
-                    ? `せいかい！「${q.color.name}」だよ！`
+                    ? attempt === 0
+                      ? `せいかい！「${q.color.name}」だよ！`
+                      : `できたね！「${q.color.name}」だよ！`
                     : `せいかいは「${q.color.name}」だよ！`}
                 </p>
               ) : (
                 <p className="text-sm font-bold text-gray-700">
                   {chosenId === correctId
-                    ? `せいかい！「${q.shape.name}」だよ！`
+                    ? attempt === 0
+                      ? `せいかい！「${q.shape.name}」だよ！`
+                      : `できたね！「${q.shape.name}」だよ！`
                     : `せいかいは「${q.shape.name}」だよ！`}
                 </p>
               )}
@@ -570,7 +630,7 @@ export default function IroPage() {
             const qLabel =
               l.q.type === 'iro'
                 ? `${l.q.shape.name} → いろは？`
-                : `なにいろかの ${l.q.shape.name} → かたちは？`
+                : `${l.q.color.name}の かたち → なまえは？`
             const ans =
               l.q.type === 'iro' ? l.q.color.name : l.q.shape.name
             return (
