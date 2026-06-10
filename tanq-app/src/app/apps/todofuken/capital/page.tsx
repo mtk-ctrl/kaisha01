@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
 import { PREFECTURES, CAPITAL_DIFFERS_PREFS, type Prefecture } from '@/data/todofukenData'
 import { playCorrect, playWrong } from '@/lib/audio'
+import { saveScore } from '@/lib/scoreApi'
 
 const PROGRESS_KEY = 'tanq_todofuken_progress_v1'
 const Q_PER_ROUND = 10
@@ -31,7 +32,15 @@ function saveCapitalMastered(prefId: string) {
   }
 }
 
-function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
+// Fisher-Yates（sort(random)は偏るため使わない）
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 interface ChoiceInfo { capital: string; kana: string }
 interface Question { pref: Prefecture; choices: ChoiceInfo[] }
@@ -58,6 +67,9 @@ export default function CapitalQuiz() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [correctHistory, setCorrectHistory] = useState<Record<string, number>>({})
   const [wrongAnswers, setWrongAnswers] = useState<WrongItem[]>([])
+  // 0=1回目, 1=ヒントを見て再挑戦中（スコア・マスター記録は1回目のみ）
+  const [attempt, setAttempt] = useState<0 | 1>(0)
+  const [firstWrong, setFirstWrong] = useState<string | null>(null)
 
   function startQuiz(qm: QuizMode) {
     setQuizMode(qm)
@@ -68,41 +80,58 @@ export default function CapitalQuiz() {
     setIsCorrect(null)
     setCorrectHistory({})
     setWrongAnswers([])
+    setAttempt(0)
+    setFirstWrong(null)
     setMode('quiz')
   }
 
   function handleSelect(capital: string) {
     if (selected !== null) return
+    if (capital === firstWrong) return
     const q = questions[qIndex]
     const correct = capital === q.pref.capital
-    setSelected(capital)
-    setIsCorrect(correct)
     if (correct) {
       playCorrect()
-      setScore(s => s + 1)
-      setCorrectHistory(prev => {
-        const next = { ...prev, [q.pref.id]: (prev[q.pref.id] ?? 0) + 1 }
-        if (next[q.pref.id] >= 2) saveCapitalMastered(q.pref.id)
-        return next
-      })
-    } else {
-      playWrong()
+      setSelected(capital)
+      setIsCorrect(true)
+      if (attempt === 0) {
+        setScore(s => s + 1)
+        setCorrectHistory(prev => {
+          const next = { ...prev, [q.pref.id]: (prev[q.pref.id] ?? 0) + 1 }
+          if (next[q.pref.id] >= 2) saveCapitalMastered(q.pref.id)
+          return next
+        })
+      }
+      return
+    }
+    playWrong()
+    if (attempt === 0) {
+      // 1回目のまちがい: 答えは見せず、頭文字ヒントで再挑戦してもらう
+      setAttempt(1)
+      setFirstWrong(capital)
       setWrongAnswers(prev => [...prev, {
         emoji: q.pref.emoji,
         label: q.pref.name,
         correct: `${q.pref.capital}市`,
         given: `${capital}市`,
       }])
+      return
     }
+    // 2回目: 答え合わせと解説を見せる
+    setSelected(capital)
+    setIsCorrect(false)
   }
 
   function handleNext() {
     if (qIndex + 1 >= questions.length) {
+      saveScore('todofuken-capital', score, questions.length, quizMode)
       setMode('result')
     } else {
       setQIndex(i => i + 1)
       setSelected(null)
       setIsCorrect(null)
+      setAttempt(0)
+      setFirstWrong(null)
     }
   }
 
@@ -220,12 +249,29 @@ export default function CapitalQuiz() {
           <p className="text-sm text-gray-400 mt-1">{q.pref.kana} · {q.pref.region}</p>
         </div>
 
-        {/* 正解/不正解バナー */}
+        {/* 1回目のまちがい: 答えは見せず、頭文字ヒントで再挑戦 */}
+        {attempt === 1 && selected === null && (
+          <div className="mb-4 rounded-2xl py-3 px-4 bg-yellow-100 border-2 border-yellow-400">
+            <p className="font-black text-yellow-700 text-sm">💡 ヒント: 「<span className="text-lg">{q.pref.capitalKana[0]}</span>」ではじまる市だよ！</p>
+            <p className="text-xs text-yellow-600 mt-1">もういちど えらんでみよう（さっきのは えらべないよ）</p>
+          </div>
+        )}
+
+        {/* 正解/不正解バナー + 解説 */}
         {isCorrect !== null && (
-          <div className={`mb-4 rounded-2xl py-3 px-4 text-center font-black text-lg ${
-            isCorrect ? 'bg-green-500 text-white' : 'bg-red-400 text-white'
-          }`}>
-            {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.capital}市」`}
+          <div className={`mb-4 rounded-2xl overflow-hidden shadow-sm border-2 ${isCorrect ? 'border-green-400' : 'border-red-400'}`}>
+            <div className={`py-3 px-4 text-center font-black text-lg ${
+              isCorrect ? 'bg-green-500 text-white' : 'bg-red-400 text-white'
+            }`}>
+              {isCorrect ? '⭕ せいかい！' : `❌ ざんねん… 正解は「${q.pref.capital}市」`}
+            </div>
+            <div className="bg-purple-50 px-4 py-3">
+              <p className="text-xs font-bold text-purple-700 mb-1">💡 おぼえよう！</p>
+              <p className="text-sm text-gray-700 leading-relaxed">
+                <span className="font-bold">{q.pref.name}</span>（{q.pref.region}地方）の県庁所在地は <span className="font-bold">{q.pref.capital}市</span>（{q.pref.capitalKana}）。
+                {q.pref.capitalDiffers && ' 県名と所在地の名前がちがう、まちがえやすい県だよ！'}
+              </p>
+            </div>
           </div>
         )}
 
@@ -233,13 +279,16 @@ export default function CapitalQuiz() {
           {q.choices.map(({ capital, kana }) => {
             const isCorrectChoice  = capital === q.pref.capital
             const isSelectedChoice = selected === capital
+            const isFirstWrong     = capital === firstWrong
             let cls = 'bg-white border-2 border-gray-200'
             if (selected !== null) {
               if (isCorrectChoice)       cls = 'bg-green-100 border-2 border-green-500'
-              else if (isSelectedChoice) cls = 'bg-red-100 border-2 border-red-400'
+              else if (isSelectedChoice || isFirstWrong) cls = 'bg-red-100 border-2 border-red-400'
+            } else if (isFirstWrong) {
+              cls = 'bg-gray-100 border-2 border-gray-200 opacity-40'
             }
             return (
-              <button key={capital} onClick={() => handleSelect(capital)}
+              <button key={capital} onClick={() => handleSelect(capital)} disabled={isFirstWrong && selected === null}
                 className={`${cls} rounded-2xl py-4 px-3 text-center transition-all active:scale-95 shadow-sm`}>
                 <span className="block font-bold text-gray-800 text-base">{capital}市</span>
                 <span className="block text-xs text-gray-500 mt-0.5">{kana}</span>

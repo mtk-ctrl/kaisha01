@@ -218,16 +218,21 @@ export default function PatternGame({
 
   const [puzzleIdx, setPuzzleIdx] = useState(0)
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null)
-  const [result, setResult] = useState<'idle' | 'animating' | 'correct' | 'wrong'>('idle')
+  // retry=1回目のまちがいで再挑戦中（答えは見せない） / reveal=2回目のまちがいで答え合わせ
+  const [result, setResult] = useState<'idle' | 'animating' | 'correct' | 'retry' | 'reveal'>('idle')
   const [score, setScore] = useState(0)
   const [animStep, setAnimStep] = useState(-1)
   const [resultsLog, setResultsLog] = useState<boolean[]>([])
+  const [attempt, setAttempt] = useState<0 | 1>(0)
+  const [firstWrong, setFirstWrong] = useState<number | null>(null)
+  const [lastGenerated, setLastGenerated] = useState<string[] | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const puzzle = puzzles[puzzleIdx]
 
   function selectChoice(idx: number) {
-    if (result !== 'idle') return
+    if (result !== 'idle' && result !== 'retry') return
+    if (idx === firstWrong) return
     setSelectedChoice(idx)
 
     // Start animation
@@ -241,9 +246,25 @@ export default function PatternGame({
       if (step >= seq.length) {
         if (intervalRef.current) clearInterval(intervalRef.current)
         const correct = puzzle.choices[idx].correct
-        setResult(correct ? 'correct' : 'wrong')
-        if (correct) setScore((s) => s + 1)
-        setResultsLog((prev) => [...prev, correct])
+        // スコア・成績ログは1回目の解答のみ記録（再挑戦で水増ししない）
+        if (correct) {
+          if (attempt === 0) {
+            setScore((s) => s + 1)
+            setResultsLog((prev) => [...prev, true])
+          }
+          setResult('correct')
+        } else if (attempt === 0) {
+          // 1回目のまちがい: 答えは見せず、自分のならびと目標をくらべて再挑戦
+          setResultsLog((prev) => [...prev, false])
+          setAttempt(1)
+          setFirstWrong(idx)
+          setLastGenerated(seq)
+          setSelectedChoice(null)
+          setResult('retry')
+        } else {
+          // 2回目のまちがい: 答え合わせ
+          setResult('reveal')
+        }
       }
     }, 300)
   }
@@ -258,12 +279,9 @@ export default function PatternGame({
     setSelectedChoice(null)
     setResult('idle')
     setAnimStep(-1)
-  }
-
-  function retry() {
-    setSelectedChoice(null)
-    setResult('idle')
-    setAnimStep(-1)
+    setAttempt(0)
+    setFirstWrong(null)
+    setLastGenerated(null)
   }
 
   // Cleanup on unmount
@@ -273,10 +291,19 @@ export default function PatternGame({
     }
   }, [])
 
-  const animSequence =
-    selectedChoice !== null && result !== 'idle'
+  // 「きみのプログラムのならび」: アニメ中・答え合わせ中は選択中の choices、再挑戦中は直前のまちがい
+  const userSequence =
+    selectedChoice !== null && (result === 'animating' || result === 'correct' || result === 'reveal')
       ? puzzle.choices[selectedChoice].generates
-      : puzzle.sequence
+      : lastGenerated
+
+  // 目標とどこからちがうか（再挑戦の足場）
+  function firstMismatch(a: string[], b: string[]): number {
+    const n = Math.max(a.length, b.length)
+    for (let i = 0; i < n; i++) if (a[i] !== b[i]) return i
+    return -1
+  }
+  const mismatchAt = lastGenerated ? firstMismatch(lastGenerated, puzzle.sequence) : -1
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -293,25 +320,52 @@ export default function PatternGame({
       </div>
 
       {/* Target sequence */}
-      <div className="w-full max-w-sm bg-[#FFFFFF] rounded-2xl p-4 mb-4">
+      <div className="w-full max-w-sm bg-[#FFFFFF] rounded-2xl p-4 mb-3">
         <p className="text-[#6B5A52] text-xs mb-3 text-center">目標のならび</p>
-        <SequenceDisplay
-          items={result !== 'idle' ? animSequence : puzzle.sequence}
-          highlight={result !== 'idle' ? animStep : puzzle.sequence.length - 1}
-        />
+        <SequenceDisplay items={puzzle.sequence} highlight={puzzle.sequence.length - 1} />
       </div>
+
+      {/* User's program output: 目標とくらべて「どこからちがうか」を考える足場 */}
+      {result !== 'idle' && userSequence && (
+        <div
+          className="w-full max-w-sm bg-[#FFFFFF] rounded-2xl p-4 mb-3"
+          style={{ border: result === 'retry' ? '2px solid #f0c040' : '1px solid rgba(58,46,42,0.1)' }}
+        >
+          <p className="text-[#6B5A52] text-xs mb-3 text-center">きみのプログラムが作ったならび</p>
+          <SequenceDisplay
+            items={userSequence}
+            highlight={result === 'animating' ? animStep : userSequence.length - 1}
+          />
+        </div>
+      )}
 
       {/* Result display */}
       {result === 'correct' && (
         <div className="mb-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
           <span className="text-[#16a34a] font-black text-lg">せいかい！</span>
+          {attempt === 1 && (
+            <span className="text-[#6B5A52] text-xs mt-1">できたね！（スコアは1回目のこたえできまるよ）</span>
+          )}
         </div>
       )}
-      {result === 'wrong' && (
+      {result === 'retry' && (
+        <div
+          className="mb-4 w-full max-w-sm rounded-2xl px-4 py-3"
+          style={{ background: '#FFF3C4', border: '2px solid #f0c040' }}
+        >
+          <p className="text-xs font-black mb-1" style={{ color: '#ca8a04' }}>💡 ヒント</p>
+          <p className="text-sm font-bold text-[#3A2E2A] leading-relaxed">
+            {mismatchAt >= 0
+              ? `${mismatchAt + 1}ばんめから 目標とちがうよ。2つのならびをくらべて、べつのプログラムをえらんでみよう！`
+              : 'ならびのながさがちがうよ。くりかえす回数を見なおしてみよう！'}
+          </p>
+        </div>
+      )}
+      {result === 'reveal' && (
         <div className="mb-4 flex flex-col items-center">
-          <span className="text-7xl text-[#f87171]">×</span>
-          <span className="text-[#f87171] font-black text-lg">ちがうよ、もう一回！</span>
+          <span className="text-[#f87171] font-black text-lg">ざんねん…正解はこれ！</span>
+          <span className="text-[#6B5A52] text-xs mt-1">✓のプログラムが目標とおなじならびを作るよ</span>
         </div>
       )}
       {result === 'animating' && (
@@ -320,29 +374,34 @@ export default function PatternGame({
         </div>
       )}
 
-      {/* Choices */}
-      {result === 'idle' && (
+      {/* Choices（再挑戦中は1回目にまちがえた選択肢を消して、もう一度考えてもらう） */}
+      {(result === 'idle' || result === 'retry') && (
         <div className="w-full max-w-sm flex flex-col gap-3">
-          {puzzle.choices.map((choice, i) => (
-            <button
-              key={i}
-              onClick={() => selectChoice(i)}
-              className="w-full px-4 py-4 rounded-2xl font-bold text-sm text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#3A2E2A',
-              }}
-            >
-              <span className="text-[#6B5A52] mr-2 font-black">{['A', 'B', 'C', 'D'][i]})</span>
-              {choice.label}
-            </button>
-          ))}
+          {puzzle.choices.map((choice, i) => {
+            const disabled = i === firstWrong
+            return (
+              <button
+                key={i}
+                onClick={() => selectChoice(i)}
+                disabled={disabled}
+                className="w-full px-4 py-4 rounded-2xl font-bold text-sm text-left transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30 disabled:hover:scale-100"
+                style={{
+                  background: 'rgba(255,255,255,0.07)',
+                  border: disabled ? '1px solid #f87171' : '1px solid rgba(58,46,42,0.15)',
+                  color: '#3A2E2A',
+                }}
+              >
+                <span className="text-[#6B5A52] mr-2 font-black">{['A', 'B', 'C', 'D'][i]})</span>
+                {choice.label}
+                {disabled && ' ✗'}
+              </button>
+            )
+          })}
         </div>
       )}
 
-      {/* After animation: show answer state with highlighted choice */}
-      {(result === 'correct' || result === 'wrong') && selectedChoice !== null && (
+      {/* 答え合わせ: 正解の選択肢をハイライト */}
+      {(result === 'correct' || result === 'reveal') && (
         <div className="w-full max-w-sm flex flex-col gap-3">
           {puzzle.choices.map((choice, i) => {
             const isSelected = i === selectedChoice
@@ -362,7 +421,7 @@ export default function PatternGame({
                       ? '#4ade80'
                       : isSelected
                       ? '#f87171'
-                      : 'rgba(255,255,255,0.1)'
+                      : 'rgba(58,46,42,0.1)'
                   }`,
                   color: isCorrChoice ? '#16a34a' : isSelected ? '#dc2626' : '#6B5A52',
                 }}
@@ -378,21 +437,12 @@ export default function PatternGame({
 
       {/* Buttons */}
       <div className="mt-5 flex flex-col gap-3 w-full max-w-sm">
-        {result === 'correct' && (
+        {(result === 'correct' || result === 'reveal') && (
           <button
             onClick={next}
             className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] bg-[#4ade80] hover:scale-[1.02] transition-all"
           >
             {puzzleIdx + 1 < total ? '次のもんだい →' : '結果を見る！'}
-          </button>
-        )}
-        {result === 'wrong' && (
-          <button
-            onClick={retry}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
-            style={{ background: '#f0c040' }}
-          >
-            もう一回！
           </button>
         )}
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
-import { Dir, findPos, simulatePath } from './MazeGame'
+import React, { useState, useRef, useEffect } from 'react'
+import { Dir, findPos, simulatePath, buildFailMessage, FailHintBox } from './MazeGame'
 
 // ─── Debug puzzle data ────────────────────────────────────────────────────────
 
@@ -222,6 +222,11 @@ export default function DebugGame({
   const [animStep, setAnimStep] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [resultsLog, setResultsLog] = useState<boolean[]>([])
+  const [runCount, setRunCount] = useState(0) // この問題で何回じっこうしたか（スコアは1回目のみ）
+  const [failMsg, setFailMsg] = useState<string | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current) }, [])
 
   const puzzle = puzzles[puzzleIdx]
   const [goalR, goalC] = findPos(puzzle.grid, 'G')
@@ -247,23 +252,30 @@ export default function DebugGame({
 
   function runProgram() {
     if (isRunning) return
-    const path = simulatePath(puzzle.grid, userCmds)
+    const cmds = userCmds
+    const path = simulatePath(puzzle.grid, cmds)
+    const firstRun = runCount === 0
     setAnimPath(path)
     setAnimStep(0)
     setIsRunning(true)
 
     let step = 0
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       step++
       setAnimStep(step)
       if (step >= path.length) {
-        clearInterval(interval)
+        if (intervalRef.current) clearInterval(intervalRef.current)
         const [fr, fc] = path[path.length - 1]
         const correct = fr === goalR && fc === goalC
         setResult(correct ? 'correct' : 'wrong')
         setIsRunning(false)
-        if (correct) setScore((s) => s + 1)
-        setResultsLog((prev) => [...prev, correct])
+        // スコア・成績ログは1回目のじっこうのみ記録（リトライで水増ししない）
+        if (firstRun) {
+          if (correct) setScore((s) => s + 1)
+          setResultsLog((prev) => [...prev, correct])
+        }
+        if (!correct) setFailMsg(buildFailMessage(cmds, path, [goalR, goalC]))
+        setRunCount((c) => c + 1)
       }
     }, 380)
   }
@@ -280,12 +292,16 @@ export default function DebugGame({
     setResult('idle')
     setAnimPath([])
     setAnimStep(0)
+    setRunCount(0)
+    setFailMsg(null)
   }
 
-  function reset() {
-    setUserCmds([...puzzle.brokenProgram])
-    setChangedIndices(new Set())
+  // 直したコマンドは消さずに、つづきからデバッグできるようにする
+  function retry() {
     setResult('idle')
+    setAnimPath([])
+    setAnimStep(0)
+    setFailMsg(null)
   }
 
   return (
@@ -337,12 +353,15 @@ export default function DebugGame({
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
           <span className="text-[#16a34a] font-black text-lg">バグ修正！すごい！</span>
+          {runCount > 1 && (
+            <span className="text-[#6B5A52] text-xs mt-1">あきらめずに直せたね！（スコアは1回目のこたえできまるよ）</span>
+          )}
         </div>
       )}
       {result === 'wrong' && (
-        <div className="my-4 flex flex-col items-center">
-          <span className="text-7xl text-[#f87171]">×</span>
+        <div className="my-3 flex flex-col items-center gap-2">
           <span className="text-[#f87171] font-black text-lg">まだバグがあるよ！</span>
+          {failMsg && <FailHintBox message={failMsg} />}
         </div>
       )}
 
@@ -368,11 +387,11 @@ export default function DebugGame({
         )}
         {result === 'wrong' && (
           <button
-            onClick={reset}
+            onClick={retry}
             className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
             style={{ background: '#f0c040' }}
           >
-            リセット
+            つづきを直す
           </button>
         )}
       </div>

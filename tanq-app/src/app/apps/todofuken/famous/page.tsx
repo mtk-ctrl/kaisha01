@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
 import { PREFECTURES, type Prefecture, type FamousItem } from '@/data/todofukenData'
 import { playCorrect, playWrong } from '@/lib/audio'
+import { saveScore } from '@/lib/scoreApi'
 
 const PROGRESS_KEY = 'tanq_todofuken_progress_v1'
 const Q_PER_ROUND = 10
@@ -27,7 +28,15 @@ function saveFamousMastered(prefId: string) {
   }
 }
 
-function shuffle<T>(arr: T[]): T[] { return [...arr].sort(() => Math.random() - 0.5) }
+// Fisher-Yates（sort(random)は偏るため使わない）
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 interface Question { pref: Prefecture; item: FamousItem; choices: Prefecture[] }
 interface WrongItem { emoji: string; label: string; correct: string; given: string }
@@ -62,6 +71,9 @@ export default function FamousQuiz() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
   const [correctHistory, setCorrectHistory] = useState<Record<string, number>>({})
   const [wrongAnswers, setWrongAnswers] = useState<WrongItem[]>([])
+  // 0=1回目, 1=ヒントを見て再挑戦中（スコア・マスター記録は1回目のみ）
+  const [attempt, setAttempt] = useState<0 | 1>(0)
+  const [firstWrong, setFirstWrong] = useState<string | null>(null)
 
   function startQuiz(diff: Difficulty) {
     const qs = buildQuestions(diff)
@@ -74,37 +86,54 @@ export default function FamousQuiz() {
     setIsCorrect(null)
     setCorrectHistory({})
     setWrongAnswers([])
+    setAttempt(0)
+    setFirstWrong(null)
     setPhase('quiz')
   }
 
   function handleSelect(pref: Prefecture) {
     if (selected !== null) return
+    if (pref.id === firstWrong) return
     const q = questions[qIndex]
-    setSelected(pref.id)
     const correct = pref.id === q.pref.id
-    setIsCorrect(correct)
     if (correct) {
       playCorrect()
-      setScore(s => s + 1)
-      setCorrectHistory(prev => {
-        const next = { ...prev, [q.pref.id]: (prev[q.pref.id] ?? 0) + 1 }
-        if (next[q.pref.id] >= 2) saveFamousMastered(q.pref.id)
-        return next
-      })
-    } else {
-      playWrong()
+      setSelected(pref.id)
+      setIsCorrect(true)
+      if (attempt === 0) {
+        setScore(s => s + 1)
+        setCorrectHistory(prev => {
+          const next = { ...prev, [q.pref.id]: (prev[q.pref.id] ?? 0) + 1 }
+          if (next[q.pref.id] >= 2) saveFamousMastered(q.pref.id)
+          return next
+        })
+      }
+      return
+    }
+    playWrong()
+    if (attempt === 0) {
+      // 1回目のまちがい: 答えは見せず、地方ヒントで再挑戦してもらう
+      setAttempt(1)
+      setFirstWrong(pref.id)
       setWrongAnswers(prev => [...prev, {
         emoji: q.item.emoji,
         label: q.item.name,
         correct: q.pref.name,
         given: pref.name,
       }])
+      return
     }
+    // 2回目: 答え合わせと解説を見せる
+    setSelected(pref.id)
+    setIsCorrect(false)
   }
 
   function handleNext() {
-    if (qIndex + 1 >= questions.length) setPhase('result')
-    else { setQIndex(i => i + 1); setSelected(null); setIsCorrect(null) }
+    if (qIndex + 1 >= questions.length) {
+      saveScore('todofuken-famous', score, questions.length, String(difficulty))
+      setPhase('result')
+    }
+    else { setQIndex(i => i + 1); setSelected(null); setIsCorrect(null); setAttempt(0); setFirstWrong(null) }
   }
 
   if (phase === 'menu') {
@@ -214,6 +243,14 @@ export default function FamousQuiz() {
           <p className="text-base font-black text-gray-800 leading-snug break-words">{q.item.name}</p>
         </div>
 
+        {/* 1回目のまちがい: 答えは見せず、地方ヒントで再挑戦 */}
+        {attempt === 1 && selected === null && (
+          <div className="mb-4 rounded-2xl py-3 px-4 bg-yellow-100 border-2 border-yellow-400">
+            <p className="font-black text-yellow-700 text-sm">💡 ヒント: <span className="font-black">{q.pref.region}地方</span>の都道府県だよ！</p>
+            <p className="text-xs text-yellow-600 mt-1">もういちど えらんでみよう（さっきのは えらべないよ）</p>
+          </div>
+        )}
+
         {/* 正解/不正解 + 解説パネル */}
         {isCorrect !== null && (
           <div className={`mb-4 rounded-2xl overflow-hidden shadow-sm border-2 ${
@@ -241,13 +278,16 @@ export default function FamousQuiz() {
           {q.choices.map(pref => {
             const isCorrectPref = pref.id === q.pref.id
             const isSelectedPref = selected === pref.id
+            const isFirstWrong = pref.id === firstWrong
             let cls = 'bg-white border-2 border-gray-200'
             if (selected !== null) {
               if (isCorrectPref)    cls = 'bg-green-100 border-2 border-green-500'
-              else if (isSelectedPref) cls = 'bg-red-100 border-2 border-red-400'
+              else if (isSelectedPref || isFirstWrong) cls = 'bg-red-100 border-2 border-red-400'
+            } else if (isFirstWrong) {
+              cls = 'bg-gray-100 border-2 border-gray-200 opacity-40'
             }
             return (
-              <button key={pref.id} onClick={() => handleSelect(pref)}
+              <button key={pref.id} onClick={() => handleSelect(pref)} disabled={isFirstWrong && selected === null}
                 className={`${cls} rounded-2xl py-4 px-3 font-bold text-gray-800 text-center transition-all active:scale-95 shadow-sm`}>
                 {pref.name}
                 <span className="block text-xs text-gray-500 font-normal mt-0.5">{pref.kana}</span>

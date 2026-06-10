@@ -372,11 +372,15 @@ export default function ConditionalGame({
 
   const [puzzleIdx, setPuzzleIdx] = useState(0)
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null)
-  const [result, setResult] = useState<'idle' | 'animating' | 'correct' | 'wrong'>('idle')
+  // retry=1回目のまちがいで再挑戦中（答えは見せない） / reveal=2回目のまちがいで答え合わせ
+  const [result, setResult] = useState<'idle' | 'animating' | 'correct' | 'retry' | 'reveal'>('idle')
   const [score, setScore] = useState(0)
   const [animPath, setAnimPath] = useState<[number, number][]>([])
   const [animStep, setAnimStep] = useState(0)
   const [resultsLog, setResultsLog] = useState<boolean[]>([])
+  const [attempt, setAttempt] = useState<0 | 1>(0)
+  const [firstWrong, setFirstWrong] = useState<number | null>(null)
+  const [failMsg, setFailMsg] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const puzzle = puzzles[puzzleIdx]
@@ -387,8 +391,23 @@ export default function ConditionalGame({
       ? animPath[Math.min(animStep, animPath.length - 1)]
       : findPos(puzzle.grid, 'S')
 
+  // 止まった場所からゴールがどの向きにあるかを伝える足場メッセージ
+  function buildStopMessage(path: [number, number][]): string {
+    const [fr, fc] = path[path.length - 1]
+    const dr = goalR - fr
+    const dc = goalC - fc
+    const parts: string[] = []
+    if (dr > 0) parts.push(`した${dr}マス`)
+    if (dr < 0) parts.push(`うえ${-dr}マス`)
+    if (dc > 0) parts.push(`みぎ${dc}マス`)
+    if (dc < 0) parts.push(`ひだり${-dc}マス`)
+    const where = parts.length > 0 ? `ゴール⭐は そこから ${parts.join('・')}のところ。` : ''
+    return `ロボットは ⭐じゃないところで止まっちゃった。${where}色のますで どっちにすすめばゴールに行けるか、もう一度考えてみよう！`
+  }
+
   function selectChoice(idx: number) {
-    if (result !== 'idle') return
+    if (result !== 'idle' && result !== 'retry') return
+    if (idx === firstWrong) return
     setSelectedChoice(idx)
     setResult('animating')
 
@@ -405,9 +424,25 @@ export default function ConditionalGame({
         if (intervalRef.current) clearInterval(intervalRef.current)
         const [fr, fc] = path[path.length - 1]
         const correct = fr === goalR && fc === goalC
-        setResult(correct ? 'correct' : 'wrong')
-        if (correct) setScore((s) => s + 1)
-        setResultsLog((prev) => [...prev, correct])
+        // スコア・成績ログは1回目の解答のみ記録（再挑戦で水増ししない）
+        if (correct) {
+          if (attempt === 0) {
+            setScore((s) => s + 1)
+            setResultsLog((prev) => [...prev, true])
+          }
+          setResult('correct')
+        } else if (attempt === 0) {
+          // 1回目のまちがい: 答えは見せず、止まった場所をヒントに再挑戦
+          setResultsLog((prev) => [...prev, false])
+          setAttempt(1)
+          setFirstWrong(idx)
+          setFailMsg(buildStopMessage(path))
+          setSelectedChoice(null)
+          setResult('retry')
+        } else {
+          // 2回目のまちがい: 答え合わせ
+          setResult('reveal')
+        }
       }
     }, 380)
   }
@@ -423,13 +458,9 @@ export default function ConditionalGame({
     setResult('idle')
     setAnimPath([])
     setAnimStep(0)
-  }
-
-  function retry() {
-    setSelectedChoice(null)
-    setResult('idle')
-    setAnimPath([])
-    setAnimStep(0)
+    setAttempt(0)
+    setFirstWrong(null)
+    setFailMsg(null)
   }
 
   useEffect(() => {
@@ -461,12 +492,24 @@ export default function ConditionalGame({
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
           <span className="text-[#16a34a] font-black text-lg">ゴール！すごい！</span>
+          {attempt === 1 && (
+            <span className="text-[#6B5A52] text-xs mt-1">できたね！（スコアは1回目のこたえできまるよ）</span>
+          )}
         </div>
       )}
-      {result === 'wrong' && (
+      {result === 'retry' && failMsg && (
+        <div
+          className="my-3 w-full max-w-sm rounded-2xl px-4 py-3"
+          style={{ background: '#FFF3C4', border: '2px solid #f0c040' }}
+        >
+          <p className="text-xs font-black mb-1" style={{ color: '#ca8a04' }}>🤖 ロボットからのほうこく</p>
+          <p className="text-sm font-bold text-[#3A2E2A] leading-relaxed">{failMsg}</p>
+        </div>
+      )}
+      {result === 'reveal' && (
         <div className="my-4 flex flex-col items-center">
-          <span className="text-7xl text-[#f87171]">×</span>
-          <span className="text-[#f87171] font-black text-lg">ゴールに着かなかった…</span>
+          <span className="text-[#f87171] font-black text-lg">ざんねん…正解はこれ！</span>
+          <span className="text-[#6B5A52] text-xs mt-1">✓のルールならゴールに行けるよ</span>
         </div>
       )}
       {result === 'animating' && (
@@ -475,29 +518,34 @@ export default function ConditionalGame({
         </div>
       )}
 
-      {/* Choices */}
-      {result === 'idle' && (
+      {/* Choices（再挑戦中は1回目にまちがえた選択肢を消して、もう一度考えてもらう） */}
+      {(result === 'idle' || result === 'retry') && (
         <div className="mt-4 w-full max-w-sm flex flex-col gap-3">
-          {puzzle.choices.map((choice, i) => (
-            <button
-              key={i}
-              onClick={() => selectChoice(i)}
-              className="w-full px-4 py-4 rounded-2xl font-bold text-sm text-left transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                color: '#3A2E2A',
-              }}
-            >
-              <span className="text-[#6B5A52] mr-2 font-black">{['A', 'B', 'C', 'D'][i]})</span>
-              {choice.label}
-            </button>
-          ))}
+          {puzzle.choices.map((choice, i) => {
+            const disabled = i === firstWrong
+            return (
+              <button
+                key={i}
+                onClick={() => selectChoice(i)}
+                disabled={disabled}
+                className="w-full px-4 py-4 rounded-2xl font-bold text-sm text-left transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30 disabled:hover:scale-100"
+                style={{
+                  background: 'rgba(255,255,255,0.07)',
+                  border: disabled ? '1px solid #f87171' : '1px solid rgba(58,46,42,0.15)',
+                  color: '#3A2E2A',
+                }}
+              >
+                <span className="text-[#6B5A52] mr-2 font-black">{['A', 'B', 'C', 'D'][i]})</span>
+                {choice.label}
+                {disabled && ' ✗'}
+              </button>
+            )
+          })}
         </div>
       )}
 
       {/* After result: show highlighted choices */}
-      {(result === 'correct' || result === 'wrong') && selectedChoice !== null && (
+      {(result === 'correct' || result === 'reveal') && selectedChoice !== null && (
         <div className="w-full max-w-sm flex flex-col gap-3">
           {puzzle.choices.map((choice, i) => {
             const isSelected = i === selectedChoice
@@ -533,21 +581,12 @@ export default function ConditionalGame({
 
       {/* Buttons */}
       <div className="mt-5 flex flex-col gap-3 w-full max-w-sm">
-        {result === 'correct' && (
+        {(result === 'correct' || result === 'reveal') && (
           <button
             onClick={next}
             className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] bg-[#4ade80] hover:scale-[1.02] transition-all"
           >
             {puzzleIdx + 1 < total ? '次のもんだい →' : '結果を見る！'}
-          </button>
-        )}
-        {result === 'wrong' && (
-          <button
-            onClick={retry}
-            className="w-full py-4 rounded-2xl font-black text-lg text-[#3A2E2A] hover:scale-[1.02] transition-all"
-            style={{ background: '#f0c040' }}
-          >
-            もう一回！
           </button>
         )}
       </div>
