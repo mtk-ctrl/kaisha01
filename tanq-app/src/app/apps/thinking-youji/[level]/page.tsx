@@ -10,9 +10,36 @@ import {
   getYoujiLevelProgress, getYoujiLevelStars, recordYoujiLevelResult, updateYoujiStreak,
   type YoujiProgress
 } from '@/lib/thinkingYoujiProgress'
+import { shuffle } from '@/lib/idiomQuiz'
+import { saveScore } from '@/lib/scoreApi'
 
 const SESSION_KEY = 'tanq-lab-auth'
 const GUEST_FREE_LEVELS = 2
+
+// 選択肢をシャッフルして正解位置を分散させる（データ上は常に先頭が正解のため必須）
+function shuffleOptions(q: (typeof YOUJI_QUESTIONS)[0]): (typeof YOUJI_QUESTIONS)[0] {
+  const order = shuffle(q.options.map((_, i) => i))
+  return {
+    ...q,
+    options: order.map(i => q.options[i]) as typeof q.options,
+    correctIndex: order.indexOf(q.correctIndex) as typeof q.correctIndex,
+  }
+}
+
+// ─── 考え方の足場ヒント（タイプ別・絵文字＋みじかい ひらがな）──
+const TYPE_HINTS: Record<string, string> = {
+  Y1:  '👆 ゆびで さしながら かぞえてみよう！',
+  Y2:  '👀 ふたつを ならべて くらべてみよう！',
+  Y3:  '🎨 ほんものの いろを おもいだそう！',
+  Y4:  '🔎 みんなと ちがうのは どれかな？',
+  Y5:  '🗣️ ならびを こえに だして よんでみよう！',
+  Y6:  '🐾 どうぶつさんの ようすを おもいだそう！',
+  Y7:  '📍 うえ？した？まえ？うしろ？ ゆびで さしてみよう！',
+  Y8:  '✏️ かたちを ゆびで そらに かいてみよう！',
+  Y9:  '❗ いつもの ようすと くらべてみよう！',
+  Y10: '🌿 おそとで みたことを おもいだそう！',
+}
+const DEFAULT_HINT = '🐰 ゆっくりで いいよ。もういちど よく みてみよう！'
 
 function getUserType(): 'guest' | 'tester' | 'member' {
   if (typeof window === 'undefined') return 'guest'
@@ -114,11 +141,13 @@ function BadgeToast({ badgeId, type, onDone }: { badgeId: string; type: 'silver'
 function ReviewScreen({
   question,
   selectedIndex,
+  firstTry,
   onNext,
   consecutiveCorrect,
 }: {
   question: (typeof YOUJI_QUESTIONS)[0]
   selectedIndex: number
+  firstTry: boolean
   onNext: () => void
   consecutiveCorrect: number
 }) {
@@ -138,8 +167,11 @@ function ReviewScreen({
     <div className="flex flex-col h-full">
       <div className={`px-4 py-4 text-center ${correct ? 'bg-green-50' : 'bg-red-50'}`}>
         <div className={`text-2xl font-bold mb-1 ${correct ? 'text-green-600' : 'text-red-500'}`}>
-          {correct ? '✅ せいかい！' : 'おしい！'}
+          {correct ? (firstTry ? '✅ せいかい！' : '💪 できたね！') : 'おしい！'}
         </div>
+        {!firstTry && correct && (
+          <div className="text-xs text-green-700">じぶんで かんがえなおせて すごい！</div>
+        )}
         <RabbitCharacter mood={rabbitMood} />
         {streakMsg && (
           <div className="mt-2 text-sm font-bold text-purple-600 animate-pulse">{streakMsg}</div>
@@ -313,6 +345,8 @@ export default function YoujiGamePage() {
   const [questions, setQuestions] = useState<typeof YOUJI_QUESTIONS>([])
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
+  const [attempt, setAttempt] = useState<0 | 1>(0)              // 0=1かいめ, 1=ヒントをみて さいちょうせん
+  const [firstWrong, setFirstWrong] = useState<number | null>(null)
   const [correctIds, setCorrectIds] = useState<number[]>([])
   const [showFireworks, setShowFireworks] = useState(false)
   const [toasts, setToasts] = useState<{ id: string; type: 'silver' | 'gold' }[]>([])
@@ -329,7 +363,7 @@ export default function YoujiGamePage() {
       router.replace('/apps/thinking-youji')
       return
     }
-    const qs = YOUJI_QUESTIONS.filter(q => q.level === level)
+    const qs = YOUJI_QUESTIONS.filter(q => q.level === level).map(shuffleOptions)
     setQuestions(qs)
   }, [level, router])
 
@@ -340,21 +374,34 @@ export default function YoujiGamePage() {
 
   function handleAnswer(idx: number) {
     if (selected !== null || !progress) return
-    setSelected(idx)
+    if (idx === firstWrong) return
 
     const correct = idx === q.correctIndex
-    const newCorrectIds = correct ? [...correctIds, q.id] : correctIds
-    setCorrectIds(newCorrectIds)
 
-    const updatedProgress = updateYoujiStreak(correct, progress)
-    setProgress(updatedProgress)
-    saveYoujiProgress(updatedProgress)
+    if (attempt === 0) {
+      // スコア・ストリークは初回解答のみで記録する（再挑戦で水増ししない）
+      const updatedProgress = updateYoujiStreak(correct, progress)
+      setProgress(updatedProgress)
+      saveYoujiProgress(updatedProgress)
 
-    if (updatedProgress.consecutiveCorrect >= 5) {
-      setShowFireworks(true)
-      setTimeout(() => setShowFireworks(false), 1500)
+      if (correct) {
+        setCorrectIds(ids => [...ids, q.id])
+        if (updatedProgress.consecutiveCorrect >= 5) {
+          setShowFireworks(true)
+          setTimeout(() => setShowFireworks(false), 1500)
+        }
+        setSelected(idx)
+        setPhase('review')
+      } else {
+        // 1回目のまちがい: 答えは見せず、ヒントを出してもう一度考えてもらう
+        setFirstWrong(idx)
+        setAttempt(1)
+      }
+      return
     }
 
+    // 2回目: 記録は変えず、答え合わせだけ行う
+    setSelected(idx)
     setPhase('review')
   }
 
@@ -362,12 +409,15 @@ export default function YoujiGamePage() {
     if (current + 1 < questions.length) {
       setCurrent(c => c + 1)
       setSelected(null)
+      setAttempt(0)
+      setFirstWrong(null)
       setPhase('question')
     } else {
       if (!progress) return
       const { updated, newSilver, newGold } = recordYoujiLevelResult(level, correctIds, progress)
       setProgress(updated)
       saveYoujiProgress(updated)
+      saveScore('thinking-youji', correctIds.length, questions.length, `lv${level}`)
       setResultData({ newSilver, newGold })
 
       const allToasts = [
@@ -388,8 +438,12 @@ export default function YoujiGamePage() {
   function handleRetry() {
     const p = loadYoujiProgress()
     setProgress(p)
+    // 選択肢の並びを覚えてしまわないよう再シャッフル
+    setQuestions(YOUJI_QUESTIONS.filter(q2 => q2.level === level).map(shuffleOptions))
     setCurrent(0)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
     setCorrectIds([])
     setToasts([])
     setPhase('question')
@@ -452,12 +506,15 @@ export default function YoujiGamePage() {
             questionIndex={current}
             total={questions.length}
             onAnswer={handleAnswer}
+            hint={attempt === 1 ? (TYPE_HINTS[q.type] ?? DEFAULT_HINT) : null}
+            disabledIndex={firstWrong}
           />
         )}
         {phase === 'review' && selected !== null && (
           <ReviewScreen
             question={q}
             selectedIndex={selected}
+            firstTry={attempt === 0}
             onNext={handleNext}
             consecutiveCorrect={consecutiveCorrect}
           />
@@ -480,12 +537,14 @@ export default function YoujiGamePage() {
 
 // ─── 問題画面 ─────────────────────────────────────────────
 function QuestionScreen({
-  question, questionIndex, total, onAnswer,
+  question, questionIndex, total, onAnswer, hint, disabledIndex,
 }: {
   question: (typeof YOUJI_QUESTIONS)[0]
   questionIndex: number
   total: number
   onAnswer: (idx: number) => void
+  hint: string | null
+  disabledIndex: number | null
 }) {
   return (
     <div className="flex flex-col h-full">
@@ -500,22 +559,36 @@ function QuestionScreen({
           </div>
         </div>
 
+        {/* 1かいめ まちがいのあとの ヒント */}
+        {hint && (
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 text-center">
+            <div className="text-amber-600 font-bold text-base mb-1">おしい！</div>
+            <div className="text-lg text-gray-700 font-bold leading-relaxed">{hint}</div>
+          </div>
+        )}
+
         <div className="space-y-3 pb-4">
-          {question.options.map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => onAnswer(i)}
-              className="w-full text-left bg-white border-2 border-gray-200 rounded-2xl px-4 py-4
-                text-base text-gray-700 font-medium
-                active:scale-95 hover:border-pink-300 hover:bg-pink-50
-                transition-all duration-150 shadow-sm"
-            >
-              <span className="inline-block w-7 h-7 rounded-full bg-pink-100 text-pink-600 text-sm font-bold text-center leading-7 mr-3 shrink-0">
-                {['①', '②', '③', '④'][i]}
-              </span>
-              {opt}
-            </button>
-          ))}
+          {question.options.map((opt, i) => {
+            const isDisabled = i === disabledIndex
+            return (
+              <button
+                key={i}
+                onClick={() => onAnswer(i)}
+                disabled={isDisabled}
+                className={`w-full text-left rounded-2xl px-4 py-4
+                  text-base font-medium transition-all duration-150 shadow-sm
+                  ${isDisabled
+                    ? 'bg-gray-100 border-2 border-gray-200 text-gray-300 cursor-not-allowed'
+                    : 'bg-white border-2 border-gray-200 text-gray-700 active:scale-95 hover:border-pink-300 hover:bg-pink-50'}`}
+              >
+                <span className={`inline-block w-7 h-7 rounded-full text-sm font-bold text-center leading-7 mr-3 shrink-0
+                  ${isDisabled ? 'bg-gray-200 text-gray-400' : 'bg-pink-100 text-pink-600'}`}>
+                  {isDisabled ? '×' : ['①', '②', '③', '④'][i]}
+                </span>
+                {opt}
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

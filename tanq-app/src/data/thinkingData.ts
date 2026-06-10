@@ -398,7 +398,7 @@ export const THINKING_QUESTIONS: ThinkingQuestion[] = [
   },
   {
     id: 37, level: 8, type: 'C4', difficulty: 2,
-    question: '犬が泥だらけで、とても嬉しそうにしている。前に何があったと思う？',
+    question: '犬が泥だらけで、とても嬉しそうにしている。前に何があったと考えるのが、いちばん自然？',
     options: ['外で元気よく走り回った', '長い間眠っていた', 'ごはんをたくさん食べた', '水をいっぱい飲んだ'],
     correctIndex: 0,
     feedback: {
@@ -450,7 +450,7 @@ export const THINKING_QUESTIONS: ThinkingQuestion[] = [
   },
   {
     id: 42, level: 9, type: 'C4', difficulty: 2,
-    question: '子どもが溶けたアイスを持って泣いている。前に何があったと思う？',
+    question: '子どもが溶けたアイスを持って泣いている。前に何があったと考えるのが、いちばん自然？',
     options: ['暑い場所でアイスを持ったまま待っていた', 'アイスを冷凍庫に入れた', 'アイスを作った', 'アイスを買いに行った'],
     correctIndex: 0,
     feedback: {
@@ -502,7 +502,7 @@ export const THINKING_QUESTIONS: ThinkingQuestion[] = [
   },
   {
     id: 47, level: 10, type: 'C4', difficulty: 2,
-    question: 'サッカーボールが割れた窓のそばにある。前に何があったと思う？',
+    question: 'サッカーボールが割れた窓のそばにある。前に何があったと考えるのが、いちばん自然？',
     options: ['サッカーをしていてボールが窓に当たった', 'ボールが風で飛んできた', '誰かがボールを窓に投げた', '窓が古くて自分で割れた'],
     correctIndex: 0,
     feedback: {
@@ -1061,7 +1061,7 @@ export const THINKING_QUESTIONS: ThinkingQuestion[] = [
     options: ['16', '12', '10', '32'],
     correctIndex: 0,
     feedback: {
-      correct: '正解！1→2→4→8と2倍ずつ増えているよ。8×2＝16だね！Q89の2・4・8・16パターンと同じ「2倍」の規則だよ。',
+      correct: '正解！1→2→4→8と2倍ずつ増えているよ。8×2＝16だね！「前の数を2倍する」規則を見つけられたね。',
       incorrect: '惜しい！1→2（×2）→4（×2）→8（×2）と、2倍のパターンだよ。8×2＝16が次の数だね。',
     }
   },
