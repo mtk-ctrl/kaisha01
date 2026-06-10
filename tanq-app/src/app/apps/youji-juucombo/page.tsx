@@ -92,7 +92,11 @@ function buildQuestions(): Question[] {
     ;[false, true].forEach(askRight => {
       const knownNum = askRight ? p.a : p.b
       const answer = askRight ? p.b : p.a
+      // 数え飛ばしでありがちな ±1 を優先して誤答に混ぜる
       const choicesSet = new Set<number>([answer])
+      shuffle([answer - 1, answer + 1]).forEach(d => {
+        if (d >= 1 && d <= 9) choicesSet.add(d)
+      })
       while (choicesSet.size < 4) {
         choicesSet.add(Math.floor(Math.random() * 9) + 1)
       }
@@ -199,6 +203,9 @@ export default function JuucomboPage() {
   const [chosen, setChosen] = useState<number | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
   const [allFilled, setAllFilled] = useState(false)
+  const [attempt, setAttempt] = useState<0 | 1>(0)      // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrong, setFirstWrong] = useState<number | null>(null)
+  const finishedRef = useRef(false)                      // 「つぎへ」連打による結果二重保存ガード
   const [best, setBest] = useState<JuucomboBest>(() => {
     if (typeof window !== 'undefined') return loadBest()
     return { best: 0 }
@@ -218,29 +225,53 @@ export default function JuucomboPage() {
     setChosen(null)
     setShowFeedback(false)
     setAllFilled(false)
+    setAttempt(0)
+    setFirstWrong(null)
+    finishedRef.current = false
     setPhase('game')
     setTimeout(() => speak(`${qs[0].knownNum} たす いくつが じゅう に なるかな？`), 300)
   }, [])
 
   const handleAnswer = useCallback((c: number) => {
-    if (chosen !== null) return
+    if (chosen !== null || c === firstWrong) return
     const q = questions[idx]
     const ok = c === q.answer
+
+    if (attempt === 0) {
+      // スコアは1回目の解答のみ記録する
+      setLog(prev => [...prev, { question: q, chosen: c, ok }])
+      if (ok) {
+        setChosen(c)
+        setShowFeedback(true)
+        setAllFilled(true)
+        speak(`せいかい！ ${q.knownNum} と ${q.answer} で じゅう！`)
+        if (canvasRef.current) fireConfetti(canvasRef.current, false)
+      } else {
+        // 1回目は答えを見せず、あいた○を数え直してもういちど
+        setFirstWrong(c)
+        setAttempt(1)
+        speak('おしい！あいている まるを かぞえてみよう！')
+      }
+      return
+    }
+
+    // 2回目: 記録は変えず、答え合わせだけ行う
     setChosen(c)
     setShowFeedback(true)
+    setAllFilled(true)
     if (ok) {
-      setAllFilled(true)
-      speak(`せいかい！ ${q.knownNum} と ${q.answer} で じゅう！`)
+      speak(`できたね！ ${q.knownNum} と ${q.answer} で じゅう！`)
       if (canvasRef.current) fireConfetti(canvasRef.current, false)
     } else {
-      speak(`ざんねん！ こたえは ${q.answer} だよ！ ${q.knownNum} と ${q.answer} で じゅう！`)
+      speak(`こたえは ${q.answer} だよ！ ${q.knownNum} と ${q.answer} で じゅう！`)
     }
-    setLog(prev => [...prev, { question: q, chosen: c, ok }])
-  }, [chosen, questions, idx])
+  }, [chosen, firstWrong, attempt, questions, idx])
 
   const nextQuestion = useCallback(() => {
     const nextIdx = idx + 1
     if (nextIdx >= TOTAL) {
+      if (finishedRef.current) return  // 連打による二重保存を防ぐ
+      finishedRef.current = true
       const correctCount = log.filter(l => l.ok).length
       saveBestScore(correctCount)
       setBest(loadBest())
@@ -260,6 +291,8 @@ export default function JuucomboPage() {
       setChosen(null)
       setShowFeedback(false)
       setAllFilled(false)
+      setAttempt(0)
+      setFirstWrong(null)
       setTimeout(() => speak(`${questions[nextIdx].knownNum} たす いくつが じゅう に なるかな？`), 300)
     }
   }, [idx, log, questions])
@@ -381,11 +414,21 @@ export default function JuucomboPage() {
             <DotGrid filled={q.knownNum} empty={q.answer} allFilled={allFilled} />
           </div>
 
+          {/* 1かいめ まちがいのあとの はげまし */}
+          {attempt === 1 && chosen === null && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
+              <p className="font-bold text-amber-600">💪 おしい！もういちど！</p>
+              <p className="text-sm text-gray-600 mt-1">あいている ○を ゆびで かぞえてみよう</p>
+            </div>
+          )}
+
           {/* 4択ボタン */}
           <div className="grid grid-cols-2 gap-3">
             {q.choices.map((c, i) => {
               let btnClass = 'w-full py-4 rounded-2xl text-2xl font-black transition-all '
-              if (chosen === null) {
+              if (chosen === null && c === firstWrong) {
+                btnClass += 'bg-gray-100 text-gray-300'
+              } else if (chosen === null) {
                 btnClass += 'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
               } else if (c === q.answer) {
                 btnClass += 'bg-green-100 text-green-700 border-2 border-green-400'
@@ -399,7 +442,7 @@ export default function JuucomboPage() {
                   key={i}
                   className={btnClass}
                   onClick={() => handleAnswer(c)}
-                  disabled={chosen !== null}
+                  disabled={chosen !== null || c === firstWrong}
                 >
                   {c}
                 </button>
@@ -415,11 +458,13 @@ export default function JuucomboPage() {
               }`}
             >
               <div className="text-3xl mb-1">
-                {chosen === q.answer ? '⭕' : '❌'}
+                {chosen === q.answer ? (attempt === 0 ? '⭕' : '💪') : '❌'}
               </div>
               <p className="text-sm font-bold text-gray-700">
                 {chosen === q.answer
-                  ? `せいかい！ ${q.knownNum} ＋ ${q.answer} ＝ 10 だよ！`
+                  ? attempt === 0
+                    ? `せいかい！ ${q.knownNum} ＋ ${q.answer} ＝ 10 だよ！`
+                    : `できたね！ ${q.knownNum} ＋ ${q.answer} ＝ 10 だよ！`
                   : `こたえは ${q.answer} だよ！ ${q.knownNum} ＋ ${q.answer} ＝ 10 だね！`}
               </p>
               <button

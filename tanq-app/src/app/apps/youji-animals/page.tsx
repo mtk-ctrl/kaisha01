@@ -120,6 +120,7 @@ interface QuestionData {
   a: number
   b: number
   answer: number
+  choices: number[]
   animal1: AnimalData
   animal2?: AnimalData
   formula: string
@@ -133,6 +134,34 @@ type GameMode = 'add' | 'sub'
 type AnswerType = '4' | 'input'
 
 function rand<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+// 4択の誤答: ありがちな間違い（ひき算で逆に足す・数え飛ばし±1）を優先して混ぜる
+function makeChoices(answer: number, wrongSum: number | null, max: number): number[] {
+  const set = new Set<number>([answer])
+  if (wrongSum !== null && wrongSum !== answer && wrongSum <= max) set.add(wrongSum)
+  shuffle([answer - 1, answer + 1]).forEach(d => {
+    if (set.size < 4 && d > 0 && d <= max) set.add(d)
+  })
+  let attempts = 0
+  while (set.size < 4 && attempts < 200) {
+    attempts++
+    const offset = Math.floor(Math.random() * 8) - 4
+    const w = answer + (offset === 0 ? 1 : offset)
+    if (w > 0 && w <= max && w !== answer) set.add(w)
+  }
+  let fb = 1
+  while (set.size < 4) { if (!set.has(fb)) set.add(fb); fb++ }
+  return shuffle(Array.from(set))
+}
 
 function pickAnimal(exclude?: AnimalData | null): AnimalData {
   const pool = exclude ? ANIMALS.filter(a => a !== exclude) : ANIMALS
@@ -163,7 +192,7 @@ function makeQuestion(mode: GameMode, level: number): QuestionData {
       { questionText: `${a1.name}が ${a}ひきいます。\nそこへ ${a2.name}が ${b}ひき やってきました。\nぜんぶで なんひきですか？`, speechText: `${a1.name}が${a}ひき。${a2.name}が${b}ひきやってきました。ぜんぶでなんひきですか？` },
       { questionText: `${a1.name}のどうぶつえんに ${a}ひき、\n${a2.name}のどうぶつえんに ${b}ひきいます。\nあわせて なんひきですか？`, speechText: `${a1.name}のどうぶつえんに${a}ひき、${a2.name}のどうぶつえんに${b}ひき。あわせてなんひきですか？` },
     ])
-    return { type: 'add', a, b, answer, animal1: a1, animal2: a2, formula: `${a1.name} ${a} ＋ ${a2.name} ${b} ＝ ${answer}`, formulaSpeech: `${a}たす${b}は${answer}`, questionText: tmpl.questionText, speechText: tmpl.speechText }
+    return { type: 'add', a, b, answer, choices: makeChoices(answer, null, max + 5), animal1: a1, animal2: a2, formula: `${a1.name} ${a} ＋ ${a2.name} ${b} ＝ ${answer}`, formulaSpeech: `${a}たす${b}は${answer}`, questionText: tmpl.questionText, speechText: tmpl.speechText }
   } else {
     const useDiff = Math.random() < 0.4
     if (useDiff) {
@@ -176,7 +205,7 @@ function makeQuestion(mode: GameMode, level: number): QuestionData {
         { questionText: `${a1.name}が ${aCount}ひき、${a2.name}が ${bCount}ひきいます。\n${a1.name}は ${a2.name}より なんひきおおいですか？`, speechText: `${a1.name}が${aCount}ひき、${a2.name}が${bCount}ひき。${a1.name}は${a2.name}よりなんひきおおいですか？` },
         { questionText: `${a1.name}が ${aCount}ひき、${a2.name}が ${bCount}ひきいます。\nちがいは なんひきですか？`, speechText: `${a1.name}が${aCount}ひき、${a2.name}が${bCount}ひき。ちがいはなんひきですか？` },
       ])
-      return { type: 'sub', subType: 'difference', a: aCount, b: bCount, answer, animal1: a1, animal2: a2, formula: `${a1.name} ${aCount} ー ${a2.name} ${bCount} ＝ ${answer}`, formulaSpeech: `${aCount}ひく${bCount}は${answer}`, questionText: tmpl.questionText, speechText: tmpl.speechText }
+      return { type: 'sub', subType: 'difference', a: aCount, b: bCount, answer, choices: makeChoices(answer, aCount + bCount, max + 5), animal1: a1, animal2: a2, formula: `${a1.name} ${aCount} ー ${a2.name} ${bCount} ＝ ${answer}`, formulaSpeech: `${aCount}ひく${bCount}は${answer}`, questionText: tmpl.questionText, speechText: tmpl.speechText }
     } else {
       const total = Math.floor(Math.random() * (max - 1)) + 2
       const removed = Math.floor(Math.random() * (total - 1)) + 1
@@ -186,7 +215,7 @@ function makeQuestion(mode: GameMode, level: number): QuestionData {
         { questionText: `${a1.name}が ${total}ひきいます。\n${removed}ひきかえりました。\nのこりは なんひきですか？`, speechText: `${a1.name}が${total}ひき。${removed}ひきかえりました。のこりはなんひきですか？` },
         { questionText: `${a1.name}が ${total}ひきいます。\n${removed}ひきが にげてしまいました！\nのこりは なんひきですか？`, speechText: `${a1.name}が${total}ひき。${removed}ひきがにげてしまいました！のこりはなんひきですか？` },
       ])
-      return { type: 'sub', subType: 'leaving', a: total, b: removed, answer, animal1: a1, formula: `${a1.name} ${total} ー ${removed} ＝ ${answer}`, formulaSpeech: `${total}ひく${removed}は${answer}`, questionText: tmpl.questionText, speechText: tmpl.speechText }
+      return { type: 'sub', subType: 'leaving', a: total, b: removed, answer, choices: makeChoices(answer, total + removed, max + 5), animal1: a1, formula: `${a1.name} ${total} ー ${removed} ＝ ${answer}`, formulaSpeech: `${total}ひく${removed}は${answer}`, questionText: tmpl.questionText, speechText: tmpl.speechText }
     }
   }
 }
@@ -296,6 +325,9 @@ export default function AnimalsPage() {
   const [overlayFormula, setOverlayFormula] = useState('')
   const [streak, setStreakState] = useState(0)
   const [chosenVal, setChosenVal] = useState<number | null>(null)
+  const [attempt, setAttempt] = useState<0 | 1>(0)            // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrong, setFirstWrong] = useState<number | null>(null)
+  const finishedRef = useRef(false)                            // 「つぎへ」連打による結果二重保存ガード
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particlesRef = useRef<FireworkParticle[]>([])
@@ -408,48 +440,71 @@ export default function AnimalsPage() {
     setShowOverlay(false)
     setStreakState(0)
     setChosenVal(null)
+    setAttempt(0)
+    setFirstWrong(null)
+    finishedRef.current = false
     fireworksStop()
     setPhase('game')
     speak(qs[0].speechText)
   }, [mode, level, count, fireworksStop])
 
   const checkAnswer = useCallback((selected: number) => {
-    if (answered) return
-    setAnswered(true)
+    // 4たくでは1回目に選んだ誤答ボタンは無効化（numpadは2回目はどの値でも答え合わせ）
+    if (answered || (answerType === '4' && selected === firstWrong)) return
     const q = questions[current]
     const isOK = selected === q.answer
-    setChosenVal(selected)
 
-    if (isOK) {
+    if (attempt === 0) {
+      // スコア・記録は1回目の解答のみ
+      setResults(prev => [...prev, { correct: isOK, formula: q.formula }])
+      if (!isOK) {
+        // 1回目は答えを見せず、絵を数え直してもういちど
+        setAttempt(1)
+        setFirstWrong(selected)
+        setNumpadVal('')
+        setStreakState(0)
+        speak('おしい！どうぶつを ゆびで かぞえてみよう！')
+        return
+      }
       setScoreState(prev => prev + 1)
+      const newStreak = streak + 1
+      setStreakState(newStreak)
+      setAnswered(true)
+      setChosenVal(selected)
       fireworksFire(6, false)
+      setTimeout(() => {
+        setOverlayOk(true)
+        setOverlayFormula(q.formula)
+        setShowOverlay(true)
+        const msg = rand(CORRECT_MSGS)
+        const streakMsg = newStreak >= 3 ? `${newStreak}もんれんぞく！` : ''
+        speak(streakMsg + msg + q.formulaSpeech)
+      }, 420)
+      return
     }
 
-    setResults(prev => [...prev, { correct: isOK, formula: q.formula }])
-
-    const newStreak = isOK ? streak + 1 : 0
-    setStreakState(newStreak)
-
+    // 2回目: 記録は変えず、答え合わせだけ行う
+    setAnswered(true)
+    setChosenVal(selected)
+    if (isOK) fireworksFire(3, false)
     setTimeout(() => {
       setOverlayOk(isOK)
       setOverlayFormula(q.formula)
       setShowOverlay(true)
-      if (isOK) {
-        const msg = rand(CORRECT_MSGS)
-        const streakMsg = newStreak >= 3 ? `${newStreak}もんれんぞく！` : ''
-        speak(streakMsg + msg + q.formulaSpeech)
-      } else {
-        speak(rand(WRONG_MSGS) + 'こたえは' + q.formulaSpeech)
-      }
+      speak(isOK ? `できたね！${q.formulaSpeech}` : `こたえは ${q.formulaSpeech}`)
     }, 420)
-  }, [answered, questions, current, streak, fireworksFire])
+  }, [answered, firstWrong, attempt, answerType, questions, current, streak, fireworksFire])
 
   const nextQuestion = useCallback(() => {
     const nextIdx = current + 1
     setShowOverlay(false)
     setChosenVal(null)
+    setAttempt(0)
+    setFirstWrong(null)
     if (nextIdx >= count) {
-      const correctCount = results.filter(r => r.correct).length + (overlayOk ? 1 : 0)
+      if (finishedRef.current) return  // 連打による二重保存を防ぐ
+      finishedRef.current = true
+      const correctCount = results.filter(r => r.correct).length
       const total = count
       const pct = Math.round(correctCount / total * 100)
       const isPerfect = correctCount === total
@@ -483,7 +538,7 @@ export default function AnimalsPage() {
       setNumpadVal('')
       speak(questions[nextIdx].speechText)
     }
-  }, [current, count, results, overlayOk, mode, level, fireworksFire, questions])
+  }, [current, count, results, mode, level, fireworksFire, questions])
 
   const numpadPress = useCallback((n: string) => {
     if (answered) return
@@ -596,20 +651,8 @@ export default function AnimalsPage() {
   if (phase === 'game') {
     const q = questions[current]
     const pct = (current / count) * 100
-    const max = level + 5
-
-    const choices: number[] = []
-    if (answerType === '4') {
-      const wrongs = new Set<number>()
-      let attempts = 0
-      while (wrongs.size < 3 && attempts < 200) {
-        attempts++
-        const offset = Math.floor(Math.random() * 8) - 4
-        const w = q.answer + (offset === 0 ? 1 : offset)
-        if (w > 0 && w <= max && w !== q.answer) wrongs.add(w)
-      }
-      choices.push(...Array.from(wrongs).concat(q.answer).sort(() => Math.random() - 0.5))
-    }
+    // 選択肢は問題生成時に固定（レンダーごとに変わるバグを修正）
+    const choices = q.choices
 
     return (
       <div className="bg-gradient-to-b from-orange-50 to-yellow-50 min-h-screen pb-20">
@@ -643,11 +686,21 @@ export default function AnimalsPage() {
             <AnimalDisplay q={q} />
           </div>
 
+          {/* 1かいめ まちがいのあとの はげまし */}
+          {attempt === 1 && !answered && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
+              <p className="font-bold text-amber-600">💪 おしい！もういちど！</p>
+              <p className="text-sm text-gray-600 mt-1">どうぶつを ゆびで かぞえてみよう</p>
+            </div>
+          )}
+
           {answerType === '4' && (
             <div className="grid grid-cols-2 gap-3">
               {choices.map((val, i) => {
                 let btnClass = 'w-full py-4 rounded-2xl text-2xl font-black transition-all '
-                if (!answered) {
+                if (!answered && val === firstWrong) {
+                  btnClass += 'bg-gray-100 text-gray-300'
+                } else if (!answered) {
                   btnClass += 'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
                 } else if (val === q.answer) {
                   btnClass += 'bg-green-100 text-green-700 border-2 border-green-400'
@@ -661,7 +714,7 @@ export default function AnimalsPage() {
                     key={i}
                     className={btnClass}
                     onClick={() => checkAnswer(val)}
-                    disabled={answered}
+                    disabled={answered || val === firstWrong}
                   >
                     {val}
                   </button>
