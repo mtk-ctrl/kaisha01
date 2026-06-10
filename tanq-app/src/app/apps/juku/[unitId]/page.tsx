@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { JUKU_UNITS, Problem, DiagramType, IntroSlide } from '@/data/jukuData'
 import { getDataKey } from '@/lib/storage'
+import { shuffle } from '@/lib/idiomQuiz'
 
 const JUKU_PROGRESS_KEY = 'tanq_juku_progress_v1'
 type Phase = 'unit-intro' | 'problem-list' | 'solving'
@@ -37,7 +38,7 @@ const DIFF_LABEL: Record<number, { label: string; color: string; bg: string }> =
 // ─────────────────────────────────────
 function buildChoices(problem: Problem): string[] | null {
   if (problem.diagramType !== 'slide') return null
-  if (problem.choices) return [...problem.choices].sort(() => Math.random() - 0.5)
+  if (problem.choices) return shuffle(problem.choices)
   const num = parseFloat(problem.answer)
   if (isNaN(num)) return null
   const fmt = (v: number) => {
@@ -49,7 +50,7 @@ function buildChoices(problem: Problem): string[] | null {
     .map(f => fmt(num * f))
     .filter(s => s !== problem.answer)
   const all = [problem.answer, ...wrongs.slice(0, 3)]
-  return all.sort(() => Math.random() - 0.5)
+  return shuffle(all)
 }
 
 // ─────────────────────────────────────

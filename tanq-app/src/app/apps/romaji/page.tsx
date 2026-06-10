@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
 import { saveScore } from '@/lib/scoreApi'
@@ -168,11 +168,14 @@ export default function RomajiPage() {
   const [log,          setLog]          = useState<LogEntry[]>([])
   const [chosen,       setChosen]       = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
+  const savedRef = useRef(false) // 「つぎへ」連打による saveRecord/saveScore 二重送信防止
 
   const startGame = useCallback(() => {
     const qs = buildQuestions(mode, caseMode, row, count)
     setQuestions(qs); setIdx(0); setScore(0); setCombo(0); setMaxCombo(0)
-    setLog([]); setChosen(null); setShowFeedback(false); setPhase('game')
+    setLog([]); setChosen(null); setShowFeedback(false)
+    savedRef.current = false
+    setPhase('game')
   }, [mode, caseMode, row, count])
 
   const handleAnswer = useCallback((c: string) => {
@@ -197,12 +200,15 @@ export default function RomajiPage() {
   const nextQuestion = useCallback(() => {
     const nextIdx = idx + 1
     if (nextIdx >= questions.length) {
-      const total = questions.length
-      const correctCount = log.filter(l => l.ok).length
-      const pct = correctCount / total
-      const stars = pct >= 0.9 ? 3 : pct >= 0.7 ? 2 : 1
-      saveRecord({ mode, caseMode, row, count: total, correct: correctCount, score, stars, maxCombo })
-      saveScore('romaji', correctCount, total, mode)
+      if (!savedRef.current) {
+        savedRef.current = true
+        const total = questions.length
+        const correctCount = log.filter(l => l.ok).length
+        const pct = correctCount / total
+        const stars = pct >= 0.9 ? 3 : pct >= 0.7 ? 2 : 1
+        saveRecord({ mode, caseMode, row, count: total, correct: correctCount, score, stars, maxCombo })
+        saveScore('romaji', correctCount, total, mode)
+      }
       setPhase('result')
     } else {
       setIdx(nextIdx); setChosen(null); setShowFeedback(false)

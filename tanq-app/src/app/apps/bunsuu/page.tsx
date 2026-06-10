@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { saveScore } from '@/lib/scoreApi'
 
 // ---- Math helpers ----
 function gcd(a: number, b: number): number { return b === 0 ? a : gcd(b, a % b) }
@@ -350,11 +351,13 @@ export default function BunsuuPage() {
   const [selAns, setSelAns] = useState<string | null>(null)
   const [correct, setCorrect] = useState(0)
   const [waiting, setWaiting] = useState(false)
+  const savedRef = useRef(false) // 連打による saveScore 二重送信防止
 
   function startQuiz(lvIdx: number, cnt: number) {
     setQuestions(buildQuestions(LEVELS[lvIdx], cnt))
     setQi(0); setScore(0); setCombo(0); setMaxCombo(0)
     setFeedback(null); setSelAns(null); setCorrect(0); setWaiting(false)
+    savedRef.current = false
     setPhase('quiz')
   }
 
@@ -376,8 +379,14 @@ export default function BunsuuPage() {
 
   const handleNext = useCallback(() => {
     setFeedback(null); setSelAns(null); setWaiting(false)
-    if (qi + 1 >= questions.length) setPhase('result'); else setQi(i => i + 1)
-  }, [qi, questions.length])
+    if (qi + 1 >= questions.length) {
+      if (!savedRef.current) {
+        savedRef.current = true
+        saveScore('bunsuu', correct, questions.length, `lv${LEVELS[selLv].id}`)
+      }
+      setPhase('result')
+    } else setQi(i => i + 1)
+  }, [qi, questions.length, correct, selLv])
 
   function stars(): number { const p = questions.length > 0 ? correct / questions.length : 0; return p >= 0.9 ? 3 : p >= 0.6 ? 2 : p >= 0.3 ? 1 : 0 }
 
