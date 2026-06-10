@@ -3,6 +3,8 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
+import { playCorrect, playWrong } from '@/lib/audio'
+import { saveScore } from '@/lib/scoreApi'
 
 interface ShapeQuestion {
   type: 'name' | 'corners' | 'sides'
@@ -11,6 +13,7 @@ interface ShapeQuestion {
   correct: string
   choices: string[]
   explanation: string
+  rotation: number // かど・へんの数え問題は向きを変えて出す（向きが変わっても図形は同じ、を体感させる）
 }
 
 interface Shape {
@@ -56,7 +59,7 @@ const SHAPES: Shape[] = [
     explanation: '六角形は辺が6本、角が6つ。ハチの巣がこの形なのは、同じ面積で材料が一番少なくてすむから！',
   },
   {
-    name: 'circle', japanese: 'えん（円）', corners: 0, sides: 1,
+    name: 'circle', japanese: 'えん（円）', corners: 0, sides: 0,
     svgPath: '', color: '#00e5c3',
     description: 'まんまるの形',
     explanation: '円は角も直線の辺もない。中心から端までの距離（半径）がどこも同じ！コンパスで書けるよ。',
@@ -64,14 +67,15 @@ const SHAPES: Shape[] = [
   {
     name: 'rhombus', japanese: 'ひし形', corners: 4, sides: 4,
     svgPath: 'M50,5 L95,50 L50,95 L5,50 Z', color: '#fb923c',
-    description: '4辺が同じ長さのひし形',
+    description: '4本の辺がぜんぶ同じ長さ',
     explanation: 'ひし形は4本の辺がすべて同じ長さ。正方形をななめに傾けた形！トランプのダイヤ♦もこれ。',
   },
   {
-    name: 'star', japanese: 'ほし（星形）', corners: 5, sides: 5,
+    // 星形の輪郭はとんがり5つ＋へこみ5つで頂点10・辺10。数え問題には出さない（NAME_ONLY）
+    name: 'star', japanese: 'ほし（星形）', corners: 10, sides: 10,
     svgPath: 'M50,5 L61,35 L95,35 L68,57 L79,91 L50,70 L21,91 L32,57 L5,35 L39,35 Z', color: '#fbbf24',
     description: '5つのとんがりがある',
-    explanation: '星形（五芒星）はとんがりが5つ。星の形は世界中の国旗にも使われているよ！',
+    explanation: '星形（五芒星）はとんがりが5つ。へこんだ角もあわせると、かどは全部で10個あるよ。世界中の国旗にも使われている形！',
   },
   {
     name: 'octagon', japanese: 'はっかくけい（八角形）', corners: 8, sides: 8,
@@ -86,7 +90,7 @@ const SHAPES: Shape[] = [
     explanation: '台形は向かい合う1組の辺だけが平行な四角形。台形のケーキやバケツの形がこれだよ！',
   },
   {
-    name: 'oval', japanese: 'だえん（楕円）', corners: 0, sides: 1,
+    name: 'oval', japanese: 'だえん（楕円）', corners: 0, sides: 0,
     svgPath: '', color: '#ef9a9a',
     description: 'たまご型のまるい形',
     explanation: '楕円（だえん）は円を横か縦に引き伸ばした形。たまごや地球の軌道もこの形だよ！',
@@ -133,14 +137,26 @@ function saveShapesBest(score: number) {
 }
 
 function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5)
+  // Fisher-Yates（sort(random)は偏るため使わない）
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
 }
 
+// なまえ問題のみ出す図形（円・楕円はかど/へんがなく、星形はへこみ角を含め数えると10になり紛らわしい）
+const NAME_ONLY = ['circle', 'oval', 'star']
+
 function makeQuestion(shape: Shape): ShapeQuestion {
-  const types: ShapeQuestion['type'][] = (shape.name === 'circle' || shape.name === 'oval')
-    ? ['name', 'name']
+  const types: ShapeQuestion['type'][] = NAME_ONLY.includes(shape.name)
+    ? ['name']
     : ['name', 'corners', 'sides']
   const type = types[Math.floor(Math.random() * types.length)]
+  // 数え問題は向きをランダムに変えて出す（向きが変わっても かど・へんの数は同じ）
+  // なまえ問題は回転させない（正方形を45°回すとひし形に見える等、答えが曖昧になるため）
+  const rotation = type === 'name' ? 0 : Math.floor(Math.random() * 360)
 
   if (type === 'name') {
     const correct = shape.japanese
@@ -149,6 +165,7 @@ function makeQuestion(shape: Shape): ShapeQuestion {
       type, shape, question: 'この図形のなまえは？', correct,
       choices: shuffle([correct, ...others]),
       explanation: shape.explanation,
+      rotation,
     }
   }
   if (type === 'corners') {
@@ -158,6 +175,7 @@ function makeQuestion(shape: Shape): ShapeQuestion {
       type, shape, question: 'かどは何個ある？', correct,
       choices: shuffle([correct, ...opts]),
       explanation: shape.explanation,
+      rotation,
     }
   }
   const correct = `${shape.sides}本`
@@ -166,18 +184,28 @@ function makeQuestion(shape: Shape): ShapeQuestion {
     type, shape, question: 'へんは何本ある？', correct,
     choices: shuffle([correct, ...opts]),
     explanation: shape.explanation,
+    rotation,
   }
 }
 
-function ShapeSVG({ shape, size = 100 }: { shape: Shape; size?: number }) {
+// 1回目のまちがいで出す「考える足場」ヒント（答えそのものは見せない）
+function getHint(q: ShapeQuestion): string {
+  if (q.type === 'name') return 'かど（とんがり）の数を ゆびで かぞえてみよう。かどが ない形は、まるい なかまだよ！'
+  if (q.type === 'corners') return 'とんがっている ところを、1つずつ ゆびで さしながら かぞえてみよう。'
+  return 'まっすぐな線（へん）を、1本ずつ なぞって かぞえてみよう。かどの数と へんの数は おなじに なるよ！'
+}
+
+function ShapeSVG({ shape, size = 100, rotation = 0 }: { shape: Shape; size?: number; rotation?: number }) {
   return (
-    <svg viewBox="0 0 100 100" width={size} height={size} className="drop-shadow-lg">
-      {shape.name === 'circle'
-        ? <circle cx="50" cy="50" r="45" fill={shape.color} opacity="0.9" />
-        : shape.name === 'oval'
-        ? <ellipse cx="50" cy="50" rx="45" ry="30" fill={shape.color} opacity="0.9" />
-        : <path d={shape.svgPath} fill={shape.color} opacity="0.9" />
-      }
+    <svg viewBox="0 0 100 100" width={size} height={size} className="drop-shadow-lg" style={{ overflow: 'visible' }}>
+      <g transform={rotation ? `rotate(${rotation} 50 50)` : undefined}>
+        {shape.name === 'circle'
+          ? <circle cx="50" cy="50" r="45" fill={shape.color} opacity="0.9" />
+          : shape.name === 'oval'
+          ? <ellipse cx="50" cy="50" rx="45" ry="30" fill={shape.color} opacity="0.9" />
+          : <path d={shape.svgPath} fill={shape.color} opacity="0.9" />
+        }
+      </g>
     </svg>
   )
 }
@@ -187,6 +215,8 @@ export default function ShapesQuiz() {
   const [queue, setQueue] = useState<ShapeQuestion[]>([])
   const [index, setIndex] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState<0 | 1>(0)               // 0=1回目, 1=ヒントを見て再挑戦中
+  const [firstWrong, setFirstWrong] = useState<string | null>(null) // 1回目にまちがえた選択肢
   const [showExplanation, setShowExplanation] = useState(false)
   const [score, setScore] = useState(0)
   const [miss, setMiss] = useState(0)
@@ -197,20 +227,42 @@ export default function ShapesQuiz() {
     setScore(0)
     setMiss(0)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
     setShowExplanation(false)
     setPhase('playing')
   }, [])
 
   useEffect(() => {
-    if (phase === 'result') saveShapesBest(score)
+    if (phase === 'result') {
+      saveShapesBest(score)
+      saveScore('shapes', score, TOTAL)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase])
 
   function choose(c: string) {
-    if (selected !== null) return
+    if (selected !== null || c === firstWrong) return
+    const correct = c === queue[index].correct
+    if (correct) playCorrect(); else playWrong()
+
+    if (attempt === 0) {
+      // スコアは初回解答のみで記録する（再挑戦で水増ししない）
+      if (correct) {
+        setSelected(c)
+        setScore((s) => s + 1)
+        setShowExplanation(true)
+      } else {
+        // 1回目のまちがい: 答えは見せず、ヒントを出してもう一度考えてもらう
+        setMiss((m) => m + 1)
+        setFirstWrong(c)
+        setAttempt(1)
+      }
+      return
+    }
+
+    // 2回目: 記録は変えず、答え合わせと解説の確認だけ行う
     setSelected(c)
-    if (c === queue[index].correct) setScore((s) => s + 1)
-    else setMiss((m) => m + 1)
     setShowExplanation(true)
   }
 
@@ -218,6 +270,8 @@ export default function ShapesQuiz() {
     if (index + 1 >= TOTAL) { setPhase('result'); return }
     setIndex((i) => i + 1)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
     setShowExplanation(false)
   }
 
@@ -232,7 +286,7 @@ export default function ShapesQuiz() {
         </div>
         <h1 className="text-4xl font-black mb-2 text-[#c4a8ff]">図形クイズ</h1>
         <p className="text-[#94a3c4] mb-2 max-w-xs leading-relaxed">
-          図形を見てなまえ・角の数・辺の数を答えよう！<br />全{TOTAL}問。正解後には解説もあるよ。
+          図形を見てなまえ・角の数・辺の数を答えよう！<br />全{TOTAL}問。まちがえてもヒントが出るからだいじょうぶ！
         </p>
         <button onClick={startGame} className="mt-6 px-12 py-5 rounded-2xl font-black text-xl text-[#050b14] transition-all hover:scale-[1.04]" style={{ background: '#c4a8ff', boxShadow: '0 0 40px rgba(196,168,255,0.4)' }}>
           スタート！
@@ -264,6 +318,8 @@ export default function ShapesQuiz() {
   if (!q) return null
 
   const isCorrect = selected === q.correct
+  const solvedFirstTry = attempt === 0
+  const isRetrying = attempt === 1 && selected === null
 
   return (
     <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-4 py-20">
@@ -281,7 +337,7 @@ export default function ShapesQuiz() {
 
       <div className="w-full max-w-sm text-center">
         <p className="text-[#94a3c4] text-sm mb-4 tracking-widest uppercase">{q.question}</p>
-        <div className="flex justify-center mb-3"><ShapeSVG shape={q.shape} size={110} /></div>
+        <div className="flex justify-center mb-3"><ShapeSVG shape={q.shape} size={110} rotation={q.rotation} /></div>
         {q.type === 'name' && <p className="text-[#94a3c4] text-xs mb-5">{q.shape.description}</p>}
 
         {/* 選択肢 */}
@@ -289,28 +345,42 @@ export default function ShapesQuiz() {
           {q.choices.map((c) => {
             const isCor = c === q.correct
             const isSel = c === selected
+            const isFirstWrong = c === firstWrong
             let bg = 'rgba(255,255,255,0.07)'
             let border = 'rgba(255,255,255,0.15)'
             let text = '#e8f0fe'
+            let opacity = 1
             if (selected !== null) {
               if (isCor) { bg = 'rgba(196,168,255,0.25)'; border = '#c4a8ff'; text = '#c4a8ff' }
-              else if (isSel) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; text = '#f87171' }
+              else if (isSel || isFirstWrong) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; text = '#f87171' }
+            } else if (isFirstWrong) {
+              // 1回目にまちがえた選択肢は消して、残りからもう一度考えてもらう
+              bg = 'rgba(248,113,113,0.12)'; border = '#f87171'; text = '#f87171'; opacity = 0.45
             }
             return (
-              <button key={c} onClick={() => choose(c)} disabled={selected !== null}
-                className="py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.03] disabled:cursor-default"
-                style={{ background: bg, border: `2px solid ${border}`, color: text }}>
+              <button key={c} onClick={() => choose(c)} disabled={selected !== null || isFirstWrong}
+                className="py-4 rounded-2xl font-bold text-base transition-all hover:scale-[1.03] disabled:cursor-default disabled:hover:scale-100"
+                style={{ background: bg, border: `2px solid ${border}`, color: text, opacity }}>
                 {c}
               </button>
             )
           })}
         </div>
 
+        {/* 1回目のまちがい: 答えは見せずヒントで再挑戦 */}
+        {isRetrying && (
+          <div className="rounded-2xl p-4 mb-5 text-left bg-[#fbbf24]/15 border border-[#fbbf24]/50">
+            <p className="font-black text-sm mb-1 text-[#fbbf24]">💡 ヒント</p>
+            <p className="text-[#e8f0fe] text-sm leading-relaxed">{getHint(q)}</p>
+            <p className="text-[#94a3c4] text-xs mt-1.5">もういちど えらんでみよう！</p>
+          </div>
+        )}
+
         {/* 解説カード */}
         {showExplanation && (
           <div className={`rounded-2xl p-4 mb-5 text-left transition-all ${isCorrect ? 'bg-[#c4a8ff]/15 border border-[#c4a8ff]/40' : 'bg-[#f87171]/15 border border-[#f87171]/40'}`}>
             <p className="font-black text-sm mb-1" style={{ color: isCorrect ? '#c4a8ff' : '#f87171' }}>
-              {isCorrect ? '✓ 正解！' : `✗ 正解は「${q.correct}」だよ`}
+              {isCorrect ? (solvedFirstTry ? '✓ 正解！' : '✓ できた！') : `おしい！正解は「${q.correct}」だよ`}
             </p>
             <p className="text-[#e8f0fe] text-sm leading-relaxed">{q.explanation}</p>
           </div>

@@ -25,7 +25,13 @@ function saveSRS(store: SRSStore) {
 }
 
 function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5)
+  // Fisher-Yates（sort(random)は偏るため使わない）
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
 }
 
 function buildSession(
@@ -83,6 +89,9 @@ interface QuizState {
   current: number
   selected: number | null
   confirmed: boolean
+  attempt: 0 | 1                  // 0=1回目, 1=ヒントを見て再挑戦中
+  firstWrong: number | null       // 1回目にまちがえた選択肢のインデックス
+  firstTryCorrect: boolean | null // 初回解答の正誤（スコア・SRSはこれのみで記録）
   score: number
   answers: { correct: boolean; q: typeof SCIENCE_QUESTIONS[number] }[]
 }
@@ -280,22 +289,27 @@ function QuizView({
           const label = choiceLabels[pos]
           const isSelected = state.selected === origIdx
           const isCorrect = origIdx === q.answer
+          const isFirstWrong = origIdx === state.firstWrong
           let bg = '#FFFFFF'
           let border = '2.5px solid #3A2E2A'
           let shadow = '3px 3px 0 0 #3A2E2A'
+          let opacity = 1
           if (state.confirmed) {
             if (isCorrect) { bg = DOMAIN_BG[domain]; border = `2.5px solid ${color}`; shadow = `3px 3px 0 0 ${color}` }
-            else if (isSelected) { bg = '#FFE3EE'; border = '2.5px solid #FF6F9C'; shadow = '3px 3px 0 0 #FF6F9C' }
+            else if (isSelected || isFirstWrong) { bg = '#FFE3EE'; border = '2.5px solid #FF6F9C'; shadow = '3px 3px 0 0 #FF6F9C' }
+          } else if (isFirstWrong) {
+            // 1回目にまちがえた選択肢は消して、残りからもう一度考えてもらう
+            bg = '#FFE3EE'; border = '2.5px solid #FF6F9C'; shadow = 'none'; opacity = 0.45
           } else if (isSelected) {
             bg = DOMAIN_BG[domain]; border = `2.5px solid ${color}`; shadow = `3px 3px 0 0 ${color}`
           }
           return (
             <button
               key={origIdx}
-              onClick={() => !state.confirmed && onSelect(origIdx)}
-              className="w-full rounded-2xl px-4 py-3 text-left flex items-center gap-3 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-default"
-              style={{ background: bg, border, boxShadow: shadow }}
-              disabled={state.confirmed}
+              onClick={() => !state.confirmed && !isFirstWrong && onSelect(origIdx)}
+              className="w-full rounded-2xl px-4 py-3 text-left flex items-center gap-3 transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-default disabled:hover:translate-y-0"
+              style={{ background: bg, border, boxShadow: shadow, opacity }}
+              disabled={state.confirmed || isFirstWrong}
             >
               <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0"
                 style={{ background: isSelected || (state.confirmed && isCorrect) ? color : '#F3EDE8', color: isSelected || (state.confirmed && isCorrect) ? '#FFFFFF' : '#6B5A52', border: '1.5px solid #3A2E2A' }}>
@@ -303,18 +317,33 @@ function QuizView({
               </span>
               <span className="font-bold text-sm leading-snug" style={{ color: '#3A2E2A' }}>{q.choices[origIdx]}</span>
               {state.confirmed && isCorrect && <span className="ml-auto text-lg font-black" style={{ color }}>○</span>}
-              {state.confirmed && isSelected && !isCorrect && <span className="ml-auto text-lg font-black" style={{ color: '#FF6F9C' }}>×</span>}
+              {((state.confirmed && isSelected && !isCorrect) || isFirstWrong) && <span className="ml-auto text-lg font-black" style={{ color: '#FF6F9C' }}>×</span>}
             </button>
           )
         })}
       </div>
+
+      {/* 1回目のまちがい: 答えは見せずヒントで再挑戦 */}
+      {!state.confirmed && state.attempt === 1 && (
+        <div className="rounded-[22px] p-4 mb-4 animate-[fadeIn_0.3s_ease]"
+          style={{ background: '#FFF6D6', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+          <p className="font-black text-sm mb-1" style={{ color: '#ca8a04' }}>💡 おしい！それはちがうみたい</p>
+          <p className="text-xs font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
+            「{q.unit}」で習ったことを思い出して、のこりの3つからもういちど考えてみよう！
+          </p>
+        </div>
+      )}
 
       {/* 解説パネル（回答確認後） */}
       {state.confirmed && (
         <div className="rounded-[22px] p-4 mb-4 animate-[fadeIn_0.3s_ease]"
           style={{ background: state.selected === q.answer ? DOMAIN_BG[domain] : '#FFE3EE', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
           <p className="font-black text-sm mb-1" style={{ color: '#3A2E2A' }}>
-            {state.selected === q.answer ? '🎉 せいかい！' : `💡 正解は「${q.choices[q.answer]}」`}
+            {state.firstTryCorrect
+              ? '🎉 せいかい！'
+              : state.selected === q.answer
+              ? `✨ できた！正解は「${q.choices[q.answer]}」`
+              : `おしい！正解は「${q.choices[q.answer]}」`}
           </p>
           <p className="text-xs font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>{q.explain}</p>
         </div>
@@ -327,7 +356,7 @@ function QuizView({
           disabled={state.selected === null}
           className="w-full py-4 rounded-full font-black text-base transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:cursor-not-allowed"
           style={{ background: state.selected !== null ? '#FFC83D' : '#E8E0D8', border: '3px solid #3A2E2A', boxShadow: state.selected !== null ? '6px 6px 0 0 #3A2E2A' : 'none', color: '#3A2E2A' }}>
-          こたえる
+          {state.attempt === 1 ? 'もういちど こたえる' : 'こたえる'}
         </button>
       ) : (
         <button
@@ -384,9 +413,14 @@ function ResultView({
             <div className="flex-1 min-w-0">
               <p className="text-xs font-black leading-snug" style={{ color: '#3A2E2A' }}>{q.q}</p>
               {!correct && (
-                <p className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
-                  正解: {q.choices[q.answer]}
-                </p>
+                <>
+                  <p className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
+                    正解: {q.choices[q.answer]}
+                  </p>
+                  <p className="text-[10px] font-bold mt-1 leading-relaxed" style={{ color: '#6B5A52' }}>
+                    {q.explain}
+                  </p>
+                </>
               )}
             </div>
           </div>
@@ -435,6 +469,9 @@ export default function SciencePage() {
       current: 0,
       selected: null,
       confirmed: false,
+      attempt: 0,
+      firstWrong: null,
+      firstTryCorrect: null,
       score: 0,
       answers: [],
     })
@@ -452,22 +489,33 @@ export default function SciencePage() {
 
     if (correct) playCorrect(); else playWrong()
 
-    // SRS更新
-    const newStore = { ...store }
-    const prev = newStore[q.id] || { b: 0, c: 0, t: 0 }
-    const newC = correct ? prev.c + 1 : 0
-    const newB: 0 | 1 | 2 = newC >= 3 ? 2 : newC >= 1 ? 1 : 0
-    newStore[q.id] = { b: newB, c: newC, t: Date.now() }
-    saveSRS(newStore)
-    setStore(newStore)
+    if (quiz.attempt === 0) {
+      // SRS・スコアは初回解答のみで記録する（再挑戦で水増ししない）
+      const newStore = { ...store }
+      const prev = newStore[q.id] || { b: 0, c: 0, t: 0 }
+      const newC = correct ? prev.c + 1 : 0
+      const newB: 0 | 1 | 2 = newC >= 3 ? 2 : newC >= 1 ? 1 : 0
+      newStore[q.id] = { b: newB, c: newC, t: Date.now() }
+      saveSRS(newStore)
+      setStore(newStore)
 
-    setQuiz(prev => prev ? { ...prev, confirmed: true, score: prev.score + (correct ? 1 : 0) } : prev)
+      if (correct) {
+        setQuiz(prev => prev ? { ...prev, confirmed: true, firstTryCorrect: true, score: prev.score + 1 } : prev)
+      } else {
+        // 1回目のまちがい: 答えは見せず、その選択肢を消してもう一度考えてもらう
+        setQuiz(prev => prev ? { ...prev, firstWrong: prev.selected, selected: null, attempt: 1, firstTryCorrect: false } : prev)
+      }
+      return
+    }
+
+    // 2回目: 記録は変えず、答え合わせと解説の確認だけ行う
+    setQuiz(prev => prev ? { ...prev, confirmed: true } : prev)
   }, [quiz, store])
 
   const handleNext = useCallback(() => {
     if (!quiz) return
     const q = quiz.questions[quiz.current]
-    const correct = quiz.selected === q.answer
+    const correct = quiz.firstTryCorrect === true
     const newAnswers = [...quiz.answers, { correct, q }]
 
     if (quiz.current + 1 >= quiz.questions.length) {
@@ -480,10 +528,13 @@ export default function SciencePage() {
         current: prev.current + 1,
         selected: null,
         confirmed: false,
+        attempt: 0,
+        firstWrong: null,
+        firstTryCorrect: null,
         answers: newAnswers,
       } : prev)
     }
-  }, [quiz])
+  }, [quiz, selectedDomain])
 
   const handleRetry = useCallback(() => {
     handleStart(selectedDomain, selectedLevel)
