@@ -46,7 +46,6 @@ export const grade1Kanji: KanjiEntry[] = [
   { kanji: '左', reading: 'ひだり', meaning: '左（left）', example: '左手・左折', tip: '音読み「サ」（左折・左右）。左手を上げてLを作ったら left！👈' },
   { kanji: '右', reading: 'みぎ', meaning: '右（right）', example: '右手・右折', tip: '音読み「ウ・ユウ」（右折・左右）。「左右（さゆう）」は left and right👉' },
   { kanji: '中', reading: 'なか', meaning: '中（middle/inside）', example: '中学校・中心', tip: '箱の真ん中を貫く形！音読み「チュウ」（中学・中心・中国）。inside🎯' },
-  { kanji: '西', reading: 'にし', meaning: '西（west）', example: '西洋・関西', tip: '音読み「セイ・サイ」（西洋・関西）。太陽が沈む方角。英語では west🌅' },
   // 身体
   { kanji: '目', reading: 'め', meaning: '目（eye）', example: '目玉・目標', tip: '縦にした目の形！音読み「モク」（目標・注目）。「日（ひ）」と似てるから注意🎯' },
   { kanji: '耳', reading: 'みみ', meaning: '耳（ear）', example: '耳元・耳鳴り', tip: '耳の形から！音読み「ジ」（耳鼻科）。人の聴こえる音域は20〜20000Hz👂' },
@@ -76,6 +75,7 @@ export const grade1Kanji: KanjiEntry[] = [
   // 色
   { kanji: '白', reading: 'しろ', meaning: '白（white）', example: '白紙・白黒', tip: '音読み「ハク・ビャク」（白紙・白黒）。光の全ての色を混ぜると白になる⬜' },
   { kanji: '赤', reading: 'あか', meaning: '赤（red）', example: '赤信号・赤字', tip: '音読み「セキ・シャク」（赤道・赤外線）。信号の赤は「止まれ」。情熱の色🔴' },
+  { kanji: '青', reading: 'あお', meaning: '青（blue）', example: '青空・青信号', tip: '音読み「セイ」（青春・青年）。空や海の色！青信号は「すすめ」🔵' },
   // 生き物
   { kanji: '犬', reading: 'いぬ', meaning: '犬（dog）', example: '愛犬・番犬', tip: '「大（おお）」に点を加えて犬！音読み「ケン」（愛犬・犬種）。人類最古のペット🐕' },
   { kanji: '虫', reading: 'むし', meaning: '虫（insect/creature）', example: '虫歯・毛虫', tip: '音読み「チュウ」（昆虫・害虫）。蛇もクモも漢字では「虫」の仲間！🐛' },

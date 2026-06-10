@@ -6,6 +6,7 @@ import { KANJI_DATA } from '@/data/kanjiData'
 import type { Grade, KanjiEntry } from '@/data/kanjiData'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 
 type QuestionFormat = 'k2r' | 'r2k'
 
@@ -16,7 +17,29 @@ const GRADE_COLORS: Record<Grade, string> = {
 }
 
 function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5)
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+// ── 形が似ていて混同しやすい漢字グループ（誤答の選択肢に優先して混ぜ、弁別学習にする）──
+const SIMILAR_GROUPS: string[][] = [
+  ['土', '士'], ['未', '末'], ['人', '入'], ['大', '犬', '太'], ['王', '玉'],
+  ['日', '目'], ['白', '百'], ['千', '干'], ['牛', '午'], ['右', '石'],
+  ['貝', '見'], ['休', '体'], ['木', '本'], ['田', '由', '申'], ['天', '夫'],
+  ['間', '問', '聞'], ['持', '待'], ['住', '注', '往'], ['遠', '園'], ['学', '字'],
+  ['名', '各'], ['島', '鳥'], ['雪', '雲'], ['買', '貸'], ['績', '積', '責'],
+  ['複', '復', '腹'], ['識', '職', '織'], ['設', '説'], ['仮', '反'], ['矢', '失'],
+  ['少', '小'], ['力', '刀'], ['池', '地'], ['作', '昨'], ['科', '料'],
+  ['官', '管'], ['険', '検', '験'], ['測', '側'], ['清', '晴', '精'], ['象', '像'],
+  ['判', '半'], ['券', '巻'], ['暑', '署'], ['境', '鏡'], ['汽', '気'],
+]
+const SIMILAR_KANJI: Record<string, string[]> = {}
+for (const group of SIMILAR_GROUPS) {
+  for (const k of group) SIMILAR_KANJI[k] = group.filter(x => x !== k)
 }
 
 // ── SRS (Spaced Repetition) ──
@@ -102,16 +125,68 @@ function pick4Unique(correct: string, candidates: string[]): string[] {
   return shuffle([correct, ...others])
 }
 
+// 全学年の漢字→エントリ（形似字は学年をまたいで誤答候補に使う）
+const KANJI_BY_CHAR = new Map<string, KanjiEntry>()
+for (const entries of Object.values(KANJI_DATA)) {
+  for (const e of entries) if (!KANJI_BY_CHAR.has(e.kanji)) KANJI_BY_CHAR.set(e.kanji, e)
+}
+
+// 誤答候補（学年プール + 形似字）を重複なしで集める
+function gatherCandidates(item: KanjiEntry, pool: KanjiEntry[]): { candidates: KanjiEntry[]; simSet: Set<string> } {
+  const similar = SIMILAR_KANJI[item.kanji] || []
+  const simSet = new Set(similar)
+  const map = new Map<string, KanjiEntry>()
+  for (const k of pool) if (k.kanji !== item.kanji) map.set(k.kanji, k)
+  for (const c of similar) {
+    const e = KANJI_BY_CHAR.get(c)
+    if (e) map.set(e.kanji, e)
+  }
+  return { candidates: Array.from(map.values()), simSet }
+}
+
 function makeQuestion(item: KanjiEntry, pool: KanjiEntry[]): Question {
   const fmt: QuestionFormat = Math.random() < 0.65 ? 'k2r' : 'r2k'
+  const { candidates, simSet } = gatherCandidates(item, pool)
+  const reading = getFullReading(item)
   if (fmt === 'k2r') {
-    const correct = getFullReading(item)
-    const candidates = shuffle(pool.filter(k => getFullReading(k) !== getFullReading(item))).map(getFullReading)
-    return { fmt, item, correct, choices: pick4Unique(correct, candidates) }
+    // 誤答: 形が似た字の読み ＞ 最初の音が同じ読み ＞ 同じ長さの読み（「読み間違いあるある」を再現）
+    const ranked = candidates
+      .map(k => {
+        const r = getFullReading(k)
+        let score = Math.random()
+        if (simSet.has(k.kanji)) score += 4
+        if (r !== reading && r[0] === reading[0]) score += 2.5
+        if (r.length === reading.length) score += 1
+        return { r, score }
+      })
+      .sort((a, b) => b.score - a.score)
+      .map(c => c.r)
+    return { fmt, item, correct: reading, choices: pick4Unique(reading, ranked) }
   }
-  const correct = item.kanji
-  const candidates = shuffle(pool.filter(k => k.kanji !== item.kanji)).map(k => k.kanji)
-  return { fmt, item, correct, choices: pick4Unique(correct, candidates) }
+  // 誤答: 形が似た字 ＞ 同音異字 ＞ 最初の音が同じ字（見分ける練習になる）
+  const ranked = candidates
+    .map(k => {
+      let score = Math.random()
+      if (simSet.has(k.kanji)) score += 4
+      const r = getFullReading(k)
+      if (r === reading) score += 3
+      else if (r[0] === reading[0]) score += 1.5
+      return { c: k.kanji, score }
+    })
+    .sort((a, b) => b.score - a.score)
+    .map(x => x.c)
+  return { fmt, item, correct: item.kanji, choices: pick4Unique(item.kanji, ranked) }
+}
+
+// 1回目のまちがいで出す「考える足場」ヒント（答えそのものは見せない）
+function getHint(q: Question): string {
+  if (q.fmt === 'k2r') {
+    return `よみかたの さいしょの音は「${getFullReading(q.item)[0]}」だよ。`
+  }
+  if (q.item.example.includes(q.item.kanji)) {
+    return `「${q.item.example.split(q.item.kanji).join('◯')}」の ◯ に入る字だよ。`
+  }
+  return 'かたちを よーく見くらべてみよう。'
 }
 
 function applySRS(store: SRSStore, key: string, correct: boolean, ms: number): {
@@ -161,6 +236,8 @@ export default function KanjiQuiz() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [qIdx, setQIdx] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState<0 | 1>(0)          // 0=1回目, 1=ヒントを見て再挑戦中
+  const [firstWrong, setFirstWrong] = useState<string | null>(null) // 1回目に選んだまちがいの選択肢
   const [flashResult, setFlashResult] = useState<'correct' | 'wrong' | null>(null)
   const [lastMs, setLastMs] = useState(0)
   const [lastChange, setLastChange] = useState<'mastered' | 'advance' | 'same' | 'regress'>('same')
@@ -186,6 +263,8 @@ export default function KanjiQuiz() {
     setQuestions(items.map(item => makeQuestion(item, KANJI_DATA[g])))
     setQIdx(0)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
     setSessionCorrect(0)
     setSessionMastered(0)
     setSessionWeak(0)
@@ -197,26 +276,42 @@ export default function KanjiQuiz() {
 
   function choose(c: string) {
     if (selected !== null) return
-    const ms = Date.now() - qStartRef.current
-    setLastMs(ms)
-    setSelected(c)
+    if (c === firstWrong) return
     const q = questions[qIdx]
     const correct = c === q.correct
     correct ? playCorrect() : playWrong()
     setFlashResult(correct ? 'correct' : 'wrong')
     setTimeout(() => setFlashResult(null), 700)
-    if (correct) setSessionCorrect(n => n + 1)
-    else setSessionWeak(n => n + 1)
-    const { store: newStore, change } = applySRS(store, q.item.kanji, correct, ms)
-    setStore(newStore)
-    saveSRS(newStore)
-    setLastChange(change)
-    if (change === 'mastered') setSessionMastered(n => n + 1)
+
+    if (attempt === 0) {
+      // スコア・SRSは初回解答のみで記録する（再挑戦で水増ししない）
+      const ms = Date.now() - qStartRef.current
+      setLastMs(ms)
+      const { store: newStore, change } = applySRS(store, q.item.kanji, correct, ms)
+      setStore(newStore)
+      saveSRS(newStore)
+      setLastChange(change)
+      if (correct) {
+        setSelected(c)
+        setSessionCorrect(n => n + 1)
+        if (change === 'mastered') setSessionMastered(n => n + 1)
+      } else {
+        // 1回目のまちがい: 答えは見せず、ヒントを出してもう一度考えてもらう
+        setSessionWeak(n => n + 1)
+        setFirstWrong(c)
+        setAttempt(1)
+      }
+      return
+    }
+
+    // 2回目: 記録は変えず、答え合わせと覚え方の確認だけ行う
+    setSelected(c)
   }
 
   function goNext() {
     setFlashResult(null)
     if (qIdx + 1 >= questions.length) {
+      saveScore('kanji', sessionCorrect, questions.length, grade)
       const ns = recordStudy()
       setFinalStreak(ns)
       setStreak(ns)
@@ -225,6 +320,8 @@ export default function KanjiQuiz() {
     }
     setQIdx(i => i + 1)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
   }
 
   const color = GRADE_COLORS[grade]
@@ -545,9 +642,13 @@ export default function KanjiQuiz() {
   const q = questions[qIdx]
   if (!q) return null
   const isCorrect = selected === q.correct
+  const solvedFirstTry = attempt === 0
   const isFast = lastMs > 0 && lastMs < 1500
   const isSlow = lastMs > 2500
   const isKanjiChoices = q.fmt === 'r2k'
+  const isRetrying = attempt === 1 && selected === null
+  // 「意味」に読みがそのまま含まれる字（例: 暗→「暗い・くらやみ」）は、答えるまで意味を隠す
+  const meaningLeaks = q.fmt === 'k2r' && q.item.reading.length >= 2 && q.item.meaning.includes(q.item.reading)
 
   const changeColor = lastChange === 'mastered' ? '#ca8a04' : lastChange === 'advance' ? '#16a34a' : lastChange === 'regress' ? '#dc2626' : '#6B5A52'
   const changeMsg = lastChange === 'mastered' ? '⭐ 習得！' : lastChange === 'advance' ? '📈 いい調子！' : lastChange === 'regress' ? '📉 要復習' : null
@@ -593,7 +694,9 @@ export default function KanjiQuiz() {
               style={{ color: selected ? (isCorrect ? '#16a34a' : '#dc2626') : '#3A2E2A' }}>
               {q.item.kanji}
             </div>
-            <p className="text-[#6B5A52] text-sm mb-1">{q.item.meaning}</p>
+            {(!meaningLeaks || selected !== null) && (
+              <p className="text-[#6B5A52] text-sm mb-1">{q.item.meaning}</p>
+            )}
             <p className="text-xs mb-5" style={{ color: `${color}bb` }}>例）{q.item.example}</p>
           </>
         ) : (
@@ -627,24 +730,30 @@ export default function KanjiQuiz() {
           {q.choices.map((c) => {
             const isCor = c === q.correct
             const isSel = c === selected
+            const isFirstWrong = c === firstWrong
             let bg = '#FFFFFF'
             let border = 'rgba(58,46,42,0.15)'
             let textColor = '#3A2E2A'
+            let opacity = 1
             if (selected !== null) {
               if (isCor) { bg = `${color}15`; border = color; textColor = color }
-              else if (isSel) { bg = 'rgba(220,38,38,0.08)'; border = '#dc2626'; textColor = '#dc2626' }
+              else if (isSel || isFirstWrong) { bg = 'rgba(220,38,38,0.08)'; border = '#dc2626'; textColor = '#dc2626' }
+            } else if (isFirstWrong) {
+              // 1回目にまちがえた選択肢は消して、残りからもう一度考えてもらう
+              bg = 'rgba(220,38,38,0.06)'; border = '#dc2626'; textColor = '#dc2626'; opacity = 0.45
             }
             return (
-              <button key={c} onClick={() => choose(c)} disabled={selected !== null}
-                className="py-4 rounded-2xl font-bold transition-all hover:scale-[1.03] disabled:cursor-default select-none"
+              <button key={c} onClick={() => choose(c)} disabled={selected !== null || isFirstWrong}
+                className="py-4 rounded-2xl font-bold transition-all hover:scale-[1.03] disabled:cursor-default disabled:hover:scale-100 select-none"
                 style={{
                   background: bg,
                   border: `2px solid ${border}`,
                   color: textColor,
+                  opacity,
                   fontSize: isKanjiChoices ? '2.2rem' : '1.1rem',
                   lineHeight: isKanjiChoices ? '1' : '1.5',
                   minHeight: '64px',
-                  boxShadow: selected === null ? '2px 2px 0 rgba(58,46,42,0.10)' : 'none',
+                  boxShadow: selected === null && !isFirstWrong ? '2px 2px 0 rgba(58,46,42,0.10)' : 'none',
                 }}>
                 {c}
               </button>
@@ -652,12 +761,21 @@ export default function KanjiQuiz() {
           })}
         </div>
 
+        {/* 1回目のまちがい: 答えは見せずヒントで再挑戦 */}
+        {isRetrying && (
+          <div className="rounded-2xl p-4 mb-4 text-left border-2 bg-[#FFC83D]/15" style={{ borderColor: '#ca8a04' }}>
+            <p className="font-black text-sm mb-1 text-[#ca8a04]">💡 ヒント</p>
+            <p className="text-[#3A2E2A] text-sm leading-relaxed">{getHint(q)}</p>
+            <p className="text-[#6B5A52] text-xs mt-1.5">もういちど えらんでみよう！</p>
+          </div>
+        )}
+
         {/* Feedback */}
         {selected !== null && (
           <>
             <div className="flex items-center justify-between mb-3 px-1">
-              <span className="text-sm font-bold" style={{ color: isFast && isCorrect ? '#ca8a04' : isSlow ? '#6B5A52' : 'transparent' }}>
-                {isCorrect && isFast ? '⚡ 速い！' : isCorrect && isSlow ? '🤔 ゆっくり' : ''}
+              <span className="text-sm font-bold" style={{ color: solvedFirstTry && isFast && isCorrect ? '#ca8a04' : solvedFirstTry && isSlow ? '#6B5A52' : 'transparent' }}>
+                {solvedFirstTry && isCorrect && isFast ? '⚡ 速い！' : solvedFirstTry && isCorrect && isSlow ? '🤔 ゆっくり' : ''}
               </span>
               {changeMsg && (
                 <span className="text-sm font-bold" style={{ color: changeColor }}>{changeMsg}</span>
@@ -671,8 +789,8 @@ export default function KanjiQuiz() {
               }}>
               <p className="font-black text-sm mb-1.5" style={{ color: isCorrect ? color : '#dc2626' }}>
                 {isCorrect
-                  ? `✓ 正解！${q.fmt === 'k2r' ? `「${q.item.kanji}」＝「${getFullReading(q.item)}」` : `「${getFullReading(q.item)}」＝「${q.item.kanji}」`}`
-                  : `✗ 正解は「${q.correct}」`
+                  ? `${solvedFirstTry ? '✓ 正解！' : '✓ できた！'}${q.fmt === 'k2r' ? `「${q.item.kanji}」＝「${getFullReading(q.item)}」` : `「${getFullReading(q.item)}」＝「${q.item.kanji}」`}`
+                  : `おしい！正解は「${q.correct}」`
                 }
               </p>
               <p className="text-[#3A2E2A] text-sm leading-relaxed">{q.item.tip}</p>
