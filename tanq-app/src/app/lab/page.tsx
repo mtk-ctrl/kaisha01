@@ -106,6 +106,7 @@ const APPS: {
   // ── 🎓 中学受験（呼称ルール: 「クイズ」「①」は使わない。教科＋単元で呼ぶ）──────────
   { id: 'juku',         name: '中学受験 算数',    emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '特殊算・図で考える',  audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
   { id: 'science',      name: '中学受験 理科',    emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
+  { id: 'rekishi',      name: '中学受験 歴史',    emoji: '🏛️', color: '#E0527E', url: '/apps/rekishi',  badge: '旧石器〜平安・76問', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   { id: 'kokugo',       name: '国語〈ことば〉',   emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'kanyo',        name: '慣用句',           emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'yoji',         name: '四字熟語',         emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },

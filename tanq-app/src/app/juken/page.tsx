@@ -21,6 +21,16 @@ function loadJukuProgress(): JukuProgress {
   try { return JSON.parse(localStorage.getItem(getDataKey(JUKU_PROGRESS_KEY)) || '{}') } catch { return {} }
 }
 
+// 歴史〈旧石器〜平安〉のクリア済みレベル数（/apps/rekishi のセーブから読む）
+const REKISHI_KEY = 'tanq_rekishi_v1'
+function loadRekishiCleared(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const raw = JSON.parse(localStorage.getItem(getDataKey(REKISHI_KEY)) || '{}')
+    return Object.values(raw.levelStars ?? {}).filter(v => Number(v) >= 1).length
+  } catch { return 0 }
+}
+
 // ─── 教科メタ ───────────────────────────────────────────
 const SUBJECTS = [
   { id: 'sansuu', emoji: '🧮', name: '算数', color: '#C99700', bg: '#FFF1B8' },
@@ -34,7 +44,7 @@ const SUBJECTS = [
 const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性']
 const KOKUGO_SOON = ['文法・敬語', '読解（オリジナル短文）']
 const RIKA_SOON = ['てこ・ばね（計算）', '電気回路（計算）', '水溶液（計算）']
-const SHAKAI_SOON = ['歴史（通史）', '公民・時事']
+const SHAKAI_SOON = ['歴史〈鎌倉〜現代〉', '公民・時事']
 
 // ─── 小さな部品 ─────────────────────────────────────────
 function GroupLabel({ children }: { children: React.ReactNode }) {
@@ -127,8 +137,12 @@ function SubjectHead({ emoji, name, sub, color, bg }: {
 export default function JukenHubPage() {
   const { stats } = useStats()
   const [jukuProgress, setJukuProgress] = useState<JukuProgress>({})
+  const [rekishiCleared, setRekishiCleared] = useState(0)
 
-  useEffect(() => { setJukuProgress(loadJukuProgress()) }, [])
+  useEffect(() => {
+    setJukuProgress(loadJukuProgress())
+    setRekishiCleared(loadRekishiCleared())
+  }, [])
 
   // 公開済みの特殊算単元（問題が入っているもののみ。過大表示しない）
   const jukuLiveUnits = JUKU_UNITS.filter(u => u.problems.length > 0)
@@ -136,7 +150,7 @@ export default function JukenHubPage() {
   const sansuuSoon = [...jukuSoonTitles, ...SANSUU_SOON]
 
   // 公開中・近日公開の単元数（ページ内のカード数から動的に算出）
-  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 4 /* 国語 */ + 1 /* 理科 */ + 1 /* 社会 */
+  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 4 /* 国語 */ + 1 /* 理科 */ + 2 /* 社会 */
   const soonCount = sansuuSoon.length + KOKUGO_SOON.length + RIKA_SOON.length + SHAKAI_SOON.length
 
   return (
@@ -278,11 +292,17 @@ export default function JukenHubPage() {
         {/* ── 社会 ── */}
         <section id="shakai" className="mt-8" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="🗾" name="社会" color="#E0527E" bg="#FFE3EE"
-            sub="地理 公開中／歴史・公民は近日公開" />
+            sub="地理・歴史〈旧石器〜平安〉公開中／公民は近日公開" />
 
           <GroupLabel>🗺️ 地理</GroupLabel>
           <div className="space-y-2">
             <UnitRow href="/apps/todofuken" emoji="🗾" title="都道府県マスター" sub="47都道府県・かたち・名物・県庁所在地" color="#E0527E" />
+          </div>
+
+          <GroupLabel>📜 歴史（通史）</GroupLabel>
+          <div className="space-y-2">
+            <UnitRow href="/apps/rekishi" emoji="🏛️" title="歴史〈旧石器〜平安〉" sub="通史前半・76問・年代ならべかえ"
+              done={rekishiCleared} total={6} color="#E0527E" />
           </div>
 
           <GroupLabel>🔭 これから公開される単元</GroupLabel>
