@@ -141,7 +141,7 @@ export default function CapitalQuiz() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
             <Link href="/apps/todofuken" className="text-gray-400 hover:text-gray-600">←</Link>
-            <h1 className="font-bold text-gray-800">🏛️ 県庁所在地クイズ</h1>
+            <h1 className="font-bold text-gray-800">🏛️ 県庁所在地チャレンジ</h1>
           </div>
         </div>
         <div className="max-w-lg mx-auto px-4 pt-6">

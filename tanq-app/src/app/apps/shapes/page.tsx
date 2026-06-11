@@ -284,7 +284,7 @@ export default function ShapesQuiz() {
             <path d="M50,8 L92,38 L75,85 L25,85 L8,38 Z" fill="#c4a8ff" opacity="0.9" />
           </svg>
         </div>
-        <h1 className="text-4xl font-black mb-2 text-[#c4a8ff]">図形クイズ</h1>
+        <h1 className="text-4xl font-black mb-2 text-[#c4a8ff]">図形トレーニング</h1>
         <p className="text-[#94a3c4] mb-2 max-w-xs leading-relaxed">
           図形を見てなまえ・角の数・辺の数を答えよう！<br />全{TOTAL}問。まちがえてもヒントが出るからだいじょうぶ！
         </p>
@@ -301,7 +301,7 @@ export default function ShapesQuiz() {
       <div className="min-h-screen bg-[#0d2248] text-[#e8f0fe] font-sans flex flex-col items-center justify-center px-6 text-center">
         <div className="text-5xl mb-4">{rank.split(' ')[0]}</div>
         <h2 className="text-3xl font-black mb-1 text-[#c4a8ff]">{rank.split(' ').slice(1).join(' ')}</h2>
-        <p className="text-[#94a3c4] mb-8">図形クイズ {TOTAL}問</p>
+        <p className="text-[#94a3c4] mb-8">図形トレーニング {TOTAL}問</p>
         <div className="flex gap-10 mb-10">
           <div className="text-center"><div className="text-5xl font-black text-[#4ade80]">{score}</div><div className="text-[#94a3c4] text-sm mt-1">正解</div></div>
           <div className="text-center"><div className="text-5xl font-black text-[#f87171]">{miss}</div><div className="text-[#94a3c4] text-sm mt-1">まちがい</div></div>

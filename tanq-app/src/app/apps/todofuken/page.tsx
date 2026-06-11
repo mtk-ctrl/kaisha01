@@ -23,8 +23,8 @@ function loadProgress(): TodofukenProgress {
 const TOTAL = PREFECTURES.length
 
 const MODES = [
-  { id: 'shape',     emoji: '🗾', name: 'かたちクイズ',   desc: 'この形はどこの都道府県？', color: 'bg-sky-500',    href: '/apps/todofuken/shape' },
-  { id: 'famous',    emoji: '🍱', name: 'めいぶつクイズ', desc: '名物・特産・日本一を学ぼう', color: 'bg-amber-400', href: '/apps/todofuken/famous' },
+  { id: 'shape',     emoji: '🗾', name: 'かたちあて',     desc: 'この形はどこの都道府県？', color: 'bg-sky-500',    href: '/apps/todofuken/shape' },
+  { id: 'famous',    emoji: '🍱', name: 'めいぶつチャレンジ', desc: '名物・特産・日本一を学ぼう', color: 'bg-amber-400', href: '/apps/todofuken/famous' },
   { id: 'capital',   emoji: '🏛️', name: '県庁所在地',     desc: '県庁所在地を答えよう',       color: 'bg-purple-500', href: '/apps/todofuken/capital' },
   { id: 'flashcard', emoji: '📇', name: 'フラッシュカード', desc: '47都道府県を まとめて復習',  color: 'bg-emerald-500', href: '/apps/todofuken/flashcard' },
 ]

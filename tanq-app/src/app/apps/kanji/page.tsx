@@ -351,7 +351,7 @@ export default function KanjiQuiz() {
         )}
 
         <div className="text-5xl mb-2 mt-4">📖</div>
-        <h1 className="text-3xl font-black mb-1 text-[#3A2E2A]">漢字クイズ</h1>
+        <h1 className="text-3xl font-black mb-1 text-[#3A2E2A]">漢字マスター</h1>
         <p className="text-[#6B5A52] text-xs mb-8 text-center">漢字→読み方 ＆ 読み方→漢字の2方向で練習。くり返しで、どんどん覚えられる！</p>
 
         {isGuest && (

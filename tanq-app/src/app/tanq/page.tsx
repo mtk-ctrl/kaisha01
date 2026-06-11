@@ -58,7 +58,7 @@ export default function TanqPage() {
         </h1>
         <p style={{ fontSize: 15, color: 'var(--ink-soft)', lineHeight: 1.85, maxWidth: '28em', margin: '0 auto 2rem' }}>
           タンキューといっしょに、4つのせかいで<ruby>科学<rt>かがく</rt></ruby>のふしぎを<ruby>発見<rt>はっけん</rt></ruby>しよう。<br/>
-          クイズにこたえるたびに、どんどんかしこくなれるよ！
+          もんだいにこたえるたびに、どんどんかしこくなれるよ！
         </p>
 
       </section>
@@ -187,10 +187,10 @@ export default function TanqPage() {
               <div style={{ fontFamily: 'var(--font-fredoka)', fontWeight: 700, fontSize: 40, color: '#FF6F9C', lineHeight: 1 }}>02</div>
               <div style={{ margin: '0.75rem 0', fontSize: 48 }}>🧠</div>
               <h3 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 15, color: 'var(--ink)', marginBottom: '0.5rem' }}>
-                クイズに こたえる
+                もんだいに こたえる
               </h3>
               <p style={{ fontSize: 12, color: 'var(--ink-soft)', lineHeight: 1.7, margin: 0 }}>
-                4択クイズにこたえよう。まちがえてもOK。解説をよんで、ふしぎのなぞをとこう。
+                4たくもんだいにこたえよう。まちがえてもOK。解説をよんで、ふしぎのなぞをとこう。
               </p>
             </div>
 

@@ -328,7 +328,7 @@ export default function EnglishQuiz() {
         )}
 
         <div className="text-5xl mb-2 mt-4">🌍</div>
-        <h1 className="text-3xl font-black mb-1 text-[#f87171]">英語クイズ</h1>
+        <h1 className="text-3xl font-black mb-1 text-[#f87171]">英語ボキャブラリー</h1>
         <p className="text-[#94a3c4] text-xs mb-8 text-center">英語→日本語 ＆ 日本語→英語の2方向で練習。間隔反復で効率的に覚えよう！</p>
 
         {/* Overall progress */}

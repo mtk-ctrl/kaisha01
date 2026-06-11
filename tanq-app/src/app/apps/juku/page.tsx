@@ -72,9 +72,9 @@ export default function JukuMenu() {
     >
       {/* Header */}
       <div className="px-4 pt-6 pb-4">
-        <Link href="/lab" className="inline-flex items-center gap-1 text-sm font-bold mb-4"
+        <Link href="/juken" className="inline-flex items-center gap-1 text-sm font-bold mb-4"
           style={{ color: '#6B5A52' }}>
-          ← ラボにもどる
+          ← 中学受験トップにもどる
         </Link>
         <div className="rounded-[26px] p-5 mb-2"
           style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A' }}>
@@ -82,7 +82,7 @@ export default function JukuMenu() {
             <span className="text-4xl">🏆</span>
             <div>
               <h1 className="font-black text-2xl leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
-                中学受験 算数①
+                中学受験 算数
               </h1>
               <p className="text-xs font-bold mt-0.5" style={{ color: '#6B5A52' }}>
                 文章題・特殊算 公開中{liveUnitCount}単元（全{totalUnitCount}単元・順次公開）

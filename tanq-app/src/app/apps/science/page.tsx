@@ -114,7 +114,7 @@ function TopView({
       <div className="flex items-center gap-3 mb-2">
         <Link href="/lab" className="text-2xl">←</Link>
         <h1 className="font-black text-2xl" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
-          🔬 理科クイズ
+          🔬 中学受験 理科
         </h1>
       </div>
       {/* 総合進捗 */}
