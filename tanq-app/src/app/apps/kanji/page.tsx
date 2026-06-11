@@ -181,7 +181,14 @@ function makeQuestion(item: KanjiEntry, pool: KanjiEntry[]): Question {
 // 1回目のまちがいで出す「考える足場」ヒント（答えそのものは見せない）
 function getHint(q: Question): string {
   if (q.fmt === 'k2r') {
-    return `よみかたの さいしょの音は「${getFullReading(q.item)[0]}」だよ。`
+    // 誤答は「最初の音が同じ読み」を優先して作るため、最初の音ヒントが
+    // 選択肢を1つも絞れないことがある。その場合は例語の音読をうながす
+    const first = getFullReading(q.item)[0]
+    const narrows = q.choices.some(c => c !== q.correct && c[0] !== first)
+    if (!narrows && q.item.example) {
+      return `「${q.item.example}」を こえに出して よんでみよう。`
+    }
+    return `よみかたの さいしょの音は「${first}」だよ。`
   }
   if (q.item.example.includes(q.item.kanji)) {
     return `「${q.item.example.split(q.item.kanji).join('◯')}」の ◯ に入る字だよ。`
