@@ -84,37 +84,40 @@ const APPS: {
   id: string; name: string; emoji: string; color: string; url: string;
   badge: string; audience: AppAudience; targetAge: string; guestAccess: boolean
 }[] = [
-  // ── 📘 小学生向け（内製アプリ・学年別カリキュラム）──────────
-  { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'ふしぎ探検',         audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
-  { id: 'juku',         name: '中学受験 算数①',  emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '12単元｜図で考える', audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
-  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
-  { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `20レベル`,          audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
-  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
-  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
-  { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',     badge: 'タイムアタック',     audience: 'shougakusei',   targetAge: '小2〜小6', guestAccess: true  },
+  // 並び順ルール: セクション内は「はじめられる年齢・学年が低い順」。
+  // badge は「・」区切りで統一。就学前カードの badge はひらがな表記。
+  // ── 📘 小学生向け（はじめられる学年順）──────────
   { id: 'kanji',        name: '漢字マスター',      emoji: '📖', color: '#c4a8ff', url: '/apps/kanji',    badge: `${TOTALS.KANJI}字`,  audience: 'shougakusei',   targetAge: '小1〜小6', guestAccess: true  },
-  { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',    badge: '分・時間計算',       audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: false },
-  { id: 'english',      name: '英語ボキャブラリー', emoji: '🌍', color: '#f87171', url: '/apps/english',  badge: `${TOTALS.ENGLISH}語`, audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
-  { id: 'thinking',     name: 'かんがえる力ジム',   emoji: '🧩', color: '#6366f1', url: '/apps/thinking', badge: '100問 / 25バッジ',  audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
   { id: 'word-math',    name: '算数文章題',        emoji: '📐', color: '#f0a050', url: '/apps/word-math', badge: '文章から立式',      audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
+  { id: 'youji-zokusei', name: 'ぞくせい仕分け工場', emoji: '🏭', color: '#94a3b4', url: '/apps/youji-zokusei', badge: 'ベン図・分類',   audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
+  { id: 'youji-hiragana', name: 'にたもじ どっち？', emoji: '🔤', color: '#c4a8ff', url: '/apps/youji-hiragana', badge: 'まちがえやすい字', audience: 'shougakusei', targetAge: '小1〜小2', guestAccess: true },
+  { id: 'math',         name: '計算チャレンジ',   emoji: '🔢', color: '#60a5fa', url: '/apps/math',     badge: 'タイムアタック',     audience: 'shougakusei',   targetAge: '小2〜小6', guestAccess: true  },
+  { id: 'kuku',         name: '九九マスター',      emoji: '✖️', color: '#f59e0b', url: '/apps/kuku',     badge: '2〜9の段',          audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: true  },
+  { id: 'clock',        name: '時計・時間計算',    emoji: '🕐', color: '#f0c040', url: '/apps/clock',    badge: '分・時間計算',       audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: false },
+  { id: 'bunsuu',       name: '分数',             emoji: '🍕', color: '#f59e0b', url: '/apps/bunsuu',   badge: '図で理解',           audience: 'shougakusei',   targetAge: '小3〜小5', guestAccess: true  },
+  { id: 'romaji',       name: 'ローマじ れんしゅう', emoji: '🔠', color: '#3b82f6', url: '/apps/romaji',  badge: '小文字・大文字',     audience: 'shougakusei',   targetAge: '小3〜小4', guestAccess: true  },
+  { id: 'english',      name: '英語ボキャブラリー', emoji: '🌍', color: '#f87171', url: '/apps/english',  badge: `${TOTALS.ENGLISH}語`, audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
   { id: 'shapes',       name: '図形トレーニング',  emoji: '🔷', color: '#a78bfa', url: '/apps/shapes',   badge: '8図形',              audience: 'shougakusei',   targetAge: '小3〜小5', guestAccess: false },
   { id: 'coding',       name: 'プログラミング',    emoji: '💻', color: '#4ade80', url: '/apps/coding',   badge: '5チャプター',         audience: 'shougakusei',   targetAge: '小3〜小6', guestAccess: false },
-  { id: 'youji-zokusei', name: 'ぞくせい仕分け工場', emoji: '🏭', color: '#94a3b4', url: '/apps/youji-zokusei', badge: 'ベン図・分類',   audience: 'shougakusei',   targetAge: '小1〜小3', guestAccess: true  },
-  { id: 'kuku',          name: '九九マスター',      emoji: '✖️', color: '#f59e0b', url: '/apps/kuku',         badge: '2〜9の段',          audience: 'shougakusei',   targetAge: '小2〜小4', guestAccess: true  },
-  { id: 'todofuken',     name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: '/apps/todofuken', badge: '47都道府県',        audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
-  // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ）──────
-  { id: 'youji-katakana',  name: 'カタカナ れんしゅう',       emoji: '🔡', color: '#d946ef', url: '/apps/youji-katakana', badge: 'ア〜ン 46字',      audience: 'youji', targetAge: '5〜6才', guestAccess: true },
-  { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: '/apps/youji-iro',       badge: '10色・8かたち',    audience: 'youji', targetAge: '3〜5才', guestAccess: true },
-  { id: 'youji-kanji',     name: 'はじめての かんじ',          emoji: '📚', color: '#f87171', url: '/apps/youji-kanji',     badge: 'にちじょうご80字', audience: 'youji', targetAge: '4〜6才', guestAccess: true },
-  { id: 'youji-math',      name: 'たべものと かずあそび',       emoji: '🍎', color: '#f0a050', url: '/apps/youji-math',      badge: '20まで',           audience: 'youji', targetAge: '3〜6才', guestAccess: true },
+  { id: 'thinking',     name: 'かんがえる力ジム',   emoji: '🧩', color: '#6366f1', url: '/apps/thinking', badge: '100問・25バッジ',   audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
+  { id: 'todofuken',    name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: '/apps/todofuken', badge: '47都道府県',        audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
+  { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'ふしぎ探検',         audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
+  { id: 'koubai',       name: 'こうばいすう・こうやくすう', emoji: '🔢', color: '#10b981', url: '/apps/koubai', badge: '素因数分解あり', audience: 'shougakusei', targetAge: '小5〜小6', guestAccess: true },
+  // ── 🏆 中学受験 ──────────
+  { id: 'juku',         name: '中学受験 算数①',  emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '図で考える',         audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
+  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
+  { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
+  // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ。対象年齢の低い順）──────
+  { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: '/apps/youji-iro',       badge: '10いろ・8かたち',  audience: 'youji', targetAge: '3〜5才', guestAccess: true },
+  { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん・10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },
+  { id: 'youji-math',      name: 'たべものと かずあそび',       emoji: '🍎', color: '#f0a050', url: '/apps/youji-math',      badge: 'かず 20まで',      audience: 'youji', targetAge: '3〜6才', guestAccess: true },
+  { id: 'youji-kanji',     name: 'はじめての かんじ',          emoji: '📚', color: '#f87171', url: '/apps/youji-kanji',     badge: 'にちじょうご80じ', audience: 'youji', targetAge: '4〜6才', guestAccess: true },
+  { id: 'youji-clock',     name: 'なんじ かな？',              emoji: '🕑', color: '#4ade80', url: '/apps/youji-clock',     badge: 'なんじ・なんじはん', audience: 'youji', targetAge: '4〜6才', guestAccess: true },
+  { id: 'youji-animals',   name: 'どうぶつ さんすう',           emoji: '🐾', color: '#fb923c', url: '/apps/youji-animals',  badge: 'たしざん・ひきざん', audience: 'youji', targetAge: '4〜6才', guestAccess: true },
+  { id: 'youji-katakana',  name: 'カタカナ れんしゅう',         emoji: '🔡', color: '#d946ef', url: '/apps/youji-katakana', badge: 'ア〜ン 46じ',      audience: 'youji', targetAge: '5〜6才', guestAccess: true },
   { id: 'youji-juucombo',  name: '10に なる かずを さがせ！',  emoji: '🔟', color: '#60a5fa', url: '/apps/youji-juucombo',  badge: 'たして10',         audience: 'youji', targetAge: '5〜6才', guestAccess: true },
-  { id: 'youji-hiragana',  name: 'にたもじ どっち？',          emoji: '🔤', color: '#c4a8ff', url: '/apps/youji-hiragana',  badge: 'おう/づ/ぢ識別',   audience: 'shougakusei', targetAge: '小1〜小2', guestAccess: true },
-  { id: 'romaji',          name: 'ローマじ れんしゅう',         emoji: '🔠', color: '#3b82f6', url: '/apps/romaji',           badge: '小文字・大文字',   audience: 'shougakusei', targetAge: '小3〜小4', guestAccess: true },
-  { id: 'bunsuu',          name: '分数',                       emoji: '🍕', color: '#f59e0b', url: '/apps/bunsuu',           badge: '図で理解',         audience: 'shougakusei', targetAge: '小3〜小5', guestAccess: true },
-  { id: 'koubai',          name: '最小公倍数・最大公約数',      emoji: '🔢', color: '#10b981', url: '/apps/koubai',           badge: '素因数分解あり',   audience: 'shougakusei', targetAge: '小5〜小6', guestAccess: true },
-  { id: 'youji-clock',     name: 'なんじ かな？',              emoji: '🕑', color: '#4ade80', url: '/apps/youji-clock',     badge: '何時・何時半',     audience: 'youji', targetAge: '4〜6才', guestAccess: true },
-  { id: 'youji-animals',   name: 'どうぶつ さんすう',           emoji: '🐾', color: '#fb923c', url: '/apps/youji-animals',  badge: 'たし引き20まで',   audience: 'youji', targetAge: '4〜6才', guestAccess: true },
-  { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん / 10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },
 ]
 
 // Pastel card color cycle for sticker style

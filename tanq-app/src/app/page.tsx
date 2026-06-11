@@ -6,20 +6,21 @@ import Footer from '@/components/Footer'
 
 export const metadata: Metadata = {
   title: 'TANQ — まなびのファンタジーラボ',
-  description: 'あそびながら、かしこくなる。小学生向け学習アプリが25本以上そろった探究ラボ。登録なしですぐ体験できる。',
+  description: 'あそびながら、かしこくなる。小学生向け学習アプリが29本そろった探究ラボ。登録なしですぐ体験できる。',
 }
 
 /* ── Static data ── */
 
 const APPS = [
-  { emoji: '🧩', name: 'かんがえるちからジム',  target: '小4〜小6', badge: '100問',    bg: '#FFE3EE', rot: '-1deg',  href: '/apps/thinking' },
-  { emoji: '📖', name: 'かんじマスター',         target: '小1〜小6', badge: '1026字',   bg: '#DBF6F0', rot: '1.5deg', href: '/apps/kanji' },
-  { emoji: '🌍', name: 'えいごボキャブラリー',   target: '小3〜小6', badge: '275語',    bg: '#FFF6E5', rot: '-0.8deg', href: '/apps/english' },
-  { emoji: '🔢', name: 'けいさんチャレンジ',     target: '小2〜小6', badge: '∞もん',    bg: '#EFE8FF', rot: '1.2deg', href: '/apps/math' },
-  { emoji: '📐', name: 'さんすうぶんしょうだい', target: '小1〜小3', badge: '立式',     bg: '#FFE3EE', rot: '-1.5deg', href: '/apps/word-math' },
-  { emoji: '💻', name: 'プログラミング',         target: '小3〜小6', badge: '5ステージ', bg: '#DBF6F0', rot: '0.8deg', href: '/apps/coding' },
-  { emoji: '🕐', name: 'とけい・じかんけいさん', target: '小2〜小4', badge: '分・時',   bg: '#EFE8FF', rot: '-1deg',  href: '/apps/clock' },
-  { emoji: '✖️', name: 'くくマスター',           target: '小2〜小4', badge: '2〜9段',   bg: '#FFF6E5', rot: '1.3deg', href: '/apps/kuku' },
+  // アプリ名はラボのカードと同じ正式名称に統一する（表記ゆれ防止）
+  { emoji: '🧩', name: 'かんがえる力ジム',       target: '小4〜小6', badge: '100問',    bg: '#FFE3EE', rot: '-1deg',  href: '/apps/thinking' },
+  { emoji: '📖', name: '漢字マスター',           target: '小1〜小6', badge: '1026字',   bg: '#DBF6F0', rot: '1.5deg', href: '/apps/kanji' },
+  { emoji: '🌍', name: '英語ボキャブラリー',     target: '小3〜小6', badge: '278語',    bg: '#FFF6E5', rot: '-0.8deg', href: '/apps/english' },
+  { emoji: '🔢', name: '計算チャレンジ',         target: '小2〜小6', badge: '∞もん',    bg: '#EFE8FF', rot: '1.2deg', href: '/apps/math' },
+  { emoji: '📐', name: '算数文章題',             target: '小1〜小3', badge: '立式',     bg: '#FFE3EE', rot: '-1.5deg', href: '/apps/word-math' },
+  { emoji: '💻', name: 'プログラミング',         target: '小3〜小6', badge: '5チャプター', bg: '#DBF6F0', rot: '0.8deg', href: '/apps/coding' },
+  { emoji: '🕐', name: '時計・時間計算',         target: '小2〜小4', badge: '分・時',   bg: '#EFE8FF', rot: '-1deg',  href: '/apps/clock' },
+  { emoji: '✖️', name: '九九マスター',           target: '小2〜小4', badge: '2〜9の段', bg: '#FFF6E5', rot: '1.3deg', href: '/apps/kuku' },
 ]
 
 const HOW_STEPS = [
@@ -88,7 +89,7 @@ const COMPANY_INFO = [
 ]
 
 const STATS = [
-  { num: '25', sub: '+', label: 'アプリ' },
+  { num: '29', sub: '本', label: 'アプリ' },
   { num: '1026', sub: '字', label: 'かんじ' },
   { num: '50', sub: 'こ+', label: 'バッジ' },
   { num: '5', sub: 'ふん', label: '1日のめやす' },
@@ -374,7 +375,7 @@ export default function HomePage() {
             APPS
           </div>
           <h2 style={{ fontFamily: 'var(--font-zen)', fontWeight: 900, fontSize: 'clamp(26px, 4vw, 42px)', color: 'var(--ink)', lineHeight: 1.2 }}>
-            25本の <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2px solid #3A2E2A' }}>まなびアプリ</span>
+            29本の <span style={{ background: '#FFC83D', padding: '0 6px', borderRadius: 6, border: '2px solid #3A2E2A' }}>まなびアプリ</span>
           </h2>
           <p style={{ marginTop: '0.75rem', color: 'var(--ink-soft)', fontSize: 15 }}>
             まずは人気の8本をチェック！タップしたら、そのアプリへ直接ジャンプ。<strong>広告なし・課金誘導なし</strong>。登録なしでもすぐ遊べる。
