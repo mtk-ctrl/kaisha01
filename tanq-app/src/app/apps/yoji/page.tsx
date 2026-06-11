@@ -191,7 +191,7 @@ export default function YojiPage() {
           </Link>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>📝</div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e1b4b', margin: '0 0 4px' }}>四字熟語クイズ</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#1e1b4b', margin: '0 0 4px' }}>四字熟語</h1>
             <p style={{ color: '#6b7280', fontSize: '14px', margin: 0 }}>故事・受験頻出 全20レベル</p>
           </div>
 

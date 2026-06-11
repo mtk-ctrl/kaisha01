@@ -126,7 +126,7 @@ export default function ShapeQuiz() {
         <div className="bg-white shadow-sm sticky top-0 z-10">
           <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
             <Link href="/apps/todofuken" className="text-gray-400 hover:text-gray-600">←</Link>
-            <h1 className="font-bold text-gray-800">🗾 かたちクイズ — 結果</h1>
+            <h1 className="font-bold text-gray-800">🗾 かたちあて — 結果</h1>
           </div>
         </div>
         <div className="max-w-sm mx-auto px-4 pt-6">
@@ -173,7 +173,7 @@ export default function ShapeQuiz() {
       <div className="bg-white shadow-sm sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/apps/todofuken" className="text-gray-400 hover:text-gray-600">←</Link>
-          <h1 className="font-bold text-gray-800 flex-1">🗾 かたちクイズ</h1>
+          <h1 className="font-bold text-gray-800 flex-1">🗾 かたちあて</h1>
           <span className="text-sm text-gray-500">{qIndex + 1}/{Q_PER_ROUND}</span>
           <span className="text-sm font-bold text-sky-500">⭐ {score}</span>
         </div>

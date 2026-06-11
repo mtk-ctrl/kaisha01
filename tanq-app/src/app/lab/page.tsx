@@ -103,12 +103,12 @@ const APPS: {
   { id: 'todofuken',    name: '都道府県マスター',  emoji: '🗾', color: '#0ea5e9', url: '/apps/todofuken', badge: '47都道府県',        audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: true  },
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'ふしぎ探検',         audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
   { id: 'koubai',       name: 'こうばいすう・こうやくすう', emoji: '🔢', color: '#10b981', url: '/apps/koubai', badge: '素因数分解あり', audience: 'shougakusei', targetAge: '小5〜小6', guestAccess: true },
-  // ── 🏆 中学受験 ──────────
-  { id: 'juku',         name: '中学受験 算数①',  emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '図で考える',         audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
-  { id: 'science',      name: '理科クイズ',       emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
-  { id: 'kokugo',       name: '国語クイズ',       emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
-  { id: 'kanyo',        name: '慣用句クイズ',     emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
-  { id: 'yoji',         name: '四字熟語クイズ',   emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
+  // ── 🎓 中学受験（呼称ルール: 「クイズ」「①」は使わない。教科＋単元で呼ぶ）──────────
+  { id: 'juku',         name: '中学受験 算数',    emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '特殊算・図で考える',  audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
+  { id: 'science',      name: '中学受験 理科',    emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
+  { id: 'kokugo',       name: '国語〈ことば〉',   emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'kanyo',        name: '慣用句',           emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'yoji',         name: '四字熟語',         emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
   // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ。対象年齢の低い順）──────
   { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: '/apps/youji-iro',       badge: '10いろ・8かたち',  audience: 'youji', targetAge: '3〜5才', guestAccess: true },
   { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん・10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },
@@ -342,7 +342,9 @@ function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
             </div>
           </>
         ) : (
-          <div className="text-[10px] font-black" style={{ color: '#6B5A52' }}>あそぶ →</div>
+          <div className="text-[10px] font-black" style={{ color: '#6B5A52' }}>
+            {app.audience === 'chuugakujuken' ? 'とりくむ →' : 'あそぶ →'}
+          </div>
         )}
       </>
     )
@@ -409,11 +411,41 @@ function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
         </div>
       )}
 
-      {/* All apps sections */}
-      {sectionOrder.map(sectionId => {
+      {/* ── 🎓 中学受験（常に最上段。有料の主戦場）── */}
+      <SectionLabel emoji="🎓" label="中学受験" sub="小4〜小6｜4教科・単元マップ" />
+      <Link href="/juken"
+        className="block rounded-[22px] p-5 mb-3 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
+        style={{ background: '#FFC83D', border: '3px solid #3A2E2A', boxShadow: '6px 6px 0 0 #3A2E2A', textDecoration: 'none' }}>
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">🎓</span>
+          <div className="flex-1">
+            <div className="font-black text-lg leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+              中学受験コース
+            </div>
+            <div className="text-[11px] font-bold mt-0.5" style={{ color: '#3A2E2A' }}>
+              算数・国語・理科・社会 — 単元の全体像と進捗がここで見える
+            </div>
+          </div>
+          <span className="font-black text-xl" style={{ color: '#3A2E2A' }}>→</span>
+        </div>
+      </Link>
+      <div className="grid grid-cols-2 gap-3 mb-2">
+        {chuugakujukenApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
+      </div>
+
+      {/* ── 🌱 TANQ ジュニア（無料の入口）── */}
+      <div className="rounded-2xl px-4 py-3 mt-7 mb-1 flex items-center gap-3"
+        style={{ background: '#DBF6F0', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
+        <span className="text-2xl">🌱</span>
+        <div>
+          <p className="font-black text-base leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>TANQ ジュニア</p>
+          <p className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>年中〜小3｜あそびで先取り。中学受験への助走路</p>
+        </div>
+      </div>
+      {sectionOrder.filter(id => id !== 'chuugakujuken').map(sectionId => {
         if (sectionId === 'youji') return (
           <React.Fragment key="youji">
-            <SectionLabel emoji="🌱" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
+            <SectionLabel emoji="🐣" label="就学前（幼稚園・年長）" sub="3〜6才｜遊びながら学ぶ" />
             <div className="grid grid-cols-2 gap-3 mb-2">
               {youjiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
             </div>
@@ -424,14 +456,6 @@ function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
             <SectionLabel emoji="📘" label="小学生（小1〜小6）" sub="6〜12才｜学年別カリキュラム" />
             <div className="grid grid-cols-2 gap-3 mb-2">
               {shougakuseiApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
-            </div>
-          </React.Fragment>
-        )
-        if (sectionId === 'chuugakujuken') return (
-          <React.Fragment key="chuugakujuken">
-            <SectionLabel emoji="🏆" label="中学受験" sub="小4〜中3｜算数・国語 入試対策" />
-            <div className="grid grid-cols-2 gap-3 mb-2">
-              {chuugakujukenApps.map((app, i) => <AppCard key={app.id} app={app} index={i} />)}
             </div>
           </React.Fragment>
         )
@@ -692,12 +716,12 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
         </RecordsAppCard>
         )}
 
-        {/* 理科クイズ */}
+        {/* 中学受験 理科 */}
         {hasScience && (
         <RecordsAppCard bg="#DFF6CF">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">⚗️</span>
-            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>理科クイズ</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>中学受験 理科</span>
           </div>
           {hasScience && (
             <div className="space-y-1 mb-3">
@@ -721,12 +745,12 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
         </RecordsAppCard>
         )}
 
-        {/* 国語クイズ */}
+        {/* 国語〈ことば〉 */}
         {stats.kokugoCleared > 0 && (
         <RecordsAppCard bg="#EDE9FE">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">📖</span>
-            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>国語クイズ</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>国語〈ことば〉</span>
           </div>
           {stats.kokugoCleared > 0 && (
             <div className="space-y-1 mb-3">
@@ -751,12 +775,12 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
         </RecordsAppCard>
         )}
 
-        {/* 慣用句クイズ */}
+        {/* 慣用句 */}
         {stats.kanyoCleared > 0 && (
         <RecordsAppCard bg="#FFF1E6">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">🗣️</span>
-            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>慣用句クイズ</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>慣用句</span>
           </div>
           {stats.kanyoCleared > 0 && (
             <div className="space-y-1 mb-3">
@@ -781,12 +805,12 @@ function RecordsTab({ stats }: { stats: ReturnType<typeof computeStats> }) {
         </RecordsAppCard>
         )}
 
-        {/* 四字熟語クイズ */}
+        {/* 四字熟語 */}
         {stats.yojiCleared > 0 && (
         <RecordsAppCard bg="#EEF2FF">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-xl">📝</span>
-            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>四字熟語クイズ</span>
+            <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>四字熟語</span>
           </div>
           {stats.yojiCleared > 0 && (
             <div className="space-y-1 mb-3">
@@ -1178,51 +1202,47 @@ function SettingsTab({ profile, onSave, userType, onLogout, sectionOrder, onSect
         </div>
       </div>
 
-      {/* Section order */}
+      {/* Section order — 中学受験は常に最上段固定。並び替えはジュニア内のみ */}
       <div className="rounded-[22px] p-5 mb-6" style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
-        <label className="block text-xs font-black uppercase tracking-wider mb-3" style={{ color: '#6B5A52' }}>アプリの並び順</label>
+        <label className="block text-xs font-black uppercase tracking-wider mb-1" style={{ color: '#6B5A52' }}>ジュニアの並び順</label>
+        <p className="text-[10px] font-bold mb-3" style={{ color: '#B0A49C' }}>🎓 中学受験はいつも一番上に表示されます</p>
         <div className="flex flex-col gap-2">
-          {sectionOrder.map((id, idx) => {
-            const sectionMeta: Record<SectionId, { emoji: string; label: string }> = {
-              youji: { emoji: '🌱', label: '就学前（幼稚園）' },
-              shougakusei: { emoji: '📘', label: '小学生' },
-              chuugakujuken: { emoji: '🏆', label: '中学受験' },
-            }
-            const { emoji, label } = sectionMeta[id]
-            return (
-              <div key={id} className="flex items-center gap-3 rounded-xl px-3 py-2.5"
-                style={{ background: '#FFF6E5', border: '2px solid #3A2E2A' }}>
-                <span className="text-lg">{emoji}</span>
-                <span className="flex-1 font-black text-sm" style={{ color: '#3A2E2A' }}>{label}</span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => {
-                      if (idx === 0) return
-                      const next = [...sectionOrder]
-                      ;[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
-                      onSectionOrderChange(next)
-                    }}
-                    disabled={idx === 0}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs transition-all"
-                    style={{ background: idx === 0 ? '#E8E0D8' : '#FFC83D', border: '2px solid #3A2E2A', color: '#3A2E2A', opacity: idx === 0 ? 0.4 : 1 }}>
-                    ▲
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (idx === sectionOrder.length - 1) return
-                      const next = [...sectionOrder]
-                      ;[next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
-                      onSectionOrderChange(next)
-                    }}
-                    disabled={idx === sectionOrder.length - 1}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs transition-all"
-                    style={{ background: idx === sectionOrder.length - 1 ? '#E8E0D8' : '#FFC83D', border: '2px solid #3A2E2A', color: '#3A2E2A', opacity: idx === sectionOrder.length - 1 ? 0.4 : 1 }}>
-                    ▼
-                  </button>
+          {(() => {
+            const juniorOrder = sectionOrder.filter(id => id !== 'chuugakujuken')
+            // ジュニア2セクションの相対順だけを入れ替え、保存形式（3要素配列）は互換のまま維持する
+            const swapJunior = () => onSectionOrderChange([...[...juniorOrder].reverse(), 'chuugakujuken'] as SectionId[])
+            return juniorOrder.map((id, idx) => {
+              const sectionMeta: Record<SectionId, { emoji: string; label: string }> = {
+                youji: { emoji: '🐣', label: '就学前（幼稚園）' },
+                shougakusei: { emoji: '📘', label: '小学生' },
+                chuugakujuken: { emoji: '🎓', label: '中学受験' },
+              }
+              const { emoji, label } = sectionMeta[id]
+              return (
+                <div key={id} className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+                  style={{ background: '#FFF6E5', border: '2px solid #3A2E2A' }}>
+                  <span className="text-lg">{emoji}</span>
+                  <span className="flex-1 font-black text-sm" style={{ color: '#3A2E2A' }}>{label}</span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => { if (idx > 0) swapJunior() }}
+                      disabled={idx === 0}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs transition-all"
+                      style={{ background: idx === 0 ? '#E8E0D8' : '#FFC83D', border: '2px solid #3A2E2A', color: '#3A2E2A', opacity: idx === 0 ? 0.4 : 1 }}>
+                      ▲
+                    </button>
+                    <button
+                      onClick={() => { if (idx < juniorOrder.length - 1) swapJunior() }}
+                      disabled={idx === juniorOrder.length - 1}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center font-black text-xs transition-all"
+                      style={{ background: idx === juniorOrder.length - 1 ? '#E8E0D8' : '#FFC83D', border: '2px solid #3A2E2A', color: '#3A2E2A', opacity: idx === juniorOrder.length - 1 ? 0.4 : 1 }}>
+                      ▼
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })
+          })()}
         </div>
       </div>
 
