@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 import MazeGame from './MazeGame'
 import DebugGame from './DebugGame'
 import PatternGame from './PatternGame'
@@ -302,6 +303,7 @@ export default function CodingPage() {
 
   function handleChapterComplete(score: number) {
     saveChapterScore(currentChapter, score)
+    saveScore('coding', score, CHAPTERS[currentChapter].total, CHAPTERS[currentChapter].concept)
     const updated = loadChapterScores()
     setChapterScores(updated)
     setPhase('chapter_result')

@@ -65,7 +65,7 @@ interface MathQuestion {
   answer: number
   choices: number[]
   foodEmoji: string
-  displayCount: number
+  foodEmoji2: string
   equation: string
 }
 
@@ -75,16 +75,26 @@ function generateQuestion(level: number): MathQuestion {
   let num1: number, num2: number, answer: number
 
   if (isAddition) {
-    answer = Math.max(1, Math.floor(Math.random() * maxNum) + 1)
-    num1 = Math.floor(Math.random() * answer)
+    // 0をふくむ式は未就学児には分かりにくいので両項1以上にする
+    answer = Math.floor(Math.random() * (maxNum - 1)) + 2 // 2..maxNum
+    num1 = Math.floor(Math.random() * (answer - 1)) + 1   // 1..answer-1
     num2 = answer - num1
   } else {
-    num1 = Math.max(1, Math.floor(Math.random() * maxNum) + 1)
-    num2 = Math.floor(Math.random() * num1)
+    num1 = Math.floor(Math.random() * (maxNum - 1)) + 2   // 2..maxNum
+    num2 = Math.floor(Math.random() * (num1 - 1)) + 1     // 1..num1-1
     answer = num1 - num2
   }
 
+  // ありがちな間違いを優先して誤答に混ぜる
+  // たし算: 数え飛ばし(±1) / ひき算: 逆に足す(num1+num2)・数え飛ばし(±1)
   const choicesSet = new Set<number>([answer])
+  const typical = isAddition
+    ? [Math.random() < 0.5 ? answer - 1 : answer + 1]
+    : [num1 + num2, Math.random() < 0.5 ? answer - 1 : answer + 1]
+  for (const d of typical) {
+    if (choicesSet.size >= 3) break
+    if (d >= 0 && d !== answer) choicesSet.add(d)
+  }
   let attempts = 0
   while (choicesSet.size < 3 && attempts < 100) {
     attempts++
@@ -100,8 +110,8 @@ function generateQuestion(level: number): MathQuestion {
     fallback++
   }
 
-  const displayCount = isAddition ? answer : num1
   const foodEmoji = FOOD_EMOJIS[Math.floor(Math.random() * FOOD_EMOJIS.length)]
+  const foodEmoji2 = FOOD_EMOJIS[(FOOD_EMOJIS.indexOf(foodEmoji) + 1) % FOOD_EMOJIS.length]
   const equation = `${num1} ${isAddition ? '+' : '-'} ${num2}`
 
   return {
@@ -111,7 +121,7 @@ function generateQuestion(level: number): MathQuestion {
     answer,
     choices: shuffle(Array.from(choicesSet)),
     foodEmoji,
-    displayCount,
+    foodEmoji2,
     equation,
   }
 }
@@ -186,6 +196,9 @@ export default function MathPage() {
   const [showFeedback, setShowFeedback] = useState(false)
   const [charEmoji, setCharEmoji] = useState('🐶')
   const [isJumping, setIsJumping] = useState(false)
+  const [attempt, setAttempt] = useState<0 | 1>(0)      // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrong, setFirstWrong] = useState<number | null>(null)
+  const finishedRef = useRef(false)                      // 「つぎへ」連打による結果二重保存ガード
   const [best, setBest] = useState<MathBest>(() => {
     if (typeof window !== 'undefined') return loadBest()
     return { best: 0 }
@@ -204,6 +217,9 @@ export default function MathPage() {
     setShowFeedback(false)
     setCharEmoji('🐶')
     setIsJumping(false)
+    setAttempt(0)
+    setFirstWrong(null)
+    finishedRef.current = false
     setPhase('game')
     const q = qs[0]
     const readOperator = q.isAddition ? 'たす' : 'ひく'
@@ -211,27 +227,49 @@ export default function MathPage() {
   }, [level, count])
 
   const handleAnswer = useCallback((c: number) => {
-    if (chosen !== null) return
+    if (chosen !== null || c === firstWrong) return
     const q = questions[idx]
     const ok = c === q.answer
+
+    if (attempt === 0) {
+      // スコアは1回目の解答のみ記録する
+      setLog(prev => [...prev, { question: q, chosen: c, ok }])
+      if (ok) {
+        setChosen(c)
+        setShowFeedback(true)
+        speak('せいかい！すごいね！')
+        setIsJumping(true)
+        if (canvasRef.current) fireConfetti(canvasRef.current, false)
+        setTimeout(() => setIsJumping(false), 1000)
+      } else {
+        // 1回目は答えを見せず、絵を数え直してもういちど
+        setFirstWrong(c)
+        setAttempt(1)
+        setCharEmoji('🐱')
+        setTimeout(() => setCharEmoji('🐶'), 1000)
+        speak(q.isAddition
+          ? 'おしい！えを ゆびで かぞえてみよう！'
+          : 'おしい！のこった えを かぞえてみよう！')
+      }
+      return
+    }
+
+    // 2回目: 記録は変えず、答え合わせだけ行う
     setChosen(c)
     setShowFeedback(true)
-    setLog(prev => [...prev, { question: q, chosen: c, ok }])
     if (ok) {
-      speak('せいかい！すごいね！')
-      setIsJumping(true)
+      speak(`できたね！こたえは ${q.answer} だよ！`)
       if (canvasRef.current) fireConfetti(canvasRef.current, false)
-      setTimeout(() => setIsJumping(false), 1000)
     } else {
-      speak('おしい！もういっかい！')
-      setCharEmoji('🐱')
-      setTimeout(() => setCharEmoji('🐶'), 1000)
+      speak(`こたえは ${q.answer} だよ！`)
     }
-  }, [chosen, questions, idx])
+  }, [chosen, firstWrong, attempt, questions, idx])
 
   const nextQuestion = useCallback(() => {
     const nextIdx = idx + 1
     if (nextIdx >= count) {
+      if (finishedRef.current) return  // 連打による二重保存を防ぐ
+      finishedRef.current = true
       const correctCount = log.filter(l => l.ok).length
       saveBestScore(correctCount, count)
       setBest(loadBest())
@@ -252,6 +290,8 @@ export default function MathPage() {
       setShowFeedback(false)
       setCharEmoji('🐶')
       setIsJumping(false)
+      setAttempt(0)
+      setFirstWrong(null)
       const q = questions[nextIdx]
       const readOperator = q.isAddition ? 'たす' : 'ひく'
       setTimeout(() => speak(`${q.num1} ${readOperator} ${q.num2} は？`), 300)
@@ -398,33 +438,65 @@ export default function MathPage() {
             </p>
           </div>
 
-          {/* おやつアイコン */}
+          {/* おやつアイコン（答えの数字は見せず、数える足場にする） */}
           <div className="bg-white rounded-2xl shadow-md p-4">
-            <div
-              className="flex flex-wrap gap-1 justify-center"
-              style={{ maxWidth: '100%' }}
-            >
-              {Array.from({ length: Math.min(q.displayCount, 20) }, (_, i) => (
-                <span key={i} className="text-2xl leading-none">
-                  {q.foodEmoji}
-                </span>
-              ))}
-              {q.displayCount > 20 && (
-                <span className="text-sm text-gray-500 self-center">
-                  ×{q.displayCount}
-                </span>
-              )}
-            </div>
-            <p className="text-xs text-gray-400 text-center mt-2">
-              {q.isAddition ? `こたえの かず（${q.answer}こ）` : `はじめの かず（${q.num1}こ）`}
-            </p>
+            {q.isAddition ? (
+              <>
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <div className="flex flex-wrap gap-1 justify-center max-w-[150px]">
+                    {Array.from({ length: q.num1 }, (_, i) => (
+                      <span key={i} className="text-2xl leading-none">{q.foodEmoji}</span>
+                    ))}
+                  </div>
+                  <span className="text-xl font-black text-gray-400">＋</span>
+                  <div className="flex flex-wrap gap-1 justify-center max-w-[150px]">
+                    {Array.from({ length: q.num2 }, (_, i) => (
+                      <span key={i} className="text-2xl leading-none">{q.foodEmoji2}</span>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 text-center mt-2">
+                  ぜんぶで なんこに なるかな？
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="flex flex-wrap gap-1 justify-center">
+                  {Array.from({ length: q.num1 }, (_, i) => (
+                    <span
+                      key={i}
+                      className={`text-2xl leading-none ${i >= q.answer ? 'opacity-25' : ''}`}
+                    >
+                      {q.foodEmoji}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-400 text-center mt-2">
+                  {q.num2}こ なくなったよ。のこりは なんこかな？
+                </p>
+              </>
+            )}
           </div>
+
+          {/* 1かいめ まちがいのあとの はげまし */}
+          {attempt === 1 && chosen === null && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
+              <p className="font-bold text-amber-600">💪 おしい！もういちど！</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {q.isAddition
+                  ? `${q.foodEmoji}を ゆびで かぞえてみよう`
+                  : 'のこっている えを ゆびで かぞえてみよう'}
+              </p>
+            </div>
+          )}
 
           {/* 3択ボタン */}
           <div className="flex gap-3">
             {q.choices.map((c, i) => {
               let btnClass = 'flex-1 py-4 rounded-2xl text-2xl font-black transition-all '
-              if (chosen === null) {
+              if (chosen === null && c === firstWrong) {
+                btnClass += 'bg-gray-100 text-gray-300'
+              } else if (chosen === null) {
                 btnClass += 'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
               } else if (c === q.answer) {
                 btnClass += 'bg-green-100 text-green-700 border-2 border-green-400'
@@ -438,7 +510,7 @@ export default function MathPage() {
                   key={i}
                   className={btnClass}
                   onClick={() => handleAnswer(c)}
-                  disabled={chosen !== null}
+                  disabled={chosen !== null || c === firstWrong}
                 >
                   {c}
                 </button>
@@ -454,11 +526,13 @@ export default function MathPage() {
               }`}
             >
               <div className="text-3xl mb-1">
-                {chosen === q.answer ? '⭕' : '❌'}
+                {chosen === q.answer ? (attempt === 0 ? '⭕' : '💪') : '❌'}
               </div>
               <p className="text-sm font-bold text-gray-700">
                 {chosen === q.answer
-                  ? `せいかい！ ${q.equation} ＝ ${q.answer} だよ！`
+                  ? attempt === 0
+                    ? `せいかい！ ${q.equation} ＝ ${q.answer} だよ！`
+                    : `できたね！ ${q.equation} ＝ ${q.answer} だよ！`
                   : `こたえは ${q.answer} だよ！ ${q.equation} ＝ ${q.answer}！`}
               </p>
               <button

@@ -16,7 +16,20 @@ interface Question {
   h?: number; m?: number
   fromH?: number; fromM?: number; toH?: number; toM?: number; durationMin?: number
   addMin?: number; subMin?: number; ansH?: number; ansM?: number
+  sceneEmoji?: string; sceneText?: string
 }
+
+// 午前・午後はとけいの絵だけでは分からないので、生活シーンで判断させる
+const AMPM_SCENES: { emoji: string; text: string; hours: number[] }[] = [
+  { emoji: '🌅', text: 'あさ おきたよ',           hours: [6, 7] },
+  { emoji: '🍳', text: 'あさごはんを たべるよ',   hours: [7, 8] },
+  { emoji: '🏫', text: 'ようちえんに いくよ',     hours: [8, 9] },
+  { emoji: '🍱', text: 'おひるごはんの じかん',   hours: [12] },
+  { emoji: '⚽', text: 'こうえんで あそぶよ',     hours: [15, 16] },
+  { emoji: '🍛', text: 'ばんごはんを たべるよ',   hours: [18, 19] },
+  { emoji: '🛁', text: 'おふろに はいるよ',       hours: [19, 20] },
+  { emoji: '🌙', text: 'もう ねる じかん',        hours: [20, 21] },
+]
 
 interface AnswerValue { h?: number; m?: number; ampm?: string }
 interface RecordEntry { bestStars: number; bestScore: number; date: string }
@@ -63,7 +76,11 @@ function makeQuestion(lv: Level): Question {
     const subMin = [5,10,15,20,30][Math.floor(Math.random()*5)]
     return { type: 'before', h, m, subMin, ansH: h - (m < subMin ? 1 : 0), ansM: (m - subMin + 60) % 60 }
   }
-  if (lv.type === 'ampm') { return { type: 'ampm', h: rand(0, 23), m: randStep(step) } }
+  if (lv.type === 'ampm') {
+    const scene = AMPM_SCENES[Math.floor(Math.random() * AMPM_SCENES.length)]
+    const h = scene.hours[Math.floor(Math.random() * scene.hours.length)]
+    return { type: 'ampm', h, m: randStep(step), sceneEmoji: scene.emoji, sceneText: scene.text }
+  }
   return { type: 'read', h: rand(1, 12), m: randStep(step) }
 }
 
@@ -81,6 +98,12 @@ function makeChoices(q: Question, correct: AnswerValue): AnswerValue[] {
   const key = (v: AnswerValue) => `${v.h}-${v.m}`
   const choices: AnswerValue[] = [correct]
   pool.add(key(correct))
+  // 「なんじ」よみとりでは、短針のとりちがえでありがちな「1つとなりの じ」を必ず混ぜる
+  if (q.type === 'read') {
+    const altH = ((correct.h ?? 0) % 12) + 1
+    const alt = { h: altH, m: correct.m }
+    if (!pool.has(key(alt))) { pool.add(key(alt)); choices.push(alt) }
+  }
   let tries = 0
   while (choices.length < 4 && tries++ < 100) {
     const offH = [-1, 0, 0, 1][Math.floor(Math.random()*4)]
@@ -115,8 +138,14 @@ function qText(q: Question): string {
   if (q.type === 'duration') return 'どれだけ じかんが かかりましたか？'
   if (q.type === 'after')    return `${q.addMin}ぷん ごは なんじ なんぷん？`
   if (q.type === 'before')   return `${q.subMin}ぷん まえは なんじ なんぷん？`
-  if (q.type === 'ampm') { const dh = (q.h ?? 0) % 12 || 12; return `この とけいは ${(q.h ?? 0) < 12 ? 'ごぜん' : 'ごご'} ${dh}じ ${q.m}ぷん？` }
+  if (q.type === 'ampm') { const dh = (q.h ?? 0) % 12 || 12; return `${q.sceneEmoji} ${q.sceneText}。この ${dh}じは ごぜん？ ごご？` }
   return 'なんじ なんぷん ですか？'
+}
+
+// 1回目の誤答時に出す「考える足場」ヒント
+function retryHint(q: Question): string {
+  if (q.type === 'read') return 'おしい！みじかい はりが 「なんじ」だよ。もういちど！'
+  return 'おしい！とけいを よくみて もういちど！'
 }
 
 function speak(text: string) {
@@ -194,6 +223,8 @@ export default function YoujiClockPage() {
   const [choices, setChoices] = useState<AnswerValue[]>([])
   const [answered, setAnswered] = useState(false)
   const [chosenIdx, setChosenIdx] = useState<number | null>(null)
+  const [attempt, setAttempt] = useState<0 | 1>(0)              // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrongIdx, setFirstWrongIdx] = useState<number | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => { setRecords(loadRecords()) }, [])
@@ -218,23 +249,35 @@ export default function YoujiClockPage() {
     const qs = Array.from({ length: count }, () => makeQuestion(selectedLevel))
     const correctAns = getCorrectAnswer(qs[0])
     setQuestions(qs); setIdx(0); setCorrectCount(0); setScore(0); setCombo(0)
-    setAnswered(false); setChosenIdx(null); setChoices(makeChoices(qs[0], correctAns))
+    setAnswered(false); setChosenIdx(null); setAttempt(0); setFirstWrongIdx(null)
+    setChoices(makeChoices(qs[0], correctAns))
     setView('game')
     setTimeout(() => speak(qText(qs[0])), 300)
   }, [selectedLevel, count])
 
   const handleAnswer = useCallback((chosen: AnswerValue, ci: number) => {
-    if (answered) return
+    if (answered || ci === firstWrongIdx) return
     const q = questions[idx]
     if (!q) return
     const correctAns = getCorrectAnswer(q)
-    setAnswered(true); setChosenIdx(ci)
     const ok = isCorrect(chosen, correctAns)
-    const newCorrect = correctCount + (ok ? 1 : 0)
-    const newScore = score + (ok ? 10 : 0)
-    const newCombo = ok ? combo + 1 : 0
+
+    // 1回目の誤答は答えを見せず、ヒントを出してもういちど（2択のごぜん・ごごは除く）
+    if (attempt === 0 && !ok && q.type !== 'ampm') {
+      setAttempt(1); setFirstWrongIdx(ci); setCombo(0)
+      speak(retryHint(q))
+      return
+    }
+
+    setAnswered(true); setChosenIdx(ci)
+    const okFirst = ok && attempt === 0   // スコアは1回目の正解のみ
+    const newCorrect = correctCount + (okFirst ? 1 : 0)
+    const newScore = score + (okFirst ? 10 : 0)
+    const newCombo = okFirst ? combo + 1 : 0
     setCorrectCount(newCorrect); setScore(newScore); setCombo(newCombo)
-    if (ok) { speak('せいかい！'); fireConfetti(false) } else { speak(`ざんねん！${formatAnswer(correctAns, q)} だよ！`) }
+    if (okFirst) { speak('せいかい！'); fireConfetti(false) }
+    else if (ok) { speak('できたね！'); fireConfetti(false) }
+    else { speak(`ざんねん！${formatAnswer(correctAns, q)} だよ！`) }
 
     setTimeout(() => {
       if (idx + 1 >= count) {
@@ -248,11 +291,12 @@ export default function YoujiClockPage() {
         const nextQ = questions[idx + 1]
         const nextAns = getCorrectAnswer(nextQ)
         setIdx(p => p + 1); setAnswered(false); setChosenIdx(null)
+        setAttempt(0); setFirstWrongIdx(null)
         setChoices(makeChoices(nextQ, nextAns))
         setTimeout(() => speak(qText(nextQ)), 200)
       }
-    }, 1000)
-  }, [answered, questions, idx, correctCount, score, combo, count, selectedLevel])
+    }, ok ? 1200 : 2400)  // 誤答時は答えを確認する時間を長めにとる
+  }, [answered, firstWrongIdx, attempt, questions, idx, correctCount, score, combo, count, selectedLevel])
 
   const GREEN = 'linear-gradient(135deg, #4ade80 0%, #22c55e 100%)'
 
@@ -375,14 +419,25 @@ export default function YoujiClockPage() {
           )}
         </div>
 
+        {/* 1かいめ まちがいのあとの はげまし */}
+        {attempt === 1 && !answered && (
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center mb-3">
+            <p className="font-black text-amber-600">💪 おしい！もういちど！</p>
+            <p className="text-sm font-bold text-gray-600 mt-1">
+              {q.type === 'read' ? 'みじかい はりが 「なんじ」だよ' : 'とけいを よく みてね'}
+            </p>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           {choices.map((c, i) => {
             const isCor = answered && isCorrect(c, correctAns)
             const isWrong = answered && i === chosenIdx && !isCorrect(c, correctAns)
+            const isFirstWrong = !answered && i === firstWrongIdx
             return (
-              <button key={i} onClick={() => handleAnswer(c, i)} disabled={answered}
+              <button key={i} onClick={() => handleAnswer(c, i)} disabled={answered || isFirstWrong}
                 className={`py-4 rounded-2xl font-black text-base shadow-md transition-all hover:-translate-y-0.5 disabled:cursor-default
-                  ${isCor ? 'bg-green-200 border-2 border-green-500' : isWrong ? 'bg-red-200 border-2 border-red-400' : 'bg-white'}`}>
+                  ${isCor ? 'bg-green-200 border-2 border-green-500' : isWrong ? 'bg-red-200 border-2 border-red-400' : isFirstWrong ? 'bg-gray-200 text-gray-400' : 'bg-white'}`}>
                 {formatAnswer(c, q)}{isCor ? ' ✓' : ''}{isWrong ? ' ✗' : ''}
               </button>
             )
@@ -392,7 +447,7 @@ export default function YoujiClockPage() {
         {answered && (
           <div className={`mt-4 rounded-2xl p-3 text-center font-black ${chosenIdx !== null && isCorrect(choices[chosenIdx], correctAns) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
             {chosenIdx !== null && isCorrect(choices[chosenIdx], correctAns)
-              ? '⭕ せいかい！'
+              ? (attempt === 0 ? '⭕ せいかい！' : '💪 できたね！')
               : `❌ ざんねん！ ${formatAnswer(correctAns, q)} だよ！`}
           </div>
         )}

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { getDataKey } from '@/lib/storage'
 import { saveScore } from '@/lib/scoreApi'
@@ -74,7 +74,7 @@ const WORD_DATA = [
   { kata:'ハンバーガー',   hira:'はんばーがー',   emoji:'🍔' },
   { kata:'ピザ',           hira:'ぴざ',           emoji:'🍕' },
   { kata:'ピアノ',         hira:'ぴあの',         emoji:'🎹' },
-  { kata:'フルーツ',       hira:'ふるーつ',       emoji:'🍎' },
+  { kata:'バナナ',         hira:'ばなな',         emoji:'🍌' },
   { kata:'ホットケーキ',   hira:'ほっとけーき',   emoji:'🥞' },
   { kata:'メダル',         hira:'めだる',         emoji:'🏅' },
   { kata:'メロン',         hira:'めろん',         emoji:'🍈' },
@@ -132,11 +132,40 @@ function speak(text: string) {
   } catch {}
 }
 
+// 形が似ていて混同しやすい字。誤答候補に優先して混ぜ、弁別学習にする
+const SIMILAR_KATA: Record<string, string[]> = {
+  'シ': ['ツ', 'ソ'], 'ツ': ['シ', 'ソ'], 'ソ': ['ン', 'ツ'], 'ン': ['ソ', 'シ'],
+  'ウ': ['ワ', 'フ'], 'ワ': ['ウ', 'フ'], 'フ': ['ワ', 'ウ'],
+  'ク': ['タ', 'ケ'], 'タ': ['ク', 'ケ'], 'ケ': ['ク', 'タ'],
+  'ナ': ['メ', 'ヌ'], 'メ': ['ナ', 'ヌ'], 'ヌ': ['メ', 'ス'], 'ス': ['ヌ', 'マ'],
+  'チ': ['テ', 'ナ'], 'テ': ['チ', 'ラ'], 'ラ': ['テ', 'フ'],
+  'ル': ['レ', 'ノ'], 'レ': ['ル', 'ノ'], 'ノ': ['レ', 'ソ'],
+  'コ': ['ロ', 'ユ'], 'ロ': ['コ', 'ユ'], 'ユ': ['コ', 'ロ'],
+  'サ': ['セ', 'ヤ'], 'セ': ['サ', 'ヒ'],
+}
+const SIMILAR_HIRA: Record<string, string[]> = {
+  'ね': ['れ', 'わ'], 'れ': ['ね', 'わ'], 'わ': ['れ', 'ね'],
+  'ぬ': ['め', 'ね'], 'め': ['ぬ', 'の'], 'の': ['め', 'ぬ'],
+  'は': ['ほ', 'ま'], 'ほ': ['は', 'ま'], 'ま': ['ほ', 'は'],
+  'さ': ['き', 'ち'], 'き': ['さ', 'ち'], 'ち': ['さ', 'ら'], 'ら': ['ち', 'う'],
+  'る': ['ろ', 'そ'], 'ろ': ['る', 'そ'], 'そ': ['ろ', 'る'],
+  'う': ['つ', 'ら'], 'つ': ['う', 'し'], 'し': ['つ', 'も'], 'も': ['し', 'ち'],
+  'け': ['は', 'に'], 'に': ['け', 'こ'],
+}
+
+// 似た字を最大2つ優先し、残りをランダムで埋める
+function pickDistractors(correct: string, all: string[], similar: Record<string, string[]>, n = 3): string[] {
+  const sims = shuffle((similar[correct] ?? []).filter(s => s !== correct && all.includes(s))).slice(0, 2)
+  const rest = shuffle(all.filter(k => k !== correct && !sims.includes(k))).slice(0, n - sims.length)
+  return [...sims, ...rest]
+}
+
 function buildQuestions(mode: GameMode, row: string, count: number): Question[] {
   if (mode === 'word') {
     return shuffle([...WORD_DATA]).slice(0, count).map(w => {
       const correct = w.kata
-      const others = WORD_DATA.filter(x => x.kata !== correct).map(x => x.kata)
+      // 絵文字がまぎらわしくならないよう同じ絵文字の語は除外
+      const others = WORD_DATA.filter(x => x.kata !== correct && x.emoji !== w.emoji).map(x => x.kata)
       const distractors = shuffle(others).slice(0, 3)
       return {
         type: 'word' as GameMode,
@@ -166,12 +195,10 @@ function buildQuestions(mode: GameMode, row: string, count: number): Question[] 
     let choices: string[]
     if (mode === 'hira2kata') {
       const correct = item.kata
-      const distractors = shuffle(ALL_KATA.filter(k => k !== correct)).slice(0, 3)
-      choices = shuffle([correct, ...distractors])
+      choices = shuffle([correct, ...pickDistractors(correct, ALL_KATA, SIMILAR_KATA)])
     } else {
       const correct = item.hira
-      const distractors = shuffle(ALL_HIRA.filter(h => h !== correct)).slice(0, 3)
-      choices = shuffle([correct, ...distractors])
+      choices = shuffle([correct, ...pickDistractors(correct, ALL_HIRA, SIMILAR_HIRA)])
     }
     return { type: mode, hira: item.hira, kata: item.kata, choices }
   })
@@ -210,6 +237,9 @@ export default function KatakanaPage() {
 
   const [chosen, setChosen] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
+  const [attempt, setAttempt] = useState<0 | 1>(0)              // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrong, setFirstWrong] = useState<string | null>(null)
+  const finishedRef = useRef(false)                              // 「つぎへ」連打による結果二重保存ガード
 
   const startGame = useCallback(() => {
     const qs = buildQuestions(mode, row, count)
@@ -221,6 +251,9 @@ export default function KatakanaPage() {
     setLog([])
     setChosen(null)
     setShowFeedback(false)
+    setAttempt(0)
+    setFirstWrong(null)
+    finishedRef.current = false
     setPhase('game')
     const q = qs[0]
     if (q) {
@@ -231,39 +264,43 @@ export default function KatakanaPage() {
   }, [mode, row, count])
 
   const handleAnswer = useCallback((c: string) => {
-    if (chosen !== null) return
+    if (chosen !== null || c === firstWrong) return
     const q = questions[idx]
     const correct = getCorrect(q)
     const ok = c === correct
 
-    setChosen(c)
-    setShowFeedback(true)
-
-    let newCombo = combo
-    let newMaxCombo = maxCombo
-    let newScore = score
-    if (ok) {
-      newCombo = combo + 1
-      if (newCombo > maxCombo) newMaxCombo = newCombo
-      const base = 100
-      const comboBonus = Math.min(newCombo - 1, 5) * 20
-      newScore = score + base + comboBonus
-      setCombo(newCombo)
-      setMaxCombo(newMaxCombo)
-      setScore(newScore)
-      speak(newCombo >= 3 ? 'すごい！' + newCombo + 'れんぞく！' : 'せいかい！')
-    } else {
-      setCombo(0)
-      newCombo = 0
-      speak('ざんねん。せいかいは ' + correct)
+    if (attempt === 0) {
+      // スコア・コンボは1回目の解答のみで記録する
+      setLog(prev => [...prev, { q, correct, chosen: c, ok }])
+      if (ok) {
+        const newCombo = combo + 1
+        if (newCombo > maxCombo) setMaxCombo(newCombo)
+        setCombo(newCombo)
+        setScore(score + 100 + Math.min(newCombo - 1, 5) * 20)
+        setChosen(c)
+        setShowFeedback(true)
+        speak(newCombo >= 3 ? 'すごい！' + newCombo + 'れんぞく！' : 'せいかい！')
+      } else {
+        // 1回目は答えを見せず、もういちど考えてもらう
+        setCombo(0)
+        setFirstWrong(c)
+        setAttempt(1)
+        speak('おしい！もういちど かんがえてみよう！')
+      }
+      return
     }
 
-    setLog(prev => [...prev, { q, correct, chosen: c, ok }])
-  }, [chosen, questions, idx, combo, maxCombo, score])
+    // 2回目: 記録は変えず、答え合わせだけ行う
+    setChosen(c)
+    setShowFeedback(true)
+    speak(ok ? 'そう！' + correct + ' だよ！' : 'こたえは ' + correct + ' だよ！')
+  }, [chosen, firstWrong, attempt, questions, idx, combo, maxCombo, score])
 
   const nextQuestion = useCallback(() => {
     const nextIdx = idx + 1
     if (nextIdx >= questions.length) {
+      if (finishedRef.current) return  // 連打による二重保存を防ぐ
+      finishedRef.current = true
       const total = questions.length
       const correctCount = log.filter(l => l.ok).length
       const pct = correctCount / total
@@ -280,6 +317,8 @@ export default function KatakanaPage() {
       setIdx(nextIdx)
       setChosen(null)
       setShowFeedback(false)
+      setAttempt(0)
+      setFirstWrong(null)
       const q = questions[nextIdx]
       if (q.type === 'word') speak(q.hira ?? '')
       else if (q.type === 'hira2kata') speak(q.hira ?? '')
@@ -422,10 +461,20 @@ export default function KatakanaPage() {
             )}
           </div>
 
+          {/* 1かいめ まちがいのあとの はげまし */}
+          {attempt === 1 && chosen === null && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
+              <p className="font-bold text-amber-600">💪 おしい！もういちど！</p>
+              <p className="text-sm text-gray-600 mt-1">よーく みて べつの こたえを えらんでね</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             {q.choices.map((c, i) => {
               let btnClass = 'w-full py-4 rounded-2xl text-xl font-black transition-all '
-              if (chosen === null) {
+              if (chosen === null && c === firstWrong) {
+                btnClass += 'bg-gray-100 text-gray-300'
+              } else if (chosen === null) {
                 btnClass += 'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
               } else if (c === correct) {
                 btnClass += 'bg-green-100 text-green-700 border-2 border-green-400'
@@ -439,7 +488,7 @@ export default function KatakanaPage() {
                   key={i}
                   className={btnClass}
                   onClick={() => handleAnswer(c)}
-                  disabled={chosen !== null}
+                  disabled={chosen !== null || c === firstWrong}
                 >
                   {c}
                 </button>
@@ -449,7 +498,7 @@ export default function KatakanaPage() {
 
           {showFeedback && chosen !== null && (
             <div className={`rounded-2xl p-4 text-center ${chosen === correct ? 'bg-green-50' : 'bg-red-50'}`}>
-              <div className="text-3xl mb-1">{chosen === correct ? '⭕' : '❌'}</div>
+              <div className="text-3xl mb-1">{chosen === correct ? (attempt === 0 ? '⭕' : '💪') : '❌'}</div>
               {q.type === 'word' && (
                 <p className="text-sm font-bold text-gray-700">
                   {chosen === correct ? 'せいかい！' : '【せいかい】'}{q.emoji} ＝ <span className="text-green-600">{correct}</span>

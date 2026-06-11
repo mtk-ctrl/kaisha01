@@ -10,9 +10,49 @@ import {
   getLevelProgress, getLevelStars, recordLevelResult, updateStreak,
   type ThinkingProgress
 } from '@/lib/thinkingProgress'
+import { shuffle } from '@/lib/idiomQuiz'
+import { saveScore } from '@/lib/scoreApi'
 
 const SESSION_KEY = 'tanq-lab-auth'
 const GUEST_FREE_LEVELS = 2
+
+// 選択肢をシャッフルして正解位置を分散させる（データ上は常に先頭が正解のため必須）
+function shuffleOptions<T extends { options: string[]; correctIndex: number }>(q: T): T {
+  const order = shuffle(q.options.map((_, i) => i))
+  return { ...q, options: order.map(i => q.options[i]), correctIndex: order.indexOf(q.correctIndex) }
+}
+
+// ─── 考え方の足場ヒント（問題タイプ別・答えは言わない）────
+const TYPE_HINTS: Record<string, string> = {
+  A1: 'ばめんを頭の中で絵にしてみよう。「同じかずずつ分ける」「ふえる」「へる」のどれかな？',
+  A2: '文に出てくる数字に○をつけて、何がどうなったか、じゅんばんに追いかけてみよう。',
+  A3: '答えを出すのに「本当にいる数字」はどれかな？いらない数字もまざっているよ。',
+  A4: '式を声に出して読んで、「どんなお話の場面か」を想像してみよう。',
+  B1: 'かげは太陽の反対がわにできるよ。太陽がどこにあるか、もう一度たしかめよう。',
+  B2: '真上にカメラがあるつもりで、上から見たところを頭の中で想像してみよう。',
+  B3: '見えない場所にも積み木がかくれていないかな？うしろや下も考えてみよう。',
+  B4: '鏡は左右が反対に映るよ。鏡の前に立った自分を想像してみよう。',
+  B5: 'その人になったつもりで、その場所から何が見えるか考えてみよう。',
+  C1: '生き物は小さいすがたから大きいすがたへ育つよ。一番はじめのすがたはどれかな？',
+  C2: 'じゅんばんを入れかえたら変にならないか、1つずつたしかめてみよう。',
+  C3: '自然のできごとは「原因→結果」のじゅんばんで起きるよ。何が先に起きるかな？',
+  C4: '今の様子は「手がかり」だよ。「何があればこうなるか」を逆から考えてみよう。',
+  C5: 'このまま時間がたつと、どう変わっていくか想像してみよう。',
+  D1: 'その体の特ちょうが「何の役に立つか」を考えてみよう。',
+  D2: '「なぜ？」を「どういう仕組みでそうなる？」に言いかえて考えてみよう。',
+  D3: 'そのルールが「なかったら、だれが困るか」を考えてみよう。',
+  D4: '「もしなかったら」をじゅんばんに想像しよう。まず何が起きる？その次は？',
+  E1: 'まず3つに共通することを見つけよう。それにあてはまらないのが仲間はずれだよ。',
+  E2: '見た目・使い方・育ち方・住む場所…いろんな角度でくらべてみよう。',
+  E3: '「どんな仲間に分けられるか」、グループの名前を考えてみよう。',
+  F1: '答えからさかのぼって「その前はどうだった？」と考えてみよう。',
+  F2: '答えを出すために「ぜったいに必要な情報」はどれか、えらび出そう。',
+  F3: '答えを出すために「まだ足りない情報」はないか、たしかめてみよう。',
+  G1: 'ならびを声に出して読んでみよう。「いくつずつ」変わっているかな？',
+  G2: 'ふだんの生活とくらべて「ありえないこと」をさがそう。何もない場合もあるよ。',
+  G3: '左のペアの関係を言葉にしてみよう。「〜は〜する場所」みたいにね。',
+}
+const DEFAULT_HINT = 'あわてなくて大丈夫。問題文をもう一度ゆっくり読んで、手がかりをさがしてみよう。'
 
 function getUserType(): 'guest' | 'tester' | 'member' {
   if (typeof window === 'undefined') return 'guest'
@@ -140,11 +180,13 @@ function BadgeToast({ badgeId, type, onDone }: { badgeId: string; type: 'silver'
 function ReviewScreen({
   question,
   selectedIndex,
+  firstTry,
   onNext,
   consecutiveCorrect,
 }: {
   question: (typeof THINKING_QUESTIONS)[0]
   selectedIndex: number
+  firstTry: boolean
   onNext: () => void
   consecutiveCorrect: number
 }) {
@@ -168,8 +210,11 @@ function ReviewScreen({
       {/* 正解・不正解バナー */}
       <div className={`px-4 py-4 text-center ${correct ? 'bg-green-50' : 'bg-red-50'}`}>
         <div className={`text-2xl font-bold mb-1 ${correct ? 'text-green-600' : 'text-red-500'}`}>
-          {correct ? '✅ 正解！' : '惜しい！'}
+          {correct ? (firstTry ? '✅ 正解！' : '💪 ヒントで正解！') : '惜しい！'}
         </div>
+        {!firstTry && correct && (
+          <div className="text-xs text-green-700">自分で考え直せたのがえらい！つぎは1回目でねらおう</div>
+        )}
         <CatCharacter mood={catMood} />
         {streakMsg && (
           <div className="mt-2 text-sm font-bold text-purple-600 animate-pulse">{streakMsg}</div>
@@ -364,6 +409,8 @@ export default function ThinkingGamePage() {
   const [questions, setQuestions] = useState<typeof THINKING_QUESTIONS>([])
   const [current, setCurrent] = useState(0)
   const [selected, setSelected] = useState<number | null>(null)
+  const [attempt, setAttempt] = useState<0 | 1>(0)              // 0=1回目, 1=ヒントを見て再挑戦中
+  const [firstWrong, setFirstWrong] = useState<number | null>(null) // 1回目に選んだまちがいの選択肢
   const [correctIds, setCorrectIds] = useState<number[]>([])
   const [showFireworks, setShowFireworks] = useState(false)
   const [toasts, setToasts] = useState<{ id: string; type: 'silver' | 'gold' }[]>([])
@@ -381,7 +428,7 @@ export default function ThinkingGamePage() {
       router.replace('/apps/thinking')
       return
     }
-    const qs = THINKING_QUESTIONS.filter(q => q.level === level)
+    const qs = THINKING_QUESTIONS.filter(q => q.level === level).map(shuffleOptions)
     setQuestions(qs)
   }, [level, router])
 
@@ -392,24 +439,34 @@ export default function ThinkingGamePage() {
 
   function handleAnswer(idx: number) {
     if (selected !== null || !progress) return
-    setSelected(idx)
+    if (idx === firstWrong) return
 
     const correct = idx === q.correctIndex
-    const newCorrectIds = correct ? [...correctIds, q.id] : correctIds
 
-    setCorrectIds(newCorrectIds)
+    if (attempt === 0) {
+      // スコア・ストリークは初回解答のみで記録する（再挑戦で水増ししない）
+      const updatedProgress = updateStreak(correct, progress)
+      setProgress(updatedProgress)
+      saveProgress(updatedProgress)
 
-    // ストリーク更新
-    const updatedProgress = updateStreak(correct, progress)
-    setProgress(updatedProgress)
-    saveProgress(updatedProgress)
-
-    const streak = updatedProgress.consecutiveCorrect
-    if (streak >= 5) {
-      setShowFireworks(true)
-      setTimeout(() => setShowFireworks(false), 1500)
+      if (correct) {
+        setCorrectIds(ids => [...ids, q.id])
+        if (updatedProgress.consecutiveCorrect >= 5) {
+          setShowFireworks(true)
+          setTimeout(() => setShowFireworks(false), 1500)
+        }
+        setSelected(idx)
+        setPhase('review')
+      } else {
+        // 1回目のまちがい: 答えは見せず、考え方のヒントを出してもう一度考えてもらう
+        setFirstWrong(idx)
+        setAttempt(1)
+      }
+      return
     }
 
+    // 2回目: 記録は変えず、答え合わせと考え方の確認だけ行う
+    setSelected(idx)
     setPhase('review')
   }
 
@@ -417,6 +474,8 @@ export default function ThinkingGamePage() {
     if (current + 1 < questions.length) {
       setCurrent(c => c + 1)
       setSelected(null)
+      setAttempt(0)
+      setFirstWrong(null)
       setPhase('question')
     } else {
       if (!progress) return
@@ -424,6 +483,7 @@ export default function ThinkingGamePage() {
       const { updated, newSilver, newGold } = recordLevelResult(level, correctIds, progress)
       setProgress(updated)
       saveProgress(updated)
+      saveScore('thinking', correctIds.length, questions.length, `lv${level}`)
       setResultData({ newSilver, newGold })
 
       // バッジトースト
@@ -447,8 +507,12 @@ export default function ThinkingGamePage() {
   function handleRetry() {
     const p = loadProgress()
     setProgress(p)
+    // 選択肢の並びを覚えてしまわないよう再シャッフル
+    setQuestions(THINKING_QUESTIONS.filter(q2 => q2.level === level).map(shuffleOptions))
     setCurrent(0)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
     setCorrectIds([])
     setPhase('question')
   }
@@ -516,12 +580,15 @@ export default function ThinkingGamePage() {
             questionIndex={current}
             total={questions.length}
             onAnswer={handleAnswer}
+            hint={attempt === 1 ? (TYPE_HINTS[q.type] ?? DEFAULT_HINT) : null}
+            disabledIndex={firstWrong}
           />
         )}
         {phase === 'review' && selected !== null && (
           <ReviewScreen
             question={q}
             selectedIndex={selected}
+            firstTry={attempt === 0}
             onNext={handleNext}
             consecutiveCorrect={consecutiveCorrect}
           />
@@ -544,12 +611,14 @@ export default function ThinkingGamePage() {
 
 // ─── 問題画面 ─────────────────────────────────────────────
 function QuestionScreen({
-  question, questionIndex, total, onAnswer,
+  question, questionIndex, total, onAnswer, hint, disabledIndex,
 }: {
   question: (typeof THINKING_QUESTIONS)[0]
   questionIndex: number
   total: number
   onAnswer: (idx: number) => void
+  hint: string | null
+  disabledIndex: number | null
 }) {
   const diffColors: Record<number, string> = {
     1: 'bg-green-100 text-green-600',
@@ -576,23 +645,37 @@ function QuestionScreen({
           </div>
         </div>
 
+        {/* 1回目まちがい後の「考え方の足場」ヒント */}
+        {hint && (
+          <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-4">
+            <div className="text-amber-700 font-bold text-sm mb-1">💭 おしい！もういちど考えてみよう</div>
+            <div className="text-sm text-gray-700 leading-relaxed">{hint}</div>
+          </div>
+        )}
+
         {/* 選択肢 */}
         <div className="space-y-3 pb-4">
-          {question.options.map((opt, i) => (
-            <button
-              key={i}
-              onClick={() => onAnswer(i)}
-              className="w-full text-left bg-white border-2 border-gray-200 rounded-2xl px-4 py-4
-                text-sm text-gray-700 font-medium
-                active:scale-95 hover:border-blue-300 hover:bg-blue-50
-                transition-all duration-150 shadow-sm"
-            >
-              <span className="inline-block w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-xs font-bold text-center leading-6 mr-2 shrink-0">
-                {['ア', 'イ', 'ウ', 'エ'][i]}
-              </span>
-              <RubyText text={opt} />
-            </button>
-          ))}
+          {question.options.map((opt, i) => {
+            const isDisabled = i === disabledIndex
+            return (
+              <button
+                key={i}
+                onClick={() => onAnswer(i)}
+                disabled={isDisabled}
+                className={`w-full text-left rounded-2xl px-4 py-4
+                  text-sm font-medium transition-all duration-150 shadow-sm
+                  ${isDisabled
+                    ? 'bg-gray-100 border-2 border-gray-200 text-gray-300 line-through cursor-not-allowed'
+                    : 'bg-white border-2 border-gray-200 text-gray-700 active:scale-95 hover:border-blue-300 hover:bg-blue-50'}`}
+              >
+                <span className={`inline-block w-6 h-6 rounded-full text-xs font-bold text-center leading-6 mr-2 shrink-0
+                  ${isDisabled ? 'bg-gray-200 text-gray-400' : 'bg-blue-100 text-blue-600'}`}>
+                  {isDisabled ? '×' : ['ア', 'イ', 'ウ', 'エ'][i]}
+                </span>
+                <RubyText text={opt} />
+              </button>
+            )
+          })}
         </div>
       </div>
     </div>

@@ -5,20 +5,33 @@ import Link from 'next/link'
 import { WORDS } from '@/data/englishData'
 import type { WordEntry } from '@/data/englishData'
 import { getDataKey } from '@/lib/storage'
+import { saveScore } from '@/lib/scoreApi'
 
 type QuestionFormat = 'en2jp' | 'jp2en'
 
+function speechAvailable(): boolean {
+  return typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
+}
+
 function speak(text: string) {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return
-  window.speechSynthesis.cancel()
-  const u = new SpeechSynthesisUtterance(text)
-  u.lang = 'en-US'
-  u.rate = 0.85
-  u.pitch = 1.0
-  window.speechSynthesis.speak(u)
+  if (!speechAvailable()) return
+  try {
+    window.speechSynthesis.cancel()
+    const u = new SpeechSynthesisUtterance(text)
+    u.lang = 'en-US'
+    u.rate = 0.85
+    u.pitch = 1.0
+    window.speechSynthesis.speak(u)
+  } catch {
+    // 発音できない端末でも学習は続けられる（文字・絵・例文は常に表示）
+  }
 }
 
 function SpeakButton({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' | 'lg' }) {
+  // 音声非対応の端末では「押しても鳴らないボタン」を見せない
+  const [ok, setOk] = useState(false)
+  useEffect(() => { setOk(speechAvailable()) }, [])
+  if (!ok) return null
   const cls = size === 'lg' ? 'text-3xl px-4 py-2' : size === 'sm' ? 'text-base px-2 py-1' : 'text-xl px-3 py-1.5'
   return (
     <button
@@ -31,16 +44,41 @@ function SpeakButton({ text, size = 'md' }: { text: string; size?: 'sm' | 'md' |
 }
 
 function shuffle<T>(arr: T[]): T[] {
-  return [...arr].sort(() => Math.random() - 0.5)
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+// 誤答の選択肢: 同カテゴリ・似たスペル（three/tree など）を優先して混ぜ、弁別学習にする
+function pickDistractors(fmt: QuestionFormat, correct: WordEntry, pool: WordEntry[]): WordEntry[] {
+  const label = (w: WordEntry) => (fmt === 'jp2en' ? w.english : w.japanese)
+  const seen = new Set([label(correct)])
+  const candidates = pool.filter(w => {
+    if (w.english === correct.english) return false
+    if (seen.has(label(w))) return false // 「はな」(flower/nose) など同じ表記の選択肢を重複させない
+    seen.add(label(w))
+    return true
+  })
+  const scored = candidates.map(w => {
+    let s = 0
+    if (w.category === correct.category) s += 2
+    let p = 0
+    const a = w.english, b = correct.english
+    while (p < Math.min(a.length, b.length) && a[p] === b[p]) p++
+    s += Math.min(p, 3) // 先頭スペルが同じ語を優先
+    if (Math.abs(a.length - b.length) <= 1) s += 1
+    return { w, s: s + Math.random() * 2 } // 毎回少し顔ぶれを変える
+  })
+  scored.sort((x, y) => y.s - x.s)
+  return shuffle(scored.slice(0, 6)).slice(0, 3).map(x => x.w)
 }
 
 function makeChoices(fmt: QuestionFormat, correct: WordEntry, pool: WordEntry[]): string[] {
-  if (fmt === 'jp2en') {
-    const others = shuffle(pool.filter(w => w.english !== correct.english)).slice(0, 3).map(w => w.english)
-    return shuffle([correct.english, ...others])
-  }
-  const others = shuffle(pool.filter(w => w.japanese !== correct.japanese)).slice(0, 3).map(w => w.japanese)
-  return shuffle([correct.japanese, ...others])
+  const others = pickDistractors(fmt, correct, pool)
+  return shuffle([correct, ...others]).map(w => (fmt === 'jp2en' ? w.english : w.japanese))
 }
 
 // ── SRS ──
@@ -137,6 +175,21 @@ function makeQuestion(word: WordEntry): Question {
   return { fmt, word, correct: fmt === 'jp2en' ? word.english : word.japanese, choices: makeChoices(fmt, word, WORDS) }
 }
 
+// 1回目のまちがい用ヒント（答えそのものは見せない）
+function getHint(q: Question): string {
+  if (q.fmt === 'jp2en') {
+    const letters = q.word.english.replace(/ /g, '').length
+    return `さいしょの文字は「${q.word.english[0]}」、ぜんぶで${letters}文字の単語だよ。スペルをよーく見くらべてみよう！`
+  }
+  // en2jp: 例文の日本語訳から答えの部分をかくして、文脈ヒントにする
+  for (const p of q.word.japanese.split('・')) {
+    if (p.length >= 2 && q.word.sentenceJP.includes(p)) {
+      return `「${q.word.sentenceJP.split(p).join('◯◯')}」の ◯◯ に入る意味だよ。`
+    }
+  }
+  return `例文は "${q.word.sentence}"。🔊でもういちど音を聞いてみよう！`
+}
+
 type Phase = 'home' | 'playing' | 'result'
 
 export default function EnglishQuiz() {
@@ -148,6 +201,8 @@ export default function EnglishQuiz() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [qIdx, setQIdx] = useState(0)
   const [selected, setSelected] = useState<string | null>(null)
+  const [attempt, setAttempt] = useState<0 | 1>(0)          // 0=1回目, 1=ヒントを見て再挑戦中
+  const [firstWrong, setFirstWrong] = useState<string | null>(null) // 1回目に選んだまちがいの選択肢
   const [lastMs, setLastMs] = useState(0)
   const [lastChange, setLastChange] = useState<'mastered' | 'advance' | 'same' | 'regress'>('same')
   const [sessionCorrect, setSessionCorrect] = useState(0)
@@ -166,6 +221,16 @@ export default function EnglishQuiz() {
     if (phase === 'playing') qStartRef.current = Date.now()
   }, [qIdx, phase])
 
+  // en2jp: 単語が出たら自動で発音して「音と意味」を結びつける
+  useEffect(() => {
+    if (phase !== 'playing') return
+    const q = questions[qIdx]
+    if (q && q.fmt === 'en2jp') {
+      const t = setTimeout(() => speak(q.word.english), 250)
+      return () => clearTimeout(t)
+    }
+  }, [qIdx, phase, questions])
+
   const startGame = useCallback((m: 'normal' | 'weak' = mode) => {
     const currentStore = loadSRS()
     setStore(currentStore)
@@ -173,6 +238,8 @@ export default function EnglishQuiz() {
     setQuestions(items.map(makeQuestion))
     setQIdx(0)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
     setSessionCorrect(0)
     setSessionMastered(0)
     setSessionWeak(0)
@@ -181,28 +248,57 @@ export default function EnglishQuiz() {
     setPhase('playing')
   }, [mode])
 
+  // 答え合わせの瞬間に正解の発音を流す（多感覚で記憶に残す）
+  function revealSpeak(q: Question, chosen: string) {
+    if (q.fmt === 'jp2en') {
+      // タップした単語はすでに発音中。まちがいのときだけ、少し置いて正解を発音
+      if (chosen !== q.word.english) setTimeout(() => speak(q.word.english), 900)
+    } else {
+      speak(q.word.english)
+    }
+  }
+
   function choose(c: string) {
     if (selected !== null) return
-    // Speak the tapped English word immediately in jp2en mode
-    if (questions[qIdx].fmt === 'jp2en') speak(c)
-    const ms = Date.now() - qStartRef.current
-    setLastMs(ms)
-    setSelected(c)
+    if (c === firstWrong) return
     const q = questions[qIdx]
+    // jp2en: タップした英単語をその場で発音（まちがいでも音のちがいに気づける）
+    if (q.fmt === 'jp2en') speak(c)
     const correct = c === q.correct
     setFlashResult(correct ? 'correct' : 'wrong')
     setTimeout(() => setFlashResult(null), 700)
-    if (correct) setSessionCorrect(n => n + 1)
-    else setSessionWeak(n => n + 1)
-    const { store: newStore, change } = applySRS(store, q.word.english, correct, ms)
-    setStore(newStore)
-    saveSRS(newStore)
-    setLastChange(change)
-    if (change === 'mastered') setSessionMastered(n => n + 1)
+
+    if (attempt === 0) {
+      // スコア・SRSは初回解答のみで記録する（再挑戦で水増ししない）
+      const ms = Date.now() - qStartRef.current
+      setLastMs(ms)
+      const { store: newStore, change } = applySRS(store, q.word.english, correct, ms)
+      setStore(newStore)
+      saveSRS(newStore)
+      setLastChange(change)
+      if (correct) {
+        setSelected(c)
+        setSessionCorrect(n => n + 1)
+        if (change === 'mastered') setSessionMastered(n => n + 1)
+        revealSpeak(q, c)
+      } else {
+        // 1回目のまちがい: 答えは見せず、ヒントを出してもう一度考えてもらう
+        setSessionWeak(n => n + 1)
+        setFirstWrong(c)
+        setAttempt(1)
+      }
+      return
+    }
+
+    // 2回目: 記録は変えず、答え合わせと覚え直しだけ行う
+    setSelected(c)
+    revealSpeak(q, c)
   }
 
   function goNext() {
+    setFlashResult(null)
     if (qIdx + 1 >= questions.length) {
+      saveScore('english', sessionCorrect, questions.length, mode)
       const ns = recordStudy()
       setFinalStreak(ns)
       setStreak(ns)
@@ -211,6 +307,8 @@ export default function EnglishQuiz() {
     }
     setQIdx(i => i + 1)
     setSelected(null)
+    setAttempt(0)
+    setFirstWrong(null)
   }
 
   const stats = globalStats(store)
@@ -348,6 +446,8 @@ export default function EnglishQuiz() {
   const q = questions[qIdx]
   if (!q) return null
   const isCorrect = selected === q.correct
+  const solvedFirstTry = attempt === 0
+  const isRetrying = attempt === 1 && selected === null
   const isFast = lastMs > 0 && lastMs < 1500
   const isSlow = lastMs > 2500
   const changeColor = lastChange === 'mastered' ? '#f0c040' : lastChange === 'advance' ? '#4ade80' : lastChange === 'regress' ? '#f87171' : '#8892b0'
@@ -393,20 +493,18 @@ export default function EnglishQuiz() {
           {q.fmt === 'jp2en' ? '日本語 → English' : 'English → 日本語'}
         </div>
 
-        {/* Question */}
+        {/* Question — 絵文字は意味そのものなので、どちらの形式でも答えてから見せる */}
+        {selected !== null && (
+          <div className="text-[7rem] leading-none mb-2 select-none">{q.word.emoji}</div>
+        )}
         {q.fmt === 'jp2en' ? (
           <>
-            {/* Emoji only shown after answering in jp2en mode to avoid giving away the answer */}
-            {selected !== null && (
-              <div className="text-[7rem] leading-none mb-2 select-none">{q.word.emoji}</div>
-            )}
             <p className="text-2xl font-black mb-1">{q.word.japanese}</p>
             <p className="text-[#94a3c4] text-xs mb-5">{q.word.category}</p>
           </>
         ) : (
           <>
-            <div className="text-[7rem] leading-none mb-2 select-none">{q.word.emoji}</div>
-            <div className="flex items-center justify-center gap-3 mb-1">
+            <div className="flex items-center justify-center gap-3 mb-1 mt-2">
               <p className="text-3xl font-black text-[#f87171]">{q.word.english}</p>
               <SpeakButton text={q.word.english} size="md" />
             </div>
@@ -419,29 +517,43 @@ export default function EnglishQuiz() {
           {q.choices.map((c) => {
             const isCor = c === q.correct
             const isSel = c === selected
+            const isFirstWrong = c === firstWrong
             let bg = 'rgba(255,255,255,0.07)'
             let border = 'rgba(255,255,255,0.15)'
             let text = '#e8f0fe'
+            let opacity = 1
             if (selected !== null) {
               if (isCor) { bg = 'rgba(74,222,128,0.2)'; border = '#4ade80'; text = '#4ade80' }
-              else if (isSel) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; text = '#f87171' }
+              else if (isSel || isFirstWrong) { bg = 'rgba(248,113,113,0.2)'; border = '#f87171'; text = '#f87171' }
+            } else if (isFirstWrong) {
+              // 1回目にまちがえた選択肢は消して、残りからもう一度考えてもらう
+              bg = 'rgba(248,113,113,0.12)'; border = '#f87171'; text = '#f87171'; opacity = 0.45
             }
             return (
-              <button key={c} onClick={() => choose(c)} disabled={selected !== null}
-                className="py-4 rounded-2xl font-bold text-sm transition-all hover:scale-[1.03] disabled:cursor-default"
-                style={{ background: bg, border: `2px solid ${border}`, color: text }}>
+              <button key={c} onClick={() => choose(c)} disabled={selected !== null || isFirstWrong}
+                className="py-4 rounded-2xl font-bold text-sm transition-all hover:scale-[1.03] disabled:cursor-default disabled:hover:scale-100"
+                style={{ background: bg, border: `2px solid ${border}`, color: text, opacity }}>
                 {c}
               </button>
             )
           })}
         </div>
 
+        {/* 1回目のまちがい: 答えは見せずヒントで再挑戦 */}
+        {isRetrying && (
+          <div className="rounded-2xl p-4 mb-4 text-left border bg-[#f0c040]/10" style={{ borderColor: 'rgba(240,192,64,0.5)' }}>
+            <p className="font-black text-sm mb-1 text-[#f0c040]">💡 おしい！ヒント</p>
+            <p className="text-[#e8f0fe] text-sm leading-relaxed">{getHint(q)}</p>
+            <p className="text-[#94a3c4] text-xs mt-1.5">もういちど えらんでみよう！</p>
+          </div>
+        )}
+
         {/* Feedback */}
         {selected !== null && (
           <>
             <div className="flex items-center justify-between mb-3 px-1">
-              <span className="text-sm font-bold" style={{ color: isFast && isCorrect ? '#f0c040' : 'transparent' }}>
-                {isCorrect && isFast ? '⚡ 速い！' : isCorrect && isSlow ? '🤔 ゆっくり' : ''}
+              <span className="text-sm font-bold" style={{ color: solvedFirstTry && isCorrect && isFast ? '#f0c040' : solvedFirstTry && isCorrect && isSlow ? '#94a3c4' : 'transparent' }}>
+                {solvedFirstTry && isCorrect && isFast ? '⚡ 速い！' : solvedFirstTry && isCorrect && isSlow ? '🤔 ゆっくり' : ''}
               </span>
               {changeMsg && (
                 <span className="text-sm font-bold" style={{ color: changeColor }}>{changeMsg}</span>
@@ -456,8 +568,8 @@ export default function EnglishQuiz() {
               <div className="flex items-center gap-2 mb-1">
                 <p className="font-black text-sm" style={{ color: isCorrect ? '#4ade80' : '#f87171' }}>
                   {isCorrect
-                    ? `✓ 正解！「${q.word.japanese}」 = "${q.word.english}"`
-                    : `✗ 正解は「${q.correct}」`}
+                    ? `${solvedFirstTry ? '✓ 正解！' : '✓ できた！'}「${q.word.japanese}」 = "${q.word.english}"`
+                    : `おしい！「${q.word.japanese}」 = "${q.word.english}"`}
                 </p>
                 <SpeakButton text={q.word.english} size="sm" />
               </div>

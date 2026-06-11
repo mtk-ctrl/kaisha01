@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import Link from 'next/link'
+import { saveScore } from '@/lib/scoreApi'
 
 // --- Math helpers ---
 function gcd(a: number, b: number): number {
@@ -216,6 +217,7 @@ export default function KoubaiPage() {
   const [wrongChoice, setWrongChoice] = useState<string | null>(null)
   const [correctCount, setCorrectCount] = useState(0)
   const [waitingNext, setWaitingNext] = useState(false)
+  const savedRef = useRef(false) // 連打による saveScore 二重送信防止
 
   function startQuiz(lvlIdx: number, cnt: number, m: Mode) {
     let qs: QuizQuestion[]
@@ -234,6 +236,7 @@ export default function KoubaiPage() {
     setWrongChoice(null)
     setCorrectCount(0)
     setWaitingNext(false)
+    savedRef.current = false
     setPhase('quiz')
   }
 
@@ -261,11 +264,15 @@ export default function KoubaiPage() {
     setWrongChoice(null)
     setWaitingNext(false)
     if (qIndex + 1 >= questions.length) {
+      if (!savedRef.current) {
+        savedRef.current = true
+        saveScore('koubai', correctCount, questions.length, `${mode}-lv${selectedLevel + 1}`)
+      }
       setPhase('result')
     } else {
       setQIndex(i => i + 1)
     }
-  }, [qIndex, questions.length])
+  }, [qIndex, questions.length, correctCount, mode, selectedLevel])
 
   const currentSets = mode === 'lcm' ? LCM_SETS : mode === 'gcd' ? GCD_SETS : PRIME_SETS
   const modeColor = mode === 'lcm' ? '#10b981' : mode === 'gcd' ? '#3b82f6' : '#a855f7'

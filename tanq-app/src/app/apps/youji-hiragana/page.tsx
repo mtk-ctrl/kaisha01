@@ -259,6 +259,9 @@ export default function HiraganaPage() {
   const [log, setLog] = useState<LogEntry[]>([])
   const [chosen, setChosen] = useState<string | null>(null)
   const [showFeedback, setShowFeedback] = useState(false)
+  const [attempt, setAttempt] = useState<0 | 1>(0)              // 0=1かいめ, 1=もういちどチャレンジ
+  const [firstWrong, setFirstWrong] = useState<string | null>(null)
+  const finishedRef = useRef(false)                              // 「つぎへ」連打による結果二重保存ガード
   const [best, setBest] = useState<HiraganaBest>(() => {
     if (typeof window !== 'undefined') return loadBest()
     return { best: 0, stickers: 0 }
@@ -275,28 +278,51 @@ export default function HiraganaPage() {
     setLog([])
     setChosen(null)
     setShowFeedback(false)
+    setAttempt(0)
+    setFirstWrong(null)
+    finishedRef.current = false
     setPhase('game')
     setTimeout(() => speak(qs[0].item.speech), 200)
   }, [count])
 
   const handleAnswer = useCallback((c: string) => {
-    if (chosen !== null) return
+    if (chosen !== null || c === firstWrong) return
     const q = questions[idx]
     const ok = c === q.item.correct
+
+    if (attempt === 0) {
+      // スコアは1回目の解答のみ記録する
+      setLog(prev => [...prev, { question: q, chosen: c, ok }])
+      if (ok) {
+        setChosen(c)
+        setShowFeedback(true)
+        speak('せいかい！')
+        if (canvasRef.current) fireConfetti(canvasRef.current, false)
+      } else {
+        // 1回目は答えを見せず、励ましてもういちど選んでもらう
+        setFirstWrong(c)
+        setAttempt(1)
+        speak('おしい！もういちど えらんでみよう！')
+      }
+      return
+    }
+
+    // 2回目: 記録は変えず、答え合わせだけ行う
     setChosen(c)
     setShowFeedback(true)
     if (ok) {
-      speak('せいかい！')
+      speak(`そう！「${q.item.correct}」だよ！`)
       if (canvasRef.current) fireConfetti(canvasRef.current, false)
     } else {
       speak(`こたえは「${q.item.correct}」だよ！`)
     }
-    setLog(prev => [...prev, { question: q, chosen: c, ok }])
-  }, [chosen, questions, idx])
+  }, [chosen, firstWrong, attempt, questions, idx])
 
   const nextQuestion = useCallback(() => {
     const nextIdx = idx + 1
     if (nextIdx >= questions.length) {
+      if (finishedRef.current) return  // 連打による二重保存を防ぐ
+      finishedRef.current = true
       const correctCount = log.filter(l => l.ok).length
       const total = questions.length
       const pct = correctCount / total
@@ -316,6 +342,8 @@ export default function HiraganaPage() {
       setIdx(nextIdx)
       setChosen(null)
       setShowFeedback(false)
+      setAttempt(0)
+      setFirstWrong(null)
       setTimeout(() => speak(questions[nextIdx].item.speech), 200)
     }
   }, [idx, questions, log])
@@ -431,12 +459,22 @@ export default function HiraganaPage() {
             <p className="text-xs text-gray-400 mt-1">タップして もういちど きこう</p>
           </div>
 
+          {/* 1かいめ まちがいのあとの はげまし */}
+          {attempt === 1 && chosen === null && (
+            <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center">
+              <p className="font-bold text-amber-600">💪 おしい！もういちど！</p>
+              <p className="text-sm text-gray-600 mt-1">🔊を きいて のこった ほうを タップしてね</p>
+            </div>
+          )}
+
           {/* 2択ボタン */}
           <div className="flex flex-col gap-3">
             {q.choices.map((c, i) => {
               let btnClass =
                 'w-full py-5 rounded-2xl text-2xl font-black transition-all '
-              if (chosen === null) {
+              if (chosen === null && c === firstWrong) {
+                btnClass += 'bg-gray-100 text-gray-300'
+              } else if (chosen === null) {
                 btnClass +=
                   'bg-white shadow-md text-gray-700 active:scale-95 hover:shadow-lg'
               } else if (c === q.item.correct) {
@@ -453,7 +491,7 @@ export default function HiraganaPage() {
                   key={i}
                   className={btnClass}
                   onClick={() => handleAnswer(c)}
-                  disabled={chosen !== null}
+                  disabled={chosen !== null || c === firstWrong}
                 >
                   {c}
                 </button>
@@ -469,11 +507,13 @@ export default function HiraganaPage() {
               }`}
             >
               <div className="text-3xl mb-1">
-                {chosen === q.item.correct ? '⭕' : '❌'}
+                {chosen === q.item.correct ? (attempt === 0 ? '⭕' : '💪') : '❌'}
               </div>
               <p className="text-sm font-bold text-gray-700">
                 {chosen === q.item.correct
-                  ? `せいかい！「${q.item.correct}」だよ！`
+                  ? attempt === 0
+                    ? `せいかい！「${q.item.correct}」だよ！`
+                    : `できたね！「${q.item.correct}」だよ！`
                   : `こたえは「${q.item.correct}」だよ！`}
               </p>
               <button

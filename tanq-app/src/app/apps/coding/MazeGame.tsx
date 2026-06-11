@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 
 export type Dir = 'UP' | 'DOWN' | 'LEFT' | 'RIGHT'
 
@@ -317,6 +317,47 @@ const DIR_LABEL: Record<Dir, string> = {
   RIGHT: 'みぎ',
 }
 
+// ─── 失敗時の「考える足場」メッセージ ─────────────────────────────────────────
+// どこで止まったか・ゴールはどの向きかを伝えて「なぜ失敗したか」を考えられるようにする
+export function buildFailMessage(
+  cmds: Dir[],
+  path: [number, number][],
+  goal: [number, number],
+  stepWord: string = 'ばんめのコマンド',
+): string {
+  const executed = path.length - 1
+  const [fr, fc] = path[path.length - 1]
+  const dr = goal[0] - fr
+  const dc = goal[1] - fc
+  const parts: string[] = []
+  if (dr > 0) parts.push(`した${dr}マス`)
+  if (dr < 0) parts.push(`うえ${-dr}マス`)
+  if (dc > 0) parts.push(`みぎ${dc}マス`)
+  if (dc < 0) parts.push(`ひだり${-dc}マス`)
+  const where = parts.length > 0 ? `ゴール⭐は ロボットから ${parts.join('・')}のところだよ。` : ''
+  if (executed < cmds.length) {
+    return `${executed + 1}${stepWord}「${DIR_ARROW[cmds[executed]]} ${DIR_LABEL[cmds[executed]]}」で 🧱かべにぶつかって止まったよ。${where}`
+  }
+  const passedGoal = path.some(([r, c]) => r === goal[0] && c === goal[1])
+  if (passedGoal) {
+    return `ゴール⭐の上を通りすぎちゃった！コマンドが多すぎたみたい。${where}`
+  }
+  return `コマンドはぜんぶ動けたけど、ゴールにとどかなかった。${where}`
+}
+
+// 失敗の足場メッセージ表示ボックス
+export function FailHintBox({ message }: { message: string }) {
+  return (
+    <div
+      className="mt-1 w-full max-w-xs rounded-2xl px-4 py-3 text-left"
+      style={{ background: '#FFF3C4', border: '2px solid #f0c040' }}
+    >
+      <p className="text-xs font-black mb-1" style={{ color: '#ca8a04' }}>🤖 ロボットからのほうこく</p>
+      <p className="text-sm font-bold text-[#3A2E2A] leading-relaxed">{message}</p>
+    </div>
+  )
+}
+
 // ─── Grid renderer ────────────────────────────────────────────────────────────
 function MazeGrid({
   grid,
@@ -383,6 +424,11 @@ function SequentialMazeGame({
   const [animStep, setAnimStep] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [resultsLog, setResultsLog] = useState<boolean[]>([])
+  const [runCount, setRunCount] = useState(0) // この問題で何回じっこうしたか（スコアは1回目のみ）
+  const [failMsg, setFailMsg] = useState<string | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current) }, [])
 
   const puzzle = puzzles[puzzleIdx]
   const [goalR, goalC] = findPos(puzzle.grid, 'G')
@@ -404,23 +450,30 @@ function SequentialMazeGame({
 
   function runProgram() {
     if (isRunning || selected.length === 0) return
-    const path = simulatePath(puzzle.grid, selected)
+    const cmds = selected
+    const path = simulatePath(puzzle.grid, cmds)
+    const firstRun = runCount === 0
     setAnimPath(path)
     setAnimStep(0)
     setIsRunning(true)
 
     let step = 0
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       step++
       setAnimStep(step)
       if (step >= path.length) {
-        clearInterval(interval)
+        if (intervalRef.current) clearInterval(intervalRef.current)
         const [fr, fc] = path[path.length - 1]
         const correct = fr === goalR && fc === goalC
         setResult(correct ? 'correct' : 'wrong')
         setIsRunning(false)
-        if (correct) setScore((s) => s + 1)
-        setResultsLog((prev) => [...prev, correct])
+        // スコア・成績ログは1回目のじっこうのみ記録（リトライで水増ししない）
+        if (firstRun) {
+          if (correct) setScore((s) => s + 1)
+          setResultsLog((prev) => [...prev, correct])
+        }
+        if (!correct) setFailMsg(buildFailMessage(cmds, path, [goalR, goalC]))
+        setRunCount((c) => c + 1)
       }
     }, 380)
   }
@@ -436,12 +489,16 @@ function SequentialMazeGame({
     setResult('idle')
     setAnimPath([])
     setAnimStep(0)
+    setRunCount(0)
+    setFailMsg(null)
   }
 
   function reset() {
     setSelected([])
     setResult('idle')
-    // keep animPath so robot stays at crash position
+    setAnimPath([])
+    setAnimStep(0)
+    setFailMsg(null)
   }
 
   return (
@@ -465,12 +522,15 @@ function SequentialMazeGame({
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
           <span className="text-[#16a34a] font-black text-lg">ゴール！すごい！</span>
+          {runCount > 1 && (
+            <span className="text-[#6B5A52] text-xs mt-1">あきらめずにクリアできたね！（スコアは1回目のこたえできまるよ）</span>
+          )}
         </div>
       )}
       {result === 'wrong' && (
-        <div className="my-4 flex flex-col items-center">
-          <span className="text-7xl text-[#f87171]">×</span>
-          <span className="text-[#f87171] font-black text-lg">もう一回やってみよう</span>
+        <div className="my-3 flex flex-col items-center gap-2">
+          <span className="text-[#f87171] font-black text-lg">おしい！もう一回やってみよう</span>
+          {failMsg && <FailHintBox message={failMsg} />}
         </div>
       )}
 
@@ -594,6 +654,11 @@ function LoopMazeGame({
   const [animStep, setAnimStep] = useState(0)
   const [isRunning, setIsRunning] = useState(false)
   const [resultsLog, setResultsLog] = useState<boolean[]>([])
+  const [runCount, setRunCount] = useState(0) // この問題で何回じっこうしたか（スコアは1回目のみ）
+  const [failMsg, setFailMsg] = useState<string | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => () => { if (intervalRef.current) clearInterval(intervalRef.current) }, [])
 
   const puzzle = puzzles[puzzleIdx]
   const [goalR, goalC] = findPos(puzzle.grid, 'G')
@@ -625,23 +690,30 @@ function LoopMazeGame({
 
   function runProgram() {
     if (isRunning || cmds.length === 0) return
-    const path = simulateLoopPath(puzzle.grid, cmds)
+    const expanded: Dir[] = cmds.flatMap(({ dir, count }) => Array(count).fill(dir) as Dir[])
+    const path = simulatePath(puzzle.grid, expanded)
+    const firstRun = runCount === 0
     setAnimPath(path)
     setAnimStep(0)
     setIsRunning(true)
 
     let step = 0
-    const interval = setInterval(() => {
+    intervalRef.current = setInterval(() => {
       step++
       setAnimStep(step)
       if (step >= path.length) {
-        clearInterval(interval)
+        if (intervalRef.current) clearInterval(intervalRef.current)
         const [fr, fc] = path[path.length - 1]
         const correct = fr === goalR && fc === goalC
         setResult(correct ? 'correct' : 'wrong')
         setIsRunning(false)
-        if (correct) setScore((s) => s + 1)
-        setResultsLog((prev) => [...prev, correct])
+        // スコア・成績ログは1回目のじっこうのみ記録（リトライで水増ししない）
+        if (firstRun) {
+          if (correct) setScore((s) => s + 1)
+          setResultsLog((prev) => [...prev, correct])
+        }
+        if (!correct) setFailMsg(buildFailMessage(expanded, path, [goalR, goalC], '歩めの'))
+        setRunCount((c) => c + 1)
       }
     }, 350)
   }
@@ -656,14 +728,21 @@ function LoopMazeGame({
     setResult('idle')
     setAnimPath([])
     setAnimStep(0)
+    setRunCount(0)
+    setFailMsg(null)
   }
 
   function reset() {
     setCmds([])
     setResult('idle')
+    setAnimPath([])
+    setAnimStep(0)
+    setFailMsg(null)
   }
 
   const lastCmd = cmds.length > 0 ? cmds[cmds.length - 1] : null
+  // くりかえしを展開するとどう動くかのプレビュー（ループの展開イメージを学ぶ）
+  const expandedPreview = cmds.flatMap(({ dir, count }) => Array(count).fill(DIR_ARROW[dir]) as string[])
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -689,12 +768,15 @@ function LoopMazeGame({
         <div className="my-4 flex flex-col items-center">
           <span className="text-7xl animate-bounce">○</span>
           <span className="text-[#16a34a] font-black text-lg">ゴール！すごい！</span>
+          {runCount > 1 && (
+            <span className="text-[#6B5A52] text-xs mt-1">あきらめずにクリアできたね！（スコアは1回目のこたえできまるよ）</span>
+          )}
         </div>
       )}
       {result === 'wrong' && (
-        <div className="my-4 flex flex-col items-center">
-          <span className="text-7xl text-[#f87171]">×</span>
-          <span className="text-[#f87171] font-black text-lg">もう一回やってみよう</span>
+        <div className="my-3 flex flex-col items-center gap-2">
+          <span className="text-[#f87171] font-black text-lg">おしい！もう一回やってみよう</span>
+          {failMsg && <FailHintBox message={failMsg} />}
         </div>
       )}
 
@@ -768,6 +850,18 @@ function LoopMazeGame({
             </button>
           )}
         </div>
+      )}
+
+      {/* くりかえしの展開プレビュー: ループが1歩ずつの動きになるイメージをつかむ */}
+      {result === 'idle' && cmds.length > 0 && (
+        <p className="mt-2 text-xs text-[#6B5A52] max-w-xs text-center break-all">
+          くりかえしをひらくと:{' '}
+          <span className="font-bold tracking-widest">
+            {expandedPreview.slice(0, 16).join('')}
+            {expandedPreview.length > 16 ? '…' : ''}
+          </span>
+          <span className="ml-1">（{expandedPreview.length}歩）</span>
+        </p>
       )}
 
       {/* Run / Next / Reset */}

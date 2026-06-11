@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import {
   YOJI_LEVEL_META,
@@ -9,6 +9,9 @@ import {
 } from '@/data/yojiData'
 import { getDataKey } from '@/lib/storage'
 import { saveScore } from '@/lib/scoreApi'
+import { shuffle, getUsageHint } from '@/lib/idiomQuiz'
+import { Furigana } from '@/components/Furigana'
+import { playCorrect, playWrong } from '@/lib/audio'
 
 const STORAGE_KEY = 'tanq_yoji_v1'
 
@@ -38,7 +41,7 @@ function calcStars(wrong: number): 0 | 1 | 2 | 3 {
 
 function shuffleChoices(q: YojiQuestion): YojiQuestion {
   const indexed = q.choices.map((c, i) => ({ c, isAnswer: i === q.answer }))
-  const shuffled = [...indexed].sort(() => Math.random() - 0.5)
+  const shuffled = shuffle(indexed)
   return {
     ...q,
     choices: shuffled.map(({ c }) => c) as [string, string, string, string],
@@ -54,6 +57,8 @@ interface QuizState {
   current: number
   selected: number | null
   confirmed: boolean
+  attempt: 0 | 1            // 0=1回目, 1=ヒントを見て再挑戦中
+  firstWrong: number | null // 1回目にまちがえた選択肢（再選択不可にする）
   wrong: number
   answers: { correct: boolean; q: YojiQuestion }[]
 }
@@ -108,43 +113,63 @@ export default function YojiPage() {
     return Math.min(max, 20)
   })()
 
+  const finishedRef = useRef(false)
+
   const startLevel = useCallback((level: number) => {
     const questions = getYojiQuestionsForLevel(level)
-    const shuffled = [...questions].sort(() => Math.random() - 0.5).map(shuffleChoices)
-    setQuiz({ level, questions: shuffled, current: 0, selected: null, confirmed: false, wrong: 0, answers: [] })
+    const shuffled = shuffle(questions).map(shuffleChoices)
+    finishedRef.current = false
+    setQuiz({ level, questions: shuffled, current: 0, selected: null, confirmed: false, attempt: 0, firstWrong: null, wrong: 0, answers: [] })
     setView('quiz')
   }, [])
 
   const select = useCallback((idx: number) => {
     setQuiz(q => {
-      if (!q || q.confirmed) return q
+      if (!q || q.confirmed || idx === q.firstWrong) return q
       return { ...q, selected: idx }
     })
   }, [])
 
   const confirm = useCallback(() => {
-    setQuiz(q => {
-      if (!q || q.selected === null || q.confirmed) return q
-      const correct = q.selected === q.questions[q.current].answer
-      return {
-        ...q,
-        confirmed: true,
-        wrong: correct ? q.wrong : q.wrong + 1,
-        answers: [...q.answers, { correct, q: q.questions[q.current] }],
-      }
+    if (!quiz || quiz.selected === null || quiz.confirmed) return
+    const question = quiz.questions[quiz.current]
+    const correct = quiz.selected === question.answer
+    if (correct) playCorrect()
+    else playWrong()
+
+    if (quiz.attempt === 0 && !correct) {
+      // 1回目のまちがい: 答えは見せず、ヒントを出してもう一度考えてもらう。
+      // スコア・⭐は初回解答で確定（再挑戦で水増ししない）
+      setQuiz({
+        ...quiz,
+        attempt: 1,
+        firstWrong: quiz.selected,
+        selected: null,
+        wrong: quiz.wrong + 1,
+        answers: [...quiz.answers, { correct: false, q: question }],
+      })
+      return
+    }
+    // 初回正解 or 再挑戦の答え合わせ（記録は初回分のみ）
+    setQuiz({
+      ...quiz,
+      confirmed: true,
+      answers: quiz.attempt === 0 ? [...quiz.answers, { correct: true, q: question }] : quiz.answers,
     })
-  }, [])
+  }, [quiz])
 
   const next = useCallback(() => {
     setQuiz(q => {
       if (!q) return q
-      return { ...q, current: q.current + 1, confirmed: false, selected: null }
+      return { ...q, current: q.current + 1, confirmed: false, selected: null, attempt: 0, firstWrong: null }
     })
   }, [])
 
   useEffect(() => {
     if (!quiz) return
     if (quiz.current >= quiz.questions.length) {
+      if (finishedRef.current) return // persistSave 再実行時に saveScore を二重送信しない
+      finishedRef.current = true
       const stars = calcStars(quiz.wrong)
       const prev = save.levelStars[quiz.level] ?? 0
       if (stars > prev) {
@@ -272,18 +297,21 @@ export default function YojiPage() {
             <div style={{ fontSize: '11px', color: '#7c3aed', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               四字熟語
             </div>
-            <p style={{ fontSize: '19px', fontWeight: 'bold', color: '#1e1b4b', margin: 0, lineHeight: 1.5 }}>{q.furigana ?? q.q}</p>
+            <p style={{ fontSize: '19px', fontWeight: 'bold', color: '#1e1b4b', margin: 0, lineHeight: 1.8 }}><Furigana text={q.furigana ?? q.q} /></p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
             {q.choices.map((choice, i) => {
+              const isFirstWrong = i === quiz.firstWrong
               let bg = 'white'
               let border = '2px solid #e5e7eb'
               let color = '#1e1b4b'
 
               if (quiz.confirmed) {
                 if (i === q.answer) { bg = '#dcfce7'; border = '2px solid #22c55e'; color = '#15803d' }
-                else if (i === quiz.selected && i !== q.answer) { bg = '#fee2e2'; border = '2px solid #ef4444'; color = '#b91c1c' }
+                else if ((i === quiz.selected || isFirstWrong) && i !== q.answer) { bg = '#fee2e2'; border = '2px solid #ef4444'; color = '#b91c1c' }
+              } else if (isFirstWrong) {
+                bg = '#fef2f2'; border = '2px dashed #fca5a5'; color = '#9ca3af'
               } else if (quiz.selected === i) {
                 bg = '#ede9fe'; border = '2px solid #8b5cf6'; color = '#5b21b6'
               }
@@ -292,22 +320,34 @@ export default function YojiPage() {
                 <button
                   key={i}
                   onClick={() => select(i)}
-                  disabled={quiz.confirmed}
-                  style={{ background: bg, border, borderRadius: '14px', padding: '14px 16px', textAlign: 'left', cursor: quiz.confirmed ? 'default' : 'pointer', color, fontSize: '15px', fontWeight: '500', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px' }}
+                  disabled={quiz.confirmed || isFirstWrong}
+                  style={{ background: bg, border, borderRadius: '14px', padding: '14px 16px', textAlign: 'left', cursor: quiz.confirmed || isFirstWrong ? 'default' : 'pointer', color, fontSize: '15px', fontWeight: '500', transition: 'all 0.15s', display: 'flex', alignItems: 'center', gap: '10px', opacity: !quiz.confirmed && isFirstWrong ? 0.6 : 1 }}
                 >
                   <span style={{ fontSize: '13px', color: '#9ca3af', minWidth: '20px' }}>{'①②③④'[i]}</span>
                   {choice}
                   {quiz.confirmed && i === q.answer && <span style={{ marginLeft: 'auto', fontSize: '18px', fontWeight: 'bold' }}>○</span>}
-                  {quiz.confirmed && i === quiz.selected && i !== q.answer && <span style={{ marginLeft: 'auto', fontSize: '18px', fontWeight: 'bold' }}>×</span>}
+                  {((quiz.confirmed && i === quiz.selected) || isFirstWrong) && i !== q.answer && <span style={{ marginLeft: 'auto', fontSize: '18px', fontWeight: 'bold' }}>×</span>}
                 </button>
               )
             })}
           </div>
 
+          {/* 1回目のまちがい: 答えは見せず、使われる場面のヒントで再挑戦 */}
+          {!quiz.confirmed && quiz.attempt === 1 && (
+            <div style={{ background: '#fefce8', border: '1px solid #fde047', borderRadius: '14px', padding: '14px 16px', marginBottom: '16px' }}>
+              <div style={{ fontSize: '12px', color: '#ca8a04', fontWeight: '600', marginBottom: '4px' }}>💡 ヒント</div>
+              <p style={{ margin: 0, fontSize: '14px', color: '#713f12', lineHeight: 1.6 }}>{getUsageHint(q.explain)}</p>
+              <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#a16207', fontWeight: '600' }}>もういちど えらんでみよう！</p>
+            </div>
+          )}
+
           {quiz.confirmed && (
             <div style={{ background: '#f5f3ff', border: '1px solid #c4b5fd', borderRadius: '14px', padding: '14px 16px', marginBottom: '16px' }}>
-              <div style={{ fontSize: '12px', color: '#7c3aed', fontWeight: '600', marginBottom: '4px' }}>解説</div>
+              <div style={{ fontSize: '12px', color: '#7c3aed', fontWeight: '600', marginBottom: '4px' }}>{quiz.firstWrong !== null ? '解説（おぼえちゃおう！）' : '解説'}</div>
               <p style={{ margin: 0, fontSize: '14px', color: '#3730a3', lineHeight: 1.6 }}>{q.explain}</p>
+              {quiz.firstWrong !== null && (
+                <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#7c3aed', fontWeight: '600' }}>まちがえてもだいじょうぶ。つぎに出たら、もうとけるね！</p>
+              )}
             </div>
           )}
 
@@ -317,7 +357,7 @@ export default function YojiPage() {
               disabled={quiz.selected === null}
               style={{ width: '100%', background: quiz.selected === null ? '#e5e7eb' : 'linear-gradient(135deg, #8b5cf6, #6366f1)', color: quiz.selected === null ? '#9ca3af' : 'white', border: 'none', borderRadius: '14px', padding: '16px', fontSize: '16px', fontWeight: 'bold', cursor: quiz.selected === null ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }}
             >
-              こたえる
+              {quiz.attempt === 1 ? 'もういちど こたえる' : 'こたえる'}
             </button>
           ) : (
             <button
@@ -354,7 +394,7 @@ export default function YojiPage() {
             </div>
             <div style={{ marginBottom: '8px' }}><StarDisplay stars={stars} /></div>
             <div style={{ fontSize: '13px', color: '#6b7280' }}>
-              {stars === 3 ? '間違いゼロ！完璧です！' : stars === 2 ? '惜しい！あと少し！' : stars === 1 ? 'クリア！もっと練習しよう' : '間違いが多かったよ。もう一度！'}
+              {stars === 3 ? '間違いゼロ！完璧です！' : stars === 2 ? '惜しい！あと少し！' : stars === 1 ? 'クリア！もっと練習しよう' : 'まちがえた言葉をふりかえれば、つぎはきっとクリア！'}
             </div>
           </div>
 
@@ -366,9 +406,14 @@ export default function YojiPage() {
                 <div>
                   <div style={{ fontSize: '13px', color: '#374151' }}>{a.q.q}</div>
                   {!a.correct && (
-                    <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
-                      正解: {a.q.choices[a.q.answer]}
-                    </div>
+                    <>
+                      <div style={{ fontSize: '12px', color: '#15803d', fontWeight: '600', marginTop: '2px' }}>
+                        正解: {a.q.choices[a.q.answer]}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px', lineHeight: 1.5 }}>
+                        {a.q.explain}
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
