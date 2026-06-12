@@ -8,6 +8,9 @@ import { useStats } from '@/hooks/useStats'
 import { createClient } from '@/lib/supabase/client'
 import { pullFromSupabase, pushToSupabase } from '@/lib/learningSync'
 import { masteryBadges } from '@/lib/badges'
+import { loadCoins } from '@/lib/coins'
+import { loadBuddy, getCharacter, getBuddyXp, getStage, buddyEmoji, type BuddyState } from '@/lib/buddy'
+import { refreshMissions, missionUrl, ALL_CLEAR_BONUS, type Mission } from '@/lib/missions'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -265,6 +268,143 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
 }
 
 // ─────────────────────────────────────────
+// BuddyWidget — 相棒ウィジェット（Phase C-1）
+// ─────────────────────────────────────────
+function BuddyWidget() {
+  const [buddy, setBuddy] = useState<BuddyState | null>(null)
+  const [balance, setBalance] = useState(0)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    setBuddy(loadBuddy())
+    setBalance(loadCoins().balance)
+    setReady(true)
+    // ミッション報酬の付与（MissionsWidget）後に残高表示を追従させる
+    const onCoins = () => setBalance(loadCoins().balance)
+    window.addEventListener('tanq-coins-updated', onCoins)
+    return () => window.removeEventListener('tanq-coins-updated', onCoins)
+  }, [])
+
+  if (!ready) return null
+
+  // 初回: 相棒えらびへの誘導カード
+  if (!buddy) {
+    return (
+      <Link href="/buddy"
+        className="block rounded-[22px] p-4 mb-5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
+        style={{ background: '#FFE3EE', border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A', textDecoration: 'none' }}>
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">🥚</span>
+          <div className="flex-1">
+            <div className="font-black text-base leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+              あいぼうを えらぼう！
+            </div>
+            <div className="text-[11px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
+              べんきょうすると コインがもらえて、あいぼうが そだつよ
+            </div>
+          </div>
+          <span className="font-black text-xl" style={{ color: '#3A2E2A' }}>→</span>
+        </div>
+      </Link>
+    )
+  }
+
+  const c = getCharacter(buddy.type)
+  const stage = getStage(getBuddyXp(buddy))
+  return (
+    <div className="rounded-[22px] p-4 mb-5 flex items-center gap-3 flex-wrap"
+      style={{ background: c.bg, border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A' }}>
+      <Link href="/buddy" className="text-4xl leading-none" style={{ textDecoration: 'none' }}>
+        {buddyEmoji(buddy, stage)}
+      </Link>
+      <div className="flex-1 min-w-[110px]">
+        <div className="font-black text-base leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>{buddy.name}</div>
+        <div className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
+          Lv.{stage.level} {stage.label}　🪙 {balance}
+        </div>
+      </div>
+      <Link href="/buddy"
+        className="shrink-0 px-3 py-2 rounded-full text-xs font-black transition-all hover:-translate-y-0.5"
+        style={{ background: '#FFC83D', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', color: '#3A2E2A', textDecoration: 'none' }}>
+        🍖 ごはんをあげる
+      </Link>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────
+// MissionsWidget — きょうのミッション3つ（Phase C-2）
+// ─────────────────────────────────────────
+function MissionsWidget() {
+  const [missions, setMissions] = useState<Mission[]>([])
+  const [justAllCleared, setJustAllCleared] = useState(false)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    // 表示時に達成判定＋未付与の報酬をまとめて付与（重複付与はclaimedフラグでガード済み）
+    const res = refreshMissions()
+    setMissions(res.state.missions)
+    setJustAllCleared(res.justAllCleared)
+    if (res.earnedNow > 0) window.dispatchEvent(new Event('tanq-coins-updated'))
+    setReady(true)
+  }, [])
+
+  if (!ready || missions.length === 0) return null
+  const doneCount = missions.filter((m) => m.done).length
+  const allDone = doneCount === missions.length
+
+  return (
+    <div className="rounded-[22px] p-4 mb-5"
+      style={{ background: '#FFFFFF', border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A' }}>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-black text-base" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+          📋 きょうのミッション
+        </h3>
+        <span className="text-xs font-black px-2.5 py-0.5 rounded-full"
+          style={{ background: allDone ? '#DBF6F0' : '#FFF1B8', border: '2px solid #3A2E2A', color: allDone ? '#2BA39A' : '#C99700' }}>
+          {doneCount}/{missions.length}
+        </span>
+      </div>
+      <div className="space-y-2">
+        {missions.map((m) =>
+          m.done ? (
+            <div key={m.id} className="flex items-center gap-2.5 rounded-2xl px-3 py-2.5"
+              style={{ background: '#DBF6F0', border: '2.5px solid #3A2E2A' }}>
+              <span className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black shrink-0"
+                style={{ background: '#2BA39A', color: '#FFFFFF', border: '2px solid #3A2E2A' }}>✓</span>
+              <span className="text-lg shrink-0">{m.emoji}</span>
+              <span className="flex-1 text-xs font-bold line-through" style={{ color: '#6B5A52' }}>{m.title}</span>
+              <span className="text-[10px] font-black shrink-0" style={{ color: '#2BA39A' }}>🪙+{m.reward} ゲット！</span>
+            </div>
+          ) : (
+            <Link key={m.id} href={missionUrl(m.app)}
+              className="flex items-center gap-2.5 rounded-2xl px-3 py-2.5 transition-all hover:-translate-y-0.5"
+              style={{ background: '#FFF6E5', border: '2.5px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A', textDecoration: 'none' }}>
+              <span className="text-lg shrink-0">{m.emoji}</span>
+              <span className="flex-1 text-xs font-bold" style={{ color: '#3A2E2A' }}>{m.title}</span>
+              <span className="text-[10px] font-black shrink-0" style={{ color: '#C99700' }}>🪙+{m.reward}</span>
+              <span className="font-black text-sm shrink-0" style={{ color: '#3A2E2A' }}>→</span>
+            </Link>
+          ),
+        )}
+      </div>
+      {allDone ? (
+        <div className={`mt-3 rounded-2xl px-3 py-2.5 text-center ${justAllCleared ? 'animate-bounce' : ''}`}
+          style={{ background: '#FFC83D', border: '2.5px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }}>
+          <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>
+            🎉 ぜんぶクリア！ ボーナス 🪙+{ALL_CLEAR_BONUS} ゲット！
+          </span>
+        </div>
+      ) : (
+        <p className="text-[10px] font-bold mt-2 text-center" style={{ color: '#6B5A52' }}>
+          ぜんぶクリアすると ボーナス 🪙+{ALL_CLEAR_BONUS}！
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────
 // HomeTab — sticker style
 // ─────────────────────────────────────────
 function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
@@ -392,6 +532,12 @@ function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
           ))}
         </div>
       </div>
+
+      {/* 相棒ウィジェット（Phase C-1） */}
+      <BuddyWidget />
+
+      {/* きょうのミッション（Phase C-2） */}
+      <MissionsWidget />
 
       {/* Guest banner */}
       {userType === 'guest' && (
