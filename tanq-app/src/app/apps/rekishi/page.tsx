@@ -245,7 +245,7 @@ export default function RekishiPage() {
           </Link>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>🏛️</div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#451a03', margin: '0 0 4px' }}>中学受験 歴史</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#451a03', margin: '0 0 4px' }}>中学受験 社会〈歴史〉</h1>
             <p style={{ color: '#78716c', fontSize: '14px', margin: 0 }}>旧石器〜平安｜全{MAX_LEVEL}レベル・{REKISHI_TOTAL}問</p>
           </div>
 

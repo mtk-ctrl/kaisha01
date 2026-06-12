@@ -191,7 +191,7 @@ export default function KanyoPage() {
           </Link>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>🗣️</div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#7c2d12', margin: '0 0 4px' }}>慣用句</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#7c2d12', margin: '0 0 4px' }}>国語〈慣用句〉</h1>
             <p style={{ color: '#78716c', fontSize: '14px', margin: 0 }}>体・動物・色など 全20レベル</p>
           </div>
 

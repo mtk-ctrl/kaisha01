@@ -260,7 +260,7 @@ export default function JukenHubPage() {
 
           <GroupLabel>🗣️ ことば（語彙・慣用句・四字熟語）</GroupLabel>
           <div className="space-y-2">
-            <UnitRow href="/apps/kokugo" emoji="📖" title="語彙" sub="受験頻出のことば・20レベル"
+            <UnitRow href="/apps/kokugo" emoji="📖" title="ことば" sub="受験頻出のことば・20レベル"
               done={stats?.kokugoCleared} total={stats?.kokugoTotal} color="#7C5CD6" />
             <UnitRow href="/apps/kanyo" emoji="🗣️" title="慣用句" sub="体・動物・色など・20レベル"
               done={stats?.kanyoCleared} total={stats?.kanyoTotal} color="#7C5CD6" />
@@ -293,7 +293,7 @@ export default function JukenHubPage() {
 
           <GroupLabel>🧪 知識分野</GroupLabel>
           <div className="space-y-2">
-            <UnitRow href="/apps/science" emoji="⚗️" title="中学受験 理科" sub="生物・地学・化学・物理の4領域"
+            <UnitRow href="/apps/science" emoji="⚗️" title="知識〈4領域〉" sub="生物・地学・化学・物理の4領域"
               done={stats?.scienceMastered} total={stats?.scienceTotal} color="#2BA39A" />
           </div>
 
