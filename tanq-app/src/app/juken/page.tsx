@@ -42,7 +42,7 @@ const SUBJECTS = [
 // 近日公開の単元（正直に「近日公開」と表示する。実装済みに見せない）
 // 速さ系（旅人算・流水算・仕事算）は JUKU_UNITS 側の未公開単元として自動表示されるため、ここには含めない
 const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性']
-const KOKUGO_SOON = ['文法・敬語', '読解（オリジナル短文）']
+const KOKUGO_SOON = ['文法・敬語', '読解 ステップ3（短文読解）']
 const RIKA_SOON = ['てこ・ばね（計算）', '電気回路（計算）', '水溶液（計算）']
 const SHAKAI_SOON = ['歴史〈鎌倉〜現代〉', '公民・時事']
 
@@ -55,9 +55,9 @@ function GroupLabel({ children }: { children: React.ReactNode }) {
   )
 }
 
-function UnitRow({ href, emoji, title, sub, done, total, color }: {
+function UnitRow({ href, emoji, title, sub, done, total, color, tag }: {
   href: string; emoji: string; title: string; sub?: string
-  done?: number; total?: number; color: string
+  done?: number; total?: number; color: string; tag?: string
 }) {
   const hasProgress = typeof done === 'number' && typeof total === 'number' && total > 0
   const pct = hasProgress ? Math.round((done! / total!) * 100) : 0
@@ -76,7 +76,15 @@ function UnitRow({ href, emoji, title, sub, done, total, color }: {
           {emoji}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="font-black text-[13px] leading-tight" style={{ color: INK }}>{title}</div>
+          <div className="font-black text-[13px] leading-tight flex items-center gap-1.5 flex-wrap" style={{ color: INK }}>
+            {title}
+            {tag && (
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full font-black shrink-0"
+                style={{ background: '#FDE68A', border: '1px solid #F59E0B', color: '#92400E' }}>
+                {tag}
+              </span>
+            )}
+          </div>
           {sub && <div className="text-[10px] font-bold mt-0.5" style={{ color: SOFT }}>{sub}</div>}
         </div>
         {hasProgress ? (
@@ -150,7 +158,7 @@ export default function JukenHubPage() {
   const sansuuSoon = [...jukuSoonTitles, ...SANSUU_SOON]
 
   // 公開中・近日公開の単元数（ページ内のカード数から動的に算出）
-  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 4 /* 国語 */ + 1 /* 理科 */ + 2 /* 社会 */
+  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + 1 /* 理科 */ + 2 /* 社会 */
   const soonCount = sansuuSoon.length + KOKUGO_SOON.length + RIKA_SOON.length + SHAKAI_SOON.length
 
   return (
@@ -248,7 +256,7 @@ export default function JukenHubPage() {
         {/* ── 国語 ── */}
         <section id="kokugo" className="mt-8" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="📖" name="国語" color="#7C5CD6" bg="#EFE8FF"
-            sub="ことば・漢字 公開中／読解は近日公開" />
+            sub="ことば・漢字 公開中／読解は ためしてみる版" />
 
           <GroupLabel>🗣️ ことば（語彙・慣用句・四字熟語）</GroupLabel>
           <div className="space-y-2">
@@ -264,6 +272,12 @@ export default function JukenHubPage() {
           <div className="space-y-2">
             <UnitRow href="/apps/kanji" emoji="📖" title="漢字マスター" sub="小1〜小6の配当漢字・くり返しで定着"
               done={stats?.kanjiMastered} total={stats?.kanjiTotal} color="#7C5CD6" />
+          </div>
+
+          <GroupLabel>📚 読解（AI生成オリジナル文）</GroupLabel>
+          <div className="space-y-2">
+            <UnitRow href="/apps/dokkai" emoji="📚" title="読解〈3文・だんらく〉" sub="オリジナル文22問・根きょの文をさがす練習"
+              color="#7C5CD6" tag="ためしてみる版" />
           </div>
 
           <GroupLabel>🔭 これから公開される単元</GroupLabel>
