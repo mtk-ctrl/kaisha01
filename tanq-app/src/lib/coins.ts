@@ -74,6 +74,23 @@ function pruneLog(log: CoinLogEntry[]): CoinLogEntry[] {
   return log.filter((e) => e.d >= cutoffStr)
 }
 
+/** earn 系の共通処理: ガード・残高/累計加算・日付×アプリのログ集計・保存 */
+function addEarned(app: string, earned: number): number {
+  const state = loadCoins()
+  const guard = `${app}@${Math.floor(Date.now() / 1000)}`
+  if (state.lastEarn === guard) return 0
+  state.balance += earned
+  state.lifetime += earned
+  state.lastEarn = guard
+  const d = todayStr()
+  const entry = state.log.find((e) => e.d === d && e.app === app)
+  if (entry) entry.earned += earned
+  else state.log.push({ d, app, earned })
+  state.log = pruneLog(state.log)
+  saveCoins(state)
+  return earned
+}
+
 /**
  * コインを獲得する（1正解=1コイン + セッションボーナス5コイン）。
  * 同一秒×同一アプリの重複呼び出しは無視（連打・二重発火ガード）。
@@ -82,20 +99,21 @@ function pruneLog(log: CoinLogEntry[]): CoinLogEntry[] {
 export function earnCoins(app: string, correctCount: number): number {
   if (typeof window === 'undefined') return 0
   try {
-    const state = loadCoins()
-    const guard = `${app}@${Math.floor(Date.now() / 1000)}`
-    if (state.lastEarn === guard) return 0
-    const earned = Math.max(0, Math.floor(correctCount)) + SESSION_BONUS
-    state.balance += earned
-    state.lifetime += earned
-    state.lastEarn = guard
-    const d = todayStr()
-    const entry = state.log.find((e) => e.d === d && e.app === app)
-    if (entry) entry.earned += earned
-    else state.log.push({ d, app, earned })
-    state.log = pruneLog(state.log)
-    saveCoins(state)
-    return earned
+    return addEarned(app, Math.max(0, Math.floor(correctCount)) + SESSION_BONUS)
+  } catch {
+    return 0
+  }
+}
+
+/**
+ * 固定額のコイン付与（ミッション報酬等）。SESSION_BONUS を足さない。
+ * 複数報酬は呼び出し側で合算して1回で渡すこと（同一秒ガードで2回目が落ちるため）。
+ */
+export function grantCoins(app: string, amount: number): number {
+  if (typeof window === 'undefined') return 0
+  if (!Number.isFinite(amount) || amount <= 0) return 0
+  try {
+    return addEarned(app, Math.floor(amount))
   } catch {
     return 0
   }
