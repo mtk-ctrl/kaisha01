@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { SCIENCE_QUESTIONS } from '@/data/scienceData'
 import type { ScienceDomain, ScienceLevel } from '@/data/scienceData'
+import { RIKA_UNITS, getRikaUnit, questionsOfRikaUnit } from '@/data/rikaUnits'
 import { playCorrect, playWrong } from '@/lib/audio'
 import { getDataKey } from '@/lib/storage'
 import { saveScore } from '@/lib/scoreApi'
@@ -49,6 +50,23 @@ function buildSession(
 
 function domainStats(domain: ScienceDomain, level: ScienceLevel, store: SRSStore) {
   const pool = SCIENCE_QUESTIONS.filter(q => q.domain === domain && q.level === level)
+  const mastered = pool.filter(q => store[q.id]?.b === 2).length
+  return { mastered, total: pool.length }
+}
+
+// ── 単元マップ（中学受験の単元えらび）──────────────────
+// 単元 → 既存問題の割当ては rikaUnits.ts（SRS キーは question id のまま変更しない）
+function buildUnitSession(unitId: string, store: SRSStore): typeof SCIENCE_QUESTIONS {
+  const pool = questionsOfRikaUnit(unitId)
+  const unmastered = pool.filter(q => !store[q.id] || store[q.id].b < 2)
+  const review = pool.filter(q => store[q.id]?.b === 2)
+  const base = unmastered.length >= 3 ? unmastered : pool
+  const withReview = [...shuffle(base), ...shuffle(review).slice(0, 2)]
+  return shuffle(withReview).slice(0, SESSION_SIZE)
+}
+
+function unitStats(unitId: string, store: SRSStore) {
+  const pool = questionsOfRikaUnit(unitId)
   const mastered = pool.filter(q => store[q.id]?.b === 2).length
   return { mastered, total: pool.length }
 }
@@ -163,13 +181,16 @@ function DomainView({
   domain,
   store,
   onStart,
+  onStartUnit,
   onBack,
 }: {
   domain: ScienceDomain
   store: SRSStore
   onStart: (d: ScienceDomain, lv: ScienceLevel) => void
+  onStartUnit: (unitId: string) => void
   onBack: () => void
 }) {
+  const fieldUnits = RIKA_UNITS.filter(u => u.field === domain)
   return (
     <div className="px-4 pt-6 pb-8">
       <div className="flex items-center gap-3 mb-6">
@@ -216,6 +237,44 @@ function DomainView({
             </button>
           )
         })}
+      </div>
+
+      {/* 単元えらび（中学受験の単元マップに沿って出題） */}
+      <div className="mt-7">
+        <p className="text-xs font-black mb-2 flex items-center gap-1.5" style={{ color: '#6B5A52' }}>
+          🗺️ 単元ごとにとく（中学受験 単元マップ）
+        </p>
+        <div className="space-y-2">
+          {fieldUnits.map(unit => {
+            const { mastered, total } = unitStats(unit.id, store)
+            if (total === 0) return null
+            const pct = total > 0 ? Math.round(mastered / total * 100) : 0
+            const isFull = unit.status === 'full'
+            return (
+              <button
+                key={unit.id}
+                onClick={() => onStartUnit(unit.id)}
+                className="w-full rounded-[18px] px-4 py-3 text-left flex items-center gap-3 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }}
+              >
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
+                  style={{ background: DOMAIN_BG[domain], border: '2px solid #3A2E2A' }}>
+                  {unit.emoji}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-black text-xs leading-tight" style={{ color: '#3A2E2A' }}>{unit.name}</p>
+                  <p className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
+                    ⭐ おぼえた {mastered}/{total}問{isFull ? '・計算は「てこのつり合い」へ' : ''}
+                  </p>
+                  <div className="h-1.5 rounded-full overflow-hidden mt-1.5" style={{ background: 'rgba(58,46,42,0.12)' }}>
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: DOMAIN_COLORS[domain] }} />
+                  </div>
+                </div>
+                <span style={{ color: '#6B5A52', fontSize: 14 }}>›</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -374,12 +433,14 @@ function ResultView({
   state,
   domain,
   level,
+  unitName,
   onRetry,
   onBack,
 }: {
   state: QuizState
   domain: ScienceDomain
   level: ScienceLevel
+  unitName?: string
   onRetry: () => void
   onBack: () => void
 }) {
@@ -390,7 +451,9 @@ function ResultView({
   return (
     <div className="px-4 pt-6 pb-8">
       <h2 className="font-black text-2xl mb-1" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>結果</h2>
-      <p className="text-xs font-bold mb-5" style={{ color: '#6B5A52' }}>{DOMAIN_EMOJI[domain]} {domain} · {LEVEL_LABEL[level]}</p>
+      <p className="text-xs font-bold mb-5" style={{ color: '#6B5A52' }}>
+        {DOMAIN_EMOJI[domain]} {domain} · {unitName ?? LEVEL_LABEL[level]}
+      </p>
 
       {/* スコア */}
       <div className="rounded-[22px] p-6 mb-5 text-center"
@@ -448,6 +511,7 @@ export default function SciencePage() {
   const [view, setView] = useState<View>('top')
   const [selectedDomain, setSelectedDomain] = useState<ScienceDomain>('生物')
   const [selectedLevel, setSelectedLevel] = useState<ScienceLevel>(1)
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null)  // 単元マップでの出題中は単元id
   const [store, setStore] = useState<SRSStore>({})
   const [quiz, setQuiz] = useState<QuizState | null>(null)
 
@@ -463,6 +527,7 @@ export default function SciencePage() {
     setStore(currentStore)
     setSelectedDomain(d)
     setSelectedLevel(lv)
+    setSelectedUnit(null)
     const qs = buildSession(d, lv, currentStore)
     setQuiz({
       questions: qs,
@@ -477,6 +542,37 @@ export default function SciencePage() {
     })
     setView('quiz')
   }, [])
+
+  // 単元マップからの出題（/juken の単元リンク・領域画面の単元えらび）
+  const handleUnitStart = useCallback((unitId: string) => {
+    const unit = getRikaUnit(unitId)
+    if (!unit) return
+    const currentStore = loadSRS()
+    const qs = buildUnitSession(unitId, currentStore)
+    if (qs.length === 0) return
+    setStore(currentStore)
+    setSelectedDomain(unit.field)
+    setSelectedUnit(unitId)
+    setQuiz({
+      questions: qs,
+      current: 0,
+      selected: null,
+      confirmed: false,
+      attempt: 0,
+      firstWrong: null,
+      firstTryCorrect: null,
+      score: 0,
+      answers: [],
+    })
+    setView('quiz')
+  }, [])
+
+  // /juken からのディープリンク（?unit=rika-…）。SSR では window がないため useEffect で読む
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const unitId = new URLSearchParams(window.location.search).get('unit')
+    if (unitId && getRikaUnit(unitId)) handleUnitStart(unitId)
+  }, [handleUnitStart])
 
   const handleSelect = useCallback((i: number) => {
     setQuiz(prev => prev ? { ...prev, selected: i } : prev)
@@ -519,7 +615,7 @@ export default function SciencePage() {
     const newAnswers = [...quiz.answers, { correct, q }]
 
     if (quiz.current + 1 >= quiz.questions.length) {
-      saveScore('science', quiz.score, quiz.questions.length, selectedDomain)
+      saveScore('science', quiz.score, quiz.questions.length, selectedUnit ?? selectedDomain)
       setQuiz(prev => prev ? { ...prev, answers: newAnswers } : prev)
       setView('result')
     } else {
@@ -534,11 +630,12 @@ export default function SciencePage() {
         answers: newAnswers,
       } : prev)
     }
-  }, [quiz, selectedDomain])
+  }, [quiz, selectedDomain, selectedUnit])
 
   const handleRetry = useCallback(() => {
-    handleStart(selectedDomain, selectedLevel)
-  }, [handleStart, selectedDomain, selectedLevel])
+    if (selectedUnit) handleUnitStart(selectedUnit)
+    else handleStart(selectedDomain, selectedLevel)
+  }, [handleStart, handleUnitStart, selectedDomain, selectedLevel, selectedUnit])
 
   return (
     <div className="min-h-screen font-sans"
@@ -551,7 +648,10 @@ export default function SciencePage() {
       <div className="min-h-screen max-w-md mx-auto"
         style={{ borderLeft: '1px solid rgba(58,46,42,0.08)', borderRight: '1px solid rgba(58,46,42,0.08)' }}>
         {view === 'top' && <TopView onSelect={handleDomainSelect} store={store} />}
-        {view === 'domain' && <DomainView domain={selectedDomain} store={store} onStart={handleStart} onBack={() => setView('top')} />}
+        {view === 'domain' && (
+          <DomainView domain={selectedDomain} store={store} onStart={handleStart}
+            onStartUnit={handleUnitStart} onBack={() => setView('top')} />
+        )}
         {view === 'quiz' && quiz && (
           <QuizView
             key={quiz.current}
@@ -568,6 +668,7 @@ export default function SciencePage() {
             state={quiz}
             domain={selectedDomain}
             level={selectedLevel}
+            unitName={selectedUnit ? getRikaUnit(selectedUnit)?.name : undefined}
             onRetry={handleRetry}
             onBack={() => setView('domain')}
           />
