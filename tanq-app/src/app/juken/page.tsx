@@ -6,6 +6,8 @@
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { JUKU_UNITS } from '@/data/jukuData'
+import { RIKA_UNITS, RIKA_FIELDS, questionsOfRikaUnit } from '@/data/rikaUnits'
+import { TEKO_PROBLEMS } from '@/data/rikaTekoData'
 import { useStats } from '@/hooks/useStats'
 import { getDataKey } from '@/lib/storage'
 
@@ -31,6 +33,24 @@ function loadRekishiCleared(): number {
   } catch { return 0 }
 }
 
+// 理科の進捗: 知識演習は science の SRS（おぼえた=b2）、てこ計算は rika-teko のクリア数
+const SCIENCE_SRS_KEY = 'tanq_science_srs_v1'
+function loadScienceMasteredIds(): Set<string> {
+  if (typeof window === 'undefined') return new Set()
+  try {
+    const raw = JSON.parse(localStorage.getItem(getDataKey(SCIENCE_SRS_KEY)) || '{}') as Record<string, { b?: number }>
+    return new Set(Object.keys(raw).filter(id => raw[id]?.b === 2))
+  } catch { return new Set() }
+}
+const RIKA_TEKO_KEY = 'tanq_rika_teko_progress_v1'
+function loadTekoCleared(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const raw = JSON.parse(localStorage.getItem(getDataKey(RIKA_TEKO_KEY)) || '{}')
+    return Array.isArray(raw.solvedIds) ? raw.solvedIds.length : 0
+  } catch { return 0 }
+}
+
 // ─── 教科メタ ───────────────────────────────────────────
 const SUBJECTS = [
   { id: 'sansuu', emoji: '🧮', name: '算数', color: '#C99700', bg: '#FFF1B8' },
@@ -43,8 +63,16 @@ const SUBJECTS = [
 // 速さ系（旅人算・流水算・仕事算）は JUKU_UNITS 側の未公開単元として自動表示されるため、ここには含めない
 const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性']
 const KOKUGO_SOON = ['文法・敬語', '読解 ステップ3（短文読解）']
-const RIKA_SOON = ['てこ・ばね（計算）', '電気回路（計算）', '水溶液（計算）']
+// 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
+const RIKA_SOON = ['ばね・ふりこ（計算）', '電気回路（計算）', '水溶液・中和（計算）', '浮力（計算）']
 const SHAKAI_SOON = ['歴史〈鎌倉〜現代〉', '公民・時事']
+
+const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
+  '生物': { emoji: '🌿', label: '生物' },
+  '地学': { emoji: '🌍', label: '地学' },
+  '物理': { emoji: '⚡', label: '物理' },
+  '化学': { emoji: '⚗️', label: '化学' },
+}
 
 // ─── 小さな部品 ─────────────────────────────────────────
 function GroupLabel({ children }: { children: React.ReactNode }) {
@@ -146,10 +174,14 @@ export default function JukenHubPage() {
   const { stats } = useStats()
   const [jukuProgress, setJukuProgress] = useState<JukuProgress>({})
   const [rekishiCleared, setRekishiCleared] = useState(0)
+  const [scienceMastered, setScienceMastered] = useState<Set<string>>(new Set())
+  const [tekoCleared, setTekoCleared] = useState(0)
 
   useEffect(() => {
     setJukuProgress(loadJukuProgress())
     setRekishiCleared(loadRekishiCleared())
+    setScienceMastered(loadScienceMasteredIds())
+    setTekoCleared(loadTekoCleared())
   }, [])
 
   // 公開済みの特殊算単元（問題が入っているもののみ。過大表示しない）
@@ -157,8 +189,12 @@ export default function JukenHubPage() {
   const jukuSoonTitles = JUKU_UNITS.filter(u => u.problems.length === 0).map(u => u.title)
   const sansuuSoon = [...jukuSoonTitles, ...SANSUU_SOON]
 
+  // 理科 単元マップ: full=まなぶ＋とく / knowledge=知識演習のみ（内訳まで正直に表示する）
+  const rikaFullCount = RIKA_UNITS.filter(u => u.status === 'full').length
+  const rikaTotalCount = RIKA_UNITS.length
+
   // 公開中・近日公開の単元数（ページ内のカード数から動的に算出）
-  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + 1 /* 理科 */ + 2 /* 社会 */
+  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + rikaTotalCount /* 理科 */ + 2 /* 社会 */
   const soonCount = sansuuSoon.length + KOKUGO_SOON.length + RIKA_SOON.length + SHAKAI_SOON.length
 
   return (
@@ -286,21 +322,49 @@ export default function JukenHubPage() {
           </div>
         </section>
 
-        {/* ── 理科 ── */}
+        {/* ── 理科（単元マップ: 構造転換のひな型）── */}
         <section id="rika" className="mt-8" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="🔬" name="理科" color="#2BA39A" bg="#DBF6F0"
-            sub="知識4領域 公開中／計算分野は近日公開" />
+            sub={`単元マップ ${rikaTotalCount}/${rikaTotalCount}単元 公開中（まなぶ＋とく ${rikaFullCount}・知識演習 ${rikaTotalCount - rikaFullCount}）`} />
 
-          <GroupLabel>🧪 知識分野</GroupLabel>
-          <div className="space-y-2">
-            <UnitRow href="/apps/science" emoji="⚗️" title="知識〈4領域〉" sub="生物・地学・化学・物理の4領域"
-              done={stats?.scienceMastered} total={stats?.scienceTotal} color="#2BA39A" />
-          </div>
+          {RIKA_FIELDS.map(field => {
+            const meta = RIKA_FIELD_META[field]
+            const units = RIKA_UNITS.filter(u => u.field === field)
+            return (
+              <React.Fragment key={field}>
+                <GroupLabel>{meta.emoji} {meta.label}</GroupLabel>
+                <div className="space-y-2">
+                  {units.map(unit => {
+                    if (unit.status === 'full') {
+                      // てこ: まなぶ（図解導入）＋とく（計算演習）まで公開
+                      return (
+                        <UnitRow key={unit.id} href={unit.href} emoji={unit.emoji}
+                          title={unit.name} sub="図解で学んで計算でとく・演習14問"
+                          done={tekoCleared} total={TEKO_PROBLEMS.length}
+                          color="#2BA39A" tag="まなぶ＋とく" />
+                      )
+                    }
+                    // 知識演習のみ公開（図解・計算は準備中であることを隠さない）
+                    const pool = questionsOfRikaUnit(unit.id)
+                    const mastered = pool.filter(q => scienceMastered.has(q.id)).length
+                    return (
+                      <UnitRow key={unit.id} href={unit.href} emoji={unit.emoji}
+                        title={unit.name} sub={`知識演習 ${pool.length}問`}
+                        done={mastered} total={pool.length} color="#2BA39A" />
+                    )
+                  })}
+                </div>
+              </React.Fragment>
+            )
+          })}
 
-          <GroupLabel>🔭 これから公開される単元（計算分野）</GroupLabel>
+          <GroupLabel>🔭 これから公開（計算・図解の演習）</GroupLabel>
           <div className="space-y-2">
             {RIKA_SOON.map(t => <SoonRow key={t} title={t} />)}
           </div>
+          <p className="text-[10px] font-bold mt-2" style={{ color: MUTE }}>
+            ※「まなぶ＋とく」は図解導入つきの計算演習。知識演習のみの単元にも順次追加していきます
+          </p>
         </section>
 
         {/* ── 社会 ── */}

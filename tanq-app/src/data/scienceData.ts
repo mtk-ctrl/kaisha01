@@ -1,5 +1,10 @@
-// 理科クイズデータ — 中学受験対応 小4〜小6
+// 中学受験 理科 問題データ — 小4〜小6
 // 4領域（生物・地学・化学・物理）× 3レベル（基礎・標準・発展）計260問
+//
+// 【単元マップ割当て（2026-06-12 構造転換）】
+// 各問題の unit タグ（34種）は、中学受験の単元マップ（src/data/rikaUnits.ts・21単元）に
+// 全問割当て済み。unit タグ→単元の対応は RikaUnit.sourceUnits、問題単位の例外は
+// rikaUnits.ts の QUESTION_OVERRIDES を参照。id・unit など既存キーは互換のため変更しない。
 
 export type ScienceDomain = '生物' | '地学' | '化学' | '物理'
 export type ScienceLevel = 1 | 2 | 3  // 1=基礎(小4) 2=標準(小5) 3=発展(小6)
