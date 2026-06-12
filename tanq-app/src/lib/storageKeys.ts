@@ -9,6 +9,10 @@ export const STORAGE_KEYS = {
   // Profile — getDataKey 不要
   PROFILE: 'tanq_profile_v1',
 
+  // 共通コイン・相棒（Phase C-1）— getDataKey 必須
+  COINS: 'tanq_coins_v1',
+  BUDDY: 'tanq_buddy_v1',
+
   // SRS ストア — getDataKey 必須
   KANJI_SRS:   'tanq_kanji_srs_v1',
   ENGLISH_SRS: 'tanq_english_srs_v1',

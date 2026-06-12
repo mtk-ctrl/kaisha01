@@ -8,6 +8,8 @@ import { useStats } from '@/hooks/useStats'
 import { createClient } from '@/lib/supabase/client'
 import { pullFromSupabase, pushToSupabase } from '@/lib/learningSync'
 import { masteryBadges } from '@/lib/badges'
+import { loadCoins } from '@/lib/coins'
+import { loadBuddy, getCharacter, getBuddyXp, getStage, buddyEmoji, type BuddyState } from '@/lib/buddy'
 
 const LAB_PASSWORD = process.env.NEXT_PUBLIC_LAB_PASSWORD || 'tanq2026'
 const SESSION_KEY = 'tanq-lab-auth'
@@ -265,6 +267,67 @@ function PasswordGate({ onUnlock }: { onUnlock: (type: UserType) => void }) {
 }
 
 // ─────────────────────────────────────────
+// BuddyWidget — 相棒ウィジェット（Phase C-1）
+// ─────────────────────────────────────────
+function BuddyWidget() {
+  const [buddy, setBuddy] = useState<BuddyState | null>(null)
+  const [balance, setBalance] = useState(0)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    setBuddy(loadBuddy())
+    setBalance(loadCoins().balance)
+    setReady(true)
+  }, [])
+
+  if (!ready) return null
+
+  // 初回: 相棒えらびへの誘導カード
+  if (!buddy) {
+    return (
+      <Link href="/buddy"
+        className="block rounded-[22px] p-4 mb-5 transition-all hover:-translate-x-0.5 hover:-translate-y-0.5"
+        style={{ background: '#FFE3EE', border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A', textDecoration: 'none' }}>
+        <div className="flex items-center gap-3">
+          <span className="text-4xl">🥚</span>
+          <div className="flex-1">
+            <div className="font-black text-base leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>
+              あいぼうを えらぼう！
+            </div>
+            <div className="text-[11px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
+              べんきょうすると コインがもらえて、あいぼうが そだつよ
+            </div>
+          </div>
+          <span className="font-black text-xl" style={{ color: '#3A2E2A' }}>→</span>
+        </div>
+      </Link>
+    )
+  }
+
+  const c = getCharacter(buddy.type)
+  const stage = getStage(getBuddyXp(buddy))
+  return (
+    <div className="rounded-[22px] p-4 mb-5 flex items-center gap-3 flex-wrap"
+      style={{ background: c.bg, border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A' }}>
+      <Link href="/buddy" className="text-4xl leading-none" style={{ textDecoration: 'none' }}>
+        {buddyEmoji(buddy, stage)}
+      </Link>
+      <div className="flex-1 min-w-[110px]">
+        <div className="font-black text-base leading-tight" style={{ color: '#3A2E2A', fontFamily: 'var(--font-zen)' }}>{buddy.name}</div>
+        <div className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
+          Lv.{stage.level} {stage.label}　🪙 {balance}
+        </div>
+      </div>
+      <Link href="/buddy"
+        className="shrink-0 px-3 py-2 rounded-full text-xs font-black transition-all hover:-translate-y-0.5"
+        style={{ background: '#FFC83D', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A', color: '#3A2E2A', textDecoration: 'none' }}>
+        🍖 ごはんをあげる
+      </Link>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────
 // HomeTab — sticker style
 // ─────────────────────────────────────────
 function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
@@ -392,6 +455,9 @@ function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
           ))}
         </div>
       </div>
+
+      {/* 相棒ウィジェット（Phase C-1） */}
+      <BuddyWidget />
 
       {/* Guest banner */}
       {userType === 'guest' && (
