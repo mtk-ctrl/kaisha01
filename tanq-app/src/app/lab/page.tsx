@@ -104,13 +104,15 @@ const APPS: {
   { id: 'tanq',         name: 'TANQ理科',        emoji: '🔬', color: '#00e5c3', url: '/tanq',          badge: 'ふしぎ探検',         audience: 'shougakusei',   targetAge: '小4〜小6', guestAccess: false },
   { id: 'koubai',       name: 'こうばいすう・こうやくすう', emoji: '🔢', color: '#10b981', url: '/apps/koubai', badge: '素因数分解あり', audience: 'shougakusei', targetAge: '小5〜小6', guestAccess: true },
   // ── 🎓 中学受験（呼称ルール: 「クイズ」「①」は使わない。教科＋単元で呼ぶ）──────────
-  { id: 'juku',         name: '中学受験 算数',    emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '特殊算・図で考える',  audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
-  { id: 'science',      name: '中学受験 理科',    emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
-  { id: 'rekishi',      name: '中学受験 歴史',    emoji: '🏛️', color: '#E0527E', url: '/apps/rekishi',  badge: '旧石器〜平安・76問', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
+  // 中学受験カードの命名ルール: セクション見出しが「中学受験」なので教科名で始める。
+  // 教科が複数カードに分かれる場合のみ〈領域〉を付ける。並びは 算数→国語→理科→社会。
+  { id: 'juku',         name: '算数',             emoji: '🏆', color: '#FFC83D', url: '/apps/juku',     badge: '特殊算・図で考える',  audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: true  },
   { id: 'kokugo',       name: '国語〈ことば〉',   emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'kanyo',        name: '国語〈慣用句〉',   emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'yoji',         name: '国語〈四字熟語〉', emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
   { id: 'dokkai',       name: '国語〈読解〉',     emoji: '📚', color: '#7C5CD6', url: '/apps/dokkai',   badge: 'ためしてみる版・22問', audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
-  { id: 'kanyo',        name: '慣用句',           emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
-  { id: 'yoji',         name: '四字熟語',         emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
+  { id: 'science',      name: '理科',             emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
+  { id: 'rekishi',      name: '社会〈歴史〉',     emoji: '🏛️', color: '#E0527E', url: '/apps/rekishi',  badge: '旧石器〜平安・76問', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ。対象年齢の低い順）──────
   { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: '/apps/youji-iro',       badge: '10いろ・8かたち',  audience: 'youji', targetAge: '3〜5才', guestAccess: true },
   { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん・10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },
