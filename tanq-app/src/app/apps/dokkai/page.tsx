@@ -50,7 +50,7 @@ function prepareStep(passages: readonly DokkaiPassage[]): PreparedQuestion[] {
 type View = 'home' | 'play' | 'result'
 
 interface PlayState {
-  step: 1 | 2
+  step: 1 | 2 | 3
   questions: PreparedQuestion[]
   current: number
   selected: number | null
@@ -70,7 +70,7 @@ export default function DokkaiPage() {
   const [mood, setMood] = useState<string | null>(null)
   const finishedRef = useRef(false)
 
-  const startStep = useCallback((step: 1 | 2) => {
+  const startStep = useCallback((step: 1 | 2 | 3) => {
     const meta = DOKKAI_STEPS[step - 1]
     finishedRef.current = false
     setMood(null)
@@ -174,7 +174,7 @@ export default function DokkaiPage() {
               <button
                 key={meta.step}
                 className="dk-step"
-                onClick={() => startStep(meta.step as 1 | 2)}
+                onClick={() => startStep(meta.step as 1 | 2 | 3)}
                 style={{ background: 'white', border: `2px solid ${PURPLE}`, borderRadius: '16px', padding: '16px', textAlign: 'left', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -191,16 +191,6 @@ export default function DokkaiPage() {
                 </div>
               </button>
             ))}
-
-            {/* ステップ3以降は正直に近日公開 */}
-            <div style={{ background: '#F3F0FA', border: '2px dashed #C4B5E8', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', opacity: 0.8 }}>
-              <span style={{ fontSize: '28px', filter: 'grayscale(1)', opacity: 0.6 }}>🌳</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '11px', color: '#9CA3AF', marginBottom: '2px' }}>ステップ3</div>
-                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#9CA3AF' }}>短文読解</div>
-              </div>
-              <span style={{ fontSize: '10px', fontWeight: 700, background: '#C4B5E8', color: 'white', borderRadius: '999px', padding: '3px 10px', flexShrink: 0 }}>近日公開</span>
-            </div>
           </div>
 
           <div style={{ marginTop: '20px', background: 'white', borderRadius: '14px', padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
@@ -397,12 +387,17 @@ export default function DokkaiPage() {
               style={{ width: '100%', background: 'white', border: `2px solid ${PURPLE}`, color: PURPLE_DARK, borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
               もう一度 ステップ{play.step}
             </button>
-            {play.step === 1 && (
-              <button onClick={() => startStep(2)}
-                style={{ width: '100%', background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})`, color: 'white', border: 'none', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
-                ステップ2「だんらくよみとり」へ →
-              </button>
-            )}
+            {(() => {
+              // play.step は1始まり → 次ステップの0始まりindex（tuple範囲外も許すため配列として参照）
+              const nextMeta = (DOKKAI_STEPS as readonly { step: number; title: string }[])[play.step]
+              if (!nextMeta) return null
+              return (
+                <button onClick={() => startStep((play.step + 1) as 1 | 2 | 3)}
+                  style={{ width: '100%', background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})`, color: 'white', border: 'none', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+                  ステップ{play.step + 1}「{nextMeta.title}」へ →
+                </button>
+              )
+            })()}
             <button onClick={() => setView('home')}
               style={{ width: '100%', background: '#F3F4F6', border: 'none', color: '#374151', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
               ステップえらびにもどる
