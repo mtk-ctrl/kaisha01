@@ -10,6 +10,7 @@ import { RIKA_UNITS, RIKA_FIELDS, questionsOfRikaUnit } from '@/data/rikaUnits'
 import { TEKO_PROBLEMS } from '@/data/rikaTekoData'
 import { BANE_PROBLEMS } from '@/data/rikaBaneData'
 import { CIRCUIT_PROBLEMS } from '@/data/rikaCircuitData'
+import { CHUKAN_PROBLEMS } from '@/data/rikaChukanData'
 import { useStats } from '@/hooks/useStats'
 import { getDataKey } from '@/lib/storage'
 
@@ -78,6 +79,14 @@ function loadCircuitCleared(): number {
     return Array.isArray(raw.solvedIds) ? raw.solvedIds.length : 0
   } catch { return 0 }
 }
+const RIKA_CHUKAN_KEY = 'tanq_rika_chukan_progress_v1'
+function loadChukanCleared(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const raw = JSON.parse(localStorage.getItem(getDataKey(RIKA_CHUKAN_KEY)) || '{}')
+    return Array.isArray(raw.solvedIds) ? raw.solvedIds.length : 0
+  } catch { return 0 }
+}
 
 // ─── 教科メタ ───────────────────────────────────────────
 const SUBJECTS = [
@@ -92,7 +101,7 @@ const SUBJECTS = [
 const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性']
 const KOKUGO_SOON = ['文法・敬語', '読解 ステップ3（短文読解）']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
-const RIKA_SOON = ['ふりこ・滑車（計算）', '水溶液・中和（計算）', '浮力（計算）']
+const RIKA_SOON = ['ふりこ・滑車（計算）', '浮力（計算）']
 const SHAKAI_SOON = ['地理〈農業・水産業〉', '地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈安土桃山〜現代〉', '公民・時事']
 
 const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
@@ -207,6 +216,7 @@ export default function JukenHubPage() {
   const [tekoCleared, setTekoCleared] = useState(0)
   const [baneCleared, setBaneCleared] = useState(0)
   const [circuitCleared, setCircuitCleared] = useState(0)
+  const [chukanCleared, setChukanCleared] = useState(0)
 
   useEffect(() => {
     setJukuProgress(loadJukuProgress())
@@ -216,6 +226,7 @@ export default function JukenHubPage() {
     setTekoCleared(loadTekoCleared())
     setBaneCleared(loadBaneCleared())
     setCircuitCleared(loadCircuitCleared())
+    setChukanCleared(loadChukanCleared())
   }, [])
 
   // 公開済みの特殊算単元（問題が入っているもののみ。過大表示しない）
@@ -373,8 +384,9 @@ export default function JukenHubPage() {
                       // まなぶ（図解導入）＋とく（計算演習）まで公開された単元
                       const isBane = unit.id === 'rika-phys-bane'
                       const isCircuit = unit.id === 'rika-phys-circuit-calc'
-                      const fullDone = isCircuit ? circuitCleared : isBane ? baneCleared : tekoCleared
-                      const fullTotal = isCircuit ? CIRCUIT_PROBLEMS.length : isBane ? BANE_PROBLEMS.length : TEKO_PROBLEMS.length
+                      const isChukan = unit.id === 'rika-chem-chukan'
+                      const fullDone = isChukan ? chukanCleared : isCircuit ? circuitCleared : isBane ? baneCleared : tekoCleared
+                      const fullTotal = isChukan ? CHUKAN_PROBLEMS.length : isCircuit ? CIRCUIT_PROBLEMS.length : isBane ? BANE_PROBLEMS.length : TEKO_PROBLEMS.length
                       return (
                         <UnitRow key={unit.id} href={unit.href} emoji={unit.emoji}
                           title={unit.name} sub={`図解で学んで計算でとく・演習${fullTotal}問`}

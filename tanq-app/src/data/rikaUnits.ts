@@ -142,6 +142,12 @@ export const RIKA_UNITS: RikaUnit[] = [
 
   // ── ⚗️ 化学（5単元）──────────────────────────────
   {
+    id: 'rika-chem-chukan', field: '化学',
+    name: '水溶液と中和', nameKana: 'すいようえきとちゅうわ', emoji: '🧪',
+    status: 'full', href: '/apps/rika-chukan',
+    sourceUnits: [],
+  },
+  {
     id: 'rika-chem-suiyoueki', field: '化学',
     name: '水溶液の性質と中和', nameKana: 'すいようえきのせいしつとちゅうわ', emoji: '🧪',
     status: 'knowledge', href: '/apps/science?unit=rika-chem-suiyoueki',
