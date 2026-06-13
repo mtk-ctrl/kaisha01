@@ -104,6 +104,12 @@ export const RIKA_UNITS: RikaUnit[] = [
     sourceUnits: ['てこ'],
   },
   {
+    id: 'rika-phys-bane', field: '物理',
+    name: 'ばねののび', nameKana: 'ばねののび', emoji: '🪝',
+    status: 'full', href: '/apps/rika-bane',
+    sourceUnits: [],
+  },
+  {
     id: 'rika-phys-spring', field: '物理',
     name: '滑車・輪軸・ばね・ふりこ', nameKana: 'かっしゃ・りんじく・ばね・ふりこ', emoji: '🪝',
     status: 'knowledge', href: '/apps/science?unit=rika-phys-spring',
