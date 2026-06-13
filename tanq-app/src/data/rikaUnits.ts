@@ -134,6 +134,12 @@ export const RIKA_UNITS: RikaUnit[] = [
     sourceUnits: ['光と音'],
   },
   {
+    id: 'rika-phys-buoy-calc', field: '物理',
+    name: '浮力', nameKana: 'ふりょく', emoji: '🛟',
+    status: 'full', href: '/apps/rika-buoy',
+    sourceUnits: [],
+  },
+  {
     id: 'rika-phys-buoyancy', field: '物理',
     name: '浮力と圧力', nameKana: 'ふりょくとあつりょく', emoji: '🛟',
     status: 'knowledge', href: '/apps/science?unit=rika-phys-buoyancy',
