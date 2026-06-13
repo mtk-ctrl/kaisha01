@@ -75,7 +75,7 @@ const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性'
 const KOKUGO_SOON = ['文法・敬語', '読解 ステップ3（短文読解）']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON = ['ばね・ふりこ（計算）', '電気回路（計算）', '水溶液・中和（計算）', '浮力（計算）']
-const SHAKAI_SOON = ['地理〈農業・水産業〉', '地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈鎌倉〜現代〉', '公民・時事']
+const SHAKAI_SOON = ['地理〈農業・水産業〉', '地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈安土桃山〜現代〉', '公民・時事']
 
 const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
   '生物': { emoji: '🌿', label: '生物' },
@@ -382,7 +382,7 @@ export default function JukenHubPage() {
         {/* ── 社会 ── */}
         <section id="shakai" className="mt-8" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="🗾" name="社会" color="#E0527E" bg="#FFE3EE"
-            sub="地理・歴史〈旧石器〜平安〉公開中／公民は近日公開" />
+            sub="地理・歴史〈旧石器〜戦国〉公開中／公民は近日公開" />
 
           <GroupLabel>🗺️ 地理</GroupLabel>
           <div className="space-y-2">
@@ -393,8 +393,8 @@ export default function JukenHubPage() {
 
           <GroupLabel>📜 歴史（通史）</GroupLabel>
           <div className="space-y-2">
-            <UnitRow href="/apps/rekishi" emoji="🏛️" title="歴史〈旧石器〜平安〉" sub="通史前半・76問・年代ならべかえ"
-              done={rekishiCleared} total={6} color="#E0527E" />
+            <UnitRow href="/apps/rekishi" emoji="🏛️" title="歴史〈旧石器〜戦国〉" sub="通史・11レベル・133問・年代ならべかえ"
+              done={rekishiCleared} total={11} color="#E0527E" />
           </div>
 
           <GroupLabel>🔭 これから公開される単元</GroupLabel>

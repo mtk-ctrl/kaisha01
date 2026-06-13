@@ -1,10 +1,10 @@
 'use client'
 
-// 中学受験 歴史〈旧石器〜平安〉
+// 中学受験 歴史〈旧石器〜戦国〉
 // - 4択＋ならべかえ（年代整序）。1回目の不正解は答えを見せず「考える足場」ヒント→再挑戦
 // - スコア・⭐は初回解答のみで確定（再挑戦で水増ししない）
 // - 正解時も一行の豆知識で定着強化。解説は「なぜ」の因果を語る
-// - 鎌倉以降はマップ上部のタイムラインで「近日公開」として全体像のみ見せる
+// - 安土桃山以降はマップ上部のタイムラインで「近日公開」として全体像のみ見せる
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
@@ -245,8 +245,8 @@ export default function RekishiPage() {
           </Link>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>🏛️</div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#451a03', margin: '0 0 4px' }}>中学受験 社会〈歴史〉</h1>
-            <p style={{ color: '#78716c', fontSize: '14px', margin: 0 }}>旧石器〜平安｜全{MAX_LEVEL}レベル・{REKISHI_TOTAL}問</p>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#451a03', margin: '0 0 4px' }}>中学受験 社会〈歴史〉旧石器〜戦国</h1>
+            <p style={{ color: '#78716c', fontSize: '14px', margin: 0 }}>旧石器〜戦国｜全{MAX_LEVEL}レベル・{REKISHI_TOTAL}問</p>
           </div>
 
           {/* 通史タイムライン（鎌倉以降は近日公開として全体像を見せる） */}
@@ -267,7 +267,7 @@ export default function RekishiPage() {
                 </span>
               ))}
             </div>
-            <p style={{ margin: '10px 0 0', fontSize: '11px', color: '#a8a29e' }}>鎌倉時代から先は近日公開。まずは通史の前半をきわめよう！</p>
+            <p style={{ margin: '10px 0 0', fontSize: '11px', color: '#a8a29e' }}>安土桃山時代から先は近日公開。旧石器から戦国まで一気にきわめよう！</p>
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', justifyContent: 'center' }}>
@@ -328,9 +328,11 @@ export default function RekishiPage() {
             <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
               {[
                 { emoji: '🏺', label: 'れきしの一歩', lv: 1 },
-                { emoji: '🏯', label: '飛鳥まで制覇', lv: 3 },
                 { emoji: '🎎', label: '平安まで制覇', lv: 5 },
-                { emoji: '🏆', label: '通史前半マスター', lv: 6 },
+                { emoji: '⚔️', label: '鎌倉武士の世', lv: 7 },
+                { emoji: '🏵️', label: '室町文化マスター', lv: 9 },
+                { emoji: '🔥', label: '戦国到達', lv: 10 },
+                { emoji: '🏆', label: '旧石器〜戦国マスター', lv: 11 },
               ].map(b => {
                 const earned = (save.levelStars[b.lv] ?? 0) >= 1
                 return (
@@ -584,7 +586,7 @@ export default function RekishiPage() {
               </button>
             )}
             {play.level === MAX_LEVEL && passed && (
-              <div style={{ textAlign: 'center', color: '#b45309', fontWeight: 'bold', fontSize: '16px', padding: '8px' }}>🏆 通史前半マスター！鎌倉時代から先も近日公開、おたのしみに！</div>
+              <div style={{ textAlign: 'center', color: '#b45309', fontWeight: 'bold', fontSize: '16px', padding: '8px' }}>🏆 旧石器〜戦国マスター！安土桃山時代から先も近日公開、おたのしみに！</div>
             )}
             <button
               onClick={() => setView('map')}
