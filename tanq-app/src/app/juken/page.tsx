@@ -99,7 +99,7 @@ const SUBJECTS = [
 // 近日公開の単元（正直に「近日公開」と表示する。実装済みに見せない）
 // 速さ系（旅人算・流水算・仕事算）は JUKU_UNITS 側の未公開単元として自動表示されるため、ここには含めない
 const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性']
-const KOKUGO_SOON = ['文法・敬語', '読解 ステップ3（短文読解）']
+const KOKUGO_SOON = ['文法・敬語']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON = ['ふりこ・滑車（計算）', '浮力（計算）']
 const SHAKAI_SOON = ['地理〈農業・水産業〉', '地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈安土桃山〜現代〉', '公民・時事']
@@ -357,7 +357,7 @@ export default function JukenHubPage() {
 
           <GroupLabel>📚 読解（AI生成オリジナル文）</GroupLabel>
           <div className="space-y-2">
-            <UnitRow href="/apps/dokkai" emoji="📚" title="読解〈3文・だんらく〉" sub="オリジナル文22問・根きょの文をさがす練習"
+            <UnitRow href="/apps/dokkai" emoji="📚" title="読解〈3文・だんらく・短文〉" sub="ステップ1〜3・オリジナル文46問・根きょの文をさがす練習"
               color="#7C5CD6" tag="ためしてみる版" />
           </div>
 
