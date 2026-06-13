@@ -116,6 +116,12 @@ export const RIKA_UNITS: RikaUnit[] = [
     sourceUnits: ['滑車・輪軸', '振り子・ばね'],
   },
   {
+    id: 'rika-phys-circuit-calc', field: '物理',
+    name: '電気回路（豆電球と乾電池）', nameKana: 'でんきかいろ', emoji: '🔋',
+    status: 'full', href: '/apps/rika-circuit',
+    sourceUnits: [],
+  },
+  {
     id: 'rika-phys-circuit', field: '物理',
     name: '電気回路と磁石', nameKana: 'でんきかいろとじしゃく', emoji: '🔋',
     status: 'knowledge', href: '/apps/science?unit=rika-phys-circuit',
