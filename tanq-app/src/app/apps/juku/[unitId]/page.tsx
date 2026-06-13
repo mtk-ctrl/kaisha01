@@ -1630,6 +1630,98 @@ function GapAreaDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown
   )
 }
 
+// ─────────────────────────────────────
+// SVG: 旅人算の矢印図 🚶
+//   2人（2つの動くもの）の速さを矢印で、間（あいだ）の距離を線分で表す。
+//   mode: meet（出会い＝反対向き→速さの和）/ chase（追いつき＝同じ向き→速さの差）/
+//         round（往復・池1周＝向かい合って進み合計が1周）
+//   解いている間は「答え（時間/道のり）」を出さず、wrongCount 連動で
+//   ①場面 → ②速さの和/差 → ③わり算で答え、と段階開示する。
+// ─────────────────────────────────────
+function ArrowDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>; wrongCount?: number }) {
+  const showValues = (spec.showValues as boolean) ?? false
+  const wc = showValues ? 3 : wrongCount
+  const mode = (spec.mode as string) ?? 'meet'
+  const aName = (spec.aName as string) ?? 'A'
+  const bName = (spec.bName as string) ?? 'B'
+  const aSpeed = spec.aSpeed as number
+  const bSpeed = spec.bSpeed as number
+  const speedUnit = (spec.speedUnit as string) ?? ''
+  const gapLabel = (spec.gapLabel as string) ?? '間の道のり'
+  const gapText = (spec.gapText as string) ?? ''
+  const combinedLabel = (spec.combinedLabel as string) ?? (mode === 'chase' ? '速さの差' : '速さの和')
+  const combinedText = (spec.combinedText as string) ?? ''
+  const answerText = (spec.answerText as string) ?? ''
+
+  const left = 24, right = 226, midY = 46
+  const aEmoji = (spec.aEmoji as string) ?? '🚶'
+  const bEmoji = (spec.bEmoji as string) ?? '🏃'
+
+  return (
+    <div className="w-full space-y-1.5">
+      <p className="text-[11px] font-bold" style={{ color: '#6B5A52' }}>
+        {mode === 'chase'
+          ? '同じ向きに進む→「速さの差」だけ近づく（または離れる）'
+          : mode === 'round'
+          ? '向かい合って進む→2人合わせて道のりを進む'
+          : '反対向きに進む→「速さの和」で近づく'}
+      </p>
+      <svg viewBox="0 0 250 86" className="w-full mx-auto overflow-visible" style={{ maxWidth: 360 }}>
+        {/* 道（線分） */}
+        <line x1={left} y1={midY} x2={right} y2={midY} stroke="#3A2E2A" strokeWidth="2" />
+        <line x1={left} y1={midY - 5} x2={left} y2={midY + 5} stroke="#3A2E2A" strokeWidth="2" />
+        <line x1={right} y1={midY - 5} x2={right} y2={midY + 5} stroke="#3A2E2A" strokeWidth="2" />
+
+        {/* 間の道のりブラケット */}
+        <text x={(left + right) / 2} y={midY + 22} textAnchor="middle" fontSize="9" fill="#6B5A52" fontWeight="bold">
+          {gapLabel}{gapText ? `：${gapText}` : ''}
+        </text>
+
+        {/* A（左から右へ）。chase は2人とも右向き、round/meet は向かい合わせ */}
+        <text x={left + 6} y={midY - 10} textAnchor="middle" fontSize="14">{aEmoji}</text>
+        <text x={left + 6} y={midY - 24} textAnchor="middle" fontSize="8" fill="#2563eb" fontWeight="bold">{aName}</text>
+        <line x1={left + 16} y1={midY - 14} x2={left + 42} y2={midY - 14} stroke="#2563eb" strokeWidth="2" />
+        <polygon points={`${left + 42},${midY - 17} ${left + 48},${midY - 14} ${left + 42},${midY - 11}`} fill="#2563eb" />
+        <text x={left + 30} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#2563eb" fontWeight="bold">{aSpeed}{speedUnit}</text>
+
+        {/* B（chase: 同じ右向きで前方 / meet・round: 右端から左向き） */}
+        {mode === 'chase' ? (
+          <>
+            <text x={right - 6} y={midY - 10} textAnchor="middle" fontSize="14">{bEmoji}</text>
+            <text x={right - 6} y={midY - 24} textAnchor="middle" fontSize="8" fill="#ea7a1e" fontWeight="bold">{bName}</text>
+            <line x1={right - 48} y1={midY - 14} x2={right - 22} y2={midY - 14} stroke="#ea7a1e" strokeWidth="2" />
+            <polygon points={`${right - 22},${midY - 17} ${right - 16},${midY - 14} ${right - 22},${midY - 11}`} fill="#ea7a1e" />
+            <text x={right - 34} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#ea7a1e" fontWeight="bold">{bSpeed}{speedUnit}</text>
+          </>
+        ) : (
+          <>
+            <text x={right - 6} y={midY - 10} textAnchor="middle" fontSize="14">{bEmoji}</text>
+            <text x={right - 6} y={midY - 24} textAnchor="middle" fontSize="8" fill="#ea7a1e" fontWeight="bold">{bName}</text>
+            <line x1={right - 16} y1={midY - 14} x2={right - 42} y2={midY - 14} stroke="#ea7a1e" strokeWidth="2" />
+            <polygon points={`${right - 42},${midY - 17} ${right - 48},${midY - 14} ${right - 42},${midY - 11}`} fill="#ea7a1e" />
+            <text x={right - 30} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#ea7a1e" fontWeight="bold">{bSpeed}{speedUnit}</text>
+          </>
+        )}
+      </svg>
+
+      {/* ② 速さの和／差 */}
+      {wc >= 2 && combinedText && (
+        <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
+          <span className="text-[10px] font-black" style={{ color: '#b45309' }}>
+            {combinedLabel}：{combinedText}
+          </span>
+        </div>
+      )}
+      {/* ③ わり算で答え */}
+      {wc >= 3 && answerText && (
+        <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
+          <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>{answerText}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 const DIAGRAM_LABELS: Partial<Record<DiagramType, string>> = {
   slide: '📐 スライド図',
   'dot-line': '🌳 植木のイメージ',
@@ -1662,6 +1754,7 @@ function DiagramRenderer({ type, spec, wrongCount = 0 }: { type: DiagramType; sp
       {type === 'ratio2'   && <RatioBasicsDiagram spec={spec} wrongCount={wrongCount} />}
       {type === 'noudo'    && <NoudoDiagram spec={spec} wrongCount={wrongCount} />}
       {type === 'profit'   && <ProfitDiagram spec={spec} wrongCount={wrongCount} />}
+      {type === 'arrow'    && <ArrowDiagram spec={spec} wrongCount={wrongCount} />}
     </div>
   )
 }
