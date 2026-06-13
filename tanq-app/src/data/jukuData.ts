@@ -2682,8 +2682,243 @@ export const JUKU_UNITS: JukuUnit[] = [
     id: 'travelers', order: 11, title: '旅人算', titleKana: 'たびびとざん',
     emoji: '🚶', color: '#fb923c', layer: 4, prerequisiteIds: ['work-newton'],
     isFree: false, coreConcept: '2つの動くものの距離の縮まり方・離れ方を時間で捉える',
-    approachText: '「出会い＝速さの和」「追いつき＝速さの差」を矢印図で理解する。',
-    primaryDiagram: 'arrow', problems: [],
+    approachText:
+      '旅人算のカギは「1分（1時間）に2人の間が何mちぢまるか・ひろがるか」。\n' +
+      '・向かい合って進む→ 1分に「速さの和」だけ近づく（出会い算）\n' +
+      '・同じ向きに進む→ 1分に「速さの差」だけ近づく（追いつき算）\n' +
+      'はじめの道のり ÷（和または差）＝ かかる時間。検算は「速さ×時間＝進んだ道のり」でかならず確かめる。',
+    primaryDiagram: 'arrow',
+    introSlide: {
+      title: '矢印図の読み方（出会い・追いつき）',
+      explanation: [
+        '道のりを1本の線で表し、2人を矢印で書く',
+        '向かい合わせ（→ ←）＝出会い。1分に「速さの和」だけ近づく',
+        '同じ向き（→ →）＝追いつき。1分に「速さの差」だけ近づく',
+        'はじめの間の道のり ÷（和 or 差）＝ かかる時間',
+      ],
+      diagramSpec: {
+        mode: 'meet', aName: 'A', bName: 'B',
+        aSpeed: 60, bSpeed: 40, speedUnit: 'm/分',
+        gapLabel: 'はじめの間', gapText: '1000m',
+        combinedLabel: '速さの和', combinedText: '60＋40＝100m/分',
+        answerText: '1000 ÷ 100 ＝ 10分で出会う',
+        showValues: true,
+      },
+    },
+    problems: [
+      // ──────────────────────────────────
+      // ★ 出会い算（速さの和）
+      // ──────────────────────────────────
+      {
+        id: 'tr-01', title: '出会うまでの時間（基本）', difficulty: 1,
+        problemText: '1800mはなれた2地点から、AさんとBさんが向かい合って同時に出発します。Aさんは分速60m、Bさんは分速60mです。2人が出会うのは何分後ですか？',
+        answer: '15', answerUnit: '分後',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'meet', aName: 'A', bName: 'B', aEmoji: '🚶', bEmoji: '🚶',
+          aSpeed: 60, bSpeed: 60, speedUnit: 'm/分',
+          gapLabel: 'はじめの間', gapText: '1800m',
+          combinedLabel: '速さの和', combinedText: '60＋60＝120m/分',
+          answerText: '1800 ÷ 120 ＝ 15分',
+        },
+        hints: [
+          { step: 1, text: '向かい合って進むから、2人は1分ごとに近づくね。1分で何mずつ近づくかな？' },
+          { step: 2, text: '1分で 60＋60＝120m ずつ近づくよ（速さの和）。はじめの間は1800m。' },
+          { step: 3, text: '1800 ÷ 120 ＝ 15分。検算：Aは60×15＝900m、Bは60×15＝900m、合わせて1800m ◎' },
+        ],
+        explanationText: '出会い算は「速さの和」。1800 ÷（60＋60）＝ 15分。',
+      },
+      {
+        id: 'tr-02', title: '速さがちがう2人の出会い', difficulty: 1,
+        problemText: '2400mはなれたところから、兄は分速70m、弟は分速50mで向かい合って同時に歩き出しました。2人が出会うのは何分後ですか？',
+        answer: '20', answerUnit: '分後',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'meet', aName: '兄', bName: '弟', aEmoji: '🧑', bEmoji: '👦',
+          aSpeed: 70, bSpeed: 50, speedUnit: 'm/分',
+          gapLabel: 'はじめの間', gapText: '2400m',
+          combinedLabel: '速さの和', combinedText: '70＋50＝120m/分',
+          answerText: '2400 ÷ 120 ＝ 20分',
+        },
+        hints: [
+          { step: 1, text: '向かい合いだから「速さの和」で近づくよ。1分で何m近づく？' },
+          { step: 2, text: '70＋50＝120m/分。はじめの間2400mをこの速さで割るよ。' },
+          { step: 3, text: '2400 ÷ 120 ＝ 20分。検算：70×20＝1400m、50×20＝1000m、合計2400m ◎' },
+        ],
+        explanationText: '2400 ÷（70＋50）＝ 20分。速さがちがっても「和」でわるのは同じ。',
+      },
+      {
+        id: 'tr-03', title: '相手の速さを求める', difficulty: 1,
+        problemText: '1200mはなれた2地点から向かい合って同時に出発し、8分後に出会いました。Aさんは分速80mです。Bさんの分速は何mですか？',
+        answer: '70', answerUnit: 'm',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'meet', aName: 'A', bName: 'B', aEmoji: '🚶', bEmoji: '🚴',
+          aSpeed: 80, bSpeed: 70, speedUnit: 'm/分',
+          gapLabel: 'はじめの間', gapText: '1200m',
+          combinedLabel: '速さの和', combinedText: '1200 ÷ 8 ＝ 150m/分',
+          answerText: '150 － 80 ＝ 70m/分',
+        },
+        hints: [
+          { step: 1, text: '8分で1200m近づいたのだから、1分あたり何m近づいた？（速さの和）' },
+          { step: 2, text: '速さの和 ＝ 1200 ÷ 8 ＝ 150m/分。これが80とBの合計だよ。' },
+          { step: 3, text: 'B ＝ 150 － 80 ＝ 70m/分。検算：（80＋70）×8 ＝ 1200m ◎' },
+        ],
+        explanationText: '速さの和 ＝ 1200 ÷ 8 ＝ 150。Bの速さ ＝ 150 － 80 ＝ 70m/分。',
+      },
+      // ──────────────────────────────────
+      // ★ 追いつき算（速さの差）
+      // ──────────────────────────────────
+      {
+        id: 'tr-04', title: '追いつくまでの時間（基本）', difficulty: 1,
+        problemText: '弟が家を出てしばらく進み、600m先にいます。そこへ兄が分速80mで追いかけ、弟は分速50mで同じ向きに進みます。兄が弟に追いつくのは何分後ですか？',
+        answer: '20', answerUnit: '分後',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'chase', aName: '兄', bName: '弟', aEmoji: '🧑', bEmoji: '👦',
+          aSpeed: 80, bSpeed: 50, speedUnit: 'm/分',
+          gapLabel: 'はじめの差', gapText: '600m',
+          combinedLabel: '速さの差', combinedText: '80－50＝30m/分',
+          answerText: '600 ÷ 30 ＝ 20分',
+        },
+        hints: [
+          { step: 1, text: '同じ向きに進むときは「速さの差」だけ近づくよ。1分で何mちぢまる？' },
+          { step: 2, text: '80－50＝30m/分ずつちぢまるね。はじめの差は600m。' },
+          { step: 3, text: '600 ÷ 30 ＝ 20分。検算：兄80×20＝1600m、弟は600＋50×20＝1600m で同じ位置 ◎' },
+        ],
+        explanationText: '追いつき算は「速さの差」。600 ÷（80－50）＝ 20分。',
+      },
+      {
+        id: 'tr-05', title: '速さの差を求める', difficulty: 1,
+        problemText: '240m前にいる人を、後ろから追いかけて12分で追いつきました。2人の分速の差は何mですか？',
+        answer: '20', answerUnit: 'm',
+        diagramType: 'none', diagramSpec: {},
+        hints: [
+          { step: 1, text: '12分かけて240mの差をうめたんだね。1分あたり何mちぢめた？' },
+          { step: 2, text: '1分でちぢまる量 ＝ 速さの差。240 ÷ 12 で出るよ。' },
+          { step: 3, text: '240 ÷ 12 ＝ 20m/分。検算：20×12 ＝ 240m ◎' },
+        ],
+        explanationText: '速さの差 ＝ はじめの差 ÷ 時間 ＝ 240 ÷ 12 ＝ 20m/分。',
+      },
+      // ──────────────────────────────────
+      // ★★ 時間差で出発・往復・池のまわり
+      // ──────────────────────────────────
+      {
+        id: 'tr-06', title: '先に出た人を追いかける', difficulty: 2,
+        problemText: '弟が分速60mで家を出発しました。その5分後に、兄が分速90mで同じ道を追いかけます。兄が弟に追いつくのは、兄が出発してから何分後ですか？',
+        answer: '10', answerUnit: '分後',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'chase', aName: '兄', bName: '弟', aEmoji: '🧑', bEmoji: '👦',
+          aSpeed: 90, bSpeed: 60, speedUnit: 'm/分',
+          gapLabel: '兄が出るときの差', gapText: '60×5＝300m',
+          combinedLabel: '速さの差', combinedText: '90－60＝30m/分',
+          answerText: '300 ÷ 30 ＝ 10分',
+        },
+        hints: [
+          { step: 1, text: '兄が出発するとき、弟はもう何m先にいる？　弟は5分歩いているよ。' },
+          { step: 2, text: '弟は 60×5＝300m 先。あとは差300mを「速さの差」90－60＝30でうめるだけ。' },
+          { step: 3, text: '300 ÷ 30 ＝ 10分。検算：兄90×10＝900m、弟60×（5＋10）＝900m ◎' },
+        ],
+        explanationText: 'まず先行ぶん 60×5＝300m を出す。次に 300 ÷（90－60）＝ 10分。',
+      },
+      {
+        id: 'tr-07', title: '池のまわりで出会う', difficulty: 2,
+        problemText: '1周1200mの池のまわりを、AさんとBさんが同じ場所から反対向きに同時に出発します。Aさんは分速80m、Bさんは分速70mです。2人がはじめて出会うのは何分後ですか？',
+        answer: '8', answerUnit: '分後',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'meet', aName: 'A', bName: 'B', aEmoji: '🚶', bEmoji: '🏃',
+          aSpeed: 80, bSpeed: 70, speedUnit: 'm/分',
+          gapLabel: '池1周', gapText: '1200m',
+          combinedLabel: '速さの和', combinedText: '80＋70＝150m/分',
+          answerText: '1200 ÷ 150 ＝ 8分',
+        },
+        hints: [
+          { step: 1, text: '反対向きに進むと、2人合わせて池1周ぶん進んだときに出会うよ。' },
+          { step: 2, text: '1分で2人合わせて 80＋70＝150m 進む。池1周は1200m。' },
+          { step: 3, text: '1200 ÷ 150 ＝ 8分。検算：80×8＝640m、70×8＝560m、合計1200m＝1周 ◎' },
+        ],
+        explanationText: '反対向きの出会いは「速さの和」で1周ぶん。1200 ÷（80＋70）＝ 8分。',
+      },
+      {
+        id: 'tr-08', title: '池のまわりで追いこす', difficulty: 2,
+        problemText: '1周1500mの池のまわりを、2人が同じ場所から同じ向きに同時に出発します。速いほうは分速90m、おそいほうは分速60mです。速いほうがおそいほうをはじめて追いこすのは何分後ですか？',
+        answer: '50', answerUnit: '分後',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'chase', aName: '速い', bName: 'おそい', aEmoji: '🏃', bEmoji: '🚶',
+          aSpeed: 90, bSpeed: 60, speedUnit: 'm/分',
+          gapLabel: '追いこすには池', gapText: '1周1500m',
+          combinedLabel: '速さの差', combinedText: '90－60＝30m/分',
+          answerText: '1500 ÷ 30 ＝ 50分',
+        },
+        hints: [
+          { step: 1, text: '同じ向きだから「速さの差」で近づくよ。追いこすには相手より池1周ぶん多く進めばいい。' },
+          { step: 2, text: '1分で差が 90－60＝30m ひらく。1周ぶん（1500m）の差がつくまでにかかる時間は？' },
+          { step: 3, text: '1500 ÷ 30 ＝ 50分。検算：90×50＝4500m、60×50＝3000m、差は1500m＝ちょうど1周 ◎' },
+        ],
+        explanationText: '同じ向きの追いこしは「速さの差」で1周ぶん。1500 ÷（90－60）＝ 50分。',
+      },
+      {
+        id: 'tr-09', title: '往復してすれちがう', difficulty: 2,
+        problemText: 'A地点とB地点は1000mはなれています。AさんはA地点から分速75m、BさんはB地点から分速125mで、向かい合って同時に出発しました。2人がはじめてすれちがうのは何分後ですか？',
+        answer: '5', answerUnit: '分後',
+        diagramType: 'arrow',
+        diagramSpec: {
+          mode: 'meet', aName: 'A', bName: 'B', aEmoji: '🚶', bEmoji: '🚴',
+          aSpeed: 75, bSpeed: 125, speedUnit: 'm/分',
+          gapLabel: 'A〜B', gapText: '1000m',
+          combinedLabel: '速さの和', combinedText: '75＋125＝200m/分',
+          answerText: '1000 ÷ 200 ＝ 5分',
+        },
+        hints: [
+          { step: 1, text: 'はじめてすれちがうまでは、ふつうの出会い算と同じ。「速さの和」で考えよう。' },
+          { step: 2, text: '75＋125＝200m/分で近づく。間は1000m。' },
+          { step: 3, text: '1000 ÷ 200 ＝ 5分。検算：75×5＝375m、125×5＝625m、合計1000m ◎' },
+        ],
+        explanationText: '最初のすれちがいは出会い算。1000 ÷（75＋125）＝ 5分。',
+      },
+      // ──────────────────────────────────
+      // ★★★ ダイヤグラム・時計算の基礎
+      // ──────────────────────────────────
+      {
+        id: 'tr-10', title: 'ダイヤグラムを読む', difficulty: 3,
+        problemText: '兄は家を出て9時に駅（家から1800m）に着きました。家を8時45分に出たとすると、兄の歩く速さは分速何mですか？',
+        answer: '120', answerUnit: 'm',
+        diagramType: 'none', diagramSpec: {},
+        hints: [
+          { step: 1, text: 'ダイヤグラムは「たて＝道のり」「よこ＝時刻」のグラフ。まずかかった時間を出そう。' },
+          { step: 2, text: '8時45分→9時は15分間。その間に1800m進んだよ。速さ＝道のり÷時間。' },
+          { step: 3, text: '1800 ÷ 15 ＝ 120m/分。検算：120×15 ＝ 1800m ◎' },
+        ],
+        explanationText: 'グラフの「たて1800m・よこ15分」から、速さ ＝ 1800 ÷ 15 ＝ 120m/分。',
+      },
+      {
+        id: 'tr-11', title: '時計算の基礎（1分の角度差）', difficulty: 3,
+        problemText: '時計の長針は1分で6度、短針は1分で0.5度進みます。長針は短針より1分で何度多く進みますか？',
+        answer: '5.5', answerUnit: '度',
+        diagramType: 'none', diagramSpec: {},
+        hints: [
+          { step: 1, text: '時計算も「速さの差」だよ。今度は速さが「角度」になっただけ。' },
+          { step: 2, text: '長針6度、短針0.5度。1分でひらく角度の差を求めよう。' },
+          { step: 3, text: '6 － 0.5 ＝ 5.5度。長針は1分ごとに短針より5.5度多く進む（これが時計算のキホン）。' },
+        ],
+        explanationText: '長針と短針の角度の差は1分で 6 － 0.5 ＝ 5.5度。針の追いつき＝追いつき算と同じ考え方。',
+      },
+      {
+        id: 'tr-12', title: '時計算（3時から重なるまで）', difficulty: 3,
+        problemText: '時計算では、3時ちょうどのとき長針は短針より90度うしろにいます。長針は1分で短針より5.5度多く進みます。長針が短針に追いつく（重なる）のは3時の何分後ですか？　答えは「□と△/11」の形で、分子（△）の数を答えなさい。',
+        answer: '4', answerUnit: '（4/11分）',
+        diagramType: 'none', diagramSpec: {},
+        hints: [
+          { step: 1, text: '長針は短針より90度うしろ。この90度を「1分で5.5度ちぢむ」速さでうめる追いつき算だよ。' },
+          { step: 2, text: '時間 ＝ 90 ÷ 5.5 ＝ 180/11 ＝ 16と4/11（分）。帯分数になおすと整数部と分子が出るね。' },
+          { step: 3, text: '180 ÷ 11 ＝ 16あまり4 なので 16と4/11分。聞かれているのは分子なので答えは4。検算：5.5×180/11＝90度 ◎' },
+        ],
+        explanationText: '90 ÷ 5.5 ＝ 180/11 ＝ 16と4/11分。時計算の重なりも追いつき算（速さの差）。',
+      },
+    ],
   },
   {
     id: 'stream', order: 12, title: '流水算', titleKana: 'りゅうすいざん',
