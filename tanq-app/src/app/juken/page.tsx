@@ -33,6 +33,16 @@ function loadRekishiCleared(): number {
   } catch { return 0 }
 }
 
+// 地理〈地形と気候〉のクリア済みレベル数（/apps/chiri のセーブから読む）
+const CHIRI_KEY = 'tanq_chiri_v1'
+function loadChiriCleared(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const raw = JSON.parse(localStorage.getItem(getDataKey(CHIRI_KEY)) || '{}')
+    return Object.values(raw.levelStars ?? {}).filter(v => Number(v) >= 1).length
+  } catch { return 0 }
+}
+
 // 理科の進捗: 知識演習は science の SRS（おぼえた=b2）、てこ計算は rika-teko のクリア数
 const SCIENCE_SRS_KEY = 'tanq_science_srs_v1'
 function loadScienceMasteredIds(): Set<string> {
@@ -65,7 +75,7 @@ const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性'
 const KOKUGO_SOON = ['文法・敬語', '読解 ステップ3（短文読解）']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON = ['ばね・ふりこ（計算）', '電気回路（計算）', '水溶液・中和（計算）', '浮力（計算）']
-const SHAKAI_SOON = ['歴史〈鎌倉〜現代〉', '公民・時事']
+const SHAKAI_SOON = ['地理〈農業・水産業〉', '地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈鎌倉〜現代〉', '公民・時事']
 
 const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
   '生物': { emoji: '🌿', label: '生物' },
@@ -174,12 +184,14 @@ export default function JukenHubPage() {
   const { stats } = useStats()
   const [jukuProgress, setJukuProgress] = useState<JukuProgress>({})
   const [rekishiCleared, setRekishiCleared] = useState(0)
+  const [chiriCleared, setChiriCleared] = useState(0)
   const [scienceMastered, setScienceMastered] = useState<Set<string>>(new Set())
   const [tekoCleared, setTekoCleared] = useState(0)
 
   useEffect(() => {
     setJukuProgress(loadJukuProgress())
     setRekishiCleared(loadRekishiCleared())
+    setChiriCleared(loadChiriCleared())
     setScienceMastered(loadScienceMasteredIds())
     setTekoCleared(loadTekoCleared())
   }, [])
@@ -194,7 +206,7 @@ export default function JukenHubPage() {
   const rikaTotalCount = RIKA_UNITS.length
 
   // 公開中・近日公開の単元数（ページ内のカード数から動的に算出）
-  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + rikaTotalCount /* 理科 */ + 2 /* 社会 */
+  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + rikaTotalCount /* 理科 */ + 3 /* 社会（都道府県・歴史・地形と気候） */
   const soonCount = sansuuSoon.length + KOKUGO_SOON.length + RIKA_SOON.length + SHAKAI_SOON.length
 
   return (
@@ -375,6 +387,8 @@ export default function JukenHubPage() {
           <GroupLabel>🗺️ 地理</GroupLabel>
           <div className="space-y-2">
             <UnitRow href="/apps/todofuken" emoji="🗾" title="都道府県マスター" sub="47都道府県・かたち・名物・県庁所在地" color="#E0527E" />
+            <UnitRow href="/apps/chiri" emoji="🗺️" title="地形と気候" sub="国土・山地・川と平野・気候区分・防災・72問"
+              done={chiriCleared} total={7} color="#0ea5e9" />
           </div>
 
           <GroupLabel>📜 歴史（通史）</GroupLabel>
