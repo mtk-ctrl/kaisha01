@@ -110,6 +110,12 @@ export const RIKA_UNITS: RikaUnit[] = [
     sourceUnits: [],
   },
   {
+    id: 'rika-phys-furiko-calc', field: '物理',
+    name: 'ふりこ', nameKana: 'ふりこ', emoji: '🕰️',
+    status: 'full', href: '/apps/rika-furiko',
+    sourceUnits: [],
+  },
+  {
     id: 'rika-phys-spring', field: '物理',
     name: '滑車・輪軸・ばね・ふりこ', nameKana: 'かっしゃ・りんじく・ばね・ふりこ', emoji: '🪝',
     status: 'knowledge', href: '/apps/science?unit=rika-phys-spring',
