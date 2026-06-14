@@ -12,6 +12,7 @@ import { BANE_PROBLEMS } from '@/data/rikaBaneData'
 import { CIRCUIT_PROBLEMS } from '@/data/rikaCircuitData'
 import { CHUKAN_PROBLEMS } from '@/data/rikaChukanData'
 import { BUOY_PROBLEMS } from '@/data/rikaBuoyData'
+import { FURIKO_PROBLEMS } from '@/data/rikaFurikoData'
 import { useStats } from '@/hooks/useStats'
 import { getDataKey } from '@/lib/storage'
 
@@ -96,6 +97,14 @@ function loadBuoyCleared(): number {
     return Array.isArray(raw.solvedIds) ? raw.solvedIds.length : 0
   } catch { return 0 }
 }
+const RIKA_FURIKO_KEY = 'tanq_rika_furiko_progress_v1'
+function loadFurikoCleared(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const raw = JSON.parse(localStorage.getItem(getDataKey(RIKA_FURIKO_KEY)) || '{}')
+    return Array.isArray(raw.solvedIds) ? raw.solvedIds.length : 0
+  } catch { return 0 }
+}
 
 // ─── 教科メタ ───────────────────────────────────────────
 const SUBJECTS = [
@@ -110,7 +119,7 @@ const SUBJECTS = [
 const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性']
 const KOKUGO_SOON = ['文法・敬語']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
-const RIKA_SOON = ['ふりこ・滑車（計算）']
+const RIKA_SOON: string[] = []
 const SHAKAI_SOON = ['地理〈農業・水産業〉', '地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈安土桃山〜現代〉', '公民・時事']
 
 const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
@@ -227,6 +236,7 @@ export default function JukenHubPage() {
   const [circuitCleared, setCircuitCleared] = useState(0)
   const [chukanCleared, setChukanCleared] = useState(0)
   const [buoyCleared, setBuoyCleared] = useState(0)
+  const [furikoCleared, setFurikoCleared] = useState(0)
 
   useEffect(() => {
     setJukuProgress(loadJukuProgress())
@@ -238,6 +248,7 @@ export default function JukenHubPage() {
     setCircuitCleared(loadCircuitCleared())
     setChukanCleared(loadChukanCleared())
     setBuoyCleared(loadBuoyCleared())
+    setFurikoCleared(loadFurikoCleared())
   }, [])
 
   // 公開済みの特殊算単元（問題が入っているもののみ。過大表示しない）
@@ -397,8 +408,9 @@ export default function JukenHubPage() {
                       const isCircuit = unit.id === 'rika-phys-circuit-calc'
                       const isChukan = unit.id === 'rika-chem-chukan'
                       const isBuoy = unit.id === 'rika-phys-buoy-calc'
-                      const fullDone = isBuoy ? buoyCleared : isChukan ? chukanCleared : isCircuit ? circuitCleared : isBane ? baneCleared : tekoCleared
-                      const fullTotal = isBuoy ? BUOY_PROBLEMS.length : isChukan ? CHUKAN_PROBLEMS.length : isCircuit ? CIRCUIT_PROBLEMS.length : isBane ? BANE_PROBLEMS.length : TEKO_PROBLEMS.length
+                      const isFuriko = unit.id === 'rika-phys-furiko-calc'
+                      const fullDone = isFuriko ? furikoCleared : isBuoy ? buoyCleared : isChukan ? chukanCleared : isCircuit ? circuitCleared : isBane ? baneCleared : tekoCleared
+                      const fullTotal = isFuriko ? FURIKO_PROBLEMS.length : isBuoy ? BUOY_PROBLEMS.length : isChukan ? CHUKAN_PROBLEMS.length : isCircuit ? CIRCUIT_PROBLEMS.length : isBane ? BANE_PROBLEMS.length : TEKO_PROBLEMS.length
                       return (
                         <UnitRow key={unit.id} href={unit.href} emoji={unit.emoji}
                           title={unit.name} sub={`図解で学んで計算でとく・演習${fullTotal}問`}
@@ -420,12 +432,16 @@ export default function JukenHubPage() {
             )
           })}
 
-          <GroupLabel>🔭 これから公開（計算・図解の演習）</GroupLabel>
-          <div className="space-y-2">
-            {RIKA_SOON.map(t => <SoonRow key={t} title={t} />)}
-          </div>
+          {RIKA_SOON.length > 0 && (
+            <>
+              <GroupLabel>🔭 これから公開（計算・図解の演習）</GroupLabel>
+              <div className="space-y-2">
+                {RIKA_SOON.map(t => <SoonRow key={t} title={t} />)}
+              </div>
+            </>
+          )}
           <p className="text-[10px] font-bold mt-2" style={{ color: MUTE }}>
-            ※「まなぶ＋とく」は図解導入つきの計算演習。知識演習のみの単元にも順次追加していきます
+            ※「まなぶ＋とく」は図解導入つきの計算演習。主要な計算分野（てこ・ばね・電気・中和・浮力・ふりこ）が公開中です
           </p>
         </section>
 
