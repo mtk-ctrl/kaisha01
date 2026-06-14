@@ -80,6 +80,7 @@ const MISSION_APPS: MissionApp[] = [
   { app: 'kanyo',   name: 'かんようく',         emoji: '🗣️', url: '/apps/kanyo',   juken: true, guest: false, explore: true },
   { app: 'yoji',    name: 'よじじゅくご',       emoji: '📝', url: '/apps/yoji',    juken: true, guest: false, explore: true },
   { app: 'dokkai',  name: 'こくご〈どっかい〉', emoji: '📚', url: '/apps/dokkai',  juken: true, guest: false, explore: true },
+  { app: 'bunpo',   name: 'こくご〈ぶんぽう・けいご〉', emoji: '🙇', url: '/apps/bunpo', juken: true, guest: false, explore: true },
   { app: 'science', name: 'りか',               emoji: '⚗️', url: '/apps/science', juken: true, guest: false, explore: true },
   { app: 'rekishi', name: 'れきし',             emoji: '🏛️', url: '/apps/rekishi', juken: true, guest: false, explore: true },
   { app: 'chiri',   name: 'ちり〈地形と気候〉',  emoji: '🗺️', url: '/apps/chiri',   juken: true, guest: false, explore: true },

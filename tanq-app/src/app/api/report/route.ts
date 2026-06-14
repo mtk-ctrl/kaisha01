@@ -14,6 +14,7 @@ const APP_LABELS: Record<string, string> = {
   kanyo: '国語〈慣用句〉',
   yoji: '国語〈四字熟語〉',
   dokkai: '国語〈読解〉',
+  bunpo: '国語〈文法・敬語〉',
   rekishi: '社会〈歴史〉',
   bunsuu: '分数',
   koubai: 'こうばいすう・こうやくすう',

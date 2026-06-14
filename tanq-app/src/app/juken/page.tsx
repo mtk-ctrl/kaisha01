@@ -127,7 +127,7 @@ const SUBJECTS = [
 // 近日公開の単元（正直に「近日公開」と表示する。実装済みに見せない）
 // 算数は特殊算＋数の性質・規則性・平面図形・場合の数まで公開。未公開単元は JUKU_UNITS 側で自動表示
 const SANSUU_SOON: string[] = []
-const KOKUGO_SOON = ['文法・敬語']
+const KOKUGO_SOON: string[] = []
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON: string[] = []
 const SHAKAI_SOON = ['地理〈工業・貿易〉', '地理〈地形図の読み方〉']
@@ -273,7 +273,7 @@ export default function JukenHubPage() {
   const rikaTotalCount = RIKA_UNITS.length
 
   // 公開中・近日公開の単元数（ページ内のカード数から動的に算出）
-  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + rikaTotalCount /* 理科 */ + 4 /* 社会（都道府県・地形と気候・歴史・公民） */
+  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 6 /* 国語（ことば・慣用句・四字熟語・漢字・文法敬語・読解） */ + rikaTotalCount /* 理科 */ + 4 /* 社会（都道府県・地形と気候・歴史・公民） */
   const soonCount = sansuuSoon.length + KOKUGO_SOON.length + RIKA_SOON.length + SHAKAI_SOON.length
 
   return (
@@ -371,7 +371,7 @@ export default function JukenHubPage() {
         {/* ── 国語 ── */}
         <section id="kokugo" className="mt-8" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="📖" name="国語" color="#7C5CD6" bg="#EFE8FF"
-            sub="ことば・漢字 公開中／読解は ためしてみる版" />
+            sub="ことば・漢字・文法・敬語 公開中／読解は ためしてみる版" />
 
           <GroupLabel>🗣️ ことば（語彙・慣用句・四字熟語）</GroupLabel>
           <div className="space-y-2">
@@ -389,16 +389,26 @@ export default function JukenHubPage() {
               done={stats?.kanjiMastered} total={stats?.kanjiTotal} color="#7C5CD6" />
           </div>
 
+          <GroupLabel>🙇 文法・敬語</GroupLabel>
+          <div className="space-y-2">
+            <UnitRow href="/apps/bunpo" emoji="🙇" title="文法・敬語" sub="敬語・品詞・文の組み立て・6レベル48問"
+              color="#7C5CD6" />
+          </div>
+
           <GroupLabel>📚 読解（AI生成オリジナル文）</GroupLabel>
           <div className="space-y-2">
             <UnitRow href="/apps/dokkai" emoji="📚" title="読解〈3文・だんらく・短文〉" sub="ステップ1〜3・オリジナル文46問・根きょの文をさがす練習"
               color="#7C5CD6" tag="ためしてみる版" />
           </div>
 
-          <GroupLabel>🔭 これから公開される単元</GroupLabel>
-          <div className="space-y-2">
-            {KOKUGO_SOON.map(t => <SoonRow key={t} title={t} />)}
-          </div>
+          {KOKUGO_SOON.length > 0 && (
+            <>
+              <GroupLabel>🔭 これから公開される単元</GroupLabel>
+              <div className="space-y-2">
+                {KOKUGO_SOON.map(t => <SoonRow key={t} title={t} />)}
+              </div>
+            </>
+          )}
         </section>
 
         {/* ── 理科（単元マップ: 構造転換のひな型）── */}
