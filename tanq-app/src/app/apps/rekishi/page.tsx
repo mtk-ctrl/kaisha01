@@ -1,10 +1,10 @@
 'use client'
 
-// 中学受験 歴史〈旧石器〜江戸〉
+// 中学受験 歴史〈旧石器〜現代（通史ぜんぶ）〉
 // - 4択＋ならべかえ（年代整序）。1回目の不正解は答えを見せず「考える足場」ヒント→再挑戦
 // - スコア・⭐は初回解答のみで確定（再挑戦で水増ししない）
 // - 正解時も一行の豆知識で定着強化。解説は「なぜ」の因果を語る
-// - 明治以降はマップ上部のタイムラインで「近日公開」として全体像のみ見せる
+// - 旧石器〜現代の通史を完成。近現代は政治的に中立な記述（戦争の評価に踏み込まず事実ベース）
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
@@ -245,11 +245,11 @@ export default function RekishiPage() {
           </Link>
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>🏛️</div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#451a03', margin: '0 0 4px' }}>中学受験 社会〈歴史〉旧石器〜江戸</h1>
-            <p style={{ color: '#78716c', fontSize: '14px', margin: 0 }}>旧石器〜江戸｜全{MAX_LEVEL}レベル・{REKISHI_TOTAL}問</p>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#451a03', margin: '0 0 4px' }}>中学受験 社会〈歴史〉旧石器〜現代（通史ぜんぶ）</h1>
+            <p style={{ color: '#78716c', fontSize: '14px', margin: 0 }}>旧石器〜現代｜全{MAX_LEVEL}レベル・{REKISHI_TOTAL}問</p>
           </div>
 
-          {/* 通史タイムライン（明治以降は近日公開として全体像を見せる） */}
+          {/* 通史タイムライン（旧石器〜現代まですべて公開＝通史完成） */}
           <div style={{ background: 'white', borderRadius: '16px', padding: '14px 16px', marginBottom: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
             <div style={{ fontSize: '12px', fontWeight: '600', color: '#92400e', marginBottom: '10px' }}>📜 日本の歴史 全体マップ</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
@@ -267,7 +267,7 @@ export default function RekishiPage() {
                 </span>
               ))}
             </div>
-            <p style={{ margin: '10px 0 0', fontSize: '11px', color: '#a8a29e' }}>明治時代から先は近日公開。旧石器から江戸まで一気にきわめよう！</p>
+            <p style={{ margin: '10px 0 0', fontSize: '11px', color: '#a8a29e' }}>旧石器から現代まで通史がぜんぶそろいました。一気にきわめよう！</p>
           </div>
 
           <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', justifyContent: 'center' }}>
@@ -335,7 +335,11 @@ export default function RekishiPage() {
                 { emoji: '🏯', label: '天下統一・安土桃山', lv: 12 },
                 { emoji: '🏰', label: '江戸幕府成立', lv: 13 },
                 { emoji: '⚓', label: '江戸の終わりへ', lv: 15 },
-                { emoji: '🏆', label: '旧石器〜江戸マスター', lv: 16 },
+                { emoji: '🎌', label: '明治維新', lv: 17 },
+                { emoji: '⚖️', label: '立憲国家・日清日露', lv: 18 },
+                { emoji: '🕊️', label: '終戦', lv: 19 },
+                { emoji: '🌅', label: '戦後復興', lv: 20 },
+                { emoji: '🏆', label: '通史マスター', lv: 21 },
               ].map(b => {
                 const earned = (save.levelStars[b.lv] ?? 0) >= 1
                 return (
@@ -589,7 +593,7 @@ export default function RekishiPage() {
               </button>
             )}
             {play.level === MAX_LEVEL && passed && (
-              <div style={{ textAlign: 'center', color: '#b45309', fontWeight: 'bold', fontSize: '16px', padding: '8px' }}>🏆 旧石器〜江戸マスター！明治時代から先も近日公開、おたのしみに！</div>
+              <div style={{ textAlign: 'center', color: '#b45309', fontWeight: 'bold', fontSize: '16px', padding: '8px' }}>🏆 通史をぜんぶ制覇！旧石器から現代まで、日本の歴史をきわめたね！</div>
             )}
             <button
               onClick={() => setView('map')}

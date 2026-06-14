@@ -28,7 +28,7 @@ function loadJukuProgress(): JukuProgress {
   try { return JSON.parse(localStorage.getItem(getDataKey(JUKU_PROGRESS_KEY)) || '{}') } catch { return {} }
 }
 
-// 歴史〈旧石器〜江戸〉のクリア済みレベル数（/apps/rekishi のセーブから読む）
+// 歴史〈旧石器〜現代 通史完成〉のクリア済みレベル数（/apps/rekishi のセーブから読む）
 const REKISHI_KEY = 'tanq_rekishi_v1'
 function loadRekishiCleared(): number {
   if (typeof window === 'undefined') return 0
@@ -120,7 +120,7 @@ const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性'
 const KOKUGO_SOON = ['文法・敬語']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON: string[] = []
-const SHAKAI_SOON = ['地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈明治〜現代〉', '公民・時事']
+const SHAKAI_SOON = ['地理〈工業・貿易〉', '地理〈地形図の読み方〉', '公民・時事']
 
 const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
   '生物': { emoji: '🌿', label: '生物' },
@@ -448,7 +448,7 @@ export default function JukenHubPage() {
         {/* ── 社会 ── */}
         <section id="shakai" className="mt-8" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="🗾" name="社会" color="#E0527E" bg="#FFE3EE"
-            sub="地理・歴史〈旧石器〜江戸〉公開中／公民は近日公開" />
+            sub="地理・歴史〈旧石器〜現代 通史完成〉公開中／公民は近日公開" />
 
           <GroupLabel>🗺️ 地理</GroupLabel>
           <div className="space-y-2">
@@ -459,8 +459,8 @@ export default function JukenHubPage() {
 
           <GroupLabel>📜 歴史（通史）</GroupLabel>
           <div className="space-y-2">
-            <UnitRow href="/apps/rekishi" emoji="🏛️" title="歴史〈旧石器〜江戸〉" sub="通史・16レベル・192問・年代ならべかえ"
-              done={rekishiCleared} total={16} color="#E0527E" />
+            <UnitRow href="/apps/rekishi" emoji="🏛️" title="歴史〈旧石器〜現代 通史完成〉" sub="通史ぜんぶ・21レベル・251問・年代ならべかえ"
+              done={rekishiCleared} total={21} color="#E0527E" />
           </div>
 
           <GroupLabel>🔭 これから公開される単元</GroupLabel>
