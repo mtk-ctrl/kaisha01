@@ -120,7 +120,7 @@ const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性'
 const KOKUGO_SOON = ['文法・敬語']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON: string[] = []
-const SHAKAI_SOON = ['地理〈農業・水産業〉', '地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈明治〜現代〉', '公民・時事']
+const SHAKAI_SOON = ['地理〈工業・貿易〉', '地理〈地形図の読み方〉', '歴史〈明治〜現代〉', '公民・時事']
 
 const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
   '生物': { emoji: '🌿', label: '生物' },
@@ -453,8 +453,8 @@ export default function JukenHubPage() {
           <GroupLabel>🗺️ 地理</GroupLabel>
           <div className="space-y-2">
             <UnitRow href="/apps/todofuken" emoji="🗾" title="都道府県マスター" sub="47都道府県・かたち・名物・県庁所在地" color="#E0527E" />
-            <UnitRow href="/apps/chiri" emoji="🗺️" title="地形と気候" sub="国土・山地・川と平野・気候区分・防災・72問"
-              done={chiriCleared} total={7} color="#0ea5e9" />
+            <UnitRow href="/apps/chiri" emoji="🗺️" title="地形と気候・農業・水産業" sub="国土・気候・稲作・畜産・水産業・自給率・128問"
+              done={chiriCleared} total={12} color="#0ea5e9" />
           </div>
 
           <GroupLabel>📜 歴史（通史）</GroupLabel>

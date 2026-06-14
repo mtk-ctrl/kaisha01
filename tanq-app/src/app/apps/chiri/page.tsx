@@ -243,7 +243,7 @@ export default function ChiriPage() {
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
             <div style={{ fontSize: '48px', marginBottom: '8px' }}>🗾</div>
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#0c4a6e', margin: '0 0 4px' }}>中学受験 社会〈地理〉</h1>
-            <p style={{ color: '#0369a1', fontSize: '14px', margin: 0 }}>日本の地形と気候｜全{MAX_LEVEL}レベル・{CHIRI_TOTAL}問</p>
+            <p style={{ color: '#0369a1', fontSize: '14px', margin: 0 }}>日本の地理（地形と気候・農業・水産業）｜全{MAX_LEVEL}レベル・{CHIRI_TOTAL}問</p>
           </div>
 
           {/* 地理 単元マップ（地形と気候のほかは近日公開として全体像を見せる） */}
