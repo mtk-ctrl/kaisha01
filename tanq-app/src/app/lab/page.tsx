@@ -113,6 +113,7 @@ const APPS: {
   { id: 'kokugo',       name: '国語〈ことば〉',   emoji: '📖', color: '#8b5cf6', url: '/apps/kokugo',   badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'kanyo',        name: '国語〈慣用句〉',   emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'yoji',         name: '国語〈四字熟語〉', emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
+  { id: 'bunpo',        name: '国語〈文法・敬語〉', emoji: '🙇', color: '#7C5CD6', url: '/apps/bunpo',    badge: `敬語・品詞・6レベル48問`, audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'dokkai',       name: '国語〈読解〉',     emoji: '📚', color: '#7C5CD6', url: '/apps/dokkai',   badge: 'ためしてみる版・22問', audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'science',      name: '理科',             emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   { id: 'chiri',        name: '社会〈地理〉',     emoji: '🗺️', color: '#0ea5e9', url: '/apps/chiri',    badge: '地形気候・農業・水産・128問',  audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
