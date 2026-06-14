@@ -83,6 +83,7 @@ const MISSION_APPS: MissionApp[] = [
   { app: 'science', name: 'りか',               emoji: '⚗️', url: '/apps/science', juken: true, guest: false, explore: true },
   { app: 'rekishi', name: 'れきし',             emoji: '🏛️', url: '/apps/rekishi', juken: true, guest: false, explore: true },
   { app: 'chiri',   name: 'ちり〈地形と気候〉',  emoji: '🗺️', url: '/apps/chiri',   juken: true, guest: false, explore: true },
+  { app: 'koumin',  name: 'こうみん',            emoji: '⚖️', url: '/apps/koumin',  juken: true, guest: false, explore: true },
   // ── 就学前向け（ログにあれば つづき/ふくしゅう枠に出る。たんけん枠には出さない）──
   { app: 'thinking-youji', name: 'ようちえん かんがえるジム', emoji: '🐰', url: '/apps/thinking-youji', guest: true, explore: false },
   { app: 'youji-iro',      name: 'いろと かたち',             emoji: '🌈', url: '/apps/youji-iro',      guest: true, explore: false },
