@@ -43,6 +43,7 @@ const LAYER_LABELS: Record<number, { label: string; color: string; bg: string }>
   2: { label: '第2層：文章題の基本', color: '#4ade80', bg: '#F0FDF4' },
   3: { label: '第3層：割合と比', color: '#c4a8ff', bg: '#F5F3FF' },
   4: { label: '第4層：速さと規則性', color: '#f87171', bg: '#FEF2F2' },
+  5: { label: '第5層：図形と場合の数', color: '#8b5cf6', bg: '#F5F3FF' },
 }
 
 export default function JukuMenu() {
@@ -54,7 +55,7 @@ export default function JukuMenu() {
     setUserType(getUserType())
   }, [])
 
-  const layers = [1, 2, 3, 4] as const
+  const layers = [1, 2, 3, 4, 5] as const
 
   // 実際に問題が入っている（公開済みの）単元数。「12単元」と過大表示しないため動的に算出
   const liveUnitCount = JUKU_UNITS.filter(u => u.problems.length > 0).length
@@ -155,7 +156,7 @@ export default function JukuMenu() {
       {/* Footer note */}
       <div className="px-4 mt-8">
         <p className="text-center text-[10px] font-bold" style={{ color: '#B0A49C' }}>
-          第2〜4層は順次公開予定
+          各単元は「まなぶ → とく」で進めます
         </p>
       </div>
     </div>

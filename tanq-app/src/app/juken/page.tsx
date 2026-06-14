@@ -125,8 +125,8 @@ const SUBJECTS = [
 ] as const
 
 // 近日公開の単元（正直に「近日公開」と表示する。実装済みに見せない）
-// 速さ系（旅人算・流水算・仕事算）は JUKU_UNITS 側の未公開単元として自動表示されるため、ここには含めない
-const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性']
+// 算数は特殊算＋数の性質・規則性・平面図形・場合の数まで公開。未公開単元は JUKU_UNITS 側で自動表示
+const SANSUU_SOON: string[] = []
 const KOKUGO_SOON = ['文法・敬語']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON: string[] = []
@@ -336,9 +336,9 @@ export default function JukenHubPage() {
         {/* ── 算数 ── */}
         <section id="sansuu" className="mt-5" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="🧮" name="算数" color="#C99700" bg="#FFF1B8"
-            sub={`特殊算 ${jukuLiveUnits.length}単元 公開中・図で考える`} />
+            sub={`${jukuLiveUnits.length}単元 公開中・特殊算＋数の性質・規則性・図形・場合の数`} />
 
-          <GroupLabel>📐 特殊算（文章題の核）</GroupLabel>
+          <GroupLabel>📐 単元べつにとく（特殊算・数の性質・規則性・図形・場合の数）</GroupLabel>
           <div className="space-y-2">
             {jukuLiveUnits.map(u => {
               const p = jukuProgress[u.id]
