@@ -429,7 +429,7 @@ function RatioBarDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknow
       {wc >= 2 && (
         <div className="rounded-lg px-2 py-1 text-center" style={{ background: 'rgba(240,192,64,0.15)', border: '1.5px dashed #f0c040' }}>
           <span className="text-[10px] font-black" style={{ color: '#b45309' }}>
-            ①にあたる量を求める：{known.value} ÷ {knownSpan} × {denom} ＝ {answerValue}{unit}
+            ①にあたる量を求める：{known.value} ÷ {knownSpan} × {denom}
           </span>
         </div>
       )}
@@ -1652,6 +1652,7 @@ function ArrowDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
   const combinedLabel = (spec.combinedLabel as string) ?? (mode === 'chase' ? '速さの差' : '速さの和')
   const combinedText = (spec.combinedText as string) ?? ''
   const answerText = (spec.answerText as string) ?? ''
+  const unknown = (spec.unknown as string) ?? ''
 
   const left = 24, right = 226, midY = 46
   const aEmoji = (spec.aEmoji as string) ?? '🚶'
@@ -1682,7 +1683,7 @@ function ArrowDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
         <text x={left + 6} y={midY - 24} textAnchor="middle" fontSize="8" fill="#2563eb" fontWeight="bold">{aName}</text>
         <line x1={left + 16} y1={midY - 14} x2={left + 42} y2={midY - 14} stroke="#2563eb" strokeWidth="2" />
         <polygon points={`${left + 42},${midY - 17} ${left + 48},${midY - 14} ${left + 42},${midY - 11}`} fill="#2563eb" />
-        <text x={left + 30} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#2563eb" fontWeight="bold">{aSpeed}{speedUnit}</text>
+        <text x={left + 30} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#2563eb" fontWeight="bold">{!showValues && unknown === 'aSpeed' ? '?' : aSpeed}{speedUnit}</text>
 
         {/* B（chase: 同じ右向きで前方 / meet・round: 右端から左向き） */}
         {mode === 'chase' ? (
@@ -1691,7 +1692,7 @@ function ArrowDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
             <text x={right - 6} y={midY - 24} textAnchor="middle" fontSize="8" fill="#ea7a1e" fontWeight="bold">{bName}</text>
             <line x1={right - 48} y1={midY - 14} x2={right - 22} y2={midY - 14} stroke="#ea7a1e" strokeWidth="2" />
             <polygon points={`${right - 22},${midY - 17} ${right - 16},${midY - 14} ${right - 22},${midY - 11}`} fill="#ea7a1e" />
-            <text x={right - 34} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#ea7a1e" fontWeight="bold">{bSpeed}{speedUnit}</text>
+            <text x={right - 34} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#ea7a1e" fontWeight="bold">{!showValues && unknown === 'bSpeed' ? '?' : bSpeed}{speedUnit}</text>
           </>
         ) : (
           <>
@@ -1699,7 +1700,7 @@ function ArrowDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
             <text x={right - 6} y={midY - 24} textAnchor="middle" fontSize="8" fill="#ea7a1e" fontWeight="bold">{bName}</text>
             <line x1={right - 16} y1={midY - 14} x2={right - 42} y2={midY - 14} stroke="#ea7a1e" strokeWidth="2" />
             <polygon points={`${right - 42},${midY - 17} ${right - 48},${midY - 14} ${right - 42},${midY - 11}`} fill="#ea7a1e" />
-            <text x={right - 30} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#ea7a1e" fontWeight="bold">{bSpeed}{speedUnit}</text>
+            <text x={right - 30} y={midY - 17} textAnchor="middle" fontSize="7.5" fill="#ea7a1e" fontWeight="bold">{!showValues && unknown === 'bSpeed' ? '?' : bSpeed}{speedUnit}</text>
           </>
         )}
       </svg>
@@ -1713,7 +1714,7 @@ function ArrowDiagram({ spec, wrongCount = 0 }: { spec: Record<string, unknown>;
         </div>
       )}
       {/* ③ わり算で答え */}
-      {wc >= 3 && answerText && (
+      {showValues && answerText && (
         <div className="rounded-lg px-2 py-1.5 text-center" style={{ background: '#FFFBEB', border: '2px solid #f0c040' }}>
           <span className="text-[11px] font-black" style={{ color: '#3A2E2A' }}>{answerText}</span>
         </div>
@@ -1879,7 +1880,7 @@ function ProblemSolver({
           正解／答えを見た後は、その専用パネル内の図に一本化するためここでは隠す */}
       {!solved && !revealed && problem.diagramType !== 'none' &&
         (problem.diagramType === 'slide' || problem.diagramType === 'dot-line' || wrongCount > 0) && (
-        <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} wrongCount={wrongCount} />
+        <DiagramRenderer type={problem.diagramType} spec={problem.diagramSpec} wrongCount={Math.min(wrongCount, 2)} />
       )}
 
       {/* 答え入力エリア */}
@@ -1960,14 +1961,9 @@ function ProblemSolver({
             <span className="text-2xl">⭐</span>
             <span className="font-black text-lg" style={{ color: '#2BA39A' }}>せいかい！</span>
           </div>
-          {problem.diagramType === 'noudo' && (
+          {problem.diagramType !== 'none' && (
             <div className="rounded-2xl bg-white/70 p-2">
-              <DiagramRenderer type="noudo" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
-            </div>
-          )}
-          {problem.diagramType === 'profit' && (
-            <div className="rounded-2xl bg-white/70 p-2">
-              <DiagramRenderer type="profit" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
+              <DiagramRenderer type={problem.diagramType} spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
             </div>
           )}
           <p className="text-sm font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
@@ -1995,14 +1991,9 @@ function ProblemSolver({
               <span className="font-black text-base ml-1" style={{ color: '#6B5A52' }}>{problem.answerUnit}</span>
             )}
           </div>
-          {problem.diagramType === 'noudo' && (
+          {problem.diagramType !== 'none' && (
             <div className="rounded-2xl bg-white/70 p-2">
-              <DiagramRenderer type="noudo" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
-            </div>
-          )}
-          {problem.diagramType === 'profit' && (
-            <div className="rounded-2xl bg-white/70 p-2">
-              <DiagramRenderer type="profit" spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
+              <DiagramRenderer type={problem.diagramType} spec={{ ...problem.diagramSpec, showValues: true }} wrongCount={3} />
             </div>
           )}
           <p className="text-sm font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
