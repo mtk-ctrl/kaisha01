@@ -117,6 +117,7 @@ const APPS: {
   { id: 'science',      name: '理科',             emoji: '⚗️', color: '#22c55e', url: '/apps/science',  badge: `${TOTALS.SCIENCE}問・4領域`, audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   { id: 'chiri',        name: '社会〈地理〉',     emoji: '🗺️', color: '#0ea5e9', url: '/apps/chiri',    badge: '地形気候・農業・水産・128問',  audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   { id: 'rekishi',      name: '社会〈歴史〉',     emoji: '🏛️', color: '#E0527E', url: '/apps/rekishi',  badge: '旧石器〜現代・251問', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
+  { id: 'koumin',       name: '社会〈公民〉',     emoji: '⚖️', color: '#db2777', url: '/apps/koumin',   badge: '憲法・人権・三権・経済・70問', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   // ── 🌱 就学前向け（ひらがな・絵・音声で遊びながら学ぶ。対象年齢の低い順）──────
   { id: 'youji-iro',       name: 'いろと かたち',              emoji: '🌈', color: '#ec4899', url: '/apps/youji-iro',       badge: '10いろ・8かたち',  audience: 'youji', targetAge: '3〜5才', guestAccess: true },
   { id: 'thinking-youji',  name: 'ようちえん かんがえるジム',   emoji: '🐰', color: '#f472b6', url: '/apps/thinking-youji', badge: '50もん・10バッジ', audience: 'youji', targetAge: '3〜6才', guestAccess: true },

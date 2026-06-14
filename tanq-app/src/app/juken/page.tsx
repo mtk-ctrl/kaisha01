@@ -48,6 +48,16 @@ function loadChiriCleared(): number {
   } catch { return 0 }
 }
 
+// 公民〈憲法・人権・三権・地方自治・経済・国際〉のクリア済みレベル数（/apps/koumin のセーブから読む）
+const KOUMIN_KEY = 'tanq_koumin_v1'
+function loadKouminCleared(): number {
+  if (typeof window === 'undefined') return 0
+  try {
+    const raw = JSON.parse(localStorage.getItem(getDataKey(KOUMIN_KEY)) || '{}')
+    return Object.values(raw.levelStars ?? {}).filter(v => Number(v) >= 1).length
+  } catch { return 0 }
+}
+
 // 理科の進捗: 知識演習は science の SRS（おぼえた=b2）、てこ計算は rika-teko のクリア数
 const SCIENCE_SRS_KEY = 'tanq_science_srs_v1'
 function loadScienceMasteredIds(): Set<string> {
@@ -120,7 +130,7 @@ const SANSUU_SOON = ['平面図形', '数の性質', '場合の数', '規則性'
 const KOKUGO_SOON = ['文法・敬語']
 // 理科は全21単元の知識演習を公開済み。計算・図解演習（まなぶ＋とく）の追加待ちを正直に表示
 const RIKA_SOON: string[] = []
-const SHAKAI_SOON = ['地理〈工業・貿易〉', '地理〈地形図の読み方〉', '公民・時事']
+const SHAKAI_SOON = ['地理〈工業・貿易〉', '地理〈地形図の読み方〉']
 
 const RIKA_FIELD_META: Record<string, { emoji: string; label: string }> = {
   '生物': { emoji: '🌿', label: '生物' },
@@ -230,6 +240,7 @@ export default function JukenHubPage() {
   const [jukuProgress, setJukuProgress] = useState<JukuProgress>({})
   const [rekishiCleared, setRekishiCleared] = useState(0)
   const [chiriCleared, setChiriCleared] = useState(0)
+  const [kouminCleared, setKouminCleared] = useState(0)
   const [scienceMastered, setScienceMastered] = useState<Set<string>>(new Set())
   const [tekoCleared, setTekoCleared] = useState(0)
   const [baneCleared, setBaneCleared] = useState(0)
@@ -242,6 +253,7 @@ export default function JukenHubPage() {
     setJukuProgress(loadJukuProgress())
     setRekishiCleared(loadRekishiCleared())
     setChiriCleared(loadChiriCleared())
+    setKouminCleared(loadKouminCleared())
     setScienceMastered(loadScienceMasteredIds())
     setTekoCleared(loadTekoCleared())
     setBaneCleared(loadBaneCleared())
@@ -261,7 +273,7 @@ export default function JukenHubPage() {
   const rikaTotalCount = RIKA_UNITS.length
 
   // 公開中・近日公開の単元数（ページ内のカード数から動的に算出）
-  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + rikaTotalCount /* 理科 */ + 3 /* 社会（都道府県・歴史・地形と気候） */
+  const liveCount = jukuLiveUnits.length + 3 /* 基礎たいりょく */ + 5 /* 国語（読解ためしてみる版含む） */ + rikaTotalCount /* 理科 */ + 4 /* 社会（都道府県・地形と気候・歴史・公民） */
   const soonCount = sansuuSoon.length + KOKUGO_SOON.length + RIKA_SOON.length + SHAKAI_SOON.length
 
   return (
@@ -448,7 +460,7 @@ export default function JukenHubPage() {
         {/* ── 社会 ── */}
         <section id="shakai" className="mt-8" style={{ scrollMarginTop: 84 }}>
           <SubjectHead emoji="🗾" name="社会" color="#E0527E" bg="#FFE3EE"
-            sub="地理・歴史〈旧石器〜現代 通史完成〉公開中／公民は近日公開" />
+            sub="地理・歴史〈通史完成〉・公民、3分野すべて公開中" />
 
           <GroupLabel>🗺️ 地理</GroupLabel>
           <div className="space-y-2">
@@ -461,6 +473,12 @@ export default function JukenHubPage() {
           <div className="space-y-2">
             <UnitRow href="/apps/rekishi" emoji="🏛️" title="歴史〈旧石器〜現代 通史完成〉" sub="通史ぜんぶ・21レベル・251問・年代ならべかえ"
               done={rekishiCleared} total={21} color="#E0527E" />
+          </div>
+
+          <GroupLabel>⚖️ 公民</GroupLabel>
+          <div className="space-y-2">
+            <UnitRow href="/apps/koumin" emoji="⚖️" title="公民〈憲法・人権・三権・地方自治・経済・国際〉" sub="憲法・基本的人権・国会・内閣裁判所・地方自治と選挙・経済国際・7レベル・70問"
+              done={kouminCleared} total={7} color="#db2777" />
           </div>
 
           <GroupLabel>🔭 これから公開される単元</GroupLabel>
