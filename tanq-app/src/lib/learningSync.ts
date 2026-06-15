@@ -47,14 +47,31 @@ export function applyRemoteData(remote: LearningPayload) {
   }
 }
 
+// member は /api/learning（cookie 認証）、tester は /api/tester/learning（テスター名キー）。
+// guest は同期しない（null を返す）。
+function syncTarget(): { kind: 'member' } | { kind: 'tester'; name: string } | null {
+  if (typeof window === 'undefined') return null
+  const auth = localStorage.getItem('tanq-lab-auth')
+  if (auth === 'member') return { kind: 'member' }
+  if (auth === 'tester') {
+    const name = (localStorage.getItem('tanq-tester-name') || '').trim()
+    if (name) return { kind: 'tester', name }
+  }
+  return null
+}
+
 export async function pushToSupabase(): Promise<void> {
+  const target = syncTarget()
+  if (!target) return
   const data = collectLocalData()
   if (Object.keys(data).length === 0) return
   try {
-    const res = await fetch('/api/learning', {
+    const url = target.kind === 'member' ? '/api/learning' : '/api/tester/learning'
+    const body = target.kind === 'member' ? { data } : { name: target.name, data }
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify(body),
     })
     if (!res.ok && process.env.NODE_ENV !== 'production') {
       console.warn('[learningSync] push failed', res.status)
@@ -65,8 +82,13 @@ export async function pushToSupabase(): Promise<void> {
 }
 
 export async function pullFromSupabase(): Promise<void> {
+  const target = syncTarget()
+  if (!target) return
   try {
-    const res = await fetch('/api/learning')
+    const url = target.kind === 'member'
+      ? '/api/learning'
+      : `/api/tester/learning?name=${encodeURIComponent(target.name)}`
+    const res = await fetch(url)
     if (!res.ok) return
     const { data } = await res.json()
     if (data && typeof data === 'object') applyRemoteData(data as LearningPayload)

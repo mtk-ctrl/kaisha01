@@ -1482,7 +1482,7 @@ function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => vo
   useEffect(() => {
     setProfile(loadProfile(userType))
     setSectionOrder(loadSectionOrder())
-    if (userType === 'member') {
+    if (userType === 'member' || userType === 'tester') {
       pullFromSupabase().then(() => refreshStats())
     } else {
       refreshStats()
@@ -1494,7 +1494,7 @@ function AppHub({ userType, onLogout }: { userType: UserType; onLogout: () => vo
   }, [tab, refreshStats])
 
   useEffect(() => {
-    if (userType !== 'member') return
+    if (userType !== 'member' && userType !== 'tester') return
     const handler = () => { pushToSupabase() }
     window.addEventListener('beforeunload', handler)
     return () => window.removeEventListener('beforeunload', handler)
@@ -1589,7 +1589,7 @@ export default function LabPage() {
   }
 
   async function handleLogout() {
-    if (userType === 'member') await pushToSupabase()
+    if (userType === 'member' || userType === 'tester') await pushToSupabase()
     localStorage.removeItem(SESSION_KEY)
     localStorage.removeItem('tanq-tester-name')
     setUnlocked(false)
