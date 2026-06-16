@@ -30,7 +30,7 @@
 オーナー↔Jobs 対話記録 → [`board/communications/`](board/communications/)
 
 > **【ログルール】** タスク完了のたびに git コミットメッセージ ＋ NOW.md の完了タスクテーブルに1行追加。  
-> `logs/sessions/` は廃止（2026-05-23〜）。旧ファイルは参照のみ可。
+> `logs/sessions/` は廃止・削除済み（2026-06-16）。完了タスクの全履歴は `logs/CHANGELOG.md`（記録庫）。
 
 ---
 

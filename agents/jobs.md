@@ -36,7 +36,7 @@
 
 ### 終了時（必須）
 1. `NOW.md` を更新（完了事項・次アクション・ブロッカー）
-2. `logs/sessions/YYYY-MM-DD_NNN.md` に作業ログ記録
+2. 完了タスクはコミットメッセージ＋NOW.md ⑤ に1行記録（`logs/sessions/` は廃止・削除済み。全履歴は `logs/CHANGELOG.md`）
 3. 重要判断は `logs/decisions/YYYY-MM-DD_topic.md` に記録
 4. `OWNER.md` を更新（週次またはマイルストーン時）
 5. `claude/*` ブランチへ push（自動デプロイ）
