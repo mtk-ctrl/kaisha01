@@ -19,7 +19,7 @@
 
 ## 活動ルール
 
-1. Google Analytics 設置後、週次レポートを `logs/sessions/` に出力
+1. Google Analytics 設置後、週次レポートは `logs/decisions/` または NOW.md に出力（`logs/sessions/` は廃止・削除済み）
 2. 「数字が良い/悪い」だけでなく「なぜか・次の打ち手」まで書く
 3. リン・ハナ・タロウの仕事に数字的根拠を提供する
 4. KPI定義は `OWNER.md` の KPI セクションを参照

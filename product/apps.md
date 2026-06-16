@@ -74,25 +74,25 @@
 | 算数文章題 | /apps/word-math | 小1〜小3・SRS | ✅ |
 | 図形トレーニング | /apps/shapes | 8図形・SVGアニメーション | ❌ |
 | プログラミング | /apps/coding | 5ステージ | ❌ |
-| ぞくせい仕分け工場 | /youji/apps/zokusei/ | ベン図・分類（静的HTML） | ✅ |
-| 九九マスター | /youji/apps/kuku/ | 2〜9の段（静的HTML） | ✅ |
+| ぞくせい仕分け工場 | /apps/youji-zokusei | ベン図・分類 | ✅ |
+| にたもじ どっち？ | /apps/youji-hiragana | まちがえやすい字（おう/づ/ぢ等） | ✅ |
+| 九九マスター | /apps/kuku | 2〜9の段 | ✅ |
 | 都道府県マスター | /apps/todofuken | 47都道府県・4モード・難易度3段階 | ✅ |
 
-### 🌱 就学前向け（静的HTML・ひらがな・絵・音声）
+### 🌱 就学前向け（React・ひらがな・絵・音声）
 
 | アプリ名 | パス | 特徴 | ゲストアクセス |
 |---------|------|------|--------------|
 | ようちえん かんがえるジム | /apps/thinking-youji | 50問・10バッジ | ✅ |
-| カタカナ れんしゅう | /youji/apps/katakana/ | ア〜ン 46字 | ✅ |
-| いろと かたち | /youji/apps/iro-katachi/ | 10色・8かたち | ✅ |
-| はじめての かんじ | /youji/apps/kanji/ | にちじょうご80字 | ✅ |
-| たべものと かずあそび | /youji/apps/math/ | 20まで | ✅ |
-| 10に なる かず | /youji/apps/juucombo/ | たして10 | ✅ |
-| にたもじ どっち？ | /youji/apps/no5/ | おう/づ/ぢ識別 | ✅ |
-| なんじ かな？ | /youji/apps/clock/ | 何時・何時半 | ✅ |
-| どうぶつ さんすう | /youji/apps/animals/ | たし引き20まで | ✅ |
+| カタカナ れんしゅう | /apps/youji-katakana | ア〜ン 46字 | ✅ |
+| いろと かたち | /apps/youji-iro | 10色・8かたち | ✅ |
+| はじめての かんじ | /apps/youji-kanji | にちじょうご80字 | ✅ |
+| たべものと かずあそび | /apps/youji-math | 20まで | ✅ |
+| 10に なる かず | /apps/youji-juucombo | たして10 | ✅ |
+| なんじ かな？ | /apps/youji-clock | 何時・何時半 | ✅ |
+| どうぶつ さんすう | /apps/youji-animals | たし引き20まで | ✅ |
 
-> 静的HTMLアプリ（/youji/apps/配下）はlocalStorage進捗・記録タブ連携は未実装（将来タスク）
+> 就学前・幼稚園アプリは2026-05-27に静的HTML→React（`/apps/youji-*`）へ移行済み。localStorage進捗・記録タブ連携も統合済み（旧 `/youji/apps/` 静的版は廃止）。「にたもじ どっち？」は小学生向けに再分類し `/apps/youji-hiragana` で公開。
 
 ---
 
