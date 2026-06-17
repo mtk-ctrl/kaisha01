@@ -202,49 +202,13 @@ function DomainView({
         </h2>
       </div>
 
-      <div className="space-y-3">
-        {LEVELS.map(lv => {
-          const { mastered, total } = domainStats(domain, lv, store)
-          const pct = total > 0 ? Math.round(mastered / total * 100) : 0
-          const allMastered = mastered === total
-          return (
-            <button
-              key={lv}
-              onClick={() => onStart(domain, lv)}
-              className="w-full rounded-[22px] p-5 text-left transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0"
-              style={{ background: DOMAIN_BG[domain], border: '3px solid #3A2E2A', boxShadow: '4px 4px 0 0 #3A2E2A' }}
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <span className="inline-block text-xs font-black px-2 py-1 rounded-full"
-                    style={{ background: LEVEL_COLOR[lv], color: '#FFFFFF', border: '2px solid #3A2E2A' }}>
-                    {LEVEL_LABEL[lv]}
-                  </span>
-                  <span className="font-black text-sm" style={{ color: '#3A2E2A' }}>
-                    {lv === 1 ? '小4レベル' : lv === 2 ? '小5レベル' : '小6レベル（入試）'}
-                  </span>
-                </div>
-                {allMastered && <span className="text-lg">🏆</span>}
-              </div>
-              <div className="flex justify-between text-[11px] font-bold mb-2" style={{ color: '#6B5A52' }}>
-                <span>⭐ おぼえた {mastered}/{total}問</span>
-                <span>{pct}%</span>
-              </div>
-              <div className="h-2.5 rounded-full overflow-hidden" style={{ background: 'rgba(58,46,42,0.15)' }}>
-                <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: DOMAIN_COLORS[domain] }} />
-              </div>
-              <p className="text-[10px] font-bold mt-2" style={{ color: '#6B5A52' }}>
-                {lv === 1 ? '昆虫・気象・状態変化・電流の基本' : lv === 2 ? '食物連鎖・地層・水溶液・てこ・浮力' : 'ヒトのからだ・火山・気体・滑車・電磁気'}
-              </p>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* 単元えらび（中学受験の単元マップに沿って出題） */}
-      <div className="mt-7">
-        <p className="text-xs font-black mb-2 flex items-center gap-1.5" style={{ color: '#6B5A52' }}>
-          🗺️ 単元ごとにとく（中学受験 単元マップ）
+      {/* 単元えらび（中学受験の単元マップ）— 主役 */}
+      <div>
+        <p className="text-sm font-black mb-1 flex items-center gap-1.5" style={{ color: '#3A2E2A' }}>
+          🗺️ 単元をえらんでとく
+        </p>
+        <p className="text-[10px] font-bold mb-3" style={{ color: '#6B5A52' }}>
+          中学受験の単元マップ。やさしい順（基礎→標準→発展）に出題されるよ
         </p>
         <div className="space-y-2">
           {fieldUnits.map(unit => {
@@ -256,15 +220,15 @@ function DomainView({
               <button
                 key={unit.id}
                 onClick={() => onStartUnit(unit.id)}
-                className="w-full rounded-[18px] px-4 py-3 text-left flex items-center gap-3 transition-all hover:-translate-y-0.5 active:translate-y-0"
-                style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }}
+                className="w-full rounded-[18px] px-4 py-3.5 text-left flex items-center gap-3 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                style={{ background: '#FFFFFF', border: '2.5px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg shrink-0"
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
                   style={{ background: DOMAIN_BG[domain], border: '2px solid #3A2E2A' }}>
                   {unit.emoji}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-black text-xs leading-tight" style={{ color: '#3A2E2A' }}>{unit.name}</p>
+                  <p className="font-black text-[13px] leading-tight" style={{ color: '#3A2E2A' }}>{unit.name}</p>
                   <p className="text-[10px] font-bold mt-0.5" style={{ color: '#6B5A52' }}>
                     ⭐ おぼえた {mastered}/{total}問{isFull ? '・計算は「てこのつり合い」へ' : ''}
                   </p>
@@ -277,6 +241,40 @@ function DomainView({
             )
           })}
         </div>
+      </div>
+
+      {/* 全範囲でおさらい（レベル別）— 補助。単元を横断して出題するためコンパクト表示 */}
+      <div className="mt-7">
+        <p className="text-xs font-black mb-2 flex items-center gap-1.5" style={{ color: '#6B5A52' }}>
+          🔁 全範囲でおさらい（レベル別）
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {LEVELS.map(lv => {
+            const { mastered, total } = domainStats(domain, lv, store)
+            const pct = total > 0 ? Math.round(mastered / total * 100) : 0
+            const allMastered = total > 0 && mastered === total
+            return (
+              <button
+                key={lv}
+                onClick={() => onStart(domain, lv)}
+                className="rounded-[16px] p-3 text-center transition-all hover:-translate-y-0.5 active:translate-y-0"
+                style={{ background: DOMAIN_BG[domain], border: '2.5px solid #3A2E2A', boxShadow: '2px 2px 0 0 #3A2E2A' }}
+              >
+                <span className="inline-block text-[10px] font-black px-2 py-0.5 rounded-full mb-1.5"
+                  style={{ background: LEVEL_COLOR[lv], color: '#FFFFFF', border: '1.5px solid #3A2E2A' }}>
+                  {LEVEL_LABEL[lv]}{allMastered ? ' 🏆' : ''}
+                </span>
+                <p className="text-[10px] font-bold" style={{ color: '#6B5A52' }}>{mastered}/{total}問</p>
+                <div className="h-1.5 rounded-full overflow-hidden mt-1" style={{ background: 'rgba(58,46,42,0.15)' }}>
+                  <div className="h-full rounded-full" style={{ width: `${pct}%`, background: DOMAIN_COLORS[domain] }} />
+                </div>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-[10px] font-bold mt-2" style={{ color: '#6B5A52' }}>
+          ※ レベル別は単元を横断して全範囲から出題。まとめて確認したいときに
+        </p>
       </div>
     </div>
   )
