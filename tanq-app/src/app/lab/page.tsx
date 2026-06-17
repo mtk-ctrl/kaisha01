@@ -134,19 +134,38 @@ const APPS: {
 ]
 
 // Pastel card color cycle for sticker style
-const CARD_COLORS = [
-  'bg-[#FFE3EE]', // pink-bg
-  'bg-[#9DEDDE]', // mint-soft
-  'bg-[#FFF1B8]', // yellow-soft
-  'bg-[#D6ECFF]', // blue
-  'bg-[#FFE0CC]', // orange
-  'bg-[#DFF6CF]', // green
-  'bg-[#EFE8FF]', // lav-bg
-  'bg-[#FFD9D3]', // coral
-]
-
-function getCardColor(index: number): string {
-  return CARD_COLORS[index % CARD_COLORS.length]
+// カード背景は「教科」で統一する（バラバラ配色をやめ、まとまりを出す）。
+// 国語=ピンク / 算数=水色 / 理科=黄色 / 社会=緑 / その他(英語・プログラミング・思考など)=ラベンダー。
+// 中学受験・小学生・幼稚園のどのセクションでも同じ規則で色が決まる。
+type Subject = 'kokugo' | 'sansuu' | 'rika' | 'shakai' | 'other'
+const SUBJECT_BG: Record<Subject, string> = {
+  kokugo: 'bg-[#FFE3EE]', // 国語=ピンク
+  sansuu: 'bg-[#D6ECFF]', // 算数=水色
+  rika:   'bg-[#FFF1B8]', // 理科=黄色
+  shakai: 'bg-[#DFF6CF]', // 社会=緑
+  other:  'bg-[#EFE8FF]', // その他=ラベンダー
+}
+const APP_SUBJECT: Record<string, Subject> = {
+  // ── 中学受験 ──
+  juku: 'sansuu',
+  kokugo: 'kokugo', kanyo: 'kokugo', yoji: 'kokugo', bunpo: 'kokugo', dokkai: 'kokugo',
+  'science-bio': 'rika', 'science-earth': 'rika', 'science-chem': 'rika', 'science-phys': 'rika',
+  chiri: 'shakai', rekishi: 'shakai', koumin: 'shakai',
+  // ── 小学生 ──
+  kanji: 'kokugo', romaji: 'kokugo', 'youji-hiragana': 'kokugo',
+  'word-math': 'sansuu', math: 'sansuu', kuku: 'sansuu', clock: 'sansuu', bunsuu: 'sansuu',
+  shapes: 'sansuu', koubai: 'sansuu',
+  tanq: 'rika',
+  todofuken: 'shakai',
+  english: 'other', coding: 'other', thinking: 'other', 'youji-zokusei': 'other',
+  // ── 幼稚園 ──
+  'youji-kanji': 'kokugo', 'youji-katakana': 'kokugo',
+  'youji-math': 'sansuu', 'youji-clock': 'sansuu', 'youji-animals': 'sansuu',
+  'youji-juucombo': 'sansuu', 'youji-iro': 'sansuu',
+  'thinking-youji': 'other',
+}
+function getCardColor(id: string): string {
+  return SUBJECT_BG[APP_SUBJECT[id] ?? 'other']
 }
 
 type Tab = 'home' | 'records' | 'settings'
@@ -444,7 +463,7 @@ function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
     const lock = lockLabel(app.id, userType)
     const s = appStats[app.id]
     const pct = s && s.total > 0 ? Math.round(s.mastered / s.total * 100) : null
-    const bgColor = getCardColor(index)
+    const bgColor = getCardColor(app.id)
 
     if (lock) {
       return (
