@@ -388,7 +388,7 @@ function QuizView({
           style={{ background: '#FFF6D6', border: '3px solid #3A2E2A', boxShadow: '3px 3px 0 0 #3A2E2A' }}>
           <p className="font-black text-sm mb-1" style={{ color: '#ca8a04' }}>💡 おしい！それはちがうみたい</p>
           <p className="text-xs font-bold leading-relaxed" style={{ color: '#3A2E2A' }}>
-            「{q.unit}」で習ったことを思い出して、のこりの3つからもういちど考えてみよう！
+            {q.hint ?? `「${q.unit}」で習ったことを思い出して、のこりの3つからもういちど考えてみよう！`}
           </p>
         </div>
       )}
