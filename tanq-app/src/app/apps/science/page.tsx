@@ -567,11 +567,18 @@ export default function SciencePage() {
     setView('quiz')
   }, [])
 
-  // /juken からのディープリンク（?unit=rika-…）。SSR では window がないため useEffect で読む
+  // ディープリンク: /juken の単元リンク（?unit=rika-…）と /lab の領域カード（?domain=生物 等）。
+  // SSR では window がないため useEffect で読む
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const unitId = new URLSearchParams(window.location.search).get('unit')
-    if (unitId && getRikaUnit(unitId)) handleUnitStart(unitId)
+    const params = new URLSearchParams(window.location.search)
+    const unitId = params.get('unit')
+    if (unitId && getRikaUnit(unitId)) { handleUnitStart(unitId); return }
+    const domain = params.get('domain')
+    if (domain && (DOMAINS as string[]).includes(domain)) {
+      setSelectedDomain(domain as ScienceDomain)
+      setView('domain')
+    }
   }, [handleUnitStart])
 
   const handleSelect = useCallback((i: number) => {
