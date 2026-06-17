@@ -167,6 +167,12 @@ const APP_SUBJECT: Record<string, Subject> = {
 function getCardColor(id: string): string {
   return SUBJECT_BG[APP_SUBJECT[id] ?? 'other']
 }
+// カードは教科順（国語→算数→理科→社会→その他）に並べ、同じ色がかたまるようにする。
+// 安定ソートなので、同じ教科内では APPS 配列に書いた順（学年・レベル順）が保たれる。
+const SUBJECT_ORDER: Record<Subject, number> = { kokugo: 0, sansuu: 1, rika: 2, shakai: 3, other: 4 }
+function bySubject(a: { id: string }, b: { id: string }): number {
+  return SUBJECT_ORDER[APP_SUBJECT[a.id] ?? 'other'] - SUBJECT_ORDER[APP_SUBJECT[b.id] ?? 'other']
+}
 
 type Tab = 'home' | 'records' | 'settings'
 
@@ -524,9 +530,9 @@ function HomeTab({ profile, stats, userType, onTabChange, sectionOrder }: {
     return <Link href={app.url} className={cardClass} style={cardStyle}>{cardContent}</Link>
   }
 
-  const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei')
-  const youjiApps = APPS.filter(a => a.audience === 'youji')
-  const chuugakujukenApps = APPS.filter(a => a.audience === 'chuugakujuken')
+  const shougakuseiApps = APPS.filter(a => a.audience === 'shougakusei').sort(bySubject)
+  const youjiApps = APPS.filter(a => a.audience === 'youji').sort(bySubject)
+  const chuugakujukenApps = APPS.filter(a => a.audience === 'chuugakujuken').sort(bySubject)
 
   return (
     <div className="px-4 pb-4 pt-4">
