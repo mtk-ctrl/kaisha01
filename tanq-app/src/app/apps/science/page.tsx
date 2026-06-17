@@ -62,7 +62,9 @@ function buildUnitSession(unitId: string, store: SRSStore): typeof SCIENCE_QUEST
   const review = pool.filter(q => store[q.id]?.b === 2)
   const base = unmastered.length >= 3 ? unmastered : pool
   const withReview = [...shuffle(base), ...shuffle(review).slice(0, 2)]
-  return shuffle(withReview).slice(0, SESSION_SIZE)
+  // 出題はレベル順（基礎→標準→発展）に並べる。同一単元内で発展が基礎より先に出ると
+  // 「レベル感」が乱れるため、セッション内は必ずやさしい順で進める。
+  return shuffle(withReview).slice(0, SESSION_SIZE).sort((a, b) => a.level - b.level)
 }
 
 function unitStats(unitId: string, store: SRSStore) {
