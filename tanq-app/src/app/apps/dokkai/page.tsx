@@ -312,6 +312,15 @@ export default function DokkaiPage() {
                   {play.firstWrong === null ? '⭕ 正解！根きょもチェック' : play.secondCorrect ? '✨ 再挑戦で正解！根きょをたしかめよう' : '📖 根きょをたしかめよう'}
                 </div>
                 <p style={{ margin: 0, fontSize: '14px', color: play.firstWrong === null ? '#14532D' : '#78350F', lineHeight: 1.9 }}><Furigana text={q.explain} /></p>
+                {/* 根拠の文をここにも引用（長文だと本文中の黄色マーカーが画面外で見つからないため） */}
+                <div style={{ marginTop: '10px', background: '#FEF9C3', border: '1px solid #FDE047', borderRadius: '10px', padding: '10px 12px' }}>
+                  <div style={{ fontSize: '11px', color: '#A16207', fontWeight: 700, marginBottom: '4px' }}>🖍️ 根きょの文（本文より）</div>
+                  {q.evidence.map(i => (
+                    <p key={i} style={{ margin: '2px 0', fontSize: '13px', color: '#713F12', lineHeight: 1.9 }}>
+                      「<Furigana text={pq.passage.sentences[i]} />」
+                    </p>
+                  ))}
+                </div>
                 {play.firstWrong !== null && !play.secondCorrect && (
                   <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#B45309', fontWeight: 600 }}>まちがえても だいじょうぶ。「本文のどこに書いてあるか」をさがすクセが、読解の力になるよ！</p>
                 )}

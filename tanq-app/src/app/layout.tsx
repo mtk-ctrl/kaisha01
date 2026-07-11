@@ -32,6 +32,16 @@ export const metadata: Metadata = {
     description: 'AIで小学生〜高校生に「考える喜び」を届ける教育テクノロジー企業。',
     siteName: 'TANQ Inc.',
   },
+  // ホーム画面ショートカット用（未設定だと Vercel 既定の「V」アイコンになる）
+  manifest: '/manifest.webmanifest',
+  icons: {
+    icon: [
+      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: '/icons/apple-touch-icon.png',
+  },
+  appleWebApp: { title: 'TANQ' },
 }
 
 export const viewport: Viewport = {
@@ -40,6 +50,7 @@ export const viewport: Viewport = {
   // ピンチズームを許可（WCAG 1.4.4 準拠）。弱視の子・保護者が拡大できるよう maximumScale は制限しない
   maximumScale: 5,
   userScalable: true,
+  themeColor: '#5B3FB8',
 }
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
