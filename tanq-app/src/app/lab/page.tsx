@@ -114,7 +114,7 @@ const APPS: {
   { id: 'kanyo',        name: '国語〈慣用句〉',   emoji: '🗣️', color: '#f97316', url: '/apps/kanyo',    badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'yoji',         name: '国語〈四字熟語〉', emoji: '📝', color: '#6366f1', url: '/apps/yoji',     badge: `140問・20レベル`,   audience: 'chuugakujuken', targetAge: '小4〜中3', guestAccess: false },
   { id: 'bunpo',        name: '国語〈文法・敬語〉', emoji: '🙇', color: '#7C5CD6', url: '/apps/bunpo',    badge: `敬語・品詞・6レベル48問`, audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
-  { id: 'dokkai',       name: '国語〈読解〉',     emoji: '📚', color: '#7C5CD6', url: '/apps/dokkai',   badge: 'ためしてみる版・54問', audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
+  { id: 'dokkai',       name: '国語〈読解〉',     emoji: '📚', color: '#7C5CD6', url: '/apps/dokkai',   badge: 'ためしてみる版・60問', audience: 'chuugakujuken', targetAge: '小3〜小6', guestAccess: false },
   { id: 'science-bio',   name: '理科〈生物〉',     emoji: '🌿', color: '#22c55e', url: '/apps/science?domain=生物', badge: '65問・基礎〜発展', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   { id: 'science-earth', name: '理科〈地学〉',     emoji: '🌍', color: '#0ea5e9', url: '/apps/science?domain=地学', badge: '65問・基礎〜発展', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
   { id: 'science-chem',  name: '理科〈化学〉',     emoji: '⚗️', color: '#f59e0b', url: '/apps/science?domain=化学', badge: '65問・基礎〜発展', audience: 'chuugakujuken', targetAge: '小4〜小6', guestAccess: false },
