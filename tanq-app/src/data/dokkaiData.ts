@@ -20,6 +20,8 @@ export interface DokkaiQuestion {
 export interface DokkaiPassage {
   id: string
   kind: '物語' | '説明'
+  title?: string         // 長文（ステップ4）の文章えらび画面で表示。1文章=1セットで解く
+  level?: '★' | '★★' | '★★★' // 難度ラダー: ★=導入 ★★=ふつう ★★★=入試レベル（1200〜1600字）
   sentences: string[]    // 文単位の配列。解説時に evidence の文をハイライトする
   paraBreaks?: number[]  // 段落の先頭になる文の index（長文用。指定がなければ段落なしの連続表示）
   questions: DokkaiQuestion[]
@@ -911,7 +913,9 @@ export const DOKKAI_STEP3: DokkaiPassage[] = [
   },
 ]
 
-// ─── ステップ4「長文読解」: 800〜1200字の長文（Stage 1 優先1・細切れ原則で1本ずつ追加）──
+// ─── ステップ4「長文読解」: 1文章=1セット（4問）で選んで解く（Stage 1 優先1・細切れ原則で1本ずつ追加）──
+// 難度ラダー（オーナー判定 2026-07-11 反映）: ★=導入800字〜 → ★★=ふつう → ★★★=入試レベル1200〜1600字。
+// 3本目以降は ★★★ を標準にして徐々に長く・難しくする。
 // 紛らわしい選択肢の3類型を意図的に混ぜる（logs/decisions/2026-07-11_content-expansion-priority.md）:
 //   ①本文に書いてあるが問いに合わない ②言い過ぎ（「わざと」「ぜったい」等の付け足し） ③本文にない
 // 段落は paraBreaks で表現。正解は evidence の文から一意。Ken が全問突き合わせ検証済み
@@ -919,7 +923,7 @@ export const DOKKAI_STEP3: DokkaiPassage[] = [
 export const DOKKAI_STEP4: DokkaiPassage[] = [
   // ─ 物語1「さいごのごめんね」約900字 ────────────────────────────────────────
   {
-    id: 's4-01', kind: '物語',
+    id: 's4-01', kind: '物語', title: 'さいごのごめんね', level: '★',
     paraBreaks: [2, 8, 11, 16, 22, 29],
     sentences: [
       '「あと{三日|みっか}で、ゆずが{引|ひ}っこしてしまう。」',
@@ -1019,7 +1023,7 @@ export const DOKKAI_STEP4: DokkaiPassage[] = [
   // 2本目からは難度を中受寄りに引き上げ（オーナー判定反映）: 語彙（原生林・常緑樹・矛盾等に
   // ふりがな付与）・譲歩→逆接の構造・「本文にあるが主張ではない」選択肢
   {
-    id: 's4-02', kind: '説明',
+    id: 's4-02', kind: '説明', title: '里山 — まもるために、手を入れる', level: '★★',
     paraBreaks: [4, 7, 12, 18, 22],
     sentences: [
       '「{自然|しぜん}を{守|まも}る」と{聞|き}いて、みなさんは{何|なに}を{思|おも}いうかべるだろうか。',
