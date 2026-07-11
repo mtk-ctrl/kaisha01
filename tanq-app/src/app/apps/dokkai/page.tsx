@@ -234,7 +234,7 @@ export default function DokkaiPage() {
             <div style={{ fontSize: '40px', marginBottom: '6px' }}>{meta.emoji}</div>
             <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E1A6E', margin: '0 0 6px' }}>ステップ4・長文読解</h1>
             <p style={{ color: '#6B7280', fontSize: '13px', margin: 0, lineHeight: 1.7 }}>
-              読みたい文章をえらぼう。1つの文章に4問ずつだよ。<br />
+              読みたい文章をえらぼう。1つの文章に4〜6問だよ。<br />
               ★の数がふえるほど、長くてむずかしくなるよ。
             </p>
           </div>

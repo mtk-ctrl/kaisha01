@@ -397,7 +397,7 @@ export default function JukenHubPage() {
 
           <GroupLabel>📚 読解（AI生成オリジナル文）</GroupLabel>
           <div className="space-y-2">
-            <UnitRow href="/apps/dokkai" emoji="📚" title="読解〈3文・だんらく・短文・長文〉" sub="ステップ1〜4・オリジナル文54問・根きょの文をさがす練習"
+            <UnitRow href="/apps/dokkai" emoji="📚" title="読解〈3文・だんらく・短文・長文〉" sub="ステップ1〜4・オリジナル文60問・長文は入試レベル★★★まで"
               color="#7C5CD6" tag="ためしてみる版" />
           </div>
 
