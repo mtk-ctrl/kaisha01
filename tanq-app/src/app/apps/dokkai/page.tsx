@@ -50,7 +50,7 @@ function prepareStep(passages: readonly DokkaiPassage[]): PreparedQuestion[] {
 type View = 'home' | 'play' | 'result'
 
 interface PlayState {
-  step: 1 | 2 | 3
+  step: 1 | 2 | 3 | 4
   questions: PreparedQuestion[]
   current: number
   selected: number | null
@@ -70,7 +70,7 @@ export default function DokkaiPage() {
   const [mood, setMood] = useState<string | null>(null)
   const finishedRef = useRef(false)
 
-  const startStep = useCallback((step: 1 | 2 | 3) => {
+  const startStep = useCallback((step: 1 | 2 | 3 | 4) => {
     const meta = DOKKAI_STEPS[step - 1]
     finishedRef.current = false
     setMood(null)
@@ -164,7 +164,7 @@ export default function DokkaiPage() {
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#2E1A6E', margin: '0 0 6px' }}>国語〈読解〉</h1>
             <div style={{ marginBottom: '6px' }}>{protoBadge}</div>
             <p style={{ color: '#6B7280', fontSize: '13px', margin: 0, lineHeight: 1.7 }}>
-              みじかい文章を読んで、「本文のどこに書いてあるか」を見つける練習だよ。<br />
+              文章を読んで、「本文のどこに書いてあるか」を見つける練習だよ。<br />
               文章はぜんぶ TANQ のオリジナル！
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function DokkaiPage() {
               <button
                 key={meta.step}
                 className="dk-step"
-                onClick={() => startStep(meta.step as 1 | 2 | 3)}
+                onClick={() => startStep(meta.step as 1 | 2 | 3 | 4)}
                 style={{ background: 'white', border: `2px solid ${PURPLE}`, borderRadius: '16px', padding: '16px', textAlign: 'left', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -239,10 +239,14 @@ export default function DokkaiPage() {
             <div style={{ fontSize: '16px', color: '#1F2937', lineHeight: 2.1 }}>
               {pq.passage.sentences.map((s, i) => {
                 const isEvidence = showEvidence && q.evidence.includes(i)
+                const newPara = i > 0 && (pq.passage.paraBreaks ?? []).includes(i)
                 return (
-                  <span key={i} className={isEvidence ? 'dk-evidence' : undefined}
-                    style={isEvidence ? { background: '#FEF08A', borderRadius: '4px', padding: '1px 2px', boxShadow: '0 0 0 1px #FACC15' } : undefined}>
-                    <Furigana text={s} />
+                  <span key={i}>
+                    {newPara && <span style={{ display: 'block', height: '12px' }} />}
+                    <span className={isEvidence ? 'dk-evidence' : undefined}
+                      style={isEvidence ? { background: '#FEF08A', borderRadius: '4px', padding: '1px 2px', boxShadow: '0 0 0 1px #FACC15' } : undefined}>
+                      <Furigana text={s} />
+                    </span>
                   </span>
                 )
               })}
@@ -392,7 +396,7 @@ export default function DokkaiPage() {
               const nextMeta = (DOKKAI_STEPS as readonly { step: number; title: string }[])[play.step]
               if (!nextMeta) return null
               return (
-                <button onClick={() => startStep((play.step + 1) as 1 | 2 | 3)}
+                <button onClick={() => startStep((play.step + 1) as 1 | 2 | 3 | 4)}
                   style={{ width: '100%', background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})`, color: 'white', border: 'none', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
                   ステップ{play.step + 1}「{nextMeta.title}」へ →
                 </button>
