@@ -47,10 +47,11 @@ function prepareStep(passages: readonly DokkaiPassage[]): PreparedQuestion[] {
   return out
 }
 
-type View = 'home' | 'play' | 'result'
+type View = 'home' | 'passages' | 'play' | 'result'
 
 interface PlayState {
   step: 1 | 2 | 3 | 4
+  passage: DokkaiPassage | null // ステップ4は1文章=1セットで解く（null=ステップ1〜3の通しプレイ）
   questions: PreparedQuestion[]
   current: number
   selected: number | null
@@ -71,11 +72,24 @@ export default function DokkaiPage() {
   const finishedRef = useRef(false)
 
   const startStep = useCallback((step: 1 | 2 | 3 | 4) => {
+    // ステップ4（長文）は1文章=1セット。まず文章えらび画面へ
+    if (step === 4) { setView('passages'); return }
     const meta = DOKKAI_STEPS[step - 1]
     finishedRef.current = false
     setMood(null)
     setPlay({
-      step, questions: prepareStep(meta.passages), current: 0,
+      step, passage: null, questions: prepareStep(meta.passages), current: 0,
+      selected: null, confirmed: false, attempt: 0, firstWrong: null,
+      secondCorrect: false, wrong: 0, answers: [],
+    })
+    setView('play')
+  }, [])
+
+  const startPassage = useCallback((passage: DokkaiPassage) => {
+    finishedRef.current = false
+    setMood(null)
+    setPlay({
+      step: 4, passage, questions: prepareStep([passage]), current: 0,
       selected: null, confirmed: false, attempt: 0, firstWrong: null,
       secondCorrect: false, wrong: 0, answers: [],
     })
@@ -129,7 +143,8 @@ export default function DokkaiPage() {
     if (play.current >= play.questions.length) {
       if (finishedRef.current) return
       finishedRef.current = true
-      saveScore('dokkai', play.questions.length - play.wrong, play.questions.length, `ステップ${play.step}`)
+      saveScore('dokkai', play.questions.length - play.wrong, play.questions.length,
+        play.passage ? `長文「${play.passage.title ?? play.passage.id}」` : `ステップ${play.step}`)
       setView('result')
     }
   }, [play])
@@ -185,7 +200,9 @@ export default function DokkaiPage() {
                     <div style={{ fontSize: '12px', color: '#6B7280', lineHeight: 1.6 }}><Furigana text={meta.sub} /></div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: PURPLE }}>{meta.qTotal}問</div>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: PURPLE }}>
+                      {meta.step === 4 ? `${meta.passages.length}文章` : `${meta.qTotal}問`}
+                    </div>
                     <div style={{ fontSize: '12px', color: PURPLE_DARK }}>はじめる →</div>
                   </div>
                 </div>
@@ -204,6 +221,55 @@ export default function DokkaiPage() {
     )
   }
 
+  // ─── PASSAGES（ステップ4: 文章えらび。1文章=1セット・4問） ─────────────────────
+  if (view === 'passages') {
+    const meta = DOKKAI_STEPS[3]
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #F6F2FF 0%, #E9E0FB 100%)', padding: '16px' }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+          <button onClick={() => setView('home')} style={{ background: 'none', border: 'none', color: PURPLE_DARK, cursor: 'pointer', fontSize: '14px', marginBottom: '12px', padding: 0 }}>
+            ← ステップえらびにもどる
+          </button>
+          <div style={{ textAlign: 'center', marginBottom: '18px' }}>
+            <div style={{ fontSize: '40px', marginBottom: '6px' }}>{meta.emoji}</div>
+            <h1 style={{ fontSize: '22px', fontWeight: 'bold', color: '#2E1A6E', margin: '0 0 6px' }}>ステップ4・長文読解</h1>
+            <p style={{ color: '#6B7280', fontSize: '13px', margin: 0, lineHeight: 1.7 }}>
+              読みたい文章をえらぼう。1つの文章に4問ずつだよ。<br />
+              ★の数がふえるほど、長くてむずかしくなるよ。
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {meta.passages.map(passage => (
+              <button
+                key={passage.id}
+                className="dk-passage"
+                onClick={() => startPassage(passage)}
+                style={{ background: 'white', border: `2px solid ${PURPLE}`, borderRadius: '16px', padding: '16px', textAlign: 'left', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '26px' }}>{passage.kind === '物語' ? '📖' : '🔍'}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 700, background: passage.kind === '物語' ? '#FFE3EE' : '#DBF6F0', color: passage.kind === '物語' ? '#BE3960' : '#0F766E', borderRadius: '999px', padding: '2px 8px' }}>
+                        {passage.kind === '物語' ? 'ものがたり' : 'せつめい文'}
+                      </span>
+                      <span style={{ fontSize: '12px', color: '#F59E0B', fontWeight: 700 }}>{passage.level ?? '★'}</span>
+                    </div>
+                    <div style={{ fontSize: '15px', fontWeight: 'bold', color: '#2E1A6E' }}>{passage.title ?? '長文'}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <div style={{ fontSize: '13px', fontWeight: 'bold', color: PURPLE }}>{passage.questions.length}問</div>
+                    <div style={{ fontSize: '12px', color: PURPLE_DARK }}>よむ →</div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // ─── PLAY ───────────────────────────────────────────────────────────────────
   if (view === 'play' && play && play.current < play.questions.length) {
     const pq = play.questions[play.current]
@@ -216,9 +282,9 @@ export default function DokkaiPage() {
       <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #F6F2FF 0%, #E9E0FB 100%)', padding: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ width: '100%', maxWidth: '560px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <button onClick={() => setView('home')} style={{ background: 'none', border: 'none', color: PURPLE_DARK, cursor: 'pointer', fontSize: '14px' }}>← もどる</button>
+            <button onClick={() => setView(play.passage ? 'passages' : 'home')} style={{ background: 'none', border: 'none', color: PURPLE_DARK, cursor: 'pointer', fontSize: '14px' }}>← もどる</button>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ fontSize: '13px', color: '#6B7280' }}>{meta.emoji} ステップ{play.step}</span>
+              <span style={{ fontSize: '13px', color: '#6B7280' }}>{meta.emoji} ステップ{play.step}{play.passage?.level ? ` ${play.passage.level}` : ''}</span>
               {protoBadge}
             </div>
             <div style={{ fontSize: '13px', color: '#6B7280' }}>{play.current + 1}/{total}</div>
@@ -364,7 +430,9 @@ export default function DokkaiPage() {
             <div style={{ fontSize: '18px', fontWeight: 'bold', color: '#1F2937', marginBottom: '4px' }}>
               {great ? 'すごい！根きょさがし名人だ！' : 'おつかれさま！'}
             </div>
-            <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '14px' }}>ステップ{play.step}・{meta.title}</div>
+            <div style={{ fontSize: '13px', color: '#6B7280', marginBottom: '14px' }}>
+              {play.passage ? `長文読解 ${play.passage.level ?? ''}「${play.passage.title ?? '長文'}」` : `ステップ${play.step}・${meta.title}`}
+            </div>
             <div style={{ fontSize: '32px', marginBottom: '8px' }}>
               {correct}<span style={{ fontSize: '18px', color: '#6B7280' }}>/{total}</span>
             </div>
@@ -396,25 +464,52 @@ export default function DokkaiPage() {
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            <button onClick={() => startStep(play.step)}
-              style={{ width: '100%', background: 'white', border: `2px solid ${PURPLE}`, color: PURPLE_DARK, borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
-              もう一度 ステップ{play.step}
-            </button>
-            {(() => {
-              // play.step は1始まり → 次ステップの0始まりindex（tuple範囲外も許すため配列として参照）
-              const nextMeta = (DOKKAI_STEPS as readonly { step: number; title: string }[])[play.step]
-              if (!nextMeta) return null
-              return (
-                <button onClick={() => startStep((play.step + 1) as 1 | 2 | 3 | 4)}
-                  style={{ width: '100%', background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})`, color: 'white', border: 'none', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
-                  ステップ{play.step + 1}「{nextMeta.title}」へ →
+            {play.passage ? (
+              <>
+                <button onClick={() => startPassage(play.passage!)}
+                  style={{ width: '100%', background: 'white', border: `2px solid ${PURPLE}`, color: PURPLE_DARK, borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+                  もう一度この文章
                 </button>
-              )
-            })()}
-            <button onClick={() => setView('home')}
-              style={{ width: '100%', background: '#F3F4F6', border: 'none', color: '#374151', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
-              ステップえらびにもどる
-            </button>
+                {(() => {
+                  const passages = DOKKAI_STEPS[3].passages
+                  const idx = passages.findIndex(p => p.id === play.passage!.id)
+                  const nextPassage = passages[idx + 1]
+                  if (!nextPassage) return null
+                  return (
+                    <button onClick={() => startPassage(nextPassage)}
+                      style={{ width: '100%', background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})`, color: 'white', border: 'none', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+                      つぎの文章「{nextPassage.title ?? '長文'}」へ →
+                    </button>
+                  )
+                })()}
+                <button onClick={() => setView('passages')}
+                  style={{ width: '100%', background: '#F3F4F6', border: 'none', color: '#374151', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+                  文章えらびにもどる
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => startStep(play.step)}
+                  style={{ width: '100%', background: 'white', border: `2px solid ${PURPLE}`, color: PURPLE_DARK, borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+                  もう一度 ステップ{play.step}
+                </button>
+                {(() => {
+                  // play.step は1始まり → 次ステップの0始まりindex（tuple範囲外も許すため配列として参照）
+                  const nextMeta = (DOKKAI_STEPS as readonly { step: number; title: string }[])[play.step]
+                  if (!nextMeta) return null
+                  return (
+                    <button onClick={() => startStep((play.step + 1) as 1 | 2 | 3 | 4)}
+                      style={{ width: '100%', background: `linear-gradient(135deg, ${PURPLE}, ${PURPLE_DARK})`, color: 'white', border: 'none', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+                      ステップ{play.step + 1}「{nextMeta.title}」へ →
+                    </button>
+                  )
+                })()}
+                <button onClick={() => setView('home')}
+                  style={{ width: '100%', background: '#F3F4F6', border: 'none', color: '#374151', borderRadius: '14px', padding: '14px', fontSize: '15px', fontWeight: 600, cursor: 'pointer' }}>
+                  ステップえらびにもどる
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
