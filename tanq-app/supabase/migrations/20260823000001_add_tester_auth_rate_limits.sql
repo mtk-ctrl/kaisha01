@@ -36,10 +36,10 @@ begin
 
   v_elapsed := greatest(0, floor(extract(epoch from (v_now - v_row.window_started_at)))::integer);
   if v_elapsed >= p_window_seconds then
-    update public.tester_auth_rate_limits
+    update public.tester_auth_rate_limits as rl
       set window_started_at = v_now, attempt_count = 0, updated_at = v_now
-      where rate_key = p_rate_key
-      returning * into v_row;
+      where rl.rate_key = p_rate_key
+      returning rl.* into v_row;
     v_elapsed := 0;
   end if;
 
@@ -51,10 +51,10 @@ begin
   end if;
 
   if p_failed then
-    update public.tester_auth_rate_limits
-      set attempt_count = attempt_count + 1, updated_at = v_now
-      where rate_key = p_rate_key
-      returning * into v_row;
+    update public.tester_auth_rate_limits as rl
+      set attempt_count = rl.attempt_count + 1, updated_at = v_now
+      where rl.rate_key = p_rate_key
+      returning rl.* into v_row;
   end if;
 
   -- The first ten failed requests are 401 responses; request 11+ is 429.
