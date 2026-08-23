@@ -43,6 +43,8 @@ begin
     v_elapsed := 0;
   end if;
 
+  -- Once ten failures have already been consumed, the next request is blocked.
+  -- A correct code cannot clear the block; only the time window can.
   if v_row.attempt_count >= p_max_failures then
     return query select true, greatest(1, p_window_seconds - v_elapsed), v_row.attempt_count;
     return;
@@ -55,9 +57,8 @@ begin
       returning * into v_row;
   end if;
 
-  return query select (v_row.attempt_count >= p_max_failures),
-    case when v_row.attempt_count >= p_max_failures then greatest(1, p_window_seconds - v_elapsed) else 0 end,
-    v_row.attempt_count;
+  -- The first ten failed requests are 401 responses; request 11+ is 429.
+  return query select false, 0, v_row.attempt_count;
 end;
 $$;
 
