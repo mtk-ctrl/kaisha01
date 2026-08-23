@@ -10,12 +10,16 @@ const SESSION_KEY = 'tanq-lab-auth'
 const NAME_KEY = 'tanq-tester-name'
 const RECENT_KEY = 'tanq-tester-recent-names-v2'
 
-function rememberName(name: string) {
+function loadRecentNames(): string[] {
   try {
     const old = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]') as unknown
-    const names = Array.isArray(old) ? old.filter((v): v is string => typeof v === 'string' && v !== name) : []
-    localStorage.setItem(RECENT_KEY, JSON.stringify([name, ...names].slice(0, 8)))
-  } catch { localStorage.setItem(RECENT_KEY, JSON.stringify([name])) }
+    return Array.isArray(old) ? old.filter((v): v is string => typeof v === 'string').slice(0, 8) : []
+  } catch { return [] }
+}
+
+function rememberName(name: string) {
+  const names = loadRecentNames().filter(v => v !== name)
+  localStorage.setItem(RECENT_KEY, JSON.stringify([name, ...names].slice(0, 8)))
 }
 
 export default function TesterPage() {
@@ -28,12 +32,12 @@ export default function TesterPage() {
   const [recent, setRecent] = useState<string[]>([])
 
   useEffect(() => {
-    try { const v = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); if (Array.isArray(v)) setRecent(v.filter(x => typeof x === 'string').slice(0, 8)) } catch {}
     fetch('/api/tester/session').then(async r => {
       if (!r.ok) return
       const data = await r.json()
       if (data?.authenticated && typeof data.name === 'string') {
-        setSessionActive(true); setName(data.name)
+        const allowedNames = Array.isArray(data.allowedNames) ? data.allowedNames.filter((v: unknown): v is string => typeof v === 'string').slice(0, 8) : [data.name]
+        setSessionActive(true); setName(data.name); setRecent(allowedNames)
         localStorage.setItem(SESSION_KEY, 'tester'); localStorage.setItem(NAME_KEY, data.name); rememberName(data.name)
       }
     }).catch(() => {})
@@ -42,7 +46,8 @@ export default function TesterPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setBusy(true); setError('')
     try {
-      const res = await fetch('/api/tester/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), code: pin }) })
+      const recentNames = loadRecentNames()
+      const res = await fetch('/api/tester/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: name.trim(), code: pin, recentNames }) })
       if (!res.ok) { setError(res.status === 429 ? '試行回数が多すぎます。しばらく待ってください' : res.status === 503 ? '一時的に利用できません' : 'お名前またはコードが正しくありません'); setPin(''); return }
       const data = await res.json(); const active = data.name as string
       localStorage.setItem(SESSION_KEY, 'tester'); localStorage.setItem(NAME_KEY, active); rememberName(active)
@@ -54,7 +59,11 @@ export default function TesterPage() {
     setBusy(true); setError('')
     try {
       const res = await fetch('/api/tester/switch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: nextName }) })
-      if (!res.ok) { setSessionActive(false); setError('セッションの期限が切れました。コードを再入力してください'); return }
+      if (!res.ok) {
+        if (res.status === 401) setSessionActive(false)
+        setError(res.status === 403 ? 'このIDは現在のセッションでは切り替えできません。コードを再入力してください' : 'セッションの期限が切れました。コードを再入力してください')
+        return
+      }
       const data = await res.json(); localStorage.setItem(SESSION_KEY, 'tester'); localStorage.setItem(NAME_KEY, data.name); rememberName(data.name); router.push('/lab')
     } catch { setError('切り替えに失敗しました') } finally { setBusy(false) }
   }
