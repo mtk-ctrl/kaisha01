@@ -5,6 +5,16 @@ DB_URL="${TEST_DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/postg
 MIGRATION="supabase/migrations/20260823000001_add_tester_auth_rate_limits.sql"
 
 psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL'
+-- Supabase migrations reference these platform roles. Plain postgres:16 does not
+-- create them, so emulate only the role names needed to execute the real migration.
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN CREATE ROLE anon NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN CREATE ROLE authenticated NOLOGIN; END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN CREATE ROLE service_role NOLOGIN; END IF;
+END
+$$;
+
 create table if not exists public.tester_data (tester_name text primary key, payload jsonb);
 create table if not exists public.tester_scores (tester_name text primary key, score integer);
 truncate public.tester_data, public.tester_scores;
