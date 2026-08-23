@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServiceClient } from '@/lib/supabase'
 import {
+  normalizeAllowedTesterNames,
   normalizeTesterName,
   readTesterSession,
   requireAllowedOrigin,
@@ -27,7 +28,7 @@ async function checkRateLimit(failed: boolean): Promise<{ blocked: boolean; retr
 export async function GET(req: NextRequest) {
   const session = readTesterSession(req)
   if (!session) return NextResponse.json({ authenticated: false }, { status: 401 })
-  return NextResponse.json({ authenticated: true, name: session.name })
+  return NextResponse.json({ authenticated: true, name: session.name, allowedNames: session.allowedNames })
 }
 
 export async function POST(req: NextRequest) {
@@ -53,7 +54,10 @@ export async function POST(req: NextRequest) {
   }
   if (!validCode) return NextResponse.json({ error: 'invalid credentials' }, { status: 401 })
 
-  const res = NextResponse.json({ authenticated: true, name })
-  setTesterSession(res, name)
+  // The shared tester code is the authority boundary. Only after it is verified may
+  // client-held recent IDs be promoted into the server-signed switch allowlist.
+  const allowedNames = normalizeAllowedTesterNames(body?.recentNames, name)
+  const res = NextResponse.json({ authenticated: true, name, allowedNames })
+  setTesterSession(res, name, allowedNames)
   return res
 }
